@@ -1,0 +1,118 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: platform-control-plane
+rules:
+  - apiGroups:
+      - platform.example.io
+    resources:
+      - platformenvironments
+      - infrastacks
+      - terraformruns
+      - resourcesets
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - patch
+  - apiGroups:
+      - platform.example.io
+    resources:
+      - terraformruns
+      - resourcesets
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - update
+      - patch
+  - apiGroups:
+      - platform.example.io
+    resources:
+      - changeapprovals
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - platform.example.io
+    resources:
+      - platformenvironments/status
+      - infrastacks/status
+      - terraformruns/status
+      - resourcesets/status
+    verbs:
+      - get
+      - update
+      - patch
+  - apiGroups:
+      - platform.example.io
+    resources:
+      - platformenvironments/finalizers
+      - infrastacks/finalizers
+      - terraformruns/finalizers
+      - resourcesets/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods/log
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+      - update

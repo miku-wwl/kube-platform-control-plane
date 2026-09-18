@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: platform-control-plane
+  namespace: platform-system
+  labels:
+    app.kubernetes.io/name: platform-control-plane
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: platform-control-plane
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: platform-control-plane
+    spec:
+      serviceAccountName: platform-control-plane
+      containers:
+        - name: manager
+          image: platform-control-plane:phase1
+          imagePullPolicy: IfNotPresent
+          args:
+            - --leader-elect=true
+            - --metrics-bind-address=0
+            - --health-probe-bind-address=:8081
+          ports:
+            - name: health
+              containerPort: 8081
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            initialDelaySeconds: 5
+            periodSeconds: 10

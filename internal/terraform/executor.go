@@ -1,0 +1,237 @@
+package terraform
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"os/exec"
+	"strconv"
+	"strings"
+	"time"
+)
+
+type CommandResult struct {
+	ExitCode int
+	Stdout   string
+	Stderr   string
+}
+
+type CommandRunner interface {
+	Run(ctx context.Context, workingDir string, args ...string) (CommandResult, error)
+}
+
+type OSCommandRunner struct {
+	Binary string
+}
+
+func (r OSCommandRunner) Run(ctx context.Context, workingDir string, args ...string) (CommandResult, error) {
+	command := exec.CommandContext(ctx, r.Binary, args...)
+	command.Dir = workingDir
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	command.Stdout = &stdout
+	command.Stderr = &stderr
+	if err := command.Run(); err != nil {
+		if ctx.Err() != nil {
+			return CommandResult{}, ctx.Err()
+		}
+		if exitError, ok := err.(*exec.ExitError); ok {
+			return CommandResult{ExitCode: exitError.ExitCode(), Stdout: stdout.String(), Stderr: stderr.String()}, nil
+		}
+		return CommandResult{}, err
+	}
+	return CommandResult{ExitCode: 0, Stdout: stdout.String(), Stderr: stderr.String()}, nil
+}
+
+type Request struct {
+	WorkingDir        string
+	Workspace         string
+	BackendConfigPath string
+	PlanPath          string
+	Destroy           bool
+	LockTimeout       time.Duration
+	Parallelism       *int32
+}
+
+type PlanOutcome string
+
+const (
+	PlanNoChange PlanOutcome = "NoChange"
+	PlanChanges  PlanOutcome = "ChangesPresent"
+	PlanFailed   PlanOutcome = "Failed"
+)
+
+type PlanResult struct {
+	Outcome    PlanOutcome
+	ExitCode   int
+	Stdout     string
+	Stderr     string
+	PlanPath   string
+	HasChanges bool
+}
+
+type ApplyResult struct {
+	Succeeded bool
+	ExitCode  int
+	Stdout    string
+	Stderr    string
+}
+
+type Executor struct {
+	Runner CommandRunner
+}
+
+func (e Executor) Plan(ctx context.Context, request Request) (PlanResult, error) {
+	if err := request.validate(true); err != nil {
+		return PlanResult{}, err
+	}
+	if err := e.init(ctx, request, false); err != nil {
+		return PlanResult{}, err
+	}
+	if err := e.selectWorkspace(ctx, request, true); err != nil {
+		return PlanResult{}, err
+	}
+
+	args := []string{"plan", "-input=false", "-no-color", "-detailed-exitcode", "-out=" + request.PlanPath}
+	if request.Destroy {
+		args = append(args, "-destroy")
+	}
+	args = appendLockTimeout(args, request.LockTimeout)
+	args = appendParallelism(args, request.Parallelism)
+	result, err := e.run(ctx, request.WorkingDir, args...)
+	if err != nil {
+		return PlanResult{}, err
+	}
+	outcome := PlanFailed
+	switch result.ExitCode {
+	case 0:
+		outcome = PlanNoChange
+	case 2:
+		outcome = PlanChanges
+	default:
+		return PlanResult{Outcome: outcome, ExitCode: result.ExitCode, Stdout: result.Stdout, Stderr: result.Stderr, PlanPath: request.PlanPath}, fmt.Errorf("terraform plan failed with exit code %d", result.ExitCode)
+	}
+	return PlanResult{
+		Outcome:    outcome,
+		ExitCode:   result.ExitCode,
+		Stdout:     result.Stdout,
+		Stderr:     result.Stderr,
+		PlanPath:   request.PlanPath,
+		HasChanges: result.ExitCode == 2,
+	}, nil
+}
+
+func (e Executor) Apply(ctx context.Context, request Request) (ApplyResult, error) {
+	if err := request.validate(false); err != nil {
+		return ApplyResult{}, err
+	}
+	if err := e.init(ctx, request, true); err != nil {
+		return ApplyResult{}, err
+	}
+	if err := e.selectWorkspace(ctx, request, false); err != nil {
+		return ApplyResult{}, err
+	}
+
+	args := []string{"apply", "-input=false", "-no-color"}
+	args = appendLockTimeout(args, request.LockTimeout)
+	args = appendParallelism(args, request.Parallelism)
+	args = append(args, request.PlanPath)
+	result, err := e.run(ctx, request.WorkingDir, args...)
+	if err != nil {
+		return ApplyResult{}, err
+	}
+	if result.ExitCode != 0 {
+		detail := strings.TrimSpace(result.Stderr)
+		if detail == "" {
+			detail = strings.TrimSpace(result.Stdout)
+		}
+		if detail == "" {
+			return ApplyResult{ExitCode: result.ExitCode, Stdout: result.Stdout, Stderr: result.Stderr}, fmt.Errorf("terraform apply failed with exit code %d", result.ExitCode)
+		}
+		return ApplyResult{ExitCode: result.ExitCode, Stdout: result.Stdout, Stderr: result.Stderr}, fmt.Errorf("terraform apply failed with exit code %d: %s", result.ExitCode, detail)
+	}
+	return ApplyResult{Succeeded: true, ExitCode: 0, Stdout: result.Stdout, Stderr: result.Stderr}, nil
+}
+
+func (e Executor) init(ctx context.Context, request Request, readonlyLockfile bool) error {
+	args := []string{"init", "-input=false", "-no-color"}
+	if readonlyLockfile {
+		args = append(args, "-lockfile=readonly")
+	}
+	args = appendLockTimeout(args, request.LockTimeout)
+	if request.BackendConfigPath != "" {
+		args = append(args, "-backend-config="+request.BackendConfigPath)
+	}
+	result, err := e.run(ctx, request.WorkingDir, args...)
+	if err != nil {
+		return err
+	}
+	if result.ExitCode != 0 {
+		return fmt.Errorf("terraform init failed with exit code %d: %s", result.ExitCode, result.Stderr)
+	}
+	return nil
+}
+
+func (e Executor) selectWorkspace(ctx context.Context, request Request, allowCreate bool) error {
+	result, err := e.run(ctx, request.WorkingDir, "workspace", "select", request.Workspace)
+	if err != nil {
+		return err
+	}
+	if result.ExitCode == 0 {
+		return nil
+	}
+	if !allowCreate {
+		return fmt.Errorf("terraform workspace select failed with exit code %d: %s", result.ExitCode, result.Stderr)
+	}
+	result, err = e.run(ctx, request.WorkingDir, "workspace", "new", request.Workspace)
+	if err != nil {
+		return err
+	}
+	if result.ExitCode != 0 {
+		return fmt.Errorf("terraform workspace new failed with exit code %d: %s", result.ExitCode, result.Stderr)
+	}
+	return nil
+}
+
+func (e Executor) run(ctx context.Context, workingDir string, args ...string) (CommandResult, error) {
+	if e.Runner == nil {
+		return CommandResult{}, fmt.Errorf("terraform command runner is required")
+	}
+	return e.Runner.Run(ctx, workingDir, args...)
+}
+
+func (r Request) validate(plan bool) error {
+	if r.WorkingDir == "" {
+		return fmt.Errorf("working directory is required")
+	}
+	if r.Workspace == "" {
+		return fmt.Errorf("workspace is required")
+	}
+	if plan && r.PlanPath == "" {
+		return fmt.Errorf("plan path is required for plan")
+	}
+	if !plan && r.PlanPath == "" {
+		return fmt.Errorf("saved plan path is required for apply")
+	}
+	if r.LockTimeout < 0 {
+		return fmt.Errorf("lock timeout cannot be negative")
+	}
+	if r.Parallelism != nil && *r.Parallelism < 1 {
+		return fmt.Errorf("terraform parallelism must be positive")
+	}
+	return nil
+}
+
+func appendLockTimeout(args []string, timeout time.Duration) []string {
+	if timeout <= 0 {
+		return args
+	}
+	return append(args, "-lock-timeout="+timeout.String())
+}
+
+func appendParallelism(args []string, parallelism *int32) []string {
+	if parallelism == nil {
+		return args
+	}
+	return append(args, "-parallelism="+strconv.FormatInt(int64(*parallelism), 10))
+}
