@@ -1,21 +1,16 @@
-# Platform Control Plane（三合一项目）详细设计文档 v1.6.6 — FINAL CONTRACT REPAIR
+# Platform Control Plane（三合一项目）详细设计文档 v1.6.7 — LIFECYCLE CLOSURE
 
 > 参考项目：`valkey-cluster-operator`、`terraform-provider-kubepatch`、`terraform-resource`
 >
-> 本版本不改变主架构，只收口最后几个 execution / lifecycle contract：
+> v1.6.7 不改变主架构、不新增 CRD、不新增 cloud，只根据 Phase 1～6 Full Lifecycle E2E 暴露的问题收口 lifecycle correctness：
 >
-> 1. 修正 Apply 的 state-observation 顺序
-> 2. `lineage/serial` 降级为 advisory stale observation
-> 3. Destroy source 明确为 `GitCommit | RetainedBundle`
-> 4. 冻结 resolved non-secret backend config
-> 5. 明确 source bundle 的两输入 builder
-> 6. controller-manager 启用 leader election
-> 7. terminal Job 仅在结果被持久化后才 TTL cleanup
-> 8. 明确 parent / child deletion sequencing
-> 9. 增加 optional Terraform `parallelism`
-> 10. 明确 runtime external-side-effect boundary
+> 1. `PlatformEnvironment` 的 Ready 必须严格等待 current-generation infrastructure / runtime / domain readiness
+> 2. Manual Approval 后由 `InfraStackController` 自动创建 ApplyRun；不要求人工创建 ApplyRun
+> 3. 删除时由 controller 自动创建 Destroy PlanRun，并走同一套 Approval → exact saved-plan Apply
+> 4. `ResourceSet` 删除必须先执行 inventory prune；target unreachable 仅允许既有 bounded-skip contract
+> 5. 补齐 Namespace / Service / Valkey 等 runtime readiness policy，避免无意义的 `RuntimeReadinessUnknown`
 >
-> v1.6.6 后停止架构迭代，后续问题优先通过代码、EnvTest、LocalStack、failure injection 暴露和修复。
+> Phase 1～6 在 **Full lifecycle E2E = PASS 且 Manager restart recovery = PASS** 之前不得 Freeze。v1.6.7 属于 v1.6.6 已允许的 correctness fix，不扩大 MVP scope。
 
 ---
 
@@ -137,35 +132,97 @@ LocalStack 不进入 production architecture，只存在于 Development / Valida
 
 ```text
 PlatformEnvironment
-→ InfraStack
-→ PlanRun
+→ ensure InfraStack
+→ InfraStack creates current-generation PlanRun
 → Plan Job
 → resolved execution snapshot
-→ NoChange fast-path OR Approval
-→ ApplyRun
+→ NoChange fast-path
+   OR
+   WaitingApproval
+→ approver creates immutable ChangeApproval
+→ InfraStackController validates exact PlanRun UID + planDigest + executionContextDigest
+→ InfraStackController automatically creates exactly one ApplyRun
 → exact saved-plan Apply
-→ Target Cluster
-→ Runtime Bootstrap
-→ ResourceSet
-→ ValkeyCluster
-→ Ready
+→ InfrastructureReady=True
+→ Target Cluster connectivity / Runtime Bootstrap
+→ ResourceSet apply + readiness
+→ ValkeyCluster readiness
+→ EnvironmentController aggregates current-generation conditions
+→ PlatformEnvironment Ready=True
 ```
 
 删除：
 
 ```text
 PlatformEnvironment deletionTimestamp
-→ Environment finalizer holds parent
-→ stop new runtime mutation
+→ Environment finalizer holds parent and required children
+→ stop new reconcile/runtime mutation
 → wait active mutating Apply
-→ cleanup runtime or bounded skip
-→ Destroy PlanRun from retained last-applied bundle
-→ NoChange fast-path OR Approval
-→ ApplyRun
-→ InfrastructureRemoved
-→ release management-side children
+→ ResourceSet finalizer prunes owned target-runtime inventory
+   OR bounded skip when target is unreachable
+→ InfraStackController automatically creates Destroy PlanRun
+   from retained last-applied bundle
+→ NoChange fast-path
+   OR
+   WaitingApproval
+→ approver creates immutable ChangeApproval
+→ InfraStackController automatically creates Destroy ApplyRun
+→ exact saved-plan Destroy Apply
+→ InfrastructureRemoved=True
+→ release retained management-side children
 → remove Environment finalizer
 ```
+
+## 4.1 Lifecycle Closure Invariants
+
+### Parent readiness gate
+
+`PlatformEnvironment Ready=True` 仅当：
+
+```text
+deletionTimestamp is nil
+AND InfraStack is Ready for its current generation
+AND ResourceSet is Ready for its current generation
+AND every required Domain Component is Ready
+```
+
+禁止：
+
+```text
+InfraStack still Pending / Applying
+→ PlatformEnvironment Ready=True
+```
+
+`RuntimeEmpty` 只能表示“当前 spec 确实不要求 runtime/domain resource”，不能作为 infrastructure 尚未完成时的 fallback Ready reason。
+
+### Approval → Apply ownership
+
+MVP **不要求独立的 ChangeApprovalController**。
+
+`ChangeApproval` 是 immutable authorization object；`InfraStackController` 负责：
+
+```text
+observe valid ChangeApproval
+→ verify exact binding
+→ idempotently create one ApplyRun
+```
+
+因此成功路径中不允许要求操作员手工创建 ApplyRun。
+
+### Delete ownership
+
+删除 `PlatformEnvironment` 时，Environment / InfraStack / ResourceSet controllers 共同推进同一个 deletion contract：
+
+```text
+runtime cleanup
+→ Destroy Plan
+→ Approval if required
+→ Destroy Apply
+→ InfrastructureRemoved
+→ finalizer release
+```
+
+如果 controller 只进入 `RecoveryRequired` 而没有根据 retained last-applied bundle 创建可恢复的 Destroy PlanRun，则 deletion lifecycle 尚未闭环。
 
 ---
 
@@ -1542,6 +1599,24 @@ SSAConflict=True
 
 # 51. Runtime Readiness
 
+`ResourceSet Ready=True` 必须由 inventory 中所有 **RequireReady** 项共同决定；`ApplyOnly` 项只要求 apply 成功，不阻塞 aggregate Ready。
+
+Namespace：
+
+```text
+phase=Active
+AND deletionTimestamp is nil
+```
+
+Service：
+
+```text
+object exists
+AND deletionTimestamp is nil
+```
+
+通用 Service reachability / endpoint health 不作为默认 ResourceSet readiness；需要服务级 health 时由专用 adapter 定义。
+
 Deployment：
 
 ```text
@@ -1573,8 +1648,11 @@ Established=True
 ValkeyCluster：
 
 ```text
-Valkey readiness adapter
+Available=True → Ready
+Degraded=True → NotReady/Degraded
 ```
+
+若 Valkey Operator 版本使用不同 condition schema，则由 Valkey-specific readiness adapter 归一化。
 
 Unknown：
 
@@ -1583,7 +1661,9 @@ Applied=True
 Ready=Unknown
 ```
 
-除非显式 `ApplyOnly`。
+Unknown 默认阻塞 `ResourceSet Ready=True`，除非该 item 显式 `ApplyOnly`。
+
+这样 Namespace / Service 等 baseline resource 不应无理由把整个 ResourceSet 留在 `RuntimeReadinessUnknown`。
 
 ---
 
@@ -1637,9 +1717,24 @@ Namespace / PVC / CRD 默认 protected。
 target reachable：
 
 ```text
-cleanup runtime
+PlatformEnvironment deletion starts
+→ ResourceSet finalizer holds cleanup
+→ validate inventory ownership
+→ prune owned runtime resources
+→ persist prune result
 → remove ResourceSet finalizer
+→ create Destroy PlanRun from retained bundle
+→ Approval if required
+→ auto-create Destroy ApplyRun
 → destroy infra
+```
+
+禁止在 target reachable 且 inventory 可用时：
+
+```text
+delete ResourceSet object
+→ skip prune
+→ directly destroy infra
 ```
 
 target unreachable：
@@ -1652,7 +1747,7 @@ bounded timeout
 → continue Terraform Destroy
 ```
 
-该路径仅对满足 Runtime External-Side-Effect Boundary 的组件安全。
+该 bounded-skip 路径仅对满足 Runtime External-Side-Effect Boundary 的组件安全。
 
 ---
 
@@ -1756,9 +1851,11 @@ Destroy lifecycle
 
 ---
 
-# 58. Phase 7 Real AWS E2E
+# 58. Deferred Real AWS E2E Validation Target
 
-验证：
+该项 **不属于 Phase 1～6 Freeze Gate**。具体放入 Phase 7～13 的哪个阶段，必须等 Phase 1～6 Freeze 后完成三个 Halter reference repositories 的 gap analysis，再重新设计。
+
+后续验证目标仍包括：
 
 ```text
 real IAM
@@ -1790,19 +1887,27 @@ PlatformEnvironment
 ## EnvironmentController
 
 - orchestration
-- dependency gating
-- condition aggregation
+- create/ensure management-side child resources
+- strict dependency gating
+- current-generation condition aggregation
+- must not publish `Ready=True` before Infrastructure + Runtime + required Domain readiness
 - deletion sequencing
+- hold Environment finalizer until runtime cleanup and infrastructure removal are terminal
 
 ## InfraStackController
 
-- PlanRun creation
+- Reconcile PlanRun creation for current generation
+- Destroy PlanRun creation from retained last-applied bundle
 - latest valid Plan tracking
 - NoChange fast-path
 - approval validation
-- ApplyRun creation
+- observe immutable `ChangeApproval`
+- idempotently create exactly one ApplyRun for a valid approval
+- automatically create Destroy ApplyRun after valid destroy approval
 - retained bundle selection
 - recovery gate
+
+`ChangeApproval` does not require a standalone controller in MVP; InfraStackController is the lifecycle consumer.
 
 ## TerraformRunController
 
@@ -1821,10 +1926,12 @@ PlatformEnvironment
 - target client / identity
 - endpoint resolution
 - SSA / waves
-- readiness
+- kind-specific readiness adapters
+- readiness aggregation
 - inventory
-- prune
+- prune on update/delete
 - finalizer
+- bounded cleanup skip only when target is unreachable under the defined safety boundary
 
 ---
 
@@ -1852,6 +1959,11 @@ PlatformEnvironment
 | StatefulSet old revision ready | not Ready |
 | ResourceSet inventory exceeds limit | InventoryLimitExceeded |
 | Apply Pod lost without trusted result | Indeterminate |
+| InfraStack not Ready but PlatformEnvironment reports Ready | invalid; parent Ready=False with InfrastructureNotReady/Pending reason |
+| valid ChangeApproval exists but operator must manually create ApplyRun | invalid; InfraStackController must auto-create exactly one ApplyRun |
+| PlatformEnvironment deletion does not create Destroy PlanRun | invalid; controller must create Destroy PlanRun from retained bundle |
+| target reachable but ResourceSet is deleted without inventory prune | invalid; ResourceSet finalizer must hold until prune result is persisted |
+| Namespace / Service baseline objects remain RuntimeReadinessUnknown | invalid unless explicitly ApplyOnly; use defined readiness policy |
 
 ---
 
@@ -1894,21 +2006,31 @@ MVP 对 kubepatch：
 # 63. 实施路线
 
 ```text
-Phase 0  Architecture Freeze
-Phase 1  Control Plane Skeleton
-Phase 2  Terraform Execution + LocalStack Validation
-Phase 3  Remote Runtime Plane
-Phase 4  Runtime Bootstrap + Local E2E
-Phase 5  Valkey Integration
-Phase 6  Reliability / Scale / Backpressure
-Phase 7  Real AWS E2E
+Phase 0    Architecture Freeze
+Phase 1    Control Plane Skeleton
+Phase 2    Terraform Execution + LocalStack Validation
+Phase 3    Remote Runtime Plane
+Phase 4    Runtime Bootstrap + Local E2E
+Phase 5    Valkey Integration
+Phase 6    Reliability / Scale / Backpressure
+Phase 6.1  Lifecycle Closure
+           - parent readiness gating
+           - Approval → automatic ApplyRun orchestration
+           - automatic Destroy PlanRun / ApplyRun orchestration
+           - ResourceSet prune-on-delete
+           - runtime readiness closure
+           - final full-lifecycle local E2E
+Freeze Gate Full lifecycle PASS + Manager restart recovery PASS
+Post-Freeze Halter 3-repo gap analysis
+Phase 7+   Production-grade roadmap redesign
+           (Real AWS E2E remains a later validation target)
 ```
 
 ---
 
 # 64. Architecture Freeze
 
-v1.6.6 起：
+v1.6.7 继续保持 v1.6.6 的 scope freeze：
 
 - 不新增 CRD
 - 不新增 cloud
@@ -1918,6 +2040,18 @@ v1.6.6 起：
 - 不把 LocalStack 变成 production dependency
 - 不继续通过纯文档 review 扩大 scope
 
+但 **Phase 1～6 尚未 Freeze**，直到 Phase 6.1 release gate 同时满足：
+
+```text
+Full lifecycle E2E = PASS
+Manager restart recovery = PASS
+go test ./... = PASS
+go vet ./... = PASS
+git diff --check = PASS
+```
+
+v1.6.7 允许且要求修复本次 E2E 已证实的 lifecycle correctness gaps。
+
 后续优先通过：
 
 ```text
@@ -1926,10 +2060,11 @@ EnvTest
 LocalStack
 Kind E2E
 failure injection
-Real AWS E2E
 ```
 
 发现和修复问题。
+
+Phase 1～6 Freeze 后，再用三个 Halter reference repositories 做 gap analysis，并据此重新设计 Phase 7+；在此之前不提前扩大 production-grade scope。
 
 允许修改：
 
@@ -1944,4 +2079,4 @@ Real AWS E2E
 
 # 65. 最终定位
 
-> **A Kubernetes-native platform control plane with exact saved-plan Terraform execution, deterministic retained-bundle destroy, frozen backend reconstruction, immutable approvals and artifacts, bounded execution concurrency, LocalStack-backed AWS integration validation, cross-cluster reconciliation, and explicit failure recovery.**
+> **A Kubernetes-native platform control plane with exact saved-plan Terraform execution, controller-orchestrated approval/apply and retained-bundle destroy lifecycles, strict parent readiness gating, deterministic cross-cluster cleanup, immutable approvals and artifacts, bounded execution concurrency, LocalStack-backed AWS integration validation, and explicit failure recovery.**

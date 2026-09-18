@@ -1,6 +1,8 @@
-# Platform Control Plane（三合一项目）简略设计文档 v1.6.6 — FINAL CONTRACT REPAIR
+# Platform Control Plane（三合一项目）简略设计文档 v1.6.7 — LIFECYCLE CLOSURE
 
 > 参考项目：`valkey-cluster-operator`、`terraform-provider-kubepatch`、`terraform-resource`
+>
+> v1.6.7 是基于 Phase 1～6 Full Lifecycle E2E 暴露问题做的 correctness repair。**不新增 CRD、不新增 cloud、不扩 MVP scope**；只收口 parent readiness、Approval→Apply、Destroy、runtime prune 与 readiness aggregation。
 
 ## 1. 项目目标
 
@@ -120,9 +122,14 @@ ApplyRun.spec
 - artifact create-once、digest-verified、不可覆盖；last-applied bundle 在 Destroy 成功前保留。
 - LocalStack-generated override 不进入 source bundle。
 - Approval 独立 RBAC，ApplyRun 冻结 `approvalUID`。
+- `approvalPolicy=Manual` 时，由 approver 创建 immutable `ChangeApproval`；`InfraStackController` 校验 exact PlanRun UID / digest 后**自动创建且只创建一个 ApplyRun**，不要求人工创建 ApplyRun。
+- Destroy 与 Reconcile 使用同一套 `Plan → Approval → exact saved-plan Apply` 编排；删除时由 controller 自动创建 Destroy PlanRun。
 - `maxConcurrentPlans` / `maxConcurrentApplies` 提供 backpressure；controller-manager 启用 leader election。
 - Job 只有在 controller 捕获 terminal result / artifacts 后才允许 TTL cleanup。
 - Environment finalizer 保证 Destroy 完成前 management-side children 不被提前 GC。
+- `PlatformEnvironment Ready=True` 必须等待当前 generation 的 `InfraStack`、`ResourceSet` 与 required Domain Components 全部 Ready；Infrastructure 未完成时禁止出现 `Ready=True / RuntimeEmpty`。
+- `ResourceSet` finalizer 在 target reachable 时必须先按 inventory prune，再允许 infrastructure destroy；target unreachable 只允许按既有 bounded-skip contract 继续。
+- Runtime readiness 至少覆盖 Namespace、Service、Deployment、StatefulSet、Job、CRD 与 ValkeyCluster；未知类型默认 `Ready=Unknown`，除非显式 `ApplyOnly`。
 - Runtime 默认禁止引入会在 EKS 外创建外部云资源的 controller。
 - Infrastructure 是 event-driven；Runtime 是 continuous。
 
@@ -138,7 +145,10 @@ Phase 3  Remote Runtime Plane
 Phase 4  Runtime Bootstrap + Local E2E
 Phase 5  Valkey Integration
 Phase 6  Reliability / Scale / Backpressure
-Phase 7  Real AWS E2E
+Phase 6.1 Lifecycle Closure + Final Local Full-Lifecycle E2E
+Freeze Gate  Full lifecycle PASS + Manager restart recovery PASS
+Post-Freeze  Halter 3-repo gap analysis
+Phase 7+  Redesign production-grade roadmap（Real AWS E2E 保留为后续 validation target）
 ```
 
 ---
@@ -158,4 +168,4 @@ Phase 7  Real AWS E2E
 
 ## 8. 最终定位
 
-> **A Kubernetes-native platform control plane for exact saved-plan Terraform execution, deterministic destroy/recovery, immutable approvals and artifacts, LocalStack-backed AWS integration validation, cross-cluster reconciliation, and explicit failure recovery.**
+> **A Kubernetes-native platform control plane for exact saved-plan Terraform execution, controller-orchestrated approval/apply and destroy lifecycles, deterministic runtime cleanup, immutable approvals and artifacts, LocalStack-backed AWS integration validation, cross-cluster reconciliation, and explicit failure recovery.**
