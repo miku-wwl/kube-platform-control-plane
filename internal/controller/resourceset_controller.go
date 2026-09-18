@@ -3,8 +3,11 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net"
 	"reflect"
+	"strings"
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -26,6 +29,8 @@ const (
 	maxInventoryStatusBytes  = 700 * 1024
 	defaultCleanupTimeout    = 5 * time.Second
 )
+
+var errCleanupPending = errors.New("runtime cleanup is still pending")
 
 // +kubebuilder:rbac:groups=platform.example.io,resources=resourcesets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=platform.example.io,resources=resourcesets/status,verbs=get;update;patch
@@ -97,7 +102,11 @@ func (r *ResourceSetReconciler) reconcilePresent(ctx context.Context, object *pl
 	}
 
 	message, reason, conditionStatus := r.runtimeReadiness(ctx, inventory)
-	return r.setRuntimeStatus(ctx, object, inventory, false, conditionStatus, reason, message)
+	result, statusErr := r.setRuntimeStatus(ctx, object, inventory, false, conditionStatus, reason, message)
+	if statusErr == nil && conditionStatus != metav1.ConditionTrue {
+		result.RequeueAfter = time.Second
+	}
+	return result, statusErr
 }
 
 func (r *ResourceSetReconciler) reconcileDelete(ctx context.Context, object *platformv1alpha1.ResourceSet) (ctrl.Result, error) {
@@ -111,7 +120,17 @@ func (r *ResourceSetReconciler) reconcileDelete(ctx context.Context, object *pla
 	defer cancel()
 	target := targetIdentity(object.Spec.Target)
 	if err := r.pruneInventory(cleanupCtx, object.Status.Inventory, target); err != nil {
-		return r.finishDelete(ctx, object, true, fmt.Sprintf("runtime cleanup skipped after bounded attempt: %v", err))
+		if errors.Is(err, errCleanupPending) {
+			return ctrl.Result{RequeueAfter: 250 * time.Millisecond}, nil
+		}
+		if isTargetUnavailable(err) {
+			return r.finishDelete(ctx, object, true, fmt.Sprintf("runtime cleanup skipped after bounded attempt: %v", err))
+		}
+		object.Status.Conditions = []metav1.Condition{stableCondition(findCondition(object.Status.Conditions, ConditionReady), object.Generation, metav1.ConditionFalse, "RuntimeCleanupBlocked", err.Error())}
+		if updateErr := r.Status().Update(ctx, object); updateErr != nil {
+			return ctrl.Result{}, updateErr
+		}
+		return ctrl.Result{RequeueAfter: time.Second}, nil
 	}
 	return r.finishDelete(ctx, object, false, "runtime inventory cleaned")
 }
@@ -122,6 +141,9 @@ func (r *ResourceSetReconciler) pruneRemoved(ctx context.Context, object *platfo
 		currentKeys[inventoryKey(item.Group, item.Version, item.Resource, item.Namespace, item.Name)] = struct{}{}
 	}
 	for _, previous := range object.Status.Inventory {
+		if runtimer.IsProtected(inventoryFromStatus(previous)) {
+			continue
+		}
 		key := inventoryKey(previous.Group, previous.Version, previous.Resource, previous.Namespace, previous.Name)
 		if _, found := currentKeys[key]; found {
 			continue
@@ -135,6 +157,9 @@ func (r *ResourceSetReconciler) pruneRemoved(ctx context.Context, object *platfo
 
 func (r *ResourceSetReconciler) pruneInventory(ctx context.Context, inventory []platformv1alpha1.InventoryItemStatus, target runtimer.TargetIdentity) error {
 	for _, statusItem := range inventory {
+		if runtimer.IsProtected(inventoryFromStatus(statusItem)) {
+			continue
+		}
 		if err := r.pruneItem(ctx, inventoryFromStatus(statusItem), target); err != nil {
 			if apierrors.IsNotFound(err) {
 				continue
@@ -163,7 +188,15 @@ func (r *ResourceSetReconciler) pruneItem(ctx context.Context, item runtimer.Inv
 	if err := runtimer.ValidatePrune(item, target, object); err != nil {
 		return err
 	}
-	return resource.Delete(ctx, item.Name, metav1.DeleteOptions{})
+	if err := resource.Delete(ctx, item.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return err
+	}
+	if _, err := resource.Get(ctx, item.Name, metav1.GetOptions{}); err == nil {
+		return errCleanupPending
+	} else if !apierrors.IsNotFound(err) {
+		return err
+	}
+	return nil
 }
 
 func (r *ResourceSetReconciler) runtimeReadiness(ctx context.Context, inventory []runtimer.InventoryItem) (string, string, metav1.ConditionStatus) {
@@ -185,10 +218,22 @@ func (r *ResourceSetReconciler) runtimeReadiness(ctx context.Context, inventory 
 		if err != nil {
 			return fmt.Sprintf("runtime readiness invalid: %v", err), "RuntimeReadinessFailed", metav1.ConditionFalse
 		}
+		if !ready && item.Kind == "ValkeyCluster" && reason == "Available condition not reported" {
+			statefulSet, statefulSetErr := r.TargetClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "statefulsets"}).Namespace(item.Namespace).Get(ctx, item.Name, metav1.GetOptions{})
+			if statefulSetErr == nil {
+				ready, reason, err = runtimer.ValkeyReadyFromStatefulSet(statefulSet)
+				if err != nil {
+					return fmt.Sprintf("Valkey readiness invalid: %v", err), "RuntimeReadinessFailed", metav1.ConditionFalse
+				}
+				if ready {
+					reason = "ValkeyCluster backed by ready StatefulSet"
+				}
+			}
+		}
 		if ready {
 			continue
 		}
-		if reason == "readiness adapter unavailable" || reason == "condition not reported" || reason == "StatefulSet replicas or revision is not ready" {
+		if reason == "readiness adapter unavailable" || strings.HasSuffix(reason, "condition not reported") {
 			unknown++
 		} else {
 			notReady++
@@ -321,6 +366,21 @@ func removeString(values []string, want string) []string {
 		}
 	}
 	return filtered
+}
+
+func isTargetUnavailable(err error) bool {
+	if err == nil {
+		return false
+	}
+	if apierrors.IsTimeout(err) || apierrors.IsServerTimeout(err) || apierrors.IsServiceUnavailable(err) || apierrors.IsTooManyRequests(err) {
+		return true
+	}
+	var networkError net.Error
+	if errors.As(err, &networkError) {
+		return true
+	}
+	message := strings.ToLower(err.Error())
+	return strings.Contains(message, "connection refused") || strings.Contains(message, "no route to host") || strings.Contains(message, "i/o timeout")
 }
 
 func stableCondition(previous *metav1.Condition, generation int64, status metav1.ConditionStatus, reason, message string) metav1.Condition {

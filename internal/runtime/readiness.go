@@ -12,6 +12,23 @@ func Ready(object *unstructured.Unstructured) (bool, string, error) {
 	}
 	generation := object.GetGeneration()
 	switch object.GetKind() {
+	case "Namespace":
+		phase, _, err := unstructured.NestedString(object.Object, "status", "phase")
+		if err != nil {
+			return false, "invalid namespace phase", err
+		}
+		if object.GetDeletionTimestamp() != nil {
+			return false, "namespace is being deleted", nil
+		}
+		if phase != "Active" {
+			return false, "namespace is not Active", nil
+		}
+		return true, "Namespace Active", nil
+	case "Service":
+		if object.GetDeletionTimestamp() != nil {
+			return false, "service is being deleted", nil
+		}
+		return true, "Service exists", nil
 	case "Deployment":
 		observed, _, _ := unstructured.NestedInt64(object.Object, "status", "observedGeneration")
 		if observed < generation {
@@ -19,11 +36,12 @@ func Ready(object *unstructured.Unstructured) (bool, string, error) {
 		}
 		return conditionTrue(object, "Available")
 	case "StatefulSet":
+		observed, _, _ := unstructured.NestedInt64(object.Object, "status", "observedGeneration")
 		readyReplicas, _, _ := unstructured.NestedInt64(object.Object, "status", "readyReplicas")
 		replicas, _, _ := unstructured.NestedInt64(object.Object, "spec", "replicas")
 		currentRevision, _, _ := unstructured.NestedString(object.Object, "status", "currentRevision")
 		updateRevision, _, _ := unstructured.NestedString(object.Object, "status", "updateRevision")
-		if readyReplicas < replicas || currentRevision == "" || currentRevision != updateRevision {
+		if observed < generation || readyReplicas < replicas || currentRevision == "" || currentRevision != updateRevision {
 			return false, "StatefulSet replicas or revision is not ready", nil
 		}
 		return true, "StatefulSet ready", nil
@@ -32,7 +50,15 @@ func Ready(object *unstructured.Unstructured) (bool, string, error) {
 	case "CustomResourceDefinition":
 		return conditionTrue(object, "Established")
 	case "ValkeyCluster":
-		return conditionTrue(object, "Available")
+		if ready, reason, err := conditionTrue(object, "Available"); ready || err != nil {
+			return ready, reason, err
+		}
+		if degraded, reason, err := conditionTrue(object, "Degraded"); err != nil {
+			return false, reason, err
+		} else if degraded {
+			return false, "ValkeyCluster is Degraded", nil
+		}
+		return false, "Available condition not reported", nil
 	default:
 		return false, "readiness adapter unavailable", nil
 	}

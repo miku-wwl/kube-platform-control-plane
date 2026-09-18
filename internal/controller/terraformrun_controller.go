@@ -344,6 +344,12 @@ func (r *TerraformRunReconciler) applyTerminalResult(ctx context.Context, object
 		object.Status.ResolvedBackendConfigRef = object.Spec.BackendConfigArtifactRef
 		object.Status.ResolvedBackendConfigDigest = object.Spec.BackendConfigArtifactDigest
 	}
+	if object.Spec.Operation == "Plan" && (result.ExecutionOutcome == "NoChange" || result.ExecutionOutcome == "ChangesPresent") && object.Status.PlanCreatedAt == nil {
+		created := metav1.Now()
+		expires := metav1.NewTime(created.Add(time.Hour))
+		object.Status.PlanCreatedAt = &created
+		object.Status.PlanExpiresAt = &expires
+	}
 	outcome := result.ExecutionOutcome
 	status := metav1.ConditionFalse
 	reason := "TerraformJobFailed"

@@ -59,7 +59,7 @@ func TestReadyDeploymentAndStatefulSet(t *testing.T) {
 		"apiVersion": "apps/v1", "kind": "StatefulSet",
 		"metadata": map[string]interface{}{"name": "valkey", "generation": int64(1)},
 		"spec":     map[string]interface{}{"replicas": int64(1)},
-		"status":   map[string]interface{}{"readyReplicas": int64(1), "currentRevision": "rev-1", "updateRevision": "rev-1"},
+		"status":   map[string]interface{}{"observedGeneration": int64(1), "readyReplicas": int64(1), "currentRevision": "rev-1", "updateRevision": "rev-1"},
 	}}
 	ready, _, err = Ready(statefulSet)
 	if err != nil || !ready {

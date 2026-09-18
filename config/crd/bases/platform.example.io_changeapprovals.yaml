@@ -69,10 +69,13 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
+              planRunUID:
+                type: string
             required:
             - executionContextDigest
             - planDigest
             - planRunRef
+            - planRunUID
             type: object
           status:
             properties:

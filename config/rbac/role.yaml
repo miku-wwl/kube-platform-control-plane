@@ -19,6 +19,7 @@ rules:
   - apiGroups:
       - platform.example.io
     resources:
+      - infrastacks
       - terraformruns
       - resourcesets
     verbs:

@@ -114,10 +114,12 @@ const (
 )
 
 type InfraStackStatus struct {
-	ObservedGeneration int64                        `json:"observedGeneration,omitempty"`
-	Conditions         []metav1.Condition           `json:"conditions,omitempty"`
-	LatestPlanRunRef   *corev1.LocalObjectReference `json:"latestPlanRunRef,omitempty"`
-	LastAppliedRunRef  *corev1.LocalObjectReference `json:"lastAppliedRunRef,omitempty"`
+	ObservedGeneration            int64                        `json:"observedGeneration,omitempty"`
+	Conditions                    []metav1.Condition           `json:"conditions,omitempty"`
+	LatestPlanRunRef              *corev1.LocalObjectReference `json:"latestPlanRunRef,omitempty"`
+	LastAppliedRunRef             *corev1.LocalObjectReference `json:"lastAppliedRunRef,omitempty"`
+	LastAppliedSourceBundleRef    string                       `json:"lastAppliedSourceBundleRef,omitempty"`
+	LastAppliedSourceBundleDigest string                       `json:"lastAppliedSourceBundleDigest,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -250,6 +252,7 @@ type ChangeApproval struct {
 
 type ChangeApprovalSpec struct {
 	PlanRunRef             corev1.LocalObjectReference `json:"planRunRef"`
+	PlanRunUID             string                      `json:"planRunUID"`
 	PlanDigest             string                      `json:"planDigest"`
 	ExecutionContextDigest string                      `json:"executionContextDigest"`
 }
