@@ -26,6 +26,7 @@ type JobRequest struct {
 	SourceURL                   string
 	SourceRevision              string
 	SourcePath                  string
+	SourceRoot                  string
 	SourceBundleRef             string
 	SourceBundleDigest          string
 	Operation                   string
@@ -122,6 +123,8 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			"--source-bundle-ref="+request.SourceBundleRef,
 			"--source-bundle-digest="+request.SourceBundleDigest,
 		)
+	} else if request.SourceRoot != "" {
+		args = append(args, "--source-root="+request.SourceRoot)
 	}
 	if request.PlanRef != "" {
 		args = append(args, "--plan-ref="+request.PlanRef, "--plan-digest="+request.PlanDigest)

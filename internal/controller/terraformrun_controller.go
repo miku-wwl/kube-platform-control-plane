@@ -230,6 +230,7 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 		SourceURL:                   object.Spec.Source.URL,
 		SourceRevision:              object.Spec.Source.Revision,
 		SourcePath:                  object.Spec.Source.Path,
+		SourceRoot:                  sourceRootForPlan(object, workingDir),
 		Operation:                   object.Spec.Operation,
 		Destroy:                     object.Spec.PlanMode == "Destroy",
 		WorkingDir:                  workingDir,
@@ -256,6 +257,13 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 		request.SourceBundleDigest = object.Spec.Source.Digest
 	}
 	return terraformexec.BuildJob(request)
+}
+
+func sourceRootForPlan(object *platformv1alpha1.TerraformRun, workingDir string) string {
+	if object.Spec.Operation == "Plan" && object.Spec.Source.Type == terraformexec.SourceGitCommit {
+		return workingDir
+	}
+	return ""
 }
 
 func (r *TerraformRunReconciler) reconcileJobStatus(ctx context.Context, object *platformv1alpha1.TerraformRun, job *batchv1.Job) (ctrl.Result, error) {

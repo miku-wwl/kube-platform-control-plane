@@ -9,8 +9,10 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/clientcmd"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -44,11 +46,12 @@ func main() {
 
 	clusterConfig := ctrl.GetConfigOrDie()
 	mgr, err := ctrl.NewManager(clusterConfig, ctrl.Options{
-		Scheme:                 scheme,
-		Metrics:                metricsserver.Options{BindAddress: metricsAddr},
-		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "platform-control-plane.platform.example.io",
+		Scheme:                  scheme,
+		Metrics:                 metricsserver.Options{BindAddress: metricsAddr},
+		HealthProbeBindAddress:  probeAddr,
+		LeaderElection:          enableLeaderElection,
+		LeaderElectionID:        "platform-control-plane.platform.example.io",
+		LeaderElectionNamespace: envOrDefault("PCP_LEADER_ELECTION_NAMESPACE", "platform-system"),
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -57,6 +60,11 @@ func main() {
 	kubeClient, err := kubernetes.NewForConfig(clusterConfig)
 	if err != nil {
 		setupLog.Error(err, "unable to create Kubernetes client for terminal evidence capture")
+		os.Exit(1)
+	}
+	targetClient, err := buildTargetClient()
+	if err != nil {
+		setupLog.Error(err, "unable to create target Kubernetes client")
 		os.Exit(1)
 	}
 	planLimit := positiveEnvInt("PCP_MAX_CONCURRENT_PLANS", 8)
@@ -84,7 +92,7 @@ func main() {
 		setupLog.Error(err, "unable to create TerraformRun controller")
 		os.Exit(1)
 	}
-	if err := (&controller.ResourceSetReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).SetupWithManager(mgr); err != nil {
+	if err := (&controller.ResourceSetReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), TargetClient: targetClient}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create ResourceSet controller")
 		os.Exit(1)
 	}
@@ -104,10 +112,36 @@ func main() {
 	}
 }
 
+func buildTargetClient() (dynamic.Interface, error) {
+	contextName := os.Getenv("PCP_TARGET_CONTEXT")
+	if contextName == "" {
+		return nil, nil
+	}
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	if kubeconfig := os.Getenv("PCP_KUBECONFIG"); kubeconfig != "" {
+		loadingRules.ExplicitPath = kubeconfig
+	}
+	targetConfig, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		loadingRules,
+		&clientcmd.ConfigOverrides{CurrentContext: contextName},
+	).ClientConfig()
+	if err != nil {
+		return nil, err
+	}
+	return dynamic.NewForConfig(targetConfig)
+}
+
 func positiveEnvInt(name string, fallback int) int {
 	value, err := strconv.Atoi(os.Getenv(name))
 	if err != nil || value < 1 {
 		return fallback
 	}
 	return value
+}
+
+func envOrDefault(name, fallback string) string {
+	if value := os.Getenv(name); value != "" {
+		return value
+	}
+	return fallback
 }
