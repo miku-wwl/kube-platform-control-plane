@@ -50,7 +50,8 @@ func TestKindResourceSetControllerSSAInventoryAndPrune(t *testing.T) {
 	resourceSet := &platformv1alpha1.ResourceSet{
 		ObjectMeta: metav1.ObjectMeta{Name: "runtime-controller", Namespace: "platform-system"},
 		Spec: platformv1alpha1.ResourceSetSpec{
-			Target: platformv1alpha1.TargetReference{Provider: "kind", ClusterName: contextName, ClusterID: contextName},
+			Target:                 platformv1alpha1.TargetReference{Provider: "kind", ClusterName: contextName, ClusterID: contextName},
+			RuntimeMutationAllowed: true,
 			Resources: []platformv1alpha1.RuntimeObject{{
 				Version:  "v1",
 				Resource: "configmaps",

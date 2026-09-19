@@ -57,6 +57,13 @@ func (r *InfraStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	destroy := object.Spec.DesiredState == platformv1alpha1.DesiredStateDestroy || !object.DeletionTimestamp.IsZero()
 	if destroy {
+		if !object.Spec.MutationFence {
+			object.Spec.MutationFence = true
+			if err := r.Update(ctx, &object); err != nil {
+				return ctrl.Result{}, err
+			}
+			return ctrl.Result{RequeueAfter: lifecycleRequeue}, nil
+		}
 		return r.reconcileDestroy(ctx, &object)
 	}
 	return r.reconcilePresent(ctx, &object)
@@ -80,9 +87,36 @@ func (r *InfraStackReconciler) reconcileDestroy(ctx context.Context, object *pla
 		}
 		return ctrl.Result{}, nil
 	}
+	var runs platformv1alpha1.TerraformRunList
+	if err := r.List(ctx, &runs, client.InNamespace(object.Namespace)); err != nil {
+		return ctrl.Result{}, err
+	}
+	for index := range runs.Items {
+		run := &runs.Items[index]
+		if run.Spec.StackRef.Name != object.Name || run.Spec.Operation != "Apply" || run.Status.JobRef == nil {
+			continue
+		}
+		if run.Status.ExecutionOutcome == "Indeterminate" {
+			return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionUnknown, "RecoveryRequired", "An active Apply is indeterminate; destroy is blocked until fresh observation and Plan."), false)
+		}
+		if run.Status.ExecutionOutcome != "Succeeded" && run.Status.ExecutionOutcome != "Failed" && run.Status.ExecutionOutcome != "Rejected" {
+			return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "DeletionHeld", "Destroy is waiting for the active Apply to reach a terminal classification."), false)
+		}
+	}
 	var applied platformv1alpha1.TerraformRun
 	if object.Status.LastAppliedRunRef == nil || object.Status.LastAppliedRunRef.Name == "" {
-		return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "RecoveryRequired", "Destroy requires the retained source bundle from the last successful Apply."), false)
+		for index := range runs.Items {
+			run := &runs.Items[index]
+			if run.Spec.StackRef.Name == object.Name && run.Spec.Operation == "Apply" {
+				return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "RecoveryRequired", "Destroy requires evidence for an Apply that may have changed infrastructure."), false)
+			}
+		}
+		if condition := findCondition(object.Status.Conditions, ConditionReady); condition == nil || condition.Reason != "InfrastructureRemoved" {
+			if _, err := r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionTrue, "InfrastructureRemoved", "No successful Apply exists; Terraform infrastructure was never admitted."), true); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+		return ctrl.Result{}, nil
 	}
 	if err := r.Get(ctx, types.NamespacedName{Name: object.Status.LastAppliedRunRef.Name, Namespace: object.Namespace}, &applied); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -170,6 +204,14 @@ func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *p
 				if applyErr != nil {
 					condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "ApplyBlocked", applyErr.Error())
 				} else {
+					if err := validateApplyAdmission(stack, plan, approval); err != nil {
+						condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "ApplyBlocked", err.Error())
+						break
+					}
+					if stack.Spec.MutationFence && !destroy {
+						condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "MutationFence", "Apply admission is closed by the durable mutation fence.")
+						break
+					}
 					condition = applyCondition(stack.Generation, apply, destroy)
 					if !destroy && apply.Status.ExecutionOutcome == "Succeeded" {
 						status.LastAppliedRunRef = &corev1.LocalObjectReference{Name: apply.Name}
@@ -226,6 +268,9 @@ func (r *InfraStackReconciler) validApprovalForPlan(ctx context.Context, plan *p
 }
 
 func (r *InfraStackReconciler) ensureApplyRun(ctx context.Context, stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.TerraformRun, approval *platformv1alpha1.ChangeApproval) (*platformv1alpha1.TerraformRun, error) {
+	if err := validateApplyAdmission(stack, plan, approval); err != nil {
+		return nil, err
+	}
 	var runs platformv1alpha1.TerraformRunList
 	if err := r.List(ctx, &runs, client.InNamespace(stack.Namespace)); err != nil {
 		return nil, err
@@ -250,6 +295,31 @@ func (r *InfraStackReconciler) ensureApplyRun(ctx context.Context, stack *platfo
 		return nil, err
 	}
 	return apply, nil
+}
+
+func validateApplyAdmission(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.TerraformRun, approval *platformv1alpha1.ChangeApproval) error {
+	if stack == nil || plan == nil || approval == nil {
+		return fmt.Errorf("stack, PlanRun, and ChangeApproval are required")
+	}
+	if stack.Spec.MutationFence && plan.Spec.PlanMode != "Destroy" {
+		return fmt.Errorf("mutation fence is set")
+	}
+	if plan.UID == "" || approval.UID == "" || approval.Spec.PlanRunUID != string(plan.UID) {
+		return fmt.Errorf("PlanRun/approval UID binding mismatch")
+	}
+	if plan.Status.PlanDigest == "" || approval.Spec.PlanDigest != plan.Status.PlanDigest {
+		return fmt.Errorf("plan digest binding mismatch")
+	}
+	if approval.Spec.ExecutionContextDigest != plan.Spec.ExecutionContextDigest {
+		return fmt.Errorf("execution context binding mismatch")
+	}
+	if plan.Status.PlanExpiresAt == nil || !time.Now().Before(plan.Status.PlanExpiresAt.Time) {
+		return fmt.Errorf("saved PlanRun is expired or has no trusted expiry")
+	}
+	if plan.Spec.EffectivePlanInputDigest == "" || plan.Spec.RuntimeTargetIdentityDigest == "" || plan.Spec.InfrastructureExecutionIdentityDigest == "" {
+		return fmt.Errorf("PlanRun execution snapshot is incomplete")
+	}
+	return nil
 }
 
 func (r *InfraStackReconciler) SetupWithManager(manager ctrl.Manager) error {
@@ -310,12 +380,24 @@ func buildPlanRun(stack *platformv1alpha1.InfraStack, name string) *platformv1al
 				Revision: stack.Spec.Source.Revision,
 				Path:     stack.Spec.Source.Path,
 			},
-			ResolvedBackendConfigRef: stack.Spec.Backend.ConfigRef.Name,
-			LockTimeout:              stack.Spec.Backend.LockTimeout,
-			VariableSecretRefs:       stack.Spec.Variables.SecretRefs,
-			Workspace:                stack.Spec.Workspace,
-			Executor:                 stack.Spec.Executor,
-			ExecutionContextDigest:   executionContextDigest(stack.Spec),
+			ResolvedBackendConfigRef:              stack.Spec.Backend.ConfigRef.Name,
+			LockTimeout:                           stack.Spec.Backend.LockTimeout,
+			VariableSecretRefs:                    stack.Spec.Variables.SecretRefs,
+			VariableSecretVariables:               stack.Spec.Variables.SecretVariables,
+			RunnerServiceAccountName:              stack.Spec.RunnerServiceAccountName,
+			Workspace:                             stack.Spec.Workspace,
+			Executor:                              stack.Spec.Executor,
+			ExecutionContextDigest:                executionContextDigest(stack.Spec),
+			EffectivePlanInputDigest:              effectivePlanInputDigest(stack.Spec),
+			InfrastructureExecutionIdentityDigest: digestIdentity(stack.Spec.InfrastructureExecutionIdentity),
+			RuntimeTargetIdentityDigest:           digestIdentity(stack.Spec.RuntimeTargetIdentity),
+			TargetConnectionProfileDigest:         digestIdentity(stack.Spec.TargetConnectionProfile),
+			RunnerImageDigest:                     stack.Spec.Executor.Image,
+			ExpectedTerraformVersion:              stack.Spec.Executor.TerraformVersion,
+			MutationFence:                         stack.Spec.MutationFence,
+			ConcurrencyGroup:                      stack.Spec.ConcurrencyGroup,
+			MaxConcurrentPlans:                    stack.Spec.MaxConcurrentPlans,
+			MaxConcurrentApplies:                  stack.Spec.MaxConcurrentApplies,
 		},
 	}
 }
@@ -331,21 +413,38 @@ func buildDestroyPlanRun(stack *platformv1alpha1.InfraStack, applied *platformv1
 	return &platformv1alpha1.TerraformRun{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: stack.Namespace},
 		Spec: platformv1alpha1.TerraformRunSpec{
-			StackRef:                        corev1.LocalObjectReference{Name: stack.Name},
-			InfraStackGeneration:            stack.Generation,
-			Operation:                       "Plan",
-			PlanMode:                        "Destroy",
-			Source:                          platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Ref: sourceRef, Digest: sourceDigest},
-			ResolvedBackendConfigRef:        applied.Spec.ResolvedBackendConfigRef,
-			BackendConfigArtifactRef:        backendRef,
-			BackendConfigArtifactDigest:     backendDigest,
-			VariableSecretRefs:              applied.Spec.VariableSecretRefs,
-			LockTimeout:                     applied.Spec.LockTimeout,
-			Workspace:                       applied.Spec.Workspace,
-			Executor:                        applied.Spec.Executor,
-			ExecutionContextDigest:          applied.Spec.ExecutionContextDigest,
-			ExecutionTargetIdentityDigest:   applied.Spec.ExecutionTargetIdentityDigest,
-			ExecutionPlatformIdentityDigest: applied.Spec.ExecutionPlatformIdentityDigest,
+			StackRef:                              corev1.LocalObjectReference{Name: stack.Name},
+			InfraStackGeneration:                  stack.Generation,
+			Operation:                             "Plan",
+			PlanMode:                              "Destroy",
+			Source:                                platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Ref: sourceRef, Digest: sourceDigest},
+			ResolvedBackendConfigRef:              applied.Spec.ResolvedBackendConfigRef,
+			BackendConfigArtifactRef:              backendRef,
+			BackendConfigArtifactDigest:           backendDigest,
+			VariableSecretRefs:                    applied.Spec.VariableSecretRefs,
+			VariableSecretVariables:               applied.Spec.VariableSecretVariables,
+			RunnerServiceAccountName:              applied.Spec.RunnerServiceAccountName,
+			LockTimeout:                           applied.Spec.LockTimeout,
+			Workspace:                             applied.Spec.Workspace,
+			Executor:                              applied.Spec.Executor,
+			ExecutionContextDigest:                applied.Spec.ExecutionContextDigest,
+			ExecutionTargetIdentityDigest:         applied.Spec.ExecutionTargetIdentityDigest,
+			ExecutionPlatformIdentityDigest:       applied.Spec.ExecutionPlatformIdentityDigest,
+			EffectivePlanInputDigest:              applied.Spec.EffectivePlanInputDigest,
+			SourceClosureDigest:                   applied.Status.SourceBundleDigest,
+			VariablesSnapshotDigest:               applied.Spec.VariablesSnapshotDigest,
+			SecretVariableIdentityDigest:          applied.Spec.SecretVariableIdentityDigest,
+			InfrastructureExecutionIdentityDigest: applied.Spec.InfrastructureExecutionIdentityDigest,
+			RuntimeTargetIdentityDigest:           applied.Spec.RuntimeTargetIdentityDigest,
+			TargetConnectionProfileDigest:         applied.Spec.TargetConnectionProfileDigest,
+			RunnerServiceAccountIdentityDigest:    applied.Spec.RunnerServiceAccountIdentityDigest,
+			TerraformLockfileDigest:               applied.Spec.TerraformLockfileDigest,
+			ExpectedTerraformVersion:              applied.Spec.ExpectedTerraformVersion,
+			RunnerImageDigest:                     applied.Spec.RunnerImageDigest,
+			MutationFence:                         stack.Spec.MutationFence,
+			ConcurrencyGroup:                      applied.Spec.ConcurrencyGroup,
+			MaxConcurrentPlans:                    applied.Spec.MaxConcurrentPlans,
+			MaxConcurrentApplies:                  applied.Spec.MaxConcurrentApplies,
 		},
 	}
 }
@@ -381,26 +480,43 @@ func buildApplyRun(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.Te
 			"platform.example.io/terraform-approval-uid": string(approval.UID),
 		}},
 		Spec: platformv1alpha1.TerraformRunSpec{
-			StackRef:                        corev1.LocalObjectReference{Name: stack.Name},
-			InfraStackGeneration:            stack.Generation,
-			Operation:                       "Apply",
-			PlanMode:                        plan.Spec.PlanMode,
-			Source:                          platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Ref: sourceRef, Digest: sourceDigest},
-			ResolvedBackendConfigRef:        plan.Spec.ResolvedBackendConfigRef,
-			BackendConfigArtifactRef:        backendRef,
-			BackendConfigArtifactDigest:     backendDigest,
-			VariableSecretRefs:              plan.Spec.VariableSecretRefs,
-			LockTimeout:                     plan.Spec.LockTimeout,
-			Workspace:                       plan.Spec.Workspace,
-			Executor:                        plan.Spec.Executor,
-			ExecutionContextDigest:          plan.Spec.ExecutionContextDigest,
-			ExecutionTargetIdentityDigest:   plan.Spec.ExecutionTargetIdentityDigest,
-			ExecutionPlatformIdentityDigest: plan.Spec.ExecutionPlatformIdentityDigest,
-			PlanRunUID:                      string(plan.UID),
-			PlanRef:                         plan.Status.PlanRef,
-			PlanDigest:                      plan.Status.PlanDigest,
-			ApprovalRef:                     &corev1.LocalObjectReference{Name: approval.Name},
-			ApprovalUID:                     string(approval.UID),
+			StackRef:                              corev1.LocalObjectReference{Name: stack.Name},
+			InfraStackGeneration:                  stack.Generation,
+			Operation:                             "Apply",
+			PlanMode:                              plan.Spec.PlanMode,
+			Source:                                platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Ref: sourceRef, Digest: sourceDigest},
+			ResolvedBackendConfigRef:              plan.Spec.ResolvedBackendConfigRef,
+			BackendConfigArtifactRef:              backendRef,
+			BackendConfigArtifactDigest:           backendDigest,
+			VariableSecretRefs:                    plan.Spec.VariableSecretRefs,
+			VariableSecretVariables:               plan.Spec.VariableSecretVariables,
+			RunnerServiceAccountName:              plan.Spec.RunnerServiceAccountName,
+			LockTimeout:                           plan.Spec.LockTimeout,
+			Workspace:                             plan.Spec.Workspace,
+			Executor:                              plan.Spec.Executor,
+			ExecutionContextDigest:                plan.Spec.ExecutionContextDigest,
+			ExecutionTargetIdentityDigest:         plan.Spec.ExecutionTargetIdentityDigest,
+			ExecutionPlatformIdentityDigest:       plan.Spec.ExecutionPlatformIdentityDigest,
+			EffectivePlanInputDigest:              plan.Spec.EffectivePlanInputDigest,
+			SourceClosureDigest:                   plan.Status.SourceBundleDigest,
+			VariablesSnapshotDigest:               plan.Spec.VariablesSnapshotDigest,
+			SecretVariableIdentityDigest:          plan.Spec.SecretVariableIdentityDigest,
+			InfrastructureExecutionIdentityDigest: plan.Spec.InfrastructureExecutionIdentityDigest,
+			RuntimeTargetIdentityDigest:           plan.Spec.RuntimeTargetIdentityDigest,
+			TargetConnectionProfileDigest:         plan.Spec.TargetConnectionProfileDigest,
+			RunnerServiceAccountIdentityDigest:    plan.Spec.RunnerServiceAccountIdentityDigest,
+			TerraformLockfileDigest:               plan.Spec.TerraformLockfileDigest,
+			ExpectedTerraformVersion:              plan.Spec.ExpectedTerraformVersion,
+			RunnerImageDigest:                     plan.Spec.RunnerImageDigest,
+			MutationFence:                         stack.Spec.MutationFence,
+			PlanRunUID:                            string(plan.UID),
+			PlanRef:                               plan.Status.PlanRef,
+			PlanDigest:                            plan.Status.PlanDigest,
+			ApprovalRef:                           &corev1.LocalObjectReference{Name: approval.Name},
+			ApprovalUID:                           string(approval.UID),
+			ConcurrencyGroup:                      plan.Spec.ConcurrencyGroup,
+			MaxConcurrentPlans:                    plan.Spec.MaxConcurrentPlans,
+			MaxConcurrentApplies:                  plan.Spec.MaxConcurrentApplies,
 		},
 	}
 }
@@ -410,11 +526,38 @@ func executionContextDigest(spec platformv1alpha1.InfraStackSpec) string {
 		Source    platformv1alpha1.SourceSpec    `json:"source"`
 		Backend   platformv1alpha1.BackendSpec   `json:"backend"`
 		Workspace string                         `json:"workspace"`
+		Capacity  platformv1alpha1.CapacitySpec  `json:"capacity"`
 		Variables platformv1alpha1.VariablesSpec `json:"variables"`
 		Executor  platformv1alpha1.ExecutorSpec  `json:"executor"`
-	}{Source: spec.Source, Backend: spec.Backend, Workspace: spec.Workspace, Variables: spec.Variables, Executor: spec.Executor})
+	}{Source: spec.Source, Backend: spec.Backend, Workspace: spec.Workspace, Capacity: spec.Capacity, Variables: spec.Variables, Executor: spec.Executor})
 	hash := sha256.Sum256(encoded)
 	return "sha256:" + hex.EncodeToString(hash[:])
+}
+
+func effectivePlanInputDigest(spec platformv1alpha1.InfraStackSpec) string {
+	digest, err := terraformexec.Digest(struct {
+		Source                 platformv1alpha1.SourceSpec
+		Backend                platformv1alpha1.BackendSpec
+		Workspace              string
+		Capacity               platformv1alpha1.CapacitySpec
+		Variables              platformv1alpha1.VariablesSpec
+		Executor               platformv1alpha1.ExecutorSpec
+		InfrastructureIdentity platformv1alpha1.InfrastructureExecutionIdentity
+		TargetIdentity         platformv1alpha1.RuntimeTargetIdentity
+		ConnectionProfile      platformv1alpha1.TargetConnectionProfile
+	}{Source: spec.Source, Backend: spec.Backend, Workspace: spec.Workspace, Capacity: spec.Capacity, Variables: spec.Variables, Executor: spec.Executor, InfrastructureIdentity: spec.InfrastructureExecutionIdentity, TargetIdentity: spec.RuntimeTargetIdentity, ConnectionProfile: spec.TargetConnectionProfile})
+	if err != nil {
+		return ""
+	}
+	return digest
+}
+
+func digestIdentity(value any) string {
+	digest, err := terraformexec.Digest(value)
+	if err != nil {
+		return ""
+	}
+	return digest
 }
 
 func planRunName(stackName string, generation int64) string {

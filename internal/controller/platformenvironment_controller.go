@@ -2,12 +2,17 @@ package controller
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,6 +33,10 @@ const (
 // +kubebuilder:rbac:groups=platform.example.io,resources=platformenvironments/finalizers,verbs=update
 // +kubebuilder:rbac:groups=platform.example.io,resources=resourcesets,verbs=get;list;watch;create;delete;update;patch
 // +kubebuilder:rbac:groups=platform.example.io,resources=infrastacks,verbs=get;list;watch;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get
 type PlatformEnvironmentReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
@@ -51,12 +60,64 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 		}
 		return ctrl.Result{Requeue: true}, nil
 	}
+	if err := validatePlatformEnvironmentSpec(&object); err != nil {
+		return r.setEnvironmentCondition(ctx, &object, "InvalidSpec", err.Error(), metav1.ConditionFalse)
+	}
+
+	stackRefName := object.Spec.InfraStackRef.Name
+	target := object.Spec.Target
+	var class *platformv1alpha1.EnvironmentClass
+	var classObjects []platformv1alpha1.RuntimeObject
+	if object.Spec.ClassRef != nil && object.Spec.ClassRef.Name != "" {
+		var classObject platformv1alpha1.EnvironmentClass
+		if err := r.Get(ctx, client.ObjectKey{Name: object.Spec.ClassRef.Name}, &classObject); err != nil {
+			if apierrors.IsNotFound(err) {
+				return r.setEnvironmentCondition(ctx, &object, "ClassNotFound", fmt.Sprintf("EnvironmentClass %q was not found", object.Spec.ClassRef.Name), metav1.ConditionFalse)
+			}
+			return ctrl.Result{}, err
+		}
+		class = &classObject
+		if err := validateEnvironmentClass(&object, class); err != nil {
+			return r.setEnvironmentCondition(ctx, &object, "ClassRejected", err.Error(), metav1.ConditionFalse)
+		}
+		if err := r.validateTenantPolicy(ctx, &object, class); err != nil {
+			return r.setEnvironmentCondition(ctx, &object, "QuotaRejected", err.Error(), metav1.ConditionFalse)
+		}
+		if err := r.ensureRunnerIdentity(ctx, &object, class); err != nil {
+			return ctrl.Result{}, err
+		}
+		stackRefName = classStackName(object.Name)
+		target = classTarget(&object, class)
+		classObjects = classRuntimeObjects(class)
+		var classStack platformv1alpha1.InfraStack
+		classStackErr := r.Get(ctx, client.ObjectKey{Name: stackRefName, Namespace: object.Namespace}, &classStack)
+		if apierrors.IsNotFound(classStackErr) {
+			classStack = *buildClassInfraStack(&object, class, stackRefName, target)
+			if err := ctrl.SetControllerReference(&object, &classStack, r.Scheme); err != nil {
+				return ctrl.Result{}, err
+			}
+			if err := r.Create(ctx, &classStack); err != nil {
+				return ctrl.Result{}, err
+			}
+		} else if classStackErr != nil {
+			return ctrl.Result{}, classStackErr
+		} else {
+			desiredStack := buildClassInfraStack(&object, class, stackRefName, target)
+			if !reflect.DeepEqual(classStack.Spec, desiredStack.Spec) {
+				classStack.Spec = desiredStack.Spec
+				if err := r.Update(ctx, &classStack); err != nil {
+					return ctrl.Result{}, err
+				}
+				return ctrl.Result{RequeueAfter: environmentRequeue}, nil
+			}
+		}
+	}
 
 	childName := resourceSetName(object.Name)
 	var child platformv1alpha1.ResourceSet
 	getErr := r.Get(ctx, client.ObjectKey{Name: childName, Namespace: object.Namespace}, &child)
 	if apierrors.IsNotFound(getErr) {
-		child = *buildResourceSet(&object, childName)
+		child = *buildResourceSetForTarget(&object, childName, target, classObjects)
 		if err := ctrl.SetControllerReference(&object, &child, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -68,18 +129,35 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 		return ctrl.Result{}, getErr
 	}
 
-	if !reflect.DeepEqual(child.Spec.Target, object.Spec.Target) {
-		child.Spec.Target = object.Spec.Target
+	stackReady := false
+	var stack platformv1alpha1.InfraStack
+	if stackRefName != "" {
+		getErr = r.Get(ctx, client.ObjectKey{Name: stackRefName, Namespace: object.Namespace}, &stack)
+		if apierrors.IsNotFound(getErr) {
+			getErr = nil
+		} else if getErr != nil {
+			return ctrl.Result{}, getErr
+		} else {
+			stackReady = conditionReadyForGeneration(stack.Status.Conditions, ConditionReady, stack.Generation) && stack.Spec.DesiredState == platformv1alpha1.DesiredStatePresent && findCondition(stack.Status.Conditions, ConditionReady).Reason == "InfrastructureReady"
+		}
+	}
+	targetDigest, _ := targetRuntimeIdentityDigest(target)
+	childSpec := child.Spec
+	childSpec.Target = target
+	childSpec.Resources = classObjects
+	childSpec.RuntimeTargetIdentityDigest = targetDigest
+	childSpec.RuntimeMutationAllowed = stackReady && !stack.Spec.MutationFence
+	childSpec.MutationFence = stack.Spec.MutationFence || !stackReady
+	if !reflect.DeepEqual(child.Spec, childSpec) {
+		child.Spec = childSpec
 		if err := r.Update(ctx, &child); err != nil {
 			return ctrl.Result{}, err
 		}
-		return ctrl.Result{RequeueAfter: environmentRequeue}, nil
 	}
 
-	var stack platformv1alpha1.InfraStack
-	stackFound := object.Spec.InfraStackRef.Name != ""
+	stackFound := stackRefName != ""
 	if stackFound {
-		getErr = r.Get(ctx, client.ObjectKey{Name: object.Spec.InfraStackRef.Name, Namespace: object.Namespace}, &stack)
+		getErr = r.Get(ctx, client.ObjectKey{Name: stackRefName, Namespace: object.Namespace}, &stack)
 		if apierrors.IsNotFound(getErr) {
 			stackFound = false
 		} else if getErr != nil {
@@ -90,15 +168,19 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 	status := object.Status
 	status.ObservedGeneration = object.Generation
 	status.InfraStackRef = nil
-	if object.Spec.InfraStackRef.Name != "" {
-		status.InfraStackRef = &corev1.LocalObjectReference{Name: object.Spec.InfraStackRef.Name}
+	if stackRefName != "" {
+		status.InfraStackRef = &corev1.LocalObjectReference{Name: stackRefName}
 	}
+	identity := targetRuntimeIdentity(target)
+	status.TargetIdentity = &identity
+	connection := environmentTargetConnection(target)
+	status.TargetConnection = &connection
 	status.ResourceSetRef = &corev1.LocalObjectReference{Name: child.Name}
 
 	condition := lifecycleCondition(object.Generation, metav1.ConditionFalse, "InfrastructurePending", "InfraStack is not available for the current PlatformEnvironment generation.")
 	if !stackFound {
 		condition = lifecycleCondition(object.Generation, metav1.ConditionFalse, "InfraStackNotFound", "The referenced InfraStack has not been created yet.")
-	} else if !conditionReadyForGeneration(stack.Status.Conditions, ConditionReady, stack.Generation) {
+	} else if !conditionReadyForGeneration(stack.Status.Conditions, ConditionReady, stack.Generation) || findCondition(stack.Status.Conditions, ConditionReady).Reason != "InfrastructureReady" {
 		condition = lifecycleCondition(object.Generation, metav1.ConditionFalse, "InfrastructureNotReady", infrastructureMessage(&stack))
 	} else if !conditionReadyForGeneration(child.Status.Conditions, ConditionReady, child.Generation) {
 		condition = lifecycleCondition(object.Generation, metav1.ConditionFalse, "RuntimeNotReady", runtimeMessage(&child))
@@ -116,6 +198,106 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 		return ctrl.Result{RequeueAfter: environmentRequeue}, nil
 	}
 	return ctrl.Result{}, nil
+}
+
+func (r *PlatformEnvironmentReconciler) validateTenantPolicy(ctx context.Context, environment *platformv1alpha1.PlatformEnvironment, class *platformv1alpha1.EnvironmentClass) error {
+	var namespace corev1.Namespace
+	if err := r.Get(ctx, client.ObjectKey{Name: environment.Namespace}, &namespace); err != nil {
+		return fmt.Errorf("read tenant namespace: %w", err)
+	}
+	if allowed := splitAnnotation(namespace.Annotations["platform.example.io/allowed-environment-classes"]); len(allowed) > 0 && !containsString(allowed, class.Name) {
+		return fmt.Errorf("EnvironmentClass %q is not allowed in tenant namespace %q", class.Name, environment.Namespace)
+	}
+	maxEnvironments := class.Spec.CapacityBounds.MaxEnvironments
+	if raw := namespace.Annotations["platform.example.io/max-platform-environments"]; raw != "" {
+		parsed, err := strconv.Atoi(raw)
+		if err != nil || parsed < 1 {
+			return fmt.Errorf("tenant namespace max-platform-environments annotation must be a positive integer")
+		}
+		maxEnvironments = int32(parsed)
+	}
+	if maxEnvironments <= 0 {
+		return nil
+	}
+	var environments platformv1alpha1.PlatformEnvironmentList
+	if err := r.List(ctx, &environments, client.InNamespace(environment.Namespace)); err != nil {
+		return fmt.Errorf("list tenant environments: %w", err)
+	}
+	active := int32(0)
+	for index := range environments.Items {
+		if environments.Items[index].DeletionTimestamp.IsZero() {
+			active++
+		}
+	}
+	if active > maxEnvironments {
+		return fmt.Errorf("tenant namespace %q has %d PlatformEnvironments, maximum is %d", environment.Namespace, active, maxEnvironments)
+	}
+	return nil
+}
+
+func splitAnnotation(value string) []string {
+	values := strings.Split(value, ",")
+	result := make([]string, 0, len(values))
+	for _, item := range values {
+		if trimmed := strings.TrimSpace(item); trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
+}
+
+func (r *PlatformEnvironmentReconciler) ensureRunnerIdentity(ctx context.Context, environment *platformv1alpha1.PlatformEnvironment, class *platformv1alpha1.EnvironmentClass) error {
+	name := class.Spec.RunnerProfile.ServiceAccountName
+	if name == "" {
+		return nil
+	}
+	serviceAccount := &corev1.ServiceAccount{}
+	key := client.ObjectKey{Name: name, Namespace: environment.Namespace}
+	if err := r.Get(ctx, key, serviceAccount); apierrors.IsNotFound(err) {
+		serviceAccount = &corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}}
+		if err := ctrl.SetControllerReference(environment, serviceAccount, r.Scheme); err != nil {
+			return err
+		}
+		if err := r.Create(ctx, serviceAccount); err != nil && !apierrors.IsAlreadyExists(err) {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+	role := &rbacv1.Role{}
+	if err := r.Get(ctx, key, role); apierrors.IsNotFound(err) {
+		role = &rbacv1.Role{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}, Rules: []rbacv1.PolicyRule{{APIGroups: []string{""}, Resources: []string{"configmaps", "secrets"}, Verbs: []string{"get"}}}}
+		if err := ctrl.SetControllerReference(environment, role, r.Scheme); err != nil {
+			return err
+		}
+		if err := r.Create(ctx, role); err != nil && !apierrors.IsAlreadyExists(err) {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+	binding := &rbacv1.RoleBinding{}
+	if err := r.Get(ctx, key, binding); apierrors.IsNotFound(err) {
+		binding = &rbacv1.RoleBinding{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}, RoleRef: rbacv1.RoleRef{APIGroup: rbacv1.GroupName, Kind: "Role", Name: name}, Subjects: []rbacv1.Subject{{Kind: "ServiceAccount", Name: name, Namespace: environment.Namespace}}}
+		if err := ctrl.SetControllerReference(environment, binding, r.Scheme); err != nil {
+			return err
+		}
+		if err := r.Create(ctx, binding); err != nil && !apierrors.IsAlreadyExists(err) {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+	return nil
+}
+
+func validatePlatformEnvironmentSpec(object *platformv1alpha1.PlatformEnvironment) error {
+	classMode := object.Spec.ClassRef != nil && object.Spec.ClassRef.Name != ""
+	legacyMode := object.Spec.InfraStackRef.Name != "" && object.Spec.Target.Provider != "" && object.Spec.Target.ClusterName != ""
+	if classMode == legacyMode {
+		return fmt.Errorf("use exactly one of Class Mode or legacy InfraStack/Target mode")
+	}
+	return nil
 }
 
 func (r *PlatformEnvironmentReconciler) reconcileDelete(ctx context.Context, object *platformv1alpha1.PlatformEnvironment) (ctrl.Result, error) {
@@ -142,9 +324,16 @@ func (r *PlatformEnvironmentReconciler) reconcileDelete(ctx context.Context, obj
 		return ctrl.Result{}, childErr
 	}
 
-	if object.Spec.InfraStackRef.Name != "" {
+	stackName := ""
+	if object.Status.InfraStackRef != nil {
+		stackName = object.Status.InfraStackRef.Name
+	}
+	if stackName == "" {
+		stackName = object.Spec.InfraStackRef.Name
+	}
+	if stackName != "" {
 		var stack platformv1alpha1.InfraStack
-		stackErr := r.Get(ctx, client.ObjectKey{Name: object.Spec.InfraStackRef.Name, Namespace: object.Namespace}, &stack)
+		stackErr := r.Get(ctx, client.ObjectKey{Name: stackName, Namespace: object.Namespace}, &stack)
 		if stackErr == nil {
 			if stack.DeletionTimestamp.IsZero() && stack.Spec.DesiredState != platformv1alpha1.DesiredStateDestroy {
 				stack.Spec.DesiredState = platformv1alpha1.DesiredStateDestroy
@@ -194,7 +383,7 @@ func (r *PlatformEnvironmentReconciler) mapInfraStack(ctx context.Context, objec
 	requests := make([]ctrl.Request, 0, len(environments.Items))
 	for index := range environments.Items {
 		environment := &environments.Items[index]
-		if environment.Spec.InfraStackRef.Name == object.GetName() {
+		if environment.Spec.InfraStackRef.Name == object.GetName() || (environment.Status.InfraStackRef != nil && environment.Status.InfraStackRef.Name == object.GetName()) {
 			requests = append(requests, ctrl.Request{NamespacedName: client.ObjectKeyFromObject(environment)})
 		}
 	}
@@ -202,13 +391,30 @@ func (r *PlatformEnvironmentReconciler) mapInfraStack(ctx context.Context, objec
 }
 
 func buildResourceSet(environment *platformv1alpha1.PlatformEnvironment, name string) *platformv1alpha1.ResourceSet {
+	return buildResourceSetForTarget(environment, name, environment.Spec.Target, nil)
+}
+
+func buildResourceSetForTarget(environment *platformv1alpha1.PlatformEnvironment, name string, target platformv1alpha1.TargetReference, resources []platformv1alpha1.RuntimeObject) *platformv1alpha1.ResourceSet {
 	return &platformv1alpha1.ResourceSet{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace},
 		Spec: platformv1alpha1.ResourceSetSpec{
-			Target:            environment.Spec.Target,
-			MaxInventoryItems: 500,
+			Target:                 target,
+			MaxInventoryItems:      500,
+			Resources:              resources,
+			RuntimeMutationAllowed: false,
+			MutationFence:          true,
 		},
 	}
+}
+
+func targetRuntimeIdentityDigest(target platformv1alpha1.TargetReference) (string, error) {
+	identity := targetRuntimeIdentity(target)
+	encoded, err := json.Marshal(identity)
+	if err != nil {
+		return "", err
+	}
+	hash := sha256.Sum256(encoded)
+	return "sha256:" + hex.EncodeToString(hash[:]), nil
 }
 
 func conditionReadyForGeneration(conditions []metav1.Condition, conditionType string, generation int64) bool {
@@ -236,4 +442,13 @@ func resourceSetName(environmentName string) string {
 		name = name[:63]
 	}
 	return strings.TrimRight(name, "-")
+}
+
+func (r *PlatformEnvironmentReconciler) setEnvironmentCondition(ctx context.Context, object *platformv1alpha1.PlatformEnvironment, reason, message string, status metav1.ConditionStatus) (ctrl.Result, error) {
+	object.Status.ObservedGeneration = object.Generation
+	object.Status.Conditions = []metav1.Condition{stableCondition(findCondition(object.Status.Conditions, ConditionReady), object.Generation, status, reason, message)}
+	if err := r.Status().Update(ctx, object); err != nil {
+		return ctrl.Result{}, err
+	}
+	return ctrl.Result{RequeueAfter: environmentRequeue}, nil
 }

@@ -78,6 +78,9 @@ func (r *TerraformRunReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 		return ctrl.Result{}, nil
 	}
+	if object.Spec.Operation == "Apply" && object.Spec.MutationFence && object.Spec.PlanMode != "Destroy" {
+		return r.updateExecutionStatus(ctx, &object, "Rejected", metav1.ConditionFalse, "MutationFence", "Apply admission is closed by the durable mutation fence.")
+	}
 
 	if object.Status.JobRef == nil {
 		if !r.ensureExecutionSlot(&object, false) {
@@ -110,7 +113,13 @@ func (r *TerraformRunReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			r.releaseExecutionSlot(&object)
 			return ctrl.Result{}, getErr
 		}
+		if err := validateTerraformJobIdentity(&object, &existing); err != nil {
+			return r.updateExecutionStatus(ctx, &object, "Indeterminate", metav1.ConditionUnknown, "TerraformJobIdentityMismatch", err.Error())
+		}
 		object.Status.JobRef = &corev1.LocalObjectReference{Name: existing.Name}
+		if existing.UID != "" {
+			object.Status.JobUID = string(existing.UID)
+		}
 		object.Status.ObservedGeneration = object.Generation
 		object.Status.Conditions = []metav1.Condition{executionCondition(object.Generation, metav1.ConditionFalse, "TerraformJobPending", "Terraform Job created; terminal evidence is not captured yet.")}
 		if err := r.Status().Update(ctx, &object); err != nil {
@@ -125,6 +134,9 @@ func (r *TerraformRunReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			return r.updateExecutionStatus(ctx, &object, "Indeterminate", metav1.ConditionUnknown, "TerraformJobMissing", "Terraform Job disappeared before terminal evidence was captured.")
 		}
 		return ctrl.Result{}, err
+	}
+	if err := validateTerraformJobIdentity(&object, &job); err != nil {
+		return r.updateExecutionStatus(ctx, &object, "Indeterminate", metav1.ConditionUnknown, "TerraformJobIdentityMismatch", err.Error())
 	}
 	if job.Status.Succeeded == 0 && job.Status.Failed == 0 && !r.ensureExecutionSlot(&object, true) {
 		result, err := r.updateExecutionStatus(ctx, &object, "Pending", metav1.ConditionFalse, "ExecutionSlotUnavailable", "Active Terraform Job is waiting for a reconstructed concurrency slot.")
@@ -164,7 +176,7 @@ func (r *TerraformRunReconciler) executionWorkItem(object *platformv1alpha1.Terr
 	if id == "" {
 		id = object.Namespace + "/" + object.Name
 	}
-	return reliability.WorkItem{ID: id, Kind: kind, Stack: object.Spec.StackRef.Name}
+	return reliability.WorkItem{ID: id, Kind: kind, Stack: object.Spec.StackRef.Name, ConcurrencyGroup: object.Spec.ConcurrencyGroup, MaxConcurrentPlans: int(object.Spec.MaxConcurrentPlans), MaxConcurrentApplies: int(object.Spec.MaxConcurrentApplies)}
 }
 
 func (r *TerraformRunReconciler) validateApplyApproval(ctx context.Context, apply *platformv1alpha1.TerraformRun) error {
@@ -193,6 +205,39 @@ func (r *TerraformRunReconciler) validateApplyApproval(ctx context.Context, appl
 	}
 	if plan.Spec.ExecutionContextDigest != "" && plan.Spec.ExecutionContextDigest != apply.Spec.ExecutionContextDigest {
 		return fmt.Errorf("PlanRun execution context mismatch")
+	}
+	if plan.Status.PlanExpiresAt == nil || !time.Now().Before(plan.Status.PlanExpiresAt.Time) {
+		return fmt.Errorf("saved PlanRun is expired or has no trusted expiry")
+	}
+	if apply.Spec.EffectivePlanInputDigest != "" && plan.Spec.EffectivePlanInputDigest != apply.Spec.EffectivePlanInputDigest {
+		return fmt.Errorf("effective plan input digest mismatch")
+	}
+	if apply.Spec.SourceClosureDigest != "" && plan.Status.SourceBundleDigest != "" && apply.Spec.SourceClosureDigest != plan.Status.SourceBundleDigest {
+		return fmt.Errorf("source closure digest mismatch")
+	}
+	if apply.Spec.RuntimeTargetIdentityDigest != "" && plan.Spec.RuntimeTargetIdentityDigest != apply.Spec.RuntimeTargetIdentityDigest {
+		return fmt.Errorf("runtime target identity digest mismatch")
+	}
+	if apply.Spec.InfrastructureExecutionIdentityDigest != "" && plan.Spec.InfrastructureExecutionIdentityDigest != apply.Spec.InfrastructureExecutionIdentityDigest {
+		return fmt.Errorf("infrastructure execution identity digest mismatch")
+	}
+	return nil
+}
+
+func validateTerraformJobIdentity(run *platformv1alpha1.TerraformRun, job *batchv1.Job) error {
+	if run == nil || job == nil {
+		return fmt.Errorf("TerraformRun and Job are required")
+	}
+	if run.Status.JobUID != "" && job.UID != "" && run.Status.JobUID != string(job.UID) {
+		return fmt.Errorf("Job UID changed from %q to %q", run.Status.JobUID, job.UID)
+	}
+	if label := job.Labels["platform.example.io/terraform-run-uid"]; label != "" && label != string(run.UID) {
+		return fmt.Errorf("Job terraform-run-uid label mismatch")
+	}
+	for _, owner := range job.OwnerReferences {
+		if owner.Kind == "TerraformRun" && owner.UID != run.UID {
+			return fmt.Errorf("Job owner UID mismatch")
+		}
 	}
 	return nil
 }
@@ -249,6 +294,8 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 		BackendConfigArtifactRef:    object.Spec.BackendConfigArtifactRef,
 		BackendConfigArtifactDigest: object.Spec.BackendConfigArtifactDigest,
 		VariableSecretRefs:          object.Spec.VariableSecretRefs,
+		VariableSecretVariables:     terraformSecretVariables(object.Spec.VariableSecretVariables),
+		ServiceAccountName:          object.Spec.RunnerServiceAccountName,
 		PlanRef:                     object.Spec.PlanRef,
 		PlanDigest:                  object.Spec.PlanDigest,
 	}
@@ -270,7 +317,7 @@ func (r *TerraformRunReconciler) reconcileJobStatus(ctx context.Context, object 
 	if job.Status.Succeeded > 0 || job.Status.Failed > 0 {
 		terminal, err := r.captureTerminalResult(ctx, object, job)
 		if err == nil {
-			return r.applyTerminalResult(ctx, object, terminal)
+			return r.applyTerminalResult(ctx, object, terminal, job)
 		}
 		return r.applyMissingTerminalResult(ctx, object, err)
 	}
@@ -322,7 +369,7 @@ func parseRunnerTerminalResult(logs string) (runnerTerminalResult, error) {
 	return runnerTerminalResult{}, fmt.Errorf("runner terminal result was not found in Pod logs")
 }
 
-func (r *TerraformRunReconciler) applyTerminalResult(ctx context.Context, object *platformv1alpha1.TerraformRun, result runnerTerminalResult) (ctrl.Result, error) {
+func (r *TerraformRunReconciler) applyTerminalResult(ctx context.Context, object *platformv1alpha1.TerraformRun, result runnerTerminalResult, job *batchv1.Job) (ctrl.Result, error) {
 	object.Status.EvidenceCaptured = true
 	object.Status.ArtifactsReady = result.ArtifactsReady
 	object.Status.HasChanges = result.HasChanges
@@ -344,8 +391,18 @@ func (r *TerraformRunReconciler) applyTerminalResult(ctx context.Context, object
 		object.Status.ResolvedBackendConfigRef = object.Spec.BackendConfigArtifactRef
 		object.Status.ResolvedBackendConfigDigest = object.Spec.BackendConfigArtifactDigest
 	}
+	if job != nil && object.Status.TerminalFinishedAt == nil {
+		finished := metav1.Now()
+		if job.Status.CompletionTime != nil {
+			finished = *job.Status.CompletionTime
+		}
+		object.Status.TerminalFinishedAt = &finished
+	}
 	if object.Spec.Operation == "Plan" && (result.ExecutionOutcome == "NoChange" || result.ExecutionOutcome == "ChangesPresent") && object.Status.PlanCreatedAt == nil {
 		created := metav1.Now()
+		if object.Status.TerminalFinishedAt != nil {
+			created = *object.Status.TerminalFinishedAt
+		}
 		expires := metav1.NewTime(created.Add(time.Hour))
 		object.Status.PlanCreatedAt = &created
 		object.Status.PlanExpiresAt = &expires
@@ -400,4 +457,12 @@ func findCondition(conditions []metav1.Condition, conditionType string) *metav1.
 		}
 	}
 	return nil
+}
+
+func terraformSecretVariables(values []platformv1alpha1.SecretVariableReference) []terraformexec.VariableSecretReference {
+	result := make([]terraformexec.VariableSecretReference, 0, len(values))
+	for _, value := range values {
+		result = append(result, terraformexec.VariableSecretReference{Variable: value.Variable, Name: value.SecretKeyRef.Name, Key: value.SecretKeyRef.Key})
+	}
+	return result
 }

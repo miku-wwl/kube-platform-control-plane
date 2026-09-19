@@ -4,29 +4,19 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.5
-  name: infrastacks.platform.example.io
+  name: environmentclasses.platform.example.io
 spec:
   group: platform.example.io
   names:
-    kind: InfraStack
-    listKind: InfraStackList
-    plural: infrastacks
+    kind: EnvironmentClass
+    listKind: EnvironmentClassList
+    plural: environmentclasses
     shortNames:
-    - istack
-    singular: infrastack
-  scope: Namespaced
+    - eclass
+    singular: environmentclass
+  scope: Cluster
   versions:
-  - additionalPrinterColumns:
-    - jsonPath: .spec.desiredState
-      name: Desired
-      type: string
-    - jsonPath: .status.conditions[?(@.type=='Ready')].status
-      name: Ready
-      type: string
-    - jsonPath: .metadata.creationTimestamp
-      name: Age
-      type: date
-    name: v1alpha1
+  - name: v1alpha1
     schema:
       openAPIV3Schema:
         properties:
@@ -49,11 +39,21 @@ spec:
             type: object
           spec:
             properties:
+              allowedRegions:
+                items:
+                  type: string
+                type: array
+                x-kubernetes-validations:
+                - message: EnvironmentClass spec is immutable
+                  rule: self == oldSelf
               approvalPolicy:
                 enum:
                 - Manual
                 - Automatic
                 type: string
+                x-kubernetes-validations:
+                - message: EnvironmentClass spec is immutable
+                  rule: self == oldSelf
               backend:
                 properties:
                   authRef:
@@ -105,19 +105,47 @@ spec:
                 - configRef
                 - type
                 type: object
-              capacity:
+              capacityBounds:
                 properties:
-                  nodeCount:
+                  maxConcurrentApplies:
                     format: int32
                     type: integer
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass capacity bounds are immutable
+                      rule: self == oldSelf
+                  maxConcurrentPlans:
+                    format: int32
+                    type: integer
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass capacity bounds are immutable
+                      rule: self == oldSelf
+                  maxEnvironments:
+                    format: int32
+                    type: integer
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass capacity bounds are immutable
+                      rule: self == oldSelf
+                  maxNodeCount:
+                    format: int32
+                    type: integer
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass capacity bounds are immutable
+                      rule: self == oldSelf
+                  minNodeCount:
+                    format: int32
+                    type: integer
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass capacity bounds are immutable
+                      rule: self == oldSelf
                 type: object
-              concurrencyGroup:
+                x-kubernetes-validations:
+                - message: EnvironmentClass spec is immutable
+                  rule: self == oldSelf
+              dataRetentionPolicy:
                 type: string
-              desiredState:
-                enum:
-                - Present
-                - Destroy
-                type: string
+                x-kubernetes-validations:
+                - message: EnvironmentClass spec is immutable
+                  rule: self == oldSelf
               executor:
                 properties:
                   executionTimeout:
@@ -162,59 +190,90 @@ spec:
                 - terraformVersion
                 - workDir
                 type: object
-              infrastructureExecutionIdentity:
+              runnerProfile:
                 properties:
-                  accountID:
+                  image:
                     type: string
-                  mode:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runner profile is immutable
+                      rule: self == oldSelf
+                  imageDigest:
                     type: string
-                  provider:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runner profile is immutable
+                      rule: self == oldSelf
+                  serviceAccountName:
                     type: string
-                  region:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runner profile is immutable
+                      rule: self == oldSelf
+                  terraformVersion:
                     type: string
-                  roleARN:
-                    type: string
-                  sessionProfile:
-                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runner profile is immutable
+                      rule: self == oldSelf
                 required:
-                - accountID
-                - mode
-                - provider
-                - region
+                - image
+                - imageDigest
+                - serviceAccountName
+                - terraformVersion
                 type: object
-              maxConcurrentApplies:
-                format: int32
-                type: integer
-              maxConcurrentPlans:
-                format: int32
-                type: integer
-              mutationFence:
-                type: boolean
-              ownerEnvironmentUID:
-                type: string
-              runnerServiceAccountName:
-                type: string
-              runtimeMutationAllowed:
-                type: boolean
-              runtimeTargetIdentity:
+              runtimeProfile:
                 properties:
-                  accountID:
+                  networkPolicyProfile:
                     type: string
-                  clusterARN:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runtime profile is immutable
+                      rule: self == oldSelf
+                  operatorImage:
                     type: string
-                  clusterName:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runtime profile is immutable
+                      rule: self == oldSelf
+                  operatorImageDigest:
                     type: string
-                  incarnationID:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runtime profile is immutable
+                      rule: self == oldSelf
+                  operatorManifestRef:
                     type: string
-                  provider:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runtime profile is immutable
+                      rule: self == oldSelf
+                  runtimeObjects:
+                    items:
+                      properties:
+                        deletionPolicy:
+                          type: string
+                        group:
+                          type: string
+                        object:
+                          x-kubernetes-preserve-unknown-fields: true
+                        ownershipID:
+                          type: string
+                        readinessPolicy:
+                          type: string
+                        resource:
+                          type: string
+                        version:
+                          type: string
+                        wave:
+                          format: int32
+                          type: integer
+                      required:
+                      - object
+                      - resource
+                      - version
+                      type: object
+                    type: array
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runtime profile is immutable
+                      rule: self == oldSelf
+                  valkeyImage:
                     type: string
-                  region:
-                    type: string
-                required:
-                - accountID
-                - incarnationID
-                - provider
-                - region
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runtime profile is immutable
+                      rule: self == oldSelf
                 type: object
               source:
                 properties:
@@ -239,91 +298,68 @@ spec:
                 - revision
                 - url
                 type: object
-              targetConnectionProfile:
+              target:
                 properties:
-                  authMode:
+                  account:
                     type: string
-                  caCertificateDigest:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  clusterARN:
                     type: string
-                  endpoint:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  clusterID:
                     type: string
-                  kubeContext:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  clusterName:
                     type: string
-                  networkRouteProfile:
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  connectionProfileRef:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  incarnationID:
+                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  provider:
+                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  region:
+                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                 required:
-                - authMode
-                - endpoint
+                - clusterName
+                - provider
                 type: object
-              variables:
-                properties:
-                  secretRefs:
-                    items:
-                      description: |-
-                        LocalObjectReference contains enough information to let you locate the
-                        referenced object inside the same namespace.
-                      properties:
-                        name:
-                          default: ""
-                          description: |-
-                            Name of the referent.
-                            This field is effectively required, but due to backwards compatibility is
-                            allowed to be empty. Instances of this type with an empty value here are
-                            almost certainly wrong.
-                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          type: string
-                      type: object
-                      x-kubernetes-map-type: atomic
-                    type: array
-                  secretVariables:
-                    items:
-                      properties:
-                        secretKeyRef:
-                          description: SecretKeySelector selects a key of a Secret.
-                          properties:
-                            key:
-                              description: The key of the secret to select from.  Must
-                                be a valid secret key.
-                              type: string
-                            name:
-                              default: ""
-                              description: |-
-                                Name of the referent.
-                                This field is effectively required, but due to backwards compatibility is
-                                allowed to be empty. Instances of this type with an empty value here are
-                                almost certainly wrong.
-                                More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                              type: string
-                            optional:
-                              description: Specify whether the Secret or its key must
-                                be defined
-                              type: boolean
-                          required:
-                          - key
-                          type: object
-                          x-kubernetes-map-type: atomic
-                        variable:
-                          type: string
-                      required:
-                      - secretKeyRef
-                      - variable
-                      type: object
-                    type: array
-                type: object
-              workspace:
+              version:
                 type: string
+                x-kubernetes-validations:
+                - message: EnvironmentClass spec is immutable
+                  rule: self == oldSelf
             required:
             - backend
             - executor
+            - runnerProfile
+            - runtimeProfile
             - source
-            - workspace
+            - target
+            - version
             type: object
           status:
             properties:
-              cleanupEvidenceDigest:
-                type: string
-              cleanupEvidenceRef:
-                type: string
               conditions:
                 items:
                   description: Condition contains details for one aspect of the current
@@ -380,52 +416,13 @@ spec:
                   - type
                   type: object
                 type: array
-              convergenceEvidenceDigest:
-                type: string
-              convergenceEvidenceRef:
-                type: string
-              driftReportDigest:
-                type: string
-              driftReportRef:
-                type: string
-              lastAppliedRunRef:
-                description: |-
-                  LocalObjectReference contains enough information to let you locate the
-                  referenced object inside the same namespace.
-                properties:
-                  name:
-                    default: ""
-                    description: |-
-                      Name of the referent.
-                      This field is effectively required, but due to backwards compatibility is
-                      allowed to be empty. Instances of this type with an empty value here are
-                      almost certainly wrong.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    type: string
-                type: object
-                x-kubernetes-map-type: atomic
-              lastAppliedSourceBundleDigest:
-                type: string
-              lastAppliedSourceBundleRef:
-                type: string
-              latestPlanRunRef:
-                description: |-
-                  LocalObjectReference contains enough information to let you locate the
-                  referenced object inside the same namespace.
-                properties:
-                  name:
-                    default: ""
-                    description: |-
-                      Name of the referent.
-                      This field is effectively required, but due to backwards compatibility is
-                      allowed to be empty. Instances of this type with an empty value here are
-                      almost certainly wrong.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    type: string
-                type: object
-                x-kubernetes-map-type: atomic
               observedGeneration:
                 format: int64
+                type: integer
+              specDigest:
+                type: string
+              usageCount:
+                format: int32
                 type: integer
             type: object
         type: object

@@ -49,13 +49,21 @@ spec:
               maxInventoryItems:
                 format: int32
                 type: integer
+              mutationFence:
+                type: boolean
               resources:
                 items:
                   properties:
+                    deletionPolicy:
+                      type: string
                     group:
                       type: string
                     object:
                       x-kubernetes-preserve-unknown-fields: true
+                    ownershipID:
+                      type: string
+                    readinessPolicy:
+                      type: string
                     resource:
                       type: string
                     version:
@@ -69,18 +77,52 @@ spec:
                   - version
                   type: object
                 type: array
+              runtimeMutationAllowed:
+                type: boolean
+              runtimeTargetIdentityDigest:
+                type: string
               target:
                 properties:
                   account:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  clusterARN:
+                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                   clusterID:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                   clusterName:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  connectionProfileRef:
+                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  incarnationID:
+                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                   provider:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                   region:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                 required:
                 - clusterName
                 - provider
@@ -90,6 +132,10 @@ spec:
             type: object
           status:
             properties:
+              cleanupEvidenceDigest:
+                type: string
+              cleanupEvidenceRef:
+                type: string
               conditions:
                 items:
                   description: Condition contains details for one aspect of the current
@@ -179,6 +225,8 @@ spec:
                 format: int32
                 type: integer
               inventoryLimitExceeded:
+                type: boolean
+              mutationBlocked:
                 type: boolean
               observedGeneration:
                 format: int64

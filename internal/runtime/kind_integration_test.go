@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -34,10 +35,11 @@ func TestKindTargetSSAInventoryAndReadiness(t *testing.T) {
 	defer cancel()
 	identity := TargetIdentity{Provider: "kind", ClusterName: contextName}
 
+	namespaceName := fmt.Sprintf("pcp-runtime-integration-%d", time.Now().UnixNano())
 	namespace := &unstructured.Unstructured{Object: map[string]interface{}{
 		"apiVersion": "v1",
 		"kind":       "Namespace",
-		"metadata":   map[string]interface{}{"name": "pcp-runtime-integration"},
+		"metadata":   map[string]interface{}{"name": namespaceName},
 	}}
 	namespace.SetGroupVersionKind(schema.GroupVersionKind{Version: "v1", Kind: "Namespace"})
 	if _, err := ApplyBootstrap(ctx, client, []BootstrapObject{{GVR: schema.GroupVersionResource{Version: "v1", Resource: "namespaces"}, Object: namespace, Wave: 0}}, "pcp-rs-integration", identity); err != nil {
@@ -48,7 +50,7 @@ func TestKindTargetSSAInventoryAndReadiness(t *testing.T) {
 		"kind":       "Deployment",
 		"metadata": map[string]interface{}{
 			"name":      "pcp-runtime",
-			"namespace": "pcp-runtime-integration",
+			"namespace": namespaceName,
 			"labels":    map[string]interface{}{managedByLabel: "platform-control-plane"},
 		},
 		"spec": map[string]interface{}{
@@ -116,7 +118,7 @@ func TestKindValkeyBootstrapReadiness(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 	target := TargetIdentity{Provider: "kind", ClusterName: contextName}
-	namespaceName := "pcp-valkey-integration"
+	namespaceName := fmt.Sprintf("pcp-valkey-integration-%d", time.Now().UnixNano())
 	namespace := &unstructured.Unstructured{Object: map[string]interface{}{"apiVersion": "v1", "kind": "Namespace", "metadata": map[string]interface{}{"name": namespaceName}}}
 	namespace.SetGroupVersionKind(schema.GroupVersionKind{Version: "v1", Kind: "Namespace"})
 	if _, err := ApplyBootstrap(ctx, client, []BootstrapObject{{GVR: schema.GroupVersionResource{Version: "v1", Resource: "namespaces"}, Object: namespace, Wave: 0}}, "pcp-valkey-integration", target); err != nil {

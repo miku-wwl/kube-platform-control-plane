@@ -10,6 +10,7 @@ rules:
       - infrastacks
       - terraformruns
       - resourcesets
+      - environmentclasses
     verbs:
       - get
       - list
@@ -45,6 +46,7 @@ rules:
       - infrastacks/status
       - terraformruns/status
       - resourcesets/status
+      - environmentclasses/status
     verbs:
       - get
       - update
@@ -56,6 +58,7 @@ rules:
       - infrastacks/finalizers
       - terraformruns/finalizers
       - resourcesets/finalizers
+      - environmentclasses/finalizers
     verbs:
       - update
   - apiGroups:
@@ -84,11 +87,44 @@ rules:
   - apiGroups:
       - ""
     resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
       - configmaps
     verbs:
       - get
       - list
       - watch
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+      - rolebindings
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
   - apiGroups:
       - ""
     resources:

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 	"strconv"
@@ -21,6 +22,7 @@ import (
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/controller"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/reliability"
+	targetresolver "github.com/miku-wwl/kube-platform-control-plane/internal/target"
 )
 
 var scheme = runtime.NewScheme()
@@ -62,7 +64,7 @@ func main() {
 		setupLog.Error(err, "unable to create Kubernetes client for terminal evidence capture")
 		os.Exit(1)
 	}
-	targetClient, err := buildTargetClient()
+	targetClient, targetFactory, err := buildTargetClient()
 	if err != nil {
 		setupLog.Error(err, "unable to create target Kubernetes client")
 		os.Exit(1)
@@ -70,9 +72,19 @@ func main() {
 	planLimit := positiveEnvInt("PCP_MAX_CONCURRENT_PLANS", 8)
 	applyLimit := positiveEnvInt("PCP_MAX_CONCURRENT_APPLIES", 4)
 	executionGate := reliability.NewGate(planLimit, applyLimit)
+	if result, err := controller.ReconstructActiveTerraformRuns(context.Background(), mgr.GetAPIReader(), kubeClient, executionGate); err != nil {
+		setupLog.Error(err, "unable to reconstruct active Terraform executions")
+		os.Exit(1)
+	} else {
+		setupLog.Info("reconstructed active Terraform executions", "active", len(result.Active), "overCapacity", result.OverCapacity, "safetyViolation", result.SafetyViolation, "duration", result.Duration)
+	}
 
 	if err := (&controller.PlatformEnvironmentReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create PlatformEnvironment controller")
+		os.Exit(1)
+	}
+	if err := (&controller.EnvironmentClassReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create EnvironmentClass controller")
 		os.Exit(1)
 	}
 	if err := (&controller.InfraStackReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).SetupWithManager(mgr); err != nil {
@@ -92,7 +104,7 @@ func main() {
 		setupLog.Error(err, "unable to create TerraformRun controller")
 		os.Exit(1)
 	}
-	if err := (&controller.ResourceSetReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), TargetClient: targetClient}).SetupWithManager(mgr); err != nil {
+	if err := (&controller.ResourceSetReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), TargetClient: targetClient, TargetResolver: targetFactory}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create ResourceSet controller")
 		os.Exit(1)
 	}
@@ -104,6 +116,10 @@ func main() {
 		setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
 	}
+	if err := mgr.AddReadyzCheck("execution-reconstruction", executionGate.ReadyCheck); err != nil {
+		setupLog.Error(err, "unable to set up execution reconstruction ready check")
+		os.Exit(1)
+	}
 
 	setupLog.Info("starting manager", "leaderElection", enableLeaderElection)
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
@@ -112,23 +128,53 @@ func main() {
 	}
 }
 
-func buildTargetClient() (dynamic.Interface, error) {
-	contextName := os.Getenv("PCP_TARGET_CONTEXT")
-	if contextName == "" {
-		return nil, nil
+func buildTargetClient() (dynamic.Interface, *targetresolver.TargetClientFactory, error) {
+	contextNames := splitNonEmpty(os.Getenv("PCP_TARGET_CONTEXTS"))
+	if len(contextNames) == 0 {
+		contextNames = splitNonEmpty(os.Getenv("PCP_TARGET_CONTEXT"))
+	}
+	if len(contextNames) == 0 {
+		return nil, nil, nil
 	}
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 	if kubeconfig := os.Getenv("PCP_KUBECONFIG"); kubeconfig != "" {
 		loadingRules.ExplicitPath = kubeconfig
 	}
-	targetConfig, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		loadingRules,
-		&clientcmd.ConfigOverrides{CurrentContext: contextName},
-	).ClientConfig()
-	if err != nil {
-		return nil, err
+	factory := targetresolver.NewTargetClientFactory()
+	var first dynamic.Interface
+	for _, contextName := range contextNames {
+		targetConfig, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+			loadingRules,
+			&clientcmd.ConfigOverrides{CurrentContext: contextName},
+		).ClientConfig()
+		if err != nil {
+			return nil, nil, err
+		}
+		client, err := dynamic.NewForConfig(targetConfig)
+		if err != nil {
+			return nil, nil, err
+		}
+		identity := targetresolver.RuntimeTargetIdentity{Provider: "kind", AccountID: "local", Region: "local", ClusterName: contextName, IncarnationID: contextName}
+		profile := targetresolver.TargetConnectionProfile{Endpoint: "kubeconfig:" + contextName, AuthMode: "kind-context", KubeContext: contextName, NetworkRouteProfile: "local-kind"}
+		if err := factory.Register(identity, profile, client); err != nil {
+			return nil, nil, err
+		}
+		if first == nil {
+			first = client
+		}
 	}
-	return dynamic.NewForConfig(targetConfig)
+	return first, factory, nil
+}
+
+func splitNonEmpty(value string) []string {
+	values := strings.Split(value, ",")
+	result := make([]string, 0, len(values))
+	for _, item := range values {
+		if trimmed := strings.TrimSpace(item); trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }
 
 func positiveEnvInt(name string, fallback int) int {

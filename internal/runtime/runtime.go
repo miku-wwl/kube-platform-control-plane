@@ -16,13 +16,16 @@ import (
 )
 
 const managedByLabel = "platform.example.io/managed-by"
+const ownershipIDLabel = "platform.example.io/ownership-id"
 
 type TargetIdentity struct {
-	Provider    string `json:"provider"`
-	Account     string `json:"account,omitempty"`
-	Region      string `json:"region,omitempty"`
-	ClusterName string `json:"clusterName"`
-	ClusterID   string `json:"clusterID,omitempty"`
+	Provider      string `json:"provider"`
+	Account       string `json:"account,omitempty"`
+	Region        string `json:"region,omitempty"`
+	ClusterName   string `json:"clusterName"`
+	ClusterID     string `json:"clusterID,omitempty"`
+	ClusterARN    string `json:"clusterARN,omitempty"`
+	IncarnationID string `json:"incarnationID,omitempty"`
 }
 
 type InventoryItem struct {
@@ -55,6 +58,15 @@ func Apply(ctx context.Context, client dynamic.Interface, gvr schema.GroupVersio
 	if fieldManager == "" {
 		return nil, fmt.Errorf("field manager is required")
 	}
+	labels := object.GetLabels()
+	if labels == nil {
+		labels = map[string]string{}
+	}
+	labels[managedByLabel] = "platform-control-plane"
+	if ownershipID := labels[ownershipIDLabel]; ownershipID == "" {
+		labels[ownershipIDLabel] = fieldManager
+	}
+	object.SetLabels(labels)
 	encoded, err := json.Marshal(object.Object)
 	if err != nil {
 		return nil, err

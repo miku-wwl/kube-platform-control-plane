@@ -16,10 +16,27 @@ spec:
         app.kubernetes.io/name: platform-control-plane
     spec:
       serviceAccountName: platform-control-plane
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: manager
-          image: platform-control-plane:phase1
+          image: platform-control-plane:phase12-local
           imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           args:
             - --leader-elect=true
             - --metrics-bind-address=0

@@ -21,6 +21,7 @@ import (
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
 	runtimer "github.com/miku-wwl/kube-platform-control-plane/internal/runtime"
+	targetresolver "github.com/miku-wwl/kube-platform-control-plane/internal/target"
 )
 
 const (
@@ -37,8 +38,9 @@ var errCleanupPending = errors.New("runtime cleanup is still pending")
 // +kubebuilder:rbac:groups=platform.example.io,resources=resourcesets/finalizers,verbs=update
 type ResourceSetReconciler struct {
 	client.Client
-	Scheme       *runtime.Scheme
-	TargetClient dynamic.Interface
+	Scheme         *runtime.Scheme
+	TargetClient   dynamic.Interface
+	TargetResolver targetresolver.ClientResolver
 }
 
 func (r *ResourceSetReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -74,10 +76,31 @@ func (r *ResourceSetReconciler) reconcilePresent(ctx context.Context, object *pl
 	if int32(len(object.Spec.Resources)) > maxItems {
 		return r.setRuntimeStatus(ctx, object, nil, true, metav1.ConditionFalse, "InventoryLimitExceeded", fmt.Sprintf("ResourceSet declares %d resources, limit is %d", len(object.Spec.Resources), maxItems))
 	}
-	if r.TargetClient == nil {
+	if r.TargetResolver == nil && r.TargetClient == nil {
 		return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionUnknown, "RuntimeClientUnavailable", "target Kubernetes client is not configured; runtime mutation is disabled")
 	}
+	if !object.Spec.RuntimeMutationAllowed || object.Spec.MutationFence {
+		status := object.Status
+		status.MutationBlocked = true
+		status.ObservedGeneration = object.Generation
+		status.Conditions = []metav1.Condition{stableCondition(findCondition(object.Status.Conditions, ConditionReady), object.Generation, metav1.ConditionFalse, "RuntimeMutationBlocked", "runtime mutation is gated until current infrastructure is ready and the durable mutation fence is clear")}
+		if reflect.DeepEqual(object.Status, status) {
+			return ctrl.Result{RequeueAfter: time.Second}, nil
+		}
+		object.Status = status
+		if err := r.Status().Update(ctx, object); err != nil {
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{RequeueAfter: time.Second}, nil
+	}
 
+	targetClient, err := r.targetClient(ctx, object)
+	if err != nil {
+		return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionFalse, "RuntimeTargetRejected", err.Error())
+	}
+	if targetClient == nil {
+		return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionUnknown, "RuntimeClientUnavailable", "target Kubernetes client is not configured; runtime mutation is disabled")
+	}
 	target := targetIdentity(object.Spec.Target)
 	objects, err := bootstrapObjects(object.Spec.Resources)
 	if err != nil {
@@ -85,23 +108,23 @@ func (r *ResourceSetReconciler) reconcilePresent(ctx context.Context, object *pl
 	}
 	if len(objects) == 0 {
 		inventory := []runtimer.InventoryItem{}
-		if err := r.pruneRemoved(ctx, object, inventory, target); err != nil {
+		if err := r.pruneRemoved(ctx, object, inventory, target, targetClient); err != nil {
 			return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionFalse, "RuntimePruneRejected", err.Error())
 		}
 		return r.setRuntimeStatus(ctx, object, inventory, false, metav1.ConditionTrue, "RuntimeEmpty", "ResourceSet has no runtime objects")
 	}
-	inventory, err := runtimer.ApplyBootstrap(ctx, r.TargetClient, objects, fieldManager(object), target)
+	inventory, err := runtimer.ApplyBootstrap(ctx, targetClient, objects, fieldManager(object), target)
 	if err != nil {
 		return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionFalse, "RuntimeApplyFailed", err.Error())
 	}
-	if err := r.pruneRemoved(ctx, object, inventory, target); err != nil {
+	if err := r.pruneRemoved(ctx, object, inventory, target, targetClient); err != nil {
 		return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionFalse, "RuntimePruneRejected", err.Error())
 	}
 	if err := validateInventorySize(inventory); err != nil {
 		return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionFalse, "InventoryStatusTooLarge", err.Error())
 	}
 
-	message, reason, conditionStatus := r.runtimeReadiness(ctx, inventory)
+	message, reason, conditionStatus := r.runtimeReadiness(ctx, inventory, targetClient)
 	result, statusErr := r.setRuntimeStatus(ctx, object, inventory, false, conditionStatus, reason, message)
 	if statusErr == nil && conditionStatus != metav1.ConditionTrue {
 		result.RequeueAfter = time.Second
@@ -113,13 +136,14 @@ func (r *ResourceSetReconciler) reconcileDelete(ctx context.Context, object *pla
 	if !containsString(object.Finalizers, resourceSetFinalizer) {
 		return ctrl.Result{}, nil
 	}
-	if r.TargetClient == nil {
+	targetClient, err := r.targetClient(ctx, object)
+	if err != nil || targetClient == nil {
 		return r.finishDelete(ctx, object, true, "target Kubernetes client unavailable; runtime cleanup was skipped")
 	}
 	cleanupCtx, cancel := context.WithTimeout(ctx, defaultCleanupTimeout)
 	defer cancel()
 	target := targetIdentity(object.Spec.Target)
-	if err := r.pruneInventory(cleanupCtx, object.Status.Inventory, target); err != nil {
+	if err := r.pruneInventory(cleanupCtx, object.Status.Inventory, target, targetClient); err != nil {
 		if errors.Is(err, errCleanupPending) {
 			return ctrl.Result{RequeueAfter: 250 * time.Millisecond}, nil
 		}
@@ -135,7 +159,46 @@ func (r *ResourceSetReconciler) reconcileDelete(ctx context.Context, object *pla
 	return r.finishDelete(ctx, object, false, "runtime inventory cleaned")
 }
 
-func (r *ResourceSetReconciler) pruneRemoved(ctx context.Context, object *platformv1alpha1.ResourceSet, current []runtimer.InventoryItem, target runtimer.TargetIdentity) error {
+func (r *ResourceSetReconciler) targetClient(ctx context.Context, object *platformv1alpha1.ResourceSet) (dynamic.Interface, error) {
+	if r.TargetResolver == nil {
+		return r.TargetClient, nil
+	}
+	identity := targetresolver.RuntimeTargetIdentity{
+		Provider:      object.Spec.Target.Provider,
+		AccountID:     object.Spec.Target.Account,
+		Region:        object.Spec.Target.Region,
+		ClusterARN:    object.Spec.Target.ClusterARN,
+		ClusterName:   object.Spec.Target.ClusterName,
+		IncarnationID: object.Spec.Target.IncarnationID,
+	}
+	if identity.IncarnationID == "" {
+		identity.IncarnationID = object.Spec.Target.ClusterID
+	}
+	if identity.IncarnationID == "" {
+		identity.IncarnationID = object.Spec.Target.ClusterName
+	}
+	if identity.AccountID == "" {
+		identity.AccountID = "local"
+	}
+	if identity.Region == "" {
+		identity.Region = "local"
+	}
+	profile := targetresolver.TargetConnectionProfile{
+		Endpoint:            object.Spec.Target.ConnectionProfileRef,
+		AuthMode:            "kind-context",
+		KubeContext:         object.Spec.Target.ClusterName,
+		NetworkRouteProfile: "local-kind",
+	}
+	if profile.Endpoint == "" {
+		profile.Endpoint = "kubeconfig:" + object.Spec.Target.ClusterName
+	}
+	if object.Spec.Target.Provider == "aws" {
+		profile.AuthMode = "aws-eks"
+	}
+	return r.TargetResolver.Client(ctx, identity, profile)
+}
+
+func (r *ResourceSetReconciler) pruneRemoved(ctx context.Context, object *platformv1alpha1.ResourceSet, current []runtimer.InventoryItem, target runtimer.TargetIdentity, targetClient dynamic.Interface) error {
 	currentKeys := make(map[string]struct{}, len(current))
 	for _, item := range current {
 		currentKeys[inventoryKey(item.Group, item.Version, item.Resource, item.Namespace, item.Name)] = struct{}{}
@@ -148,19 +211,19 @@ func (r *ResourceSetReconciler) pruneRemoved(ctx context.Context, object *platfo
 		if _, found := currentKeys[key]; found {
 			continue
 		}
-		if err := r.pruneItem(ctx, inventoryFromStatus(previous), target); err != nil {
+		if err := r.pruneItem(ctx, inventoryFromStatus(previous), target, targetClient); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (r *ResourceSetReconciler) pruneInventory(ctx context.Context, inventory []platformv1alpha1.InventoryItemStatus, target runtimer.TargetIdentity) error {
+func (r *ResourceSetReconciler) pruneInventory(ctx context.Context, inventory []platformv1alpha1.InventoryItemStatus, target runtimer.TargetIdentity, targetClient dynamic.Interface) error {
 	for _, statusItem := range inventory {
 		if runtimer.IsProtected(inventoryFromStatus(statusItem)) {
 			continue
 		}
-		if err := r.pruneItem(ctx, inventoryFromStatus(statusItem), target); err != nil {
+		if err := r.pruneItem(ctx, inventoryFromStatus(statusItem), target, targetClient); err != nil {
 			if apierrors.IsNotFound(err) {
 				continue
 			}
@@ -170,16 +233,16 @@ func (r *ResourceSetReconciler) pruneInventory(ctx context.Context, inventory []
 	return nil
 }
 
-func (r *ResourceSetReconciler) pruneItem(ctx context.Context, item runtimer.InventoryItem, target runtimer.TargetIdentity) error {
+func (r *ResourceSetReconciler) pruneItem(ctx context.Context, item runtimer.InventoryItem, target runtimer.TargetIdentity, targetClient dynamic.Interface) error {
 	if item.Resource == "" {
 		return fmt.Errorf("inventory item %s/%s has no resource name", item.Namespace, item.Name)
 	}
 	gvr := schema.GroupVersionResource{Group: item.Group, Version: item.Version, Resource: item.Resource}
 	var resource dynamic.ResourceInterface
 	if item.Namespace != "" {
-		resource = r.TargetClient.Resource(gvr).Namespace(item.Namespace)
+		resource = targetClient.Resource(gvr).Namespace(item.Namespace)
 	} else {
-		resource = r.TargetClient.Resource(gvr)
+		resource = targetClient.Resource(gvr)
 	}
 	object, err := resource.Get(ctx, item.Name, metav1.GetOptions{})
 	if err != nil {
@@ -199,16 +262,16 @@ func (r *ResourceSetReconciler) pruneItem(ctx context.Context, item runtimer.Inv
 	return nil
 }
 
-func (r *ResourceSetReconciler) runtimeReadiness(ctx context.Context, inventory []runtimer.InventoryItem) (string, string, metav1.ConditionStatus) {
+func (r *ResourceSetReconciler) runtimeReadiness(ctx context.Context, inventory []runtimer.InventoryItem, targetClient dynamic.Interface) (string, string, metav1.ConditionStatus) {
 	unknown := 0
 	notReady := 0
 	for _, item := range inventory {
 		gvr := schema.GroupVersionResource{Group: item.Group, Version: item.Version, Resource: item.Resource}
 		var resource dynamic.ResourceInterface
 		if item.Namespace != "" {
-			resource = r.TargetClient.Resource(gvr).Namespace(item.Namespace)
+			resource = targetClient.Resource(gvr).Namespace(item.Namespace)
 		} else {
-			resource = r.TargetClient.Resource(gvr)
+			resource = targetClient.Resource(gvr)
 		}
 		object, err := resource.Get(ctx, item.Name, metav1.GetOptions{})
 		if err != nil {
@@ -219,7 +282,7 @@ func (r *ResourceSetReconciler) runtimeReadiness(ctx context.Context, inventory 
 			return fmt.Sprintf("runtime readiness invalid: %v", err), "RuntimeReadinessFailed", metav1.ConditionFalse
 		}
 		if !ready && item.Kind == "ValkeyCluster" && reason == "Available condition not reported" {
-			statefulSet, statefulSetErr := r.TargetClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "statefulsets"}).Namespace(item.Namespace).Get(ctx, item.Name, metav1.GetOptions{})
+			statefulSet, statefulSetErr := targetClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "statefulsets"}).Namespace(item.Namespace).Get(ctx, item.Name, metav1.GetOptions{})
 			if statefulSetErr == nil {
 				ready, reason, err = runtimer.ValkeyReadyFromStatefulSet(statefulSet)
 				if err != nil {
@@ -257,6 +320,7 @@ func (r *ResourceSetReconciler) setRuntimeStatus(ctx context.Context, object *pl
 	}
 	status.TargetIdentityDigest = digest
 	status.InventoryLimitExceeded = limitExceeded
+	status.MutationBlocked = false
 	if inventory != nil {
 		status.Inventory = inventoryStatus(inventory)
 		status.InventoryItems = int32(len(inventory))
@@ -303,16 +367,28 @@ func bootstrapObjects(resources []platformv1alpha1.RuntimeObject) ([]runtimer.Bo
 			return nil, fmt.Errorf("runtime object %d rejected: %w", index, err)
 		}
 		objects = append(objects, runtimer.BootstrapObject{
-			GVR:    schema.GroupVersionResource{Group: spec.Group, Version: spec.Version, Resource: spec.Resource},
-			Object: object,
-			Wave:   int(spec.Wave),
+			GVR:             schema.GroupVersionResource{Group: spec.Group, Version: spec.Version, Resource: spec.Resource},
+			Object:          object,
+			Wave:            int(spec.Wave),
+			ReadinessPolicy: spec.ReadinessPolicy,
 		})
 	}
 	return objects, nil
 }
 
 func targetIdentity(reference platformv1alpha1.TargetReference) runtimer.TargetIdentity {
-	return runtimer.TargetIdentity{Provider: reference.Provider, Account: reference.Account, Region: reference.Region, ClusterName: reference.ClusterName, ClusterID: reference.ClusterID}
+	incarnation := reference.IncarnationID
+	if incarnation == "" {
+		incarnation = reference.ClusterID
+	}
+	if incarnation == "" {
+		incarnation = reference.ClusterName
+	}
+	account := reference.Account
+	if account == "" {
+		account = "local"
+	}
+	return runtimer.TargetIdentity{Provider: reference.Provider, Account: account, Region: reference.Region, ClusterName: reference.ClusterName, ClusterID: reference.ClusterID, ClusterARN: reference.ClusterARN, IncarnationID: incarnation}
 }
 
 func fieldManager(object *platformv1alpha1.ResourceSet) string {

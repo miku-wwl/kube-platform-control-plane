@@ -54,24 +54,24 @@ func TestBuildJobEnforcesTerraformJobContract(t *testing.T) {
 
 func TestBuildJobBuildsRetainedBundleWithoutGitInitContainers(t *testing.T) {
 	job, err := BuildJob(JobRequest{
-		Name:               "destroy-run",
-		Namespace:          "platform-system",
-		RunUID:             "run-uid",
-		RunnerImage:        "registry.example/runner@sha256:runner",
-		SourceType:         SourceRetainedBundle,
-		SourceBundleRef:    "runs/previous/source-bundle.tar.zst",
-		SourceBundleDigest: "sha256:bundle",
-		ArtifactEndpoint:   "http://localstack:4566",
-		ArtifactRegion:     "us-east-1",
-		ArtifactBucket:     "artifacts",
-		ArtifactPrefix:     "runs/run-uid",
-		VariableSecretRefs: []corev1.LocalObjectReference{{Name: "terraform-vars"}},
-		Operation:          "Plan",
-		WorkingDir:         "/workspace/terraform",
-		Workspace:          "default",
-		PlanPath:           "/workspace/terraform/plan.binary",
-		ExecutionTimeout:   time.Minute,
-		GitImage:           DefaultGitImage,
+		Name:                    "destroy-run",
+		Namespace:               "platform-system",
+		RunUID:                  "run-uid",
+		RunnerImage:             "registry.example/runner@sha256:runner",
+		SourceType:              SourceRetainedBundle,
+		SourceBundleRef:         "runs/previous/source-bundle.tar.zst",
+		SourceBundleDigest:      "sha256:bundle",
+		ArtifactEndpoint:        "http://localstack:4566",
+		ArtifactRegion:          "us-east-1",
+		ArtifactBucket:          "artifacts",
+		ArtifactPrefix:          "runs/run-uid",
+		VariableSecretVariables: []VariableSecretReference{{Variable: "db_password", Name: "terraform-vars", Key: "db_password"}},
+		Operation:               "Plan",
+		WorkingDir:              "/workspace/terraform",
+		Workspace:               "default",
+		PlanPath:                "/workspace/terraform/plan.binary",
+		ExecutionTimeout:        time.Minute,
+		GitImage:                DefaultGitImage,
 	})
 	if err != nil {
 		t.Fatalf("BuildJob() error = %v", err)
@@ -89,8 +89,11 @@ func TestBuildJobBuildsRetainedBundleWithoutGitInitContainers(t *testing.T) {
 	if !contains(args, "--artifact-prefix=runs/run-uid") {
 		t.Fatalf("runner artifact prefix args = %#v", args)
 	}
-	if len(job.Spec.Template.Spec.Containers[0].EnvFrom) != 1 || job.Spec.Template.Spec.Containers[0].EnvFrom[0].SecretRef.Name != "terraform-vars" {
-		t.Fatalf("runner secret env = %#v", job.Spec.Template.Spec.Containers[0].EnvFrom)
+	if !hasSecretEnv(job.Spec.Template.Spec.Containers[0].Env, "TF_VAR_db_password", "db_password") {
+		t.Fatalf("runner secret env = %#v", job.Spec.Template.Spec.Containers[0].Env)
+	}
+	if !hasLiteralEnv(job.Spec.Template.Spec.Containers[0].Env, "AWS_ACCESS_KEY_ID", "test") || !hasLiteralEnv(job.Spec.Template.Spec.Containers[0].Env, "AWS_SECRET_ACCESS_KEY", "test") {
+		t.Fatalf("LocalStack credentials were not constrained to the runner = %#v", job.Spec.Template.Spec.Containers[0].Env)
 	}
 }
 
@@ -152,6 +155,24 @@ func TestBuildJobRejectsDestroyFromGitCommit(t *testing.T) {
 func contains(values []string, want string) bool {
 	for _, value := range values {
 		if value == want {
+			return true
+		}
+	}
+	return false
+}
+
+func hasLiteralEnv(values []corev1.EnvVar, name, value string) bool {
+	for _, item := range values {
+		if item.Name == name && item.Value == value && item.ValueFrom == nil {
+			return true
+		}
+	}
+	return false
+}
+
+func hasSecretEnv(values []corev1.EnvVar, name, key string) bool {
+	for _, item := range values {
+		if item.Name == name && item.ValueFrom != nil && item.ValueFrom.SecretKeyRef != nil && item.ValueFrom.SecretKeyRef.Key == key {
 			return true
 		}
 	}

@@ -92,7 +92,7 @@ func (e Executor) Plan(ctx context.Context, request Request) (PlanResult, error)
 		return PlanResult{}, err
 	}
 
-	args := []string{"plan", "-input=false", "-no-color", "-detailed-exitcode", "-out=" + request.PlanPath}
+	args := []string{"plan", "-input=false", "-no-color", "-detailed-exitcode", "-out", request.PlanPath}
 	if request.Destroy {
 		args = append(args, "-destroy")
 	}
@@ -156,11 +156,11 @@ func (e Executor) Apply(ctx context.Context, request Request) (ApplyResult, erro
 func (e Executor) init(ctx context.Context, request Request, readonlyLockfile bool) error {
 	args := []string{"init", "-input=false", "-no-color"}
 	if readonlyLockfile {
-		args = append(args, "-lockfile=readonly")
+		args = append(args, "-lockfile", "readonly")
 	}
 	args = appendLockTimeout(args, request.LockTimeout)
 	if request.BackendConfigPath != "" {
-		args = append(args, "-backend-config="+request.BackendConfigPath)
+		args = append(args, "-backend-config", request.BackendConfigPath)
 	}
 	result, err := e.run(ctx, request.WorkingDir, args...)
 	if err != nil {
@@ -226,12 +226,12 @@ func appendLockTimeout(args []string, timeout time.Duration) []string {
 	if timeout <= 0 {
 		return args
 	}
-	return append(args, "-lock-timeout="+timeout.String())
+	return append(args, "-lock-timeout", timeout.String())
 }
 
 func appendParallelism(args []string, parallelism *int32) []string {
 	if parallelism == nil {
 		return args
 	}
-	return append(args, "-parallelism="+strconv.FormatInt(int64(*parallelism), 10))
+	return append(args, "-parallelism", strconv.FormatInt(int64(*parallelism), 10))
 }

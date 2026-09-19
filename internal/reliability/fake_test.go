@@ -108,6 +108,40 @@ func TestGateEnsureActiveReconstructsAndIsIdempotent(t *testing.T) {
 	}
 }
 
+func TestGateEnforcesEnvironmentClassConcurrencyBounds(t *testing.T) {
+	gate := NewGate(8, 8)
+	first := WorkItem{ID: "plan-class-a-1", Kind: KindPlan, Stack: "stack-a", ConcurrencyGroup: "environmentclass:gold", MaxConcurrentPlans: 1}
+	second := WorkItem{ID: "plan-class-a-2", Kind: KindPlan, Stack: "stack-b", ConcurrencyGroup: "environmentclass:gold", MaxConcurrentPlans: 1}
+	if !gate.TryAcquire(first) {
+		t.Fatal("first class plan was rejected")
+	}
+	if gate.TryAcquire(second) {
+		t.Fatal("second plan exceeded the EnvironmentClass plan quota")
+	}
+	gate.Release(first)
+	if !gate.TryAcquire(second) {
+		t.Fatal("class plan was not admitted after the first completed")
+	}
+}
+
+func TestGateReconstructsAllActiveRunsAndBlocksNewAdmissionOnSafetyViolation(t *testing.T) {
+	gate := NewGate(1, 1)
+	result := gate.Reconstruct([]WorkItem{
+		{ID: "apply-a", Kind: KindApply, Stack: "stack-a"},
+		{ID: "apply-b", Kind: KindApply, Stack: "stack-a"},
+	})
+	if !result.GateReady || !result.OverCapacity || !result.SafetyViolation || len(result.Active) != 2 {
+		t.Fatalf("reconstruction result = %+v", result)
+	}
+	if gate.TryAcquire(WorkItem{ID: "plan-new", Kind: KindPlan, Stack: "stack-b"}) {
+		t.Fatal("new admission must remain blocked after reconstruction safety violation")
+	}
+	metrics := gate.Metrics()
+	if !metrics.GateReady || !metrics.OverCapacity || !metrics.SafetyViolation {
+		t.Fatalf("gate metrics = %+v", metrics)
+	}
+}
+
 func itoa(value int) string {
 	if value == 0 {
 		return "0"

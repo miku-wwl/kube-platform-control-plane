@@ -6,6 +6,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -82,13 +83,42 @@ func TestPlatformEnvironmentGatesReadyOnCurrentInfrastructureGeneration(t *testi
 	}
 }
 
+func TestPlatformEnvironmentDeleteWithoutInfraStackReferenceRemovesFinalizer(t *testing.T) {
+	scheme := phase61Scheme(t)
+	deletedAt := metav1.NewTime(time.Now())
+	environment := &platformv1alpha1.PlatformEnvironment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "quota-rejected",
+			Namespace:         "platform-system",
+			DeletionTimestamp: &deletedAt,
+			Finalizers:        []string{platformEnvironmentFinalizer},
+		},
+	}
+	client := clientfake.NewClientBuilder().WithScheme(scheme).WithStatusSubresource(environment).WithObjects(environment).Build()
+	reconciler := &PlatformEnvironmentReconciler{Client: client, Scheme: scheme}
+	request := ctrl.Request{NamespacedName: types.NamespacedName{Name: environment.Name, Namespace: environment.Namespace}}
+
+	if _, err := reconciler.Reconcile(context.Background(), request); err != nil {
+		t.Fatalf("Reconcile() error = %v", err)
+	}
+	var observed platformv1alpha1.PlatformEnvironment
+	if err := client.Get(context.Background(), request.NamespacedName, &observed); apierrors.IsNotFound(err) {
+		return
+	} else if err != nil {
+		t.Fatalf("read environment: %v", err)
+	}
+	if containsString(observed.Finalizers, platformEnvironmentFinalizer) {
+		t.Fatalf("finalizer was not removed: %v", observed.Finalizers)
+	}
+}
+
 func TestInfraStackAutomaticallyCreatesExactlyOneApplyRunAfterApproval(t *testing.T) {
 	scheme := phase61Scheme(t)
 	planExpires := metav1.NewTime(time.Now().Add(time.Hour))
 	plan := &platformv1alpha1.TerraformRun{
 		ObjectMeta: metav1.ObjectMeta{Name: "stack-plan-1", Namespace: "platform-system", UID: types.UID("plan-uid")},
 		Spec: platformv1alpha1.TerraformRunSpec{
-			StackRef: corev1.LocalObjectReference{Name: "stack"}, PlanMode: "Reconcile", ExecutionContextDigest: "sha256:context",
+			StackRef: corev1.LocalObjectReference{Name: "stack"}, PlanMode: "Reconcile", ExecutionContextDigest: "sha256:context", EffectivePlanInputDigest: "sha256:input", RuntimeTargetIdentityDigest: "sha256:target", InfrastructureExecutionIdentityDigest: "sha256:infra",
 		},
 		Status: platformv1alpha1.TerraformRunStatus{
 			ExecutionOutcome: "ChangesPresent", PlanDigest: "sha256:plan", SourceBundleRef: "runs/plan/source-bundle.tar.zst", SourceBundleDigest: "sha256:bundle", PlanExpiresAt: &planExpires,
@@ -143,6 +173,9 @@ func TestInfraStackDestroyPlanUsesRetainedApplyBundle(t *testing.T) {
 
 	if _, err := reconciler.Reconcile(context.Background(), request); err != nil {
 		t.Fatalf("Reconcile() error = %v", err)
+	}
+	if _, err := reconciler.Reconcile(context.Background(), request); err != nil {
+		t.Fatalf("Reconcile() after durable fence: %v", err)
 	}
 	var destroyPlan platformv1alpha1.TerraformRun
 	if err := client.Get(context.Background(), types.NamespacedName{Name: destroyPlanRunName(stack.Name, stack.Generation), Namespace: stack.Namespace}, &destroyPlan); err != nil {

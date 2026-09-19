@@ -3,11 +3,14 @@ package terraform
 import (
 	"fmt"
 	"math"
+	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -49,6 +52,14 @@ type JobRequest struct {
 	BackendConfigArtifactRef    string
 	BackendConfigArtifactDigest string
 	VariableSecretRefs          []corev1.LocalObjectReference
+	VariableSecretVariables     []VariableSecretReference
+	ServiceAccountName          string
+}
+
+type VariableSecretReference struct {
+	Variable string
+	Name     string
+	Key      string
 }
 
 func BuildJob(request JobRequest) (*batchv1.Job, error) {
@@ -64,8 +75,13 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 		Name:         "workspace",
 		VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}},
 	}
-	volumes := []corev1.Volume{workspaceVolume}
+	tmpVolume := corev1.Volume{
+		Name:         "tmp",
+		VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}},
+	}
+	volumes := []corev1.Volume{workspaceVolume, tmpVolume}
 	volumeMount := corev1.VolumeMount{Name: "workspace", MountPath: "/workspace"}
+	tmpMount := corev1.VolumeMount{Name: "tmp", MountPath: "/tmp"}
 	if request.BackendConfigMap != "" {
 		volumes = append(volumes, corev1.Volume{
 			Name: "backend-config",
@@ -77,20 +93,25 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 
 	initContainers := []corev1.Container{}
 	if request.SourceType == SourceGitCommit {
+		gitUser := int64(1000)
+		gitGroup := int64(1000)
+		gitSecurityContext := &corev1.SecurityContext{RunAsUser: &gitUser, RunAsGroup: &gitGroup, RunAsNonRoot: pointerBool(true), AllowPrivilegeEscalation: pointerBool(false), Capabilities: &corev1.Capabilities{Drop: []corev1.Capability{"ALL"}}}
 		initContainers = []corev1.Container{
 			{
-				Name:         "source-clone",
-				Image:        request.GitImage,
-				Command:      []string{"git"},
-				Args:         []string{"clone", "--no-checkout", request.SourceURL, "/workspace/terraform"},
-				VolumeMounts: []corev1.VolumeMount{volumeMount},
+				Name:            "source-clone",
+				Image:           request.GitImage,
+				Command:         []string{"git"},
+				Args:            []string{"clone", "--no-checkout", request.SourceURL, "/workspace/terraform"},
+				VolumeMounts:    []corev1.VolumeMount{volumeMount},
+				SecurityContext: gitSecurityContext.DeepCopy(),
 			},
 			{
-				Name:         "source-checkout",
-				Image:        request.GitImage,
-				Command:      []string{"git"},
-				Args:         []string{"-C", "/workspace/terraform", "checkout", "--detach", request.SourceRevision},
-				VolumeMounts: []corev1.VolumeMount{volumeMount},
+				Name:            "source-checkout",
+				Image:           request.GitImage,
+				Command:         []string{"git"},
+				Args:            []string{"-C", "/workspace/terraform", "checkout", "--detach", request.SourceRevision},
+				VolumeMounts:    []corev1.VolumeMount{volumeMount},
+				SecurityContext: gitSecurityContext.DeepCopy(),
 			},
 		}
 	}
@@ -143,12 +164,44 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 		Command:      []string{"terraform-runner"},
 		Args:         args,
 		VolumeMounts: []corev1.VolumeMount{volumeMount},
+		SecurityContext: &corev1.SecurityContext{
+			RunAsUser:                pointerInt64(1000),
+			RunAsGroup:               pointerInt64(1000),
+			RunAsNonRoot:             pointerBool(true),
+			AllowPrivilegeEscalation: pointerBool(false),
+			Capabilities:             &corev1.Capabilities{Drop: []corev1.Capability{"ALL"}},
+			ReadOnlyRootFilesystem:   pointerBool(true),
+		},
+		Env: []corev1.EnvVar{{Name: "HOME", Value: "/workspace"}},
+		Resources: corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m"), corev1.ResourceMemory: resource.MustParse("128Mi")},
+			Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1"), corev1.ResourceMemory: resource.MustParse("512Mi")},
+		},
 	}
+	runner.VolumeMounts = append(runner.VolumeMounts, tmpMount)
 	if request.BackendConfigMap != "" {
 		runner.VolumeMounts = append(runner.VolumeMounts, corev1.VolumeMount{Name: "backend-config", MountPath: "/workspace/backend", ReadOnly: true})
 	}
-	for _, reference := range request.VariableSecretRefs {
-		runner.EnvFrom = append(runner.EnvFrom, corev1.EnvFromSource{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: reference}})
+	for _, reference := range request.VariableSecretVariables {
+		if reference.Variable == "" || reference.Name == "" || reference.Key == "" {
+			return nil, fmt.Errorf("secret variable, Secret name, and key are required")
+		}
+		runner.Env = append(runner.Env, corev1.EnvVar{
+			Name: "TF_VAR_" + reference.Variable,
+			ValueFrom: &corev1.EnvVarSource{SecretKeyRef: &corev1.SecretKeySelector{
+				LocalObjectReference: corev1.LocalObjectReference{Name: reference.Name}, Key: reference.Key,
+			}},
+		})
+	}
+	if isLocalStackEndpoint(request.ArtifactEndpoint) {
+		// LocalStack deliberately uses non-secret test credentials. Keep this
+		// branch constrained to local endpoints so production Jobs never receive
+		// synthetic AWS credentials.
+		runner.Env = append(runner.Env,
+			corev1.EnvVar{Name: "AWS_ACCESS_KEY_ID", Value: "test"},
+			corev1.EnvVar{Name: "AWS_SECRET_ACCESS_KEY", Value: "test"},
+			corev1.EnvVar{Name: "AWS_DEFAULT_REGION", Value: request.ArtifactRegion},
+		)
 	}
 
 	return &batchv1.Job{
@@ -159,7 +212,13 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: labels},
 				Spec: corev1.PodSpec{
-					RestartPolicy:  corev1.RestartPolicyNever,
+					RestartPolicy:      corev1.RestartPolicyNever,
+					ServiceAccountName: request.ServiceAccountName,
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsNonRoot:   pointerBool(true),
+						FSGroup:        pointerInt64(1000),
+						SeccompProfile: &corev1.SeccompProfile{Type: corev1.SeccompProfileTypeRuntimeDefault},
+					},
 					InitContainers: initContainers,
 					Containers:     []corev1.Container{runner},
 					Volumes:        volumes,
@@ -167,6 +226,23 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			},
 		},
 	}, nil
+}
+
+func isLocalStackEndpoint(endpoint string) bool {
+	if endpoint == "" {
+		return false
+	}
+	parsed, err := url.Parse(endpoint)
+	if err != nil {
+		return false
+	}
+	host := strings.ToLower(parsed.Hostname())
+	switch host {
+	case "localhost", "127.0.0.1", "host.docker.internal", "localstack":
+		return true
+	default:
+		return false
+	}
 }
 
 func (r JobRequest) validate() error {
@@ -232,9 +308,22 @@ func (r JobRequest) validate() error {
 	if r.SourcePath != "" && path.IsAbs(r.SourcePath) {
 		return fmt.Errorf("source path must be relative")
 	}
+	for _, reference := range r.VariableSecretVariables {
+		if reference.Variable == "" || reference.Name == "" || reference.Key == "" {
+			return fmt.Errorf("secret variable, Secret name, and key are required")
+		}
+	}
 	return nil
 }
 
 func pointer(value int32) *int32 {
+	return &value
+}
+
+func pointerBool(value bool) *bool {
+	return &value
+}
+
+func pointerInt64(value int64) *int64 {
 	return &value
 }

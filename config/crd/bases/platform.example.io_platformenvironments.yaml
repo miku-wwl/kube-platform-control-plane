@@ -46,6 +46,28 @@ spec:
             type: object
           spec:
             properties:
+              capacity:
+                properties:
+                  nodeCount:
+                    format: int32
+                    type: integer
+                type: object
+              classRef:
+                description: |-
+                  LocalObjectReference contains enough information to let you locate the
+                  referenced object inside the same namespace.
+                properties:
+                  name:
+                    default: ""
+                    description: |-
+                      Name of the referent.
+                      This field is effectively required, but due to backwards compatibility is
+                      allowed to be empty. Instances of this type with an empty value here are
+                      almost certainly wrong.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
               desiredState:
                 enum:
                 - Present
@@ -67,28 +89,72 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
+              region:
+                type: string
               target:
                 properties:
                   account:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  clusterARN:
+                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                   clusterID:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                   clusterName:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  connectionProfileRef:
+                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
+                  incarnationID:
+                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                   provider:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                   region:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass target is immutable
+                      rule: self == oldSelf
                 required:
                 - clusterName
                 - provider
                 type: object
-            required:
-            - infraStackRef
-            - target
+              valkey:
+                properties:
+                  enabled:
+                    type: boolean
+                  replicas:
+                    format: int32
+                    type: integer
+                  shards:
+                    format: int32
+                    type: integer
+                type: object
             type: object
           status:
             properties:
+              cleanupEvidenceDigest:
+                type: string
+              cleanupEvidenceRef:
+                type: string
               conditions:
                 items:
                   description: Condition contains details for one aspect of the current
@@ -180,6 +246,42 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
+              targetConnection:
+                properties:
+                  authMode:
+                    type: string
+                  caCertificateDigest:
+                    type: string
+                  endpoint:
+                    type: string
+                  kubeContext:
+                    type: string
+                  networkRouteProfile:
+                    type: string
+                required:
+                - authMode
+                - endpoint
+                type: object
+              targetIdentity:
+                properties:
+                  accountID:
+                    type: string
+                  clusterARN:
+                    type: string
+                  clusterName:
+                    type: string
+                  incarnationID:
+                    type: string
+                  provider:
+                    type: string
+                  region:
+                    type: string
+                required:
+                - accountID
+                - incarnationID
+                - provider
+                - region
+                type: object
             type: object
         type: object
     served: true

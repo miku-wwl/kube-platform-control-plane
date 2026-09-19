@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"testing"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,13 +21,14 @@ func TestValidateApplyApprovalBindsPlanAndApprovalUID(t *testing.T) {
 	}
 	plan := &platformv1alpha1.TerraformRun{
 		ObjectMeta: metav1.ObjectMeta{Name: "plan-run", Namespace: "platform-system", UID: types.UID("plan-uid")},
-		Status:     platformv1alpha1.TerraformRunStatus{PlanDigest: "sha256:plan"},
+		Status:     platformv1alpha1.TerraformRunStatus{PlanDigest: "sha256:plan", PlanExpiresAt: func() *metav1.Time { value := metav1.NewTime(time.Now().Add(time.Hour)); return &value }()},
 		Spec:       platformv1alpha1.TerraformRunSpec{ExecutionContextDigest: "sha256:context"},
 	}
 	approval := &platformv1alpha1.ChangeApproval{
 		ObjectMeta: metav1.ObjectMeta{Name: "approval", Namespace: "platform-system", UID: types.UID("approval-uid")},
 		Spec: platformv1alpha1.ChangeApprovalSpec{
 			PlanRunRef:             corev1.LocalObjectReference{Name: plan.Name},
+			PlanRunUID:             string(plan.UID),
 			PlanDigest:             "sha256:plan",
 			ExecutionContextDigest: "sha256:context",
 		},

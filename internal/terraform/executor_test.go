@@ -49,10 +49,10 @@ func TestPlanUsesInitWorkspaceAndDetailedExitCode(t *testing.T) {
 		t.Fatalf("unexpected plan result: %+v", result)
 	}
 	want := []string{
-		"init -input=false -no-color -lock-timeout=30s",
+		"init -input=false -no-color -lock-timeout 30s",
 		"workspace select staging",
 		"workspace new staging",
-		"plan -input=false -no-color -detailed-exitcode -out=/workspace/terraform/plan.binary -lock-timeout=30s -parallelism=4",
+		"plan -input=false -no-color -detailed-exitcode -out /workspace/terraform/plan.binary -lock-timeout 30s -parallelism 4",
 	}
 	if !reflect.DeepEqual(runner.commands, want) {
 		t.Fatalf("commands = %#v, want %#v", runner.commands, want)
@@ -85,7 +85,7 @@ func TestDestroyPlanUsesDestroyFlagBeforeExecution(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Plan() error = %v", err)
 	}
-	want := "plan -input=false -no-color -detailed-exitcode -out=/workspace/terraform/destroy.binary -destroy"
+	want := "plan -input=false -no-color -detailed-exitcode -out /workspace/terraform/destroy.binary -destroy"
 	if runner.commands[len(runner.commands)-1] != want {
 		t.Fatalf("destroy command = %q, want %q", runner.commands[len(runner.commands)-1], want)
 	}
@@ -104,9 +104,9 @@ func TestApplyNeverCreatesWorkspaceOrReplans(t *testing.T) {
 		t.Fatalf("Apply() result=%+v err=%v", result, err)
 	}
 	want := []string{
-		"init -input=false -no-color -lockfile=readonly -lock-timeout=1m0s -backend-config=/workspace/backend-config",
+		"init -input=false -no-color -lockfile readonly -lock-timeout 1m0s -backend-config /workspace/backend-config",
 		"workspace select staging",
-		"apply -input=false -no-color -lock-timeout=1m0s /workspace/plan.binary",
+		"apply -input=false -no-color -lock-timeout 1m0s /workspace/plan.binary",
 	}
 	if !reflect.DeepEqual(runner.commands, want) {
 		t.Fatalf("commands = %#v, want %#v", runner.commands, want)

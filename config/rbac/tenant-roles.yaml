@@ -1,0 +1,38 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: platform-tenant-developer
+rules:
+  - apiGroups:
+      - platform.example.io
+    resources:
+      - platformenvironments
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - platform.example.io
+    resources:
+      - platformenvironments/status
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: platform-change-approver
+rules:
+  - apiGroups:
+      - platform.example.io
+    resources:
+      - changeapprovals
+    verbs:
+      - get
+      - list
+      - watch
+      - create

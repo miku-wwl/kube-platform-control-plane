@@ -71,6 +71,10 @@ spec:
                 type: string
               backendConfigArtifactRef:
                 type: string
+              concurrencyGroup:
+                type: string
+              effectivePlanInputDigest:
+                type: string
               executionContextDigest:
                 type: string
               executionPlatformIdentityDigest:
@@ -81,30 +85,63 @@ spec:
                 properties:
                   executionTimeout:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass executor is immutable
+                      rule: duration(self) == duration(oldSelf)
                   image:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass executor is immutable
+                      rule: self == oldSelf
                   parallelism:
                     format: int32
                     type: integer
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass executor is immutable
+                      rule: self == oldSelf
                   runtimeArchitecture:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass executor is immutable
+                      rule: self == oldSelf
                   runtimeOS:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass executor is immutable
+                      rule: self == oldSelf
                   terraformVersion:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass executor is immutable
+                      rule: self == oldSelf
                   workDir:
                     type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass executor is immutable
+                      rule: self == oldSelf
                 required:
                 - executionTimeout
                 - image
                 - terraformVersion
                 - workDir
                 type: object
+              expectedTerraformVersion:
+                type: string
               infraStackGeneration:
                 format: int64
                 type: integer
+              infrastructureExecutionIdentityDigest:
+                type: string
               lockTimeout:
                 type: string
+              maxConcurrentApplies:
+                format: int32
+                type: integer
+              maxConcurrentPlans:
+                format: int32
+                type: integer
+              mutationFence:
+                type: boolean
               operation:
                 type: string
               planDigest:
@@ -116,6 +153,16 @@ spec:
               planRunUID:
                 type: string
               resolvedBackendConfigRef:
+                type: string
+              runnerImageDigest:
+                type: string
+              runnerServiceAccountIdentityDigest:
+                type: string
+              runnerServiceAccountName:
+                type: string
+              runtimeTargetIdentityDigest:
+                type: string
+              secretVariableIdentityDigest:
                 type: string
               source:
                 properties:
@@ -137,6 +184,8 @@ spec:
                 required:
                 - type
                 type: object
+              sourceClosureDigest:
+                type: string
               stackRef:
                 description: |-
                   LocalObjectReference contains enough information to let you locate the
@@ -153,6 +202,10 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
+              targetConnectionProfileDigest:
+                type: string
+              terraformLockfileDigest:
+                type: string
               variableSecretRefs:
                 items:
                   description: |-
@@ -171,6 +224,42 @@ spec:
                   type: object
                   x-kubernetes-map-type: atomic
                 type: array
+              variableSecretVariables:
+                items:
+                  properties:
+                    secretKeyRef:
+                      description: SecretKeySelector selects a key of a Secret.
+                      properties:
+                        key:
+                          description: The key of the secret to select from.  Must
+                            be a valid secret key.
+                          type: string
+                        name:
+                          default: ""
+                          description: |-
+                            Name of the referent.
+                            This field is effectively required, but due to backwards compatibility is
+                            allowed to be empty. Instances of this type with an empty value here are
+                            almost certainly wrong.
+                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          type: string
+                        optional:
+                          description: Specify whether the Secret or its key must
+                            be defined
+                          type: boolean
+                      required:
+                      - key
+                      type: object
+                      x-kubernetes-map-type: atomic
+                    variable:
+                      type: string
+                  required:
+                  - secretKeyRef
+                  - variable
+                  type: object
+                type: array
+              variablesSnapshotDigest:
+                type: string
               workspace:
                 type: string
             required:
@@ -182,6 +271,9 @@ spec:
             - stackRef
             - workspace
             type: object
+            x-kubernetes-validations:
+            - message: TerraformRun spec is immutable
+              rule: self == oldSelf
           status:
             properties:
               artifactsReady:
@@ -264,7 +356,14 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
+              jobUID:
+                type: string
               observedGeneration:
+                format: int64
+                type: integer
+              observedStateLineage:
+                type: string
+              observedStateSerial:
                 format: int64
                 type: integer
               planCreatedAt:
@@ -284,6 +383,12 @@ spec:
               sourceBundleDigest:
                 type: string
               sourceBundleRef:
+                type: string
+              terminalFinishedAt:
+                format: date-time
+                type: string
+              terminalStartedAt:
+                format: date-time
                 type: string
               terraformLockfileDigest:
                 type: string
