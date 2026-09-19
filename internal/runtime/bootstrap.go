@@ -16,6 +16,8 @@ type BootstrapObject struct {
 	Object          *unstructured.Unstructured
 	Wave            int
 	ReadinessPolicy string
+	DeletionPolicy  string
+	OwnershipID     string
 }
 
 func ApplyBootstrap(ctx context.Context, client dynamic.Interface, objects []BootstrapObject, fieldManager string, target TargetIdentity) ([]InventoryItem, error) {
@@ -30,6 +32,12 @@ func ApplyBootstrap(ctx context.Context, client dynamic.Interface, objects []Boo
 			end++
 		}
 		for _, item := range ordered[start:end] {
+			labels := item.Object.GetLabels()
+			if labels == nil {
+				labels = map[string]string{}
+			}
+			labels[ownershipIDLabel] = item.OwnershipID
+			item.Object.SetLabels(labels)
 			applied, err := Apply(ctx, client, item.GVR, item.Object, fieldManager)
 			if err != nil {
 				return nil, fmt.Errorf("apply %s/%s: %w", item.Object.GetKind(), item.Object.GetName(), err)
@@ -39,6 +47,9 @@ func ApplyBootstrap(ctx context.Context, client dynamic.Interface, objects []Boo
 				return nil, err
 			}
 			entry.Resource = item.GVR.Resource
+			entry.OwnershipID = item.OwnershipID
+			entry.ReadinessPolicy = item.ReadinessPolicy
+			entry.DeletionPolicy = item.DeletionPolicy
 			inventory = append(inventory, entry)
 		}
 		for _, item := range ordered[start:end] {

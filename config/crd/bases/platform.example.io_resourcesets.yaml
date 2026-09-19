@@ -51,6 +51,8 @@ spec:
                 type: integer
               mutationFence:
                 type: boolean
+              ownershipID:
+                type: string
               resources:
                 items:
                   properties:
@@ -195,6 +197,8 @@ spec:
               inventory:
                 items:
                   properties:
+                    deletionPolicy:
+                      type: string
                     group:
                       type: string
                     kind:
@@ -202,6 +206,10 @@ spec:
                     name:
                       type: string
                     namespace:
+                      type: string
+                    ownershipID:
+                      type: string
+                    readinessPolicy:
                       type: string
                     resource:
                       type: string

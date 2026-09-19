@@ -141,14 +141,15 @@ type InfraStack struct {
 }
 
 type InfraStackSpec struct {
-	Source                          SourceSpec                      `json:"source"`
-	Backend                         BackendSpec                     `json:"backend"`
-	Workspace                       string                          `json:"workspace"`
-	Capacity                        CapacitySpec                    `json:"capacity,omitempty"`
-	Variables                       VariablesSpec                   `json:"variables,omitempty"`
-	Executor                        ExecutorSpec                    `json:"executor"`
-	DesiredState                    DesiredState                    `json:"desiredState,omitempty"`
-	ApprovalPolicy                  ApprovalPolicy                  `json:"approvalPolicy,omitempty"`
+	Source         SourceSpec     `json:"source"`
+	Backend        BackendSpec    `json:"backend"`
+	Workspace      string         `json:"workspace"`
+	Capacity       CapacitySpec   `json:"capacity,omitempty"`
+	Variables      VariablesSpec  `json:"variables,omitempty"`
+	Executor       ExecutorSpec   `json:"executor"`
+	DesiredState   DesiredState   `json:"desiredState,omitempty"`
+	ApprovalPolicy ApprovalPolicy `json:"approvalPolicy,omitempty"`
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="InfraStack ownerEnvironmentUID is immutable"
 	OwnerEnvironmentUID             string                          `json:"ownerEnvironmentUID,omitempty"`
 	InfrastructureExecutionIdentity InfrastructureExecutionIdentity `json:"infrastructureExecutionIdentity,omitempty"`
 	RuntimeTargetIdentity           RuntimeTargetIdentity           `json:"runtimeTargetIdentity,omitempty"`
@@ -283,12 +284,32 @@ type InfraStackStatus struct {
 	LastAppliedRunRef             *corev1.LocalObjectReference `json:"lastAppliedRunRef,omitempty"`
 	LastAppliedSourceBundleRef    string                       `json:"lastAppliedSourceBundleRef,omitempty"`
 	LastAppliedSourceBundleDigest string                       `json:"lastAppliedSourceBundleDigest,omitempty"`
+	LastConverged                 *LastConvergedSourceClosure  `json:"lastConverged,omitempty"`
 	ConvergenceEvidenceRef        string                       `json:"convergenceEvidenceRef,omitempty"`
 	ConvergenceEvidenceDigest     string                       `json:"convergenceEvidenceDigest,omitempty"`
+	TargetDiscoveryRef            string                       `json:"targetDiscoveryRef,omitempty"`
+	TargetDiscoveryDigest         string                       `json:"targetDiscoveryDigest,omitempty"`
 	DriftReportRef                string                       `json:"driftReportRef,omitempty"`
 	DriftReportDigest             string                       `json:"driftReportDigest,omitempty"`
 	CleanupEvidenceRef            string                       `json:"cleanupEvidenceRef,omitempty"`
 	CleanupEvidenceDigest         string                       `json:"cleanupEvidenceDigest,omitempty"`
+}
+
+// LastConvergedSourceClosure is the immutable evidence required to safely
+// reconstruct a later Destroy. It is written for both Apply and NoChange.
+type LastConvergedSourceClosure struct {
+	SourceClosureRef                      string `json:"sourceClosureRef"`
+	SourceClosureDigest                   string `json:"sourceClosureDigest"`
+	BackendSnapshotRef                    string `json:"backendSnapshotRef"`
+	BackendSnapshotDigest                 string `json:"backendSnapshotDigest"`
+	TargetDiscoveryRef                    string `json:"targetDiscoveryRef"`
+	TargetDiscoveryDigest                 string `json:"targetDiscoveryDigest"`
+	EffectivePlanInputDigest              string `json:"effectivePlanInputDigest"`
+	InfrastructureExecutionIdentityDigest string `json:"infrastructureExecutionIdentityDigest"`
+	ExecutionPlatformIdentityDigest       string `json:"executionPlatformIdentityDigest"`
+	RunnerServiceAccountIdentityDigest    string `json:"runnerServiceAccountIdentityDigest"`
+	TerraformRunUID                       string `json:"terraformRunUID"`
+	Generation                            int64  `json:"generation"`
 }
 
 // +kubebuilder:object:root=true
@@ -326,6 +347,8 @@ type TerraformRunSpec struct {
 	PlanRunUID                            string                        `json:"planRunUID,omitempty"`
 	PlanRef                               string                        `json:"planRef,omitempty"`
 	PlanDigest                            string                        `json:"planDigest,omitempty"`
+	PlanReportRef                         string                        `json:"planReportRef,omitempty"`
+	PlanReportDigest                      string                        `json:"planReportDigest,omitempty"`
 	ApprovalRef                           *corev1.LocalObjectReference  `json:"approvalRef,omitempty"`
 	ApprovalUID                           string                        `json:"approvalUID,omitempty"`
 	EffectivePlanInputDigest              string                        `json:"effectivePlanInputDigest,omitempty"`
@@ -362,15 +385,24 @@ type TerraformRunStatus struct {
 	JobRef                      *corev1.LocalObjectReference `json:"jobRef,omitempty"`
 	SourceBundleRef             string                       `json:"sourceBundleRef,omitempty"`
 	SourceBundleDigest          string                       `json:"sourceBundleDigest,omitempty"`
+	PlanReportRef               string                       `json:"planReportRef,omitempty"`
+	PlanReportDigest            string                       `json:"planReportDigest,omitempty"`
+	TargetDiscoveryRef          string                       `json:"targetDiscoveryRef,omitempty"`
+	TargetDiscoveryDigest       string                       `json:"targetDiscoveryDigest,omitempty"`
+	TerminalResultRef           string                       `json:"terminalResultRef,omitempty"`
+	TerminalResultDigest        string                       `json:"terminalResultDigest,omitempty"`
 	ResolvedBackendConfigRef    string                       `json:"resolvedBackendConfigRef,omitempty"`
 	ResolvedBackendConfigDigest string                       `json:"resolvedBackendConfigDigest,omitempty"`
 	TerraformLockfileDigest     string                       `json:"terraformLockfileDigest,omitempty"`
 	PlanRef                     string                       `json:"planRef,omitempty"`
 	PlanDigest                  string                       `json:"planDigest,omitempty"`
+	EffectivePlanInputDigest    string                       `json:"effectivePlanInputDigest,omitempty"`
 	HasChanges                  bool                         `json:"hasChanges,omitempty"`
 	PlanCreatedAt               *metav1.Time                 `json:"planCreatedAt,omitempty"`
 	PlanExpiresAt               *metav1.Time                 `json:"planExpiresAt,omitempty"`
 	ExecutionOutcome            string                       `json:"executionOutcome,omitempty"`
+	MutationClassification      string                       `json:"mutationClassification,omitempty"`
+	MutationMayHaveOccurred     bool                         `json:"mutationMayHaveOccurred,omitempty"`
 	ArtifactsReady              bool                         `json:"artifactsReady,omitempty"`
 	EvidenceCaptured            bool                         `json:"evidenceCaptured,omitempty"`
 	JobUID                      string                       `json:"jobUID,omitempty"`
@@ -395,6 +427,7 @@ type ResourceSet struct {
 
 type ResourceSetSpec struct {
 	Target                      TargetReference `json:"target"`
+	OwnershipID                 string          `json:"ownershipID,omitempty"`
 	MaxInventoryItems           int32           `json:"maxInventoryItems,omitempty"`
 	Resources                   []RuntimeObject `json:"resources,omitempty"`
 	RuntimeMutationAllowed      bool            `json:"runtimeMutationAllowed,omitempty"`
@@ -422,6 +455,9 @@ type InventoryItemStatus struct {
 	Namespace            string `json:"namespace,omitempty"`
 	Name                 string `json:"name"`
 	UID                  string `json:"uid"`
+	OwnershipID          string `json:"ownershipID,omitempty"`
+	ReadinessPolicy      string `json:"readinessPolicy,omitempty"`
+	DeletionPolicy       string `json:"deletionPolicy,omitempty"`
 }
 
 type ResourceSetStatus struct {
@@ -453,10 +489,13 @@ type ChangeApproval struct {
 
 // +kubebuilder:validation:XValidation:rule="self == oldSelf",message="ChangeApproval spec is immutable"
 type ChangeApprovalSpec struct {
-	PlanRunRef             corev1.LocalObjectReference `json:"planRunRef"`
-	PlanRunUID             string                      `json:"planRunUID"`
-	PlanDigest             string                      `json:"planDigest"`
-	ExecutionContextDigest string                      `json:"executionContextDigest"`
+	PlanRunRef               corev1.LocalObjectReference `json:"planRunRef"`
+	PlanRunUID               string                      `json:"planRunUID"`
+	PlanDigest               string                      `json:"planDigest"`
+	ExecutionContextDigest   string                      `json:"executionContextDigest"`
+	EffectivePlanInputDigest string                      `json:"effectivePlanInputDigest"`
+	PlanReportRef            string                      `json:"planReportRef"`
+	PlanReportDigest         string                      `json:"planReportDigest"`
 }
 
 type ChangeApprovalStatus struct {

@@ -37,6 +37,9 @@ type InventoryItem struct {
 	Namespace            string `json:"namespace,omitempty"`
 	Name                 string `json:"name"`
 	UID                  string `json:"uid"`
+	OwnershipID          string `json:"ownershipID,omitempty"`
+	ReadinessPolicy      string `json:"readinessPolicy,omitempty"`
+	DeletionPolicy       string `json:"deletionPolicy,omitempty"`
 }
 
 func (i TargetIdentity) Digest() (string, error) {
@@ -122,6 +125,9 @@ func ValidatePrune(item InventoryItem, target TargetIdentity, object *unstructur
 	if object.GetLabels()[managedByLabel] != "platform-control-plane" {
 		return fmt.Errorf("prune ownership label missing")
 	}
+	if item.OwnershipID != "" && object.GetLabels()[ownershipIDLabel] != item.OwnershipID {
+		return fmt.Errorf("prune ownership identity mismatch")
+	}
 	if IsProtected(item) {
 		return fmt.Errorf("protected resource cannot be pruned")
 	}
@@ -129,6 +135,9 @@ func ValidatePrune(item InventoryItem, target TargetIdentity, object *unstructur
 }
 
 func IsProtected(item InventoryItem) bool {
+	if item.DeletionPolicy == "Retain" {
+		return true
+	}
 	if item.Kind == "Namespace" || item.Kind == "PersistentVolumeClaim" || item.Kind == "CustomResourceDefinition" {
 		return true
 	}

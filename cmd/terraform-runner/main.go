@@ -15,18 +15,30 @@ import (
 )
 
 type terminalResult struct {
-	Operation           string `json:"operation"`
-	TerraformExitCode   int    `json:"terraformExitCode"`
-	ExecutionOutcome    string `json:"executionOutcome"`
-	ArtifactsReady      bool   `json:"artifactsReady"`
-	HasChanges          bool   `json:"hasChanges"`
-	Error               string `json:"error,omitempty"`
-	PlanRef             string `json:"planRef,omitempty"`
-	PlanDigest          string `json:"planDigest,omitempty"`
-	SourceBundleRef     string `json:"sourceBundleRef,omitempty"`
-	SourceBundleDigest  string `json:"sourceBundleDigest,omitempty"`
-	BackendConfigRef    string `json:"backendConfigRef,omitempty"`
-	BackendConfigDigest string `json:"backendConfigDigest,omitempty"`
+	RunUID                   string    `json:"terraformRunUID"`
+	JobUID                   string    `json:"jobUID,omitempty"`
+	StartedAt                time.Time `json:"startedAt"`
+	FinishedAt               time.Time `json:"finishedAt"`
+	Operation                string    `json:"operation"`
+	TerraformExitCode        int       `json:"terraformExitCode"`
+	ExecutionOutcome         string    `json:"executionOutcome"`
+	MutationClassification   string    `json:"mutationClassification,omitempty"`
+	MutationMayHaveOccurred  bool      `json:"mutationMayHaveOccurred"`
+	ArtifactsReady           bool      `json:"artifactsReady"`
+	HasChanges               bool      `json:"hasChanges"`
+	Error                    string    `json:"error,omitempty"`
+	PlanRef                  string    `json:"planRef,omitempty"`
+	PlanDigest               string    `json:"planDigest,omitempty"`
+	SourceBundleRef          string    `json:"sourceBundleRef,omitempty"`
+	SourceBundleDigest       string    `json:"sourceBundleDigest,omitempty"`
+	BackendConfigRef         string    `json:"backendConfigRef,omitempty"`
+	BackendConfigDigest      string    `json:"backendConfigDigest,omitempty"`
+	PlanReportRef            string    `json:"planReportRef,omitempty"`
+	PlanReportDigest         string    `json:"planReportDigest,omitempty"`
+	TerminalResultRef        string    `json:"terminalResultRef,omitempty"`
+	EffectivePlanInputDigest string    `json:"effectivePlanInputDigest,omitempty"`
+	TargetDiscoveryRef       string    `json:"targetDiscoveryRef,omitempty"`
+	TargetDiscoveryDigest    string    `json:"targetDiscoveryDigest,omitempty"`
 }
 
 func main() {
@@ -50,6 +62,8 @@ func main() {
 	var planDigest string
 	var backendConfigRef string
 	var backendConfigDigest string
+	var runUID string
+	var expectedVersion string
 
 	flag.StringVar(&operation, "operation", "", "Terraform operation: Plan or Apply")
 	flag.StringVar(&workingDir, "working-dir", "/workspace/terraform", "absolute Terraform working directory")
@@ -71,7 +85,11 @@ func main() {
 	flag.StringVar(&planDigest, "plan-digest", "", "saved plan digest")
 	flag.StringVar(&backendConfigRef, "backend-config-ref", "", "immutable backend snapshot object key")
 	flag.StringVar(&backendConfigDigest, "backend-config-digest", "", "backend snapshot digest")
+	flag.StringVar(&runUID, "run-uid", "", "immutable TerraformRun UID")
+	flag.StringVar(&expectedVersion, "expected-terraform-version", "", "expected Terraform version")
 	flag.Parse()
+	startedAt := time.Now().UTC()
+	jobUID := os.Getenv("PCP_JOB_UID")
 
 	request := terraform.Request{
 		WorkingDir:        workingDir,
@@ -91,17 +109,29 @@ func main() {
 	executor := terraform.Executor{Runner: terraform.OSCommandRunner{Binary: terraformBinary}}
 	store, storeErr := buildArtifactStore(artifactEndpoint, artifactRegion, artifactBucket)
 	if storeErr != nil {
-		emit(terminalResult{Operation: operation, ExecutionOutcome: "Failed", Error: storeErr.Error()})
+		emit(terminalResult{RunUID: runUID, JobUID: jobUID, Operation: operation, StartedAt: startedAt, FinishedAt: time.Now().UTC(), ExecutionOutcome: "Failed", MutationClassification: "FailedPreMutation", Error: storeErr.Error()})
 		os.Exit(2)
 	}
 	if err := prepareArtifacts(ctx, store, request, sourceRoot, sourceBundleRef, sourceBundleDigest, planRef, planDigest, backendConfigRef, backendConfigDigest); err != nil {
-		emit(terminalResult{Operation: operation, ExecutionOutcome: "Failed", Error: err.Error()})
+		terminal := terminalResult{RunUID: runUID, JobUID: jobUID, Operation: operation, StartedAt: startedAt, FinishedAt: time.Now().UTC(), ExecutionOutcome: "Failed", MutationClassification: "FailedPreMutation", Error: err.Error()}
+		_ = persistTerminalResult(ctx, store, artifactPrefix, &terminal)
+		emit(terminal)
+		os.Exit(2)
+	}
+	if err := executor.VerifyTerraformVersion(ctx, expectedVersion, request.WorkingDir); err != nil {
+		terminal := terminalResult{RunUID: runUID, JobUID: jobUID, Operation: operation, StartedAt: startedAt, FinishedAt: time.Now().UTC(), ExecutionOutcome: "Failed", MutationClassification: "FailedPreMutation", Error: err.Error()}
+		_ = persistTerminalResult(ctx, store, artifactPrefix, &terminal)
+		emit(terminal)
 		os.Exit(2)
 	}
 	switch operation {
 	case "Plan":
 		result, err := executor.Plan(ctx, request)
 		terminal := terminalResult{
+			RunUID:            runUID,
+			JobUID:            jobUID,
+			StartedAt:         startedAt,
+			FinishedAt:        time.Now().UTC(),
 			Operation:         operation,
 			TerraformExitCode: result.ExitCode,
 			ExecutionOutcome:  string(result.Outcome),
@@ -111,17 +141,31 @@ func main() {
 		if err != nil {
 			terminal.Error = err.Error()
 		}
-		if err == nil && store != nil && result.HasChanges {
+		terminal.MutationClassification = "NoMutation"
+		if err == nil && store != nil {
 			if uploadErr := uploadPlanArtifacts(ctx, store, artifactPrefix, request, sourceRoot, result, &terminal); uploadErr != nil {
 				terminal.ArtifactsReady = false
 				terminal.Error = uploadErr.Error()
 			}
+			if result.Outcome == terraform.PlanNoChange && terminal.ArtifactsReady {
+				if uploadErr := uploadTargetDiscovery(ctx, store, artifactPrefix, request); uploadErr != nil {
+					terminal.ArtifactsReady = false
+					terminal.Error = uploadErr.Error()
+				} else {
+					terminal.TargetDiscoveryRef = artifactKey(artifactPrefix, "target-discovery.json")
+					if ref, _, headErr := store.GetVerifiedByKey(ctx, terminal.TargetDiscoveryRef); headErr == nil {
+						terminal.TargetDiscoveryDigest = ref.Digest
+					}
+				}
+			}
 		}
+		terminal.EffectivePlanInputDigest = effectiveInputDigest(request, expectedVersion, terminal.SourceBundleDigest, terminal.BackendConfigDigest, terminal.PlanDigest)
 		if result.PlanPath != "" {
 			if _, statErr := os.Stat(result.PlanPath); statErr != nil {
 				terminal.ArtifactsReady = false
 			}
 		}
+		_ = persistTerminalResult(ctx, store, artifactPrefix, &terminal)
 		emit(terminal)
 		if err != nil {
 			os.Exit(1)
@@ -137,13 +181,42 @@ func main() {
 				outcome = "Indeterminate"
 			}
 		}
-		emit(terminalResult{
-			Operation:         operation,
-			TerraformExitCode: result.ExitCode,
-			ExecutionOutcome:  outcome,
-			ArtifactsReady:    result.Succeeded,
-			Error:             errorText(err),
-		})
+		terminal := terminalResult{
+			RunUID: runUID, JobUID: jobUID, StartedAt: startedAt, FinishedAt: time.Now().UTC(),
+			Operation:              operation,
+			TerraformExitCode:      result.ExitCode,
+			ExecutionOutcome:       outcome,
+			ArtifactsReady:         result.Succeeded,
+			Error:                  errorText(err),
+			MutationClassification: "SucceededPostMutation",
+			PlanRef:                planRef,
+			PlanDigest:             planDigest,
+			SourceBundleRef:        sourceBundleRef,
+			SourceBundleDigest:     sourceBundleDigest,
+			BackendConfigRef:       backendConfigRef,
+			BackendConfigDigest:    backendConfigDigest,
+		}
+		if err != nil {
+			terminal.MutationMayHaveOccurred = true
+			terminal.MutationClassification = "FailedPostMutationPossible"
+			if errors.Is(err, context.DeadlineExceeded) {
+				terminal.MutationClassification = "Indeterminate"
+			}
+		}
+		if result.Succeeded && store != nil {
+			if uploadErr := uploadTargetDiscovery(ctx, store, artifactPrefix, request); uploadErr != nil {
+				terminal.ArtifactsReady = false
+				terminal.Error = uploadErr.Error()
+			} else {
+				terminal.TargetDiscoveryRef = artifactKey(artifactPrefix, "target-discovery.json")
+				if ref, _, headErr := store.GetVerifiedByKey(ctx, terminal.TargetDiscoveryRef); headErr == nil {
+					terminal.TargetDiscoveryDigest = ref.Digest
+				}
+			}
+		}
+		terminal.EffectivePlanInputDigest = effectiveInputDigest(request, expectedVersion, sourceBundleDigest, backendConfigDigest, planDigest)
+		_ = persistTerminalResult(ctx, store, artifactPrefix, &terminal)
+		emit(terminal)
 		if exitCode != 0 {
 			os.Exit(exitCode)
 		}
@@ -152,6 +225,22 @@ func main() {
 		fmt.Fprintln(os.Stderr, "operation must be Plan or Apply")
 		os.Exit(2)
 	}
+}
+
+func effectiveInputDigest(request terraform.Request, expectedVersion, sourceBundleDigest, backendDigest, planDigest string) string {
+	digest, err := terraform.Digest(struct {
+		SourceBundleDigest string
+		BackendDigest      string
+		PlanDigest         string
+		TerraformVersion   string
+		WorkingDir         string
+		Workspace          string
+		Destroy            bool
+	}{sourceBundleDigest, backendDigest, planDigest, expectedVersion, request.WorkingDir, request.Workspace, request.Destroy})
+	if err != nil {
+		return ""
+	}
+	return digest
 }
 
 func buildArtifactStore(endpoint, region, bucket string) (*artifacts.Store, error) {
@@ -178,10 +267,27 @@ func uploadPlanArtifacts(ctx context.Context, store *artifacts.Store, prefix str
 	}
 	terminal.PlanRef = planRef.Key
 	terminal.PlanDigest = planRef.Digest
+	report, err := buildPlanReport(ctx, request, result, planRef.Digest)
+	if err != nil {
+		return err
+	}
+	reportContent, err := json.Marshal(report)
+	if err != nil {
+		return fmt.Errorf("marshal plan report: %w", err)
+	}
+	reportRef, err := store.PutImmutable(ctx, artifactKey(prefix, "plan-report.json"), reportContent)
+	if err != nil {
+		return fmt.Errorf("upload plan report: %w", err)
+	}
+	terminal.PlanReportRef = reportRef.Key
+	terminal.PlanReportDigest = reportRef.Digest
 	if request.BackendConfigPath != "" {
 		backendContent, err := os.ReadFile(request.BackendConfigPath)
 		if err != nil {
 			return fmt.Errorf("read backend snapshot: %w", err)
+		}
+		if err := terraform.ValidateBackendConfigContent(backendContent); err != nil {
+			return fmt.Errorf("validate backend snapshot: %w", err)
 		}
 		backendRef, err := store.PutImmutable(ctx, artifactKey(prefix, "backend-config.hcl"), backendContent)
 		if err != nil {
@@ -203,6 +309,108 @@ func uploadPlanArtifacts(ctx context.Context, store *artifacts.Store, prefix str
 		terminal.SourceBundleDigest = bundleRef.Digest
 	}
 	return nil
+}
+
+func uploadTargetDiscovery(ctx context.Context, store *artifacts.Store, prefix string, request terraform.Request) error {
+	if store == nil {
+		return fmt.Errorf("target discovery requires artifact store")
+	}
+	command, err := (terraform.OSCommandRunner{Binary: "terraform"}).Run(ctx, request.WorkingDir, "output", "-json")
+	if err != nil {
+		return fmt.Errorf("terraform output discovery: %w", err)
+	}
+	if command.ExitCode != 0 {
+		return fmt.Errorf("terraform output discovery failed: %s", command.Stderr)
+	}
+	sanitized, err := sanitizeTargetDiscovery([]byte(command.Stdout))
+	if err != nil {
+		return err
+	}
+	if _, err := store.PutImmutable(ctx, artifactKey(prefix, "target-discovery.json"), sanitized); err != nil {
+		return fmt.Errorf("upload target discovery: %w", err)
+	}
+	return nil
+}
+
+func sanitizeTargetDiscovery(content []byte) ([]byte, error) {
+	var values map[string]json.RawMessage
+	if err := json.Unmarshal(content, &values); err != nil {
+		return nil, fmt.Errorf("decode terraform target discovery output: %w", err)
+	}
+	allowed := map[string]struct{}{"provider": {}, "accountId": {}, "region": {}, "clusterArn": {}, "clusterName": {}, "incarnationId": {}, "endpoint": {}, "caCertificateDigest": {}, "authMode": {}, "kubeContext": {}}
+	result := map[string]json.RawMessage{}
+	for key, value := range values {
+		if _, ok := allowed[key]; ok {
+			result[key] = value
+			continue
+		}
+		var wrapper struct {
+			Value json.RawMessage `json:"value"`
+		}
+		if json.Unmarshal(value, &wrapper) == nil && len(wrapper.Value) > 0 {
+			var nested map[string]json.RawMessage
+			if json.Unmarshal(wrapper.Value, &nested) == nil {
+				for nestedKey, nestedValue := range nested {
+					if _, ok := allowed[nestedKey]; ok {
+						result[nestedKey] = nestedValue
+					}
+				}
+			}
+		}
+	}
+	if len(result) == 0 {
+		return nil, fmt.Errorf("terraform output does not contain an allowlisted target discovery object")
+	}
+	return json.Marshal(result)
+}
+
+type planReport struct {
+	PlanDigest      string         `json:"planDigest"`
+	Outcome         string         `json:"outcome"`
+	HasChanges      bool           `json:"hasChanges"`
+	ResourceActions map[string]int `json:"resourceActions,omitempty"`
+	GeneratedAt     time.Time      `json:"generatedAt"`
+}
+
+func buildPlanReport(ctx context.Context, request terraform.Request, result terraform.PlanResult, planDigest string) (planReport, error) {
+	show := terraform.OSCommandRunner{Binary: "terraform"}
+	command, err := show.Run(ctx, request.WorkingDir, "show", "-json", request.PlanPath)
+	if err != nil {
+		return planReport{}, fmt.Errorf("terraform show plan report: %w", err)
+	}
+	if command.ExitCode != 0 {
+		return planReport{}, fmt.Errorf("terraform show plan report failed: %s", command.Stderr)
+	}
+	var payload struct {
+		ResourceChanges []struct {
+			Change struct {
+				Actions []string `json:"actions"`
+			} `json:"change"`
+		} `json:"resource_changes"`
+	}
+	if err := json.Unmarshal([]byte(command.Stdout), &payload); err != nil {
+		return planReport{}, fmt.Errorf("parse terraform show plan report: %w", err)
+	}
+	actions := map[string]int{}
+	for _, resource := range payload.ResourceChanges {
+		for _, action := range resource.Change.Actions {
+			actions[action]++
+		}
+	}
+	return planReport{PlanDigest: planDigest, Outcome: string(result.Outcome), HasChanges: result.HasChanges, ResourceActions: actions, GeneratedAt: time.Now().UTC()}, nil
+}
+
+func persistTerminalResult(ctx context.Context, store *artifacts.Store, prefix string, result *terminalResult) error {
+	if store == nil || result == nil {
+		return nil
+	}
+	result.TerminalResultRef = artifactKey(prefix, "terminal-result.json")
+	content, err := json.Marshal(result)
+	if err != nil {
+		return err
+	}
+	_, err = store.PutImmutable(ctx, result.TerminalResultRef, content)
+	return err
 }
 
 func artifactKey(prefix, name string) string {

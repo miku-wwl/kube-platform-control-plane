@@ -54,6 +54,7 @@ type JobRequest struct {
 	VariableSecretRefs          []corev1.LocalObjectReference
 	VariableSecretVariables     []VariableSecretReference
 	ServiceAccountName          string
+	ExpectedTerraformVersion    string
 }
 
 type VariableSecretReference struct {
@@ -118,6 +119,8 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 
 	args := []string{
 		"--operation=" + request.Operation,
+		"--run-uid=" + request.RunUID,
+		"--expected-terraform-version=" + request.ExpectedTerraformVersion,
 		"--working-dir=" + request.WorkingDir,
 		"--workspace=" + request.Workspace,
 		"--plan=" + request.PlanPath,
@@ -140,7 +143,7 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 	}
 	if request.SourceBundleRef != "" {
 		args = append(args,
-			"--source-root="+request.WorkingDir,
+			"--source-root="+sourceRootForJob(request),
 			"--source-bundle-ref="+request.SourceBundleRef,
 			"--source-bundle-digest="+request.SourceBundleDigest,
 		)
@@ -178,6 +181,7 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1"), corev1.ResourceMemory: resource.MustParse("512Mi")},
 		},
 	}
+	runner.Env = append(runner.Env, corev1.EnvVar{Name: "PCP_JOB_UID", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.uid"}}})
 	runner.VolumeMounts = append(runner.VolumeMounts, tmpMount)
 	if request.BackendConfigMap != "" {
 		runner.VolumeMounts = append(runner.VolumeMounts, corev1.VolumeMount{Name: "backend-config", MountPath: "/workspace/backend", ReadOnly: true})
@@ -212,8 +216,9 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: labels},
 				Spec: corev1.PodSpec{
-					RestartPolicy:      corev1.RestartPolicyNever,
-					ServiceAccountName: request.ServiceAccountName,
+					RestartPolicy:                corev1.RestartPolicyNever,
+					AutomountServiceAccountToken: pointerBool(false),
+					ServiceAccountName:           request.ServiceAccountName,
 					SecurityContext: &corev1.PodSecurityContext{
 						RunAsNonRoot:   pointerBool(true),
 						FSGroup:        pointerInt64(1000),
@@ -226,6 +231,13 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			},
 		},
 	}, nil
+}
+
+func sourceRootForJob(request JobRequest) string {
+	if request.SourceRoot != "" {
+		return request.SourceRoot
+	}
+	return "/workspace/terraform"
 }
 
 func isLocalStackEndpoint(endpoint string) bool {

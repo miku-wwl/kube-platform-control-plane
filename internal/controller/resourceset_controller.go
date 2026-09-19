@@ -2,6 +2,8 @@ package controller
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,8 +22,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/observability"
 	runtimer "github.com/miku-wwl/kube-platform-control-plane/internal/runtime"
 	targetresolver "github.com/miku-wwl/kube-platform-control-plane/internal/target"
+	terraformexec "github.com/miku-wwl/kube-platform-control-plane/internal/terraform"
 )
 
 const (
@@ -102,7 +106,7 @@ func (r *ResourceSetReconciler) reconcilePresent(ctx context.Context, object *pl
 		return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionUnknown, "RuntimeClientUnavailable", "target Kubernetes client is not configured; runtime mutation is disabled")
 	}
 	target := targetIdentity(object.Spec.Target)
-	objects, err := bootstrapObjects(object.Spec.Resources)
+	objects, err := bootstrapObjects(object.Spec.Resources, object.Spec.OwnershipID)
 	if err != nil {
 		return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionFalse, "RuntimeObjectRejected", err.Error())
 	}
@@ -281,18 +285,6 @@ func (r *ResourceSetReconciler) runtimeReadiness(ctx context.Context, inventory 
 		if err != nil {
 			return fmt.Sprintf("runtime readiness invalid: %v", err), "RuntimeReadinessFailed", metav1.ConditionFalse
 		}
-		if !ready && item.Kind == "ValkeyCluster" && reason == "Available condition not reported" {
-			statefulSet, statefulSetErr := targetClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "statefulsets"}).Namespace(item.Namespace).Get(ctx, item.Name, metav1.GetOptions{})
-			if statefulSetErr == nil {
-				ready, reason, err = runtimer.ValkeyReadyFromStatefulSet(statefulSet)
-				if err != nil {
-					return fmt.Sprintf("Valkey readiness invalid: %v", err), "RuntimeReadinessFailed", metav1.ConditionFalse
-				}
-				if ready {
-					reason = "ValkeyCluster backed by ready StatefulSet"
-				}
-			}
-		}
 		if ready {
 			continue
 		}
@@ -329,17 +321,31 @@ func (r *ResourceSetReconciler) setRuntimeStatus(ctx context.Context, object *pl
 	if reflect.DeepEqual(object.Status, status) {
 		return ctrl.Result{}, nil
 	}
+	observability.RuntimeReconciliations.WithLabelValues(reason).Inc()
 	object.Status = status
 	return ctrl.Result{}, r.Status().Update(ctx, object)
 }
 
 func (r *ResourceSetReconciler) finishDelete(ctx context.Context, object *platformv1alpha1.ResourceSet, skipped bool, message string) (ctrl.Result, error) {
+	evidenceDigest, err := terraformexec.Digest(struct {
+		Namespace string
+		Name      string
+		Inventory []platformv1alpha1.InventoryItemStatus
+		Skipped   bool
+	}{Namespace: object.Namespace, Name: object.Name, Inventory: object.Status.Inventory, Skipped: skipped})
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	object.Status.CleanupEvidenceRef = "cleanup/" + object.Namespace + "/" + object.Name
+	object.Status.CleanupEvidenceDigest = evidenceDigest
 	if skipped {
 		object.Status.RuntimeCleanupSkipped = true
 		object.Status.Conditions = []metav1.Condition{stableCondition(findCondition(object.Status.Conditions, ConditionReady), object.Generation, metav1.ConditionFalse, "RuntimeCleanupSkipped", message)}
 		if err := r.Status().Update(ctx, object); err != nil && !apierrors.IsNotFound(err) {
 			return ctrl.Result{}, err
 		}
+	} else if err := r.Status().Update(ctx, object); err != nil && !apierrors.IsNotFound(err) {
+		return ctrl.Result{}, err
 	}
 	object.Finalizers = removeString(object.Finalizers, resourceSetFinalizer)
 	if err := r.Update(ctx, object); err != nil && !apierrors.IsNotFound(err) {
@@ -352,7 +358,7 @@ func (r *ResourceSetReconciler) SetupWithManager(manager ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(manager).For(&platformv1alpha1.ResourceSet{}).Complete(r)
 }
 
-func bootstrapObjects(resources []platformv1alpha1.RuntimeObject) ([]runtimer.BootstrapObject, error) {
+func bootstrapObjects(resources []platformv1alpha1.RuntimeObject, ownershipID string) ([]runtimer.BootstrapObject, error) {
 	objects := make([]runtimer.BootstrapObject, 0, len(resources))
 	for index, spec := range resources {
 		if spec.Version == "" || spec.Resource == "" || len(spec.Object.Raw) == 0 {
@@ -366,11 +372,31 @@ func bootstrapObjects(resources []platformv1alpha1.RuntimeObject) ([]runtimer.Bo
 		if err := runtimer.ValidateRuntimeObject(object); err != nil {
 			return nil, fmt.Errorf("runtime object %d rejected: %w", index, err)
 		}
+		readinessPolicy := spec.ReadinessPolicy
+		if readinessPolicy == "" {
+			readinessPolicy = "ApplyOnly"
+		}
+		if readinessPolicy != "RequireReady" && readinessPolicy != "ApplyOnly" {
+			return nil, fmt.Errorf("runtime object %d has unsupported readinessPolicy %q", index, spec.ReadinessPolicy)
+		}
+		deletionPolicy := spec.DeletionPolicy
+		if deletionPolicy == "" {
+			deletionPolicy = "Prune"
+		}
+		if deletionPolicy != "Prune" && deletionPolicy != "Retain" {
+			return nil, fmt.Errorf("runtime object %d has unsupported deletionPolicy %q", index, spec.DeletionPolicy)
+		}
+		itemOwnershipID := spec.OwnershipID
+		if itemOwnershipID == "" {
+			itemOwnershipID = ownershipID
+		}
 		objects = append(objects, runtimer.BootstrapObject{
 			GVR:             schema.GroupVersionResource{Group: spec.Group, Version: spec.Version, Resource: spec.Resource},
 			Object:          object,
 			Wave:            int(spec.Wave),
-			ReadinessPolicy: spec.ReadinessPolicy,
+			ReadinessPolicy: readinessPolicy,
+			DeletionPolicy:  deletionPolicy,
+			OwnershipID:     itemOwnershipID,
 		})
 	}
 	return objects, nil
@@ -392,22 +418,24 @@ func targetIdentity(reference platformv1alpha1.TargetReference) runtimer.TargetI
 }
 
 func fieldManager(object *platformv1alpha1.ResourceSet) string {
-	if object.UID != "" {
-		return "pcp-rs-" + string(object.UID)
+	ownershipID := object.Spec.OwnershipID
+	if ownershipID == "" {
+		ownershipID = string(object.UID)
 	}
-	return "pcp-rs-" + object.Name
+	digest := sha256.Sum256([]byte(ownershipID))
+	return "pcp-runtime-" + hex.EncodeToString(digest[:])[:16]
 }
 
 func inventoryStatus(inventory []runtimer.InventoryItem) []platformv1alpha1.InventoryItemStatus {
 	status := make([]platformv1alpha1.InventoryItemStatus, 0, len(inventory))
 	for _, item := range inventory {
-		status = append(status, platformv1alpha1.InventoryItemStatus{TargetIdentityDigest: item.TargetIdentityDigest, Group: item.Group, Version: item.Version, Resource: item.Resource, Kind: item.Kind, Namespace: item.Namespace, Name: item.Name, UID: item.UID})
+		status = append(status, platformv1alpha1.InventoryItemStatus{TargetIdentityDigest: item.TargetIdentityDigest, Group: item.Group, Version: item.Version, Resource: item.Resource, Kind: item.Kind, Namespace: item.Namespace, Name: item.Name, UID: item.UID, OwnershipID: item.OwnershipID, ReadinessPolicy: item.ReadinessPolicy, DeletionPolicy: item.DeletionPolicy})
 	}
 	return status
 }
 
 func inventoryFromStatus(item platformv1alpha1.InventoryItemStatus) runtimer.InventoryItem {
-	return runtimer.InventoryItem{TargetIdentityDigest: item.TargetIdentityDigest, Group: item.Group, Version: item.Version, Resource: item.Resource, Kind: item.Kind, Namespace: item.Namespace, Name: item.Name, UID: item.UID}
+	return runtimer.InventoryItem{TargetIdentityDigest: item.TargetIdentityDigest, Group: item.Group, Version: item.Version, Resource: item.Resource, Kind: item.Kind, Namespace: item.Namespace, Name: item.Name, UID: item.UID, OwnershipID: item.OwnershipID, ReadinessPolicy: item.ReadinessPolicy, DeletionPolicy: item.DeletionPolicy}
 }
 
 func inventoryKey(group, version, resource, namespace, name string) string {

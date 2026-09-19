@@ -6,6 +6,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -22,6 +23,9 @@ func phase61Scheme(t *testing.T) *runtime.Scheme {
 	scheme := runtime.NewScheme()
 	if err := platformv1alpha1.AddToScheme(scheme); err != nil {
 		t.Fatalf("AddToScheme() error = %v", err)
+	}
+	if err := rbacv1.AddToScheme(scheme); err != nil {
+		t.Fatalf("AddToScheme(rbac) error = %v", err)
 	}
 	return scheme
 }
@@ -118,15 +122,15 @@ func TestInfraStackAutomaticallyCreatesExactlyOneApplyRunAfterApproval(t *testin
 	plan := &platformv1alpha1.TerraformRun{
 		ObjectMeta: metav1.ObjectMeta{Name: "stack-plan-1", Namespace: "platform-system", UID: types.UID("plan-uid")},
 		Spec: platformv1alpha1.TerraformRunSpec{
-			StackRef: corev1.LocalObjectReference{Name: "stack"}, PlanMode: "Reconcile", ExecutionContextDigest: "sha256:context", EffectivePlanInputDigest: "sha256:input", RuntimeTargetIdentityDigest: "sha256:target", InfrastructureExecutionIdentityDigest: "sha256:infra",
+			StackRef: corev1.LocalObjectReference{Name: "stack"}, InfraStackGeneration: 1, Operation: "Plan", PlanMode: "Reconcile", ExecutionContextDigest: "sha256:context", EffectivePlanInputDigest: "sha256:input", RuntimeTargetIdentityDigest: "sha256:target", InfrastructureExecutionIdentityDigest: "sha256:infra",
 		},
 		Status: platformv1alpha1.TerraformRunStatus{
-			ExecutionOutcome: "ChangesPresent", PlanDigest: "sha256:plan", SourceBundleRef: "runs/plan/source-bundle.tar.zst", SourceBundleDigest: "sha256:bundle", PlanExpiresAt: &planExpires,
+			ExecutionOutcome: "ChangesPresent", PlanDigest: "sha256:plan", SourceBundleRef: "runs/plan/source-bundle.tar.zst", SourceBundleDigest: "sha256:bundle", ResolvedBackendConfigRef: "runs/plan/backend-config.hcl", ResolvedBackendConfigDigest: "sha256:backend", PlanExpiresAt: &planExpires, EffectivePlanInputDigest: "sha256:input-effective", PlanReportRef: "runs/plan/plan-report.json", PlanReportDigest: "sha256:report", TerminalResultRef: "runs/plan/terminal-result.json", TerminalResultDigest: "sha256:terminal", TargetDiscoveryRef: "runs/plan/target-discovery.json", TargetDiscoveryDigest: "sha256:discovery", EvidenceCaptured: true, ArtifactsReady: true,
 		},
 	}
 	approval := &platformv1alpha1.ChangeApproval{
 		ObjectMeta: metav1.ObjectMeta{Name: "approval", Namespace: "platform-system", UID: types.UID("approval-uid")},
-		Spec:       platformv1alpha1.ChangeApprovalSpec{PlanRunRef: corev1.LocalObjectReference{Name: plan.Name}, PlanRunUID: string(plan.UID), PlanDigest: plan.Status.PlanDigest, ExecutionContextDigest: plan.Spec.ExecutionContextDigest},
+		Spec:       platformv1alpha1.ChangeApprovalSpec{PlanRunRef: corev1.LocalObjectReference{Name: plan.Name}, PlanRunUID: string(plan.UID), PlanDigest: plan.Status.PlanDigest, ExecutionContextDigest: plan.Spec.ExecutionContextDigest, EffectivePlanInputDigest: plan.Status.EffectivePlanInputDigest, PlanReportRef: plan.Status.PlanReportRef, PlanReportDigest: plan.Status.PlanReportDigest},
 	}
 	stack := phase61Stack()
 	client := clientfake.NewClientBuilder().WithScheme(scheme).WithStatusSubresource(stack, plan).WithObjects(stack, plan, approval).Build()
@@ -162,6 +166,7 @@ func TestInfraStackDestroyPlanUsesRetainedApplyBundle(t *testing.T) {
 	stack := phase61Stack()
 	stack.Spec.DesiredState = platformv1alpha1.DesiredStateDestroy
 	stack.Status.LastAppliedRunRef = &corev1.LocalObjectReference{Name: "apply-run"}
+	stack.Status.LastConverged = &platformv1alpha1.LastConvergedSourceClosure{SourceClosureRef: "runs/apply/source-bundle.tar.zst", SourceClosureDigest: "sha256:bundle", BackendSnapshotRef: "runs/apply/backend-config.hcl", BackendSnapshotDigest: "sha256:backend", EffectivePlanInputDigest: "sha256:input", InfrastructureExecutionIdentityDigest: "sha256:infra", TerraformRunUID: "apply-uid", Generation: stack.Generation}
 	apply := &platformv1alpha1.TerraformRun{
 		ObjectMeta: metav1.ObjectMeta{Name: "apply-run", Namespace: stack.Namespace},
 		Spec:       platformv1alpha1.TerraformRunSpec{StackRef: corev1.LocalObjectReference{Name: stack.Name}, Source: platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Ref: "runs/apply/source-bundle.tar.zst", Digest: "sha256:bundle"}, ExecutionContextDigest: "sha256:context", Executor: stack.Spec.Executor, Workspace: stack.Spec.Workspace},

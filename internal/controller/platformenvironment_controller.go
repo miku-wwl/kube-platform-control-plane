@@ -102,6 +102,18 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 		} else if classStackErr != nil {
 			return ctrl.Result{}, classStackErr
 		} else {
+			if hasForeignController(&classStack, &object, "PlatformEnvironment") {
+				return r.setEnvironmentCondition(ctx, &object, "ChildOwnershipConflict", fmt.Sprintf("InfraStack %q exists but is owned by another PlatformEnvironment", classStack.Name), metav1.ConditionFalse)
+			}
+			if object.UID != "" && !ownedBy(&classStack, &object, "PlatformEnvironment") {
+				if err := ctrl.SetControllerReference(&object, &classStack, r.Scheme); err != nil {
+					return ctrl.Result{}, err
+				}
+				if err := r.Update(ctx, &classStack); err != nil {
+					return ctrl.Result{}, err
+				}
+				return ctrl.Result{RequeueAfter: environmentRequeue}, nil
+			}
 			desiredStack := buildClassInfraStack(&object, class, stackRefName, target)
 			if !reflect.DeepEqual(classStack.Spec, desiredStack.Spec) {
 				classStack.Spec = desiredStack.Spec
@@ -111,6 +123,9 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 				return ctrl.Result{RequeueAfter: environmentRequeue}, nil
 			}
 		}
+	}
+	if err := r.ensureControllerSecretReader(ctx, &object); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	childName := resourceSetName(object.Name)
@@ -127,6 +142,18 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 		return ctrl.Result{RequeueAfter: environmentRequeue}, nil
 	} else if getErr != nil {
 		return ctrl.Result{}, getErr
+	}
+	if hasForeignController(&child, &object, "PlatformEnvironment") {
+		return r.setEnvironmentCondition(ctx, &object, "ChildOwnershipConflict", fmt.Sprintf("ResourceSet %q exists but is owned by another PlatformEnvironment", child.Name), metav1.ConditionFalse)
+	}
+	if object.UID != "" && !ownedBy(&child, &object, "PlatformEnvironment") {
+		if err := ctrl.SetControllerReference(&object, &child, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+		if err := r.Update(ctx, &child); err != nil {
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{RequeueAfter: environmentRequeue}, nil
 	}
 
 	stackReady := false
@@ -223,16 +250,39 @@ func (r *PlatformEnvironmentReconciler) validateTenantPolicy(ctx context.Context
 	if err := r.List(ctx, &environments, client.InNamespace(environment.Namespace)); err != nil {
 		return fmt.Errorf("list tenant environments: %w", err)
 	}
-	active := int32(0)
+	if environmentAlreadyAdmitted(environment) {
+		return nil
+	}
+	admitted := int32(0)
+	pendingBefore := int32(0)
 	for index := range environments.Items {
-		if environments.Items[index].DeletionTimestamp.IsZero() {
-			active++
+		candidate := &environments.Items[index]
+		if candidate.Name == environment.Name && candidate.Namespace == environment.Namespace {
+			continue
+		}
+		if candidate.DeletionTimestamp.IsZero() {
+			if environmentAlreadyAdmitted(candidate) {
+				admitted++
+			} else if candidate.CreationTimestamp.Before(&environment.CreationTimestamp) || (candidate.CreationTimestamp.Equal(&environment.CreationTimestamp) && candidate.Name < environment.Name) {
+				pendingBefore++
+			}
 		}
 	}
-	if active > maxEnvironments {
-		return fmt.Errorf("tenant namespace %q has %d PlatformEnvironments, maximum is %d", environment.Namespace, active, maxEnvironments)
+	if admitted+pendingBefore >= maxEnvironments {
+		return fmt.Errorf("tenant namespace %q has reached maximum admitted PlatformEnvironments (%d)", environment.Namespace, maxEnvironments)
 	}
 	return nil
+}
+
+func environmentAlreadyAdmitted(environment *platformv1alpha1.PlatformEnvironment) bool {
+	if environment == nil {
+		return false
+	}
+	if environment.Status.InfraStackRef != nil && environment.Status.InfraStackRef.Name != "" {
+		return true
+	}
+	condition := findCondition(environment.Status.Conditions, ConditionReady)
+	return condition != nil && condition.Reason != "QuotaRejected" && condition.Reason != "ClassRejected" && condition.Reason != "ClassNotFound"
 }
 
 func splitAnnotation(value string) []string {
@@ -291,6 +341,42 @@ func (r *PlatformEnvironmentReconciler) ensureRunnerIdentity(ctx context.Context
 	return nil
 }
 
+func (r *PlatformEnvironmentReconciler) ensureControllerSecretReader(ctx context.Context, environment *platformv1alpha1.PlatformEnvironment) error {
+	const name = "platform-control-plane-secret-reader"
+	key := client.ObjectKey{Name: name, Namespace: environment.Namespace}
+	role := &rbacv1.Role{}
+	if err := r.Get(ctx, key, role); apierrors.IsNotFound(err) {
+		role = &rbacv1.Role{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}, Rules: []rbacv1.PolicyRule{{APIGroups: []string{""}, Resources: []string{"secrets"}, Verbs: []string{"get"}}}}
+		if environment.UID != "" {
+			if err := ctrl.SetControllerReference(environment, role, r.Scheme); err != nil {
+				return err
+			}
+		}
+		if err := r.Create(ctx, role); err != nil && !apierrors.IsAlreadyExists(err) {
+			return err
+		}
+	} else if err != nil {
+		return err
+	} else if len(role.Rules) != 1 || len(role.Rules[0].Resources) != 1 || role.Rules[0].Resources[0] != "secrets" {
+		return fmt.Errorf("secret reader Role %q is not the expected narrow policy", name)
+	}
+	binding := &rbacv1.RoleBinding{}
+	if err := r.Get(ctx, key, binding); apierrors.IsNotFound(err) {
+		binding = &rbacv1.RoleBinding{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}, RoleRef: rbacv1.RoleRef{APIGroup: rbacv1.GroupName, Kind: "Role", Name: name}, Subjects: []rbacv1.Subject{{Kind: "ServiceAccount", Name: "platform-control-plane", Namespace: "platform-system"}}}
+		if environment.UID != "" {
+			if err := ctrl.SetControllerReference(environment, binding, r.Scheme); err != nil {
+				return err
+			}
+		}
+		if err := r.Create(ctx, binding); err != nil && !apierrors.IsAlreadyExists(err) {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+	return nil
+}
+
 func validatePlatformEnvironmentSpec(object *platformv1alpha1.PlatformEnvironment) error {
 	classMode := object.Spec.ClassRef != nil && object.Spec.ClassRef.Name != ""
 	legacyMode := object.Spec.InfraStackRef.Name != "" && object.Spec.Target.Provider != "" && object.Spec.Target.ClusterName != ""
@@ -310,9 +396,53 @@ func (r *PlatformEnvironmentReconciler) reconcileDelete(ctx context.Context, obj
 			return ctrl.Result{}, err
 		}
 	}
+	stackName := ""
+	if object.Status.InfraStackRef != nil {
+		stackName = object.Status.InfraStackRef.Name
+	}
+	if stackName == "" {
+		stackName = object.Spec.InfraStackRef.Name
+	}
+	if stackName == "" && object.Spec.ClassRef != nil && object.Spec.ClassRef.Name != "" {
+		stackName = classStackName(object.Name)
+	}
+	var stack platformv1alpha1.InfraStack
+	stackFound := false
+	if stackName != "" {
+		err := r.Get(ctx, client.ObjectKey{Name: stackName, Namespace: object.Namespace}, &stack)
+		if err == nil {
+			stackFound = true
+			if stack.Spec.OwnerEnvironmentUID != "" && stack.Spec.OwnerEnvironmentUID != string(object.UID) {
+				return r.setEnvironmentCondition(ctx, object, "ChildOwnershipConflict", fmt.Sprintf("InfraStack %q is owned by another PlatformEnvironment", stack.Name), metav1.ConditionFalse)
+			}
+			if !stack.Spec.MutationFence {
+				stack.Spec.MutationFence = true
+				if err := r.Update(ctx, &stack); err != nil {
+					return ctrl.Result{}, err
+				}
+				return ctrl.Result{RequeueAfter: environmentRequeue}, nil
+			}
+		} else if !apierrors.IsNotFound(err) {
+			return ctrl.Result{}, err
+		}
+	}
 	var child platformv1alpha1.ResourceSet
 	childErr := r.Get(ctx, client.ObjectKey{Name: resourceSetName(object.Name), Namespace: object.Namespace}, &child)
 	if childErr == nil {
+		if !child.Spec.MutationFence || child.Spec.RuntimeMutationAllowed {
+			child.Spec.MutationFence = true
+			child.Spec.RuntimeMutationAllowed = false
+			if err := r.Update(ctx, &child); err != nil {
+				return ctrl.Result{}, err
+			}
+			return ctrl.Result{RequeueAfter: environmentRequeue}, nil
+		}
+		if stackFound && hasActiveMutatingApply(ctx, r, &stack) {
+			return ctrl.Result{RequeueAfter: environmentRequeue}, nil
+		}
+		if stackFound && stackConditionReason(&stack) == "RecoveryRequired" {
+			return r.setEnvironmentCondition(ctx, object, "RecoveryRequired", "Destroy is blocked until the Apply mutation outcome is observed and reconciled.", metav1.ConditionUnknown)
+		}
 		if child.DeletionTimestamp.IsZero() {
 			if err := r.Delete(ctx, &child); err != nil && !apierrors.IsNotFound(err) {
 				return ctrl.Result{}, err
@@ -323,39 +453,25 @@ func (r *PlatformEnvironmentReconciler) reconcileDelete(ctx context.Context, obj
 	if !apierrors.IsNotFound(childErr) {
 		return ctrl.Result{}, childErr
 	}
-
-	stackName := ""
-	if object.Status.InfraStackRef != nil {
-		stackName = object.Status.InfraStackRef.Name
-	}
-	if stackName == "" {
-		stackName = object.Spec.InfraStackRef.Name
-	}
-	if stackName != "" {
-		var stack platformv1alpha1.InfraStack
-		stackErr := r.Get(ctx, client.ObjectKey{Name: stackName, Namespace: object.Namespace}, &stack)
-		if stackErr == nil {
-			if stack.DeletionTimestamp.IsZero() && stack.Spec.DesiredState != platformv1alpha1.DesiredStateDestroy {
-				stack.Spec.DesiredState = platformv1alpha1.DesiredStateDestroy
-				if err := r.Update(ctx, &stack); err != nil {
-					return ctrl.Result{}, err
-				}
-				return ctrl.Result{RequeueAfter: environmentRequeue}, nil
-			}
-			if !conditionReadyForGeneration(stack.Status.Conditions, ConditionReady, stack.Generation) || findCondition(stack.Status.Conditions, ConditionReady).Reason != "InfrastructureRemoved" {
-				return ctrl.Result{RequeueAfter: environmentRequeue}, nil
-			}
-			if stack.DeletionTimestamp.IsZero() {
-				if err := r.Delete(ctx, &stack); err != nil && !apierrors.IsNotFound(err) {
-					return ctrl.Result{}, err
-				}
-				return ctrl.Result{RequeueAfter: environmentRequeue}, nil
+	if stackFound {
+		if stack.Spec.DesiredState != platformv1alpha1.DesiredStateDestroy && stack.DeletionTimestamp.IsZero() {
+			stack.Spec.DesiredState = platformv1alpha1.DesiredStateDestroy
+			if err := r.Update(ctx, &stack); err != nil {
+				return ctrl.Result{}, err
 			}
 			return ctrl.Result{RequeueAfter: environmentRequeue}, nil
 		}
-		if !apierrors.IsNotFound(stackErr) {
-			return ctrl.Result{}, stackErr
+		condition := findCondition(stack.Status.Conditions, ConditionReady)
+		if condition == nil || condition.Status != metav1.ConditionTrue || condition.Reason != "InfrastructureRemoved" {
+			return ctrl.Result{RequeueAfter: environmentRequeue}, nil
 		}
+		if stack.DeletionTimestamp.IsZero() {
+			if err := r.Delete(ctx, &stack); err != nil && !apierrors.IsNotFound(err) {
+				return ctrl.Result{}, err
+			}
+			return ctrl.Result{RequeueAfter: environmentRequeue}, nil
+		}
+		return ctrl.Result{RequeueAfter: environmentRequeue}, nil
 	}
 
 	if containsString(object.Finalizers, platformEnvironmentFinalizer) {
@@ -365,6 +481,36 @@ func (r *PlatformEnvironmentReconciler) reconcileDelete(ctx context.Context, obj
 		}
 	}
 	return ctrl.Result{}, nil
+}
+
+func hasActiveMutatingApply(ctx context.Context, reconciler *PlatformEnvironmentReconciler, stack *platformv1alpha1.InfraStack) bool {
+	if reconciler == nil || stack == nil {
+		return false
+	}
+	var runs platformv1alpha1.TerraformRunList
+	if err := reconciler.List(ctx, &runs, client.InNamespace(stack.Namespace)); err != nil {
+		return true
+	}
+	for index := range runs.Items {
+		run := &runs.Items[index]
+		if run.Spec.StackRef.Name != stack.Name || run.Spec.Operation != "Apply" {
+			continue
+		}
+		if run.Status.ExecutionOutcome == "" || run.Status.ExecutionOutcome == "Pending" || run.Status.ExecutionOutcome == "Running" {
+			return true
+		}
+	}
+	return false
+}
+
+func stackConditionReason(stack *platformv1alpha1.InfraStack) string {
+	if stack == nil {
+		return ""
+	}
+	if condition := findCondition(stack.Status.Conditions, ConditionReady); condition != nil {
+		return condition.Reason
+	}
+	return ""
 }
 
 func (r *PlatformEnvironmentReconciler) SetupWithManager(manager ctrl.Manager) error {
@@ -395,10 +541,15 @@ func buildResourceSet(environment *platformv1alpha1.PlatformEnvironment, name st
 }
 
 func buildResourceSetForTarget(environment *platformv1alpha1.PlatformEnvironment, name string, target platformv1alpha1.TargetReference, resources []platformv1alpha1.RuntimeObject) *platformv1alpha1.ResourceSet {
+	ownershipID := string(environment.UID)
+	if ownershipID == "" {
+		ownershipID = environment.Namespace + "/" + environment.Name
+	}
 	return &platformv1alpha1.ResourceSet{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace},
 		Spec: platformv1alpha1.ResourceSetSpec{
 			Target:                 target,
+			OwnershipID:            ownershipID,
 			MaxInventoryItems:      500,
 			Resources:              resources,
 			RuntimeMutationAllowed: false,
@@ -437,11 +588,35 @@ func runtimeMessage(resourceSet *platformv1alpha1.ResourceSet) string {
 }
 
 func resourceSetName(environmentName string) string {
-	name := fmt.Sprintf("%s-resources", environmentName)
-	if len(name) > 63 {
-		name = name[:63]
+	return boundedResourceName(fmt.Sprintf("%s-resources", environmentName))
+}
+
+func ownedBy(object metav1.Object, parent metav1.Object, kind string) bool {
+	if object == nil || parent == nil || parent.GetUID() == "" {
+		return false
 	}
-	return strings.TrimRight(name, "-")
+	for _, owner := range object.GetOwnerReferences() {
+		if owner.Controller != nil && *owner.Controller && owner.Kind == kind && owner.UID == parent.GetUID() {
+			return true
+		}
+	}
+	return false
+}
+
+func hasForeignController(object metav1.Object, parent metav1.Object, kind string) bool {
+	if object == nil {
+		return false
+	}
+	parentUID := ""
+	if parent != nil {
+		parentUID = string(parent.GetUID())
+	}
+	for _, owner := range object.GetOwnerReferences() {
+		if owner.Controller != nil && *owner.Controller && owner.Kind == kind && string(owner.UID) != parentUID {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *PlatformEnvironmentReconciler) setEnvironmentCondition(ctx context.Context, object *platformv1alpha1.PlatformEnvironment, reason, message string, status metav1.ConditionStatus) (ctrl.Result, error) {

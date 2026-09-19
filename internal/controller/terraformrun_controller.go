@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"path"
 	"strings"
 	"time"
@@ -20,6 +19,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/artifacts"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/observability"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/reliability"
 	terraformexec "github.com/miku-wwl/kube-platform-control-plane/internal/terraform"
 )
@@ -29,7 +30,6 @@ import (
 // +kubebuilder:rbac:groups=platform.example.io,resources=terraformruns/finalizers,verbs=update
 // +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
-// +kubebuilder:rbac:groups="",resources=secrets,verbs=get
 // +kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=pods/log,verbs=get
 type TerraformRunReconciler struct {
@@ -45,18 +45,31 @@ type TerraformRunReconciler struct {
 }
 
 type runnerTerminalResult struct {
-	Operation           string `json:"operation"`
-	TerraformExitCode   int    `json:"terraformExitCode"`
-	ExecutionOutcome    string `json:"executionOutcome"`
-	ArtifactsReady      bool   `json:"artifactsReady"`
-	HasChanges          bool   `json:"hasChanges"`
-	Error               string `json:"error,omitempty"`
-	PlanRef             string `json:"planRef,omitempty"`
-	PlanDigest          string `json:"planDigest,omitempty"`
-	SourceBundleRef     string `json:"sourceBundleRef,omitempty"`
-	SourceBundleDigest  string `json:"sourceBundleDigest,omitempty"`
-	BackendConfigRef    string `json:"backendConfigRef,omitempty"`
-	BackendConfigDigest string `json:"backendConfigDigest,omitempty"`
+	RunUID                   string    `json:"terraformRunUID"`
+	JobUID                   string    `json:"jobUID,omitempty"`
+	StartedAt                time.Time `json:"startedAt"`
+	FinishedAt               time.Time `json:"finishedAt"`
+	Operation                string    `json:"operation"`
+	TerraformExitCode        int       `json:"terraformExitCode"`
+	ExecutionOutcome         string    `json:"executionOutcome"`
+	ArtifactsReady           bool      `json:"artifactsReady"`
+	HasChanges               bool      `json:"hasChanges"`
+	Error                    string    `json:"error,omitempty"`
+	PlanRef                  string    `json:"planRef,omitempty"`
+	PlanDigest               string    `json:"planDigest,omitempty"`
+	SourceBundleRef          string    `json:"sourceBundleRef,omitempty"`
+	SourceBundleDigest       string    `json:"sourceBundleDigest,omitempty"`
+	BackendConfigRef         string    `json:"backendConfigRef,omitempty"`
+	BackendConfigDigest      string    `json:"backendConfigDigest,omitempty"`
+	PlanReportRef            string    `json:"planReportRef,omitempty"`
+	PlanReportDigest         string    `json:"planReportDigest,omitempty"`
+	TerminalResultRef        string    `json:"terminalResultRef,omitempty"`
+	TerminalResultDigest     string    `json:"terminalResultDigest,omitempty"`
+	EffectivePlanInputDigest string    `json:"effectivePlanInputDigest,omitempty"`
+	TargetDiscoveryRef       string    `json:"targetDiscoveryRef,omitempty"`
+	TargetDiscoveryDigest    string    `json:"targetDiscoveryDigest,omitempty"`
+	MutationClassification   string    `json:"mutationClassification,omitempty"`
+	MutationMayHaveOccurred  bool      `json:"mutationMayHaveOccurred"`
 }
 
 func (r *TerraformRunReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -190,7 +203,7 @@ func (r *TerraformRunReconciler) validateApplyApproval(ctx context.Context, appl
 	if string(approval.UID) != apply.Spec.ApprovalUID {
 		return fmt.Errorf("approval UID mismatch")
 	}
-	if approval.Spec.PlanDigest != apply.Spec.PlanDigest || approval.Spec.ExecutionContextDigest != apply.Spec.ExecutionContextDigest {
+	if approval.Spec.PlanDigest != apply.Spec.PlanDigest || approval.Spec.ExecutionContextDigest != apply.Spec.ExecutionContextDigest || approval.Spec.EffectivePlanInputDigest != apply.Spec.EffectivePlanInputDigest || approval.Spec.PlanReportRef != apply.Spec.PlanReportRef || approval.Spec.PlanReportDigest != apply.Spec.PlanReportDigest {
 		return fmt.Errorf("approval digest binding mismatch")
 	}
 	var plan platformv1alpha1.TerraformRun
@@ -203,13 +216,16 @@ func (r *TerraformRunReconciler) validateApplyApproval(ctx context.Context, appl
 	if plan.Status.PlanDigest != "" && plan.Status.PlanDigest != apply.Spec.PlanDigest {
 		return fmt.Errorf("PlanRun digest mismatch")
 	}
+	if plan.Status.PlanReportRef == "" || plan.Status.PlanReportDigest == "" || apply.Spec.PlanReportRef != plan.Status.PlanReportRef || apply.Spec.PlanReportDigest != plan.Status.PlanReportDigest {
+		return fmt.Errorf("PlanRun report binding mismatch")
+	}
 	if plan.Spec.ExecutionContextDigest != "" && plan.Spec.ExecutionContextDigest != apply.Spec.ExecutionContextDigest {
 		return fmt.Errorf("PlanRun execution context mismatch")
 	}
 	if plan.Status.PlanExpiresAt == nil || !time.Now().Before(plan.Status.PlanExpiresAt.Time) {
 		return fmt.Errorf("saved PlanRun is expired or has no trusted expiry")
 	}
-	if apply.Spec.EffectivePlanInputDigest != "" && plan.Spec.EffectivePlanInputDigest != apply.Spec.EffectivePlanInputDigest {
+	if apply.Spec.EffectivePlanInputDigest == "" || plan.Status.EffectivePlanInputDigest != apply.Spec.EffectivePlanInputDigest {
 		return fmt.Errorf("effective plan input digest mismatch")
 	}
 	if apply.Spec.SourceClosureDigest != "" && plan.Status.SourceBundleDigest != "" && apply.Spec.SourceClosureDigest != plan.Status.SourceBundleDigest {
@@ -231,13 +247,20 @@ func validateTerraformJobIdentity(run *platformv1alpha1.TerraformRun, job *batch
 	if run.Status.JobUID != "" && job.UID != "" && run.Status.JobUID != string(job.UID) {
 		return fmt.Errorf("Job UID changed from %q to %q", run.Status.JobUID, job.UID)
 	}
-	if label := job.Labels["platform.example.io/terraform-run-uid"]; label != "" && label != string(run.UID) {
+	if run.UID != "" && job.Labels["platform.example.io/terraform-run-uid"] != string(run.UID) {
 		return fmt.Errorf("Job terraform-run-uid label mismatch")
 	}
+	ownerFound := false
 	for _, owner := range job.OwnerReferences {
-		if owner.Kind == "TerraformRun" && owner.UID != run.UID {
-			return fmt.Errorf("Job owner UID mismatch")
+		if owner.Controller != nil && *owner.Controller && owner.Kind == "TerraformRun" {
+			ownerFound = true
+			if owner.UID != run.UID {
+				return fmt.Errorf("Job owner UID mismatch")
+			}
 		}
+	}
+	if run.UID != "" && !ownerFound {
+		return fmt.Errorf("Job is not controller-owned by TerraformRun")
 	}
 	return nil
 }
@@ -262,6 +285,10 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 	if object.Spec.Source.Path != "" {
 		workingDir = path.Join(workingDir, object.Spec.Source.Path)
 	}
+	backendConfigMap := ""
+	if object.Spec.Operation == "Plan" && object.Spec.Source.Type == terraformexec.SourceGitCommit {
+		backendConfigMap = object.Spec.ResolvedBackendConfigRef
+	}
 	gitImage := r.GitImage
 	if gitImage == "" {
 		gitImage = terraformexec.DefaultGitImage
@@ -280,7 +307,7 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 		Destroy:                     object.Spec.PlanMode == "Destroy",
 		WorkingDir:                  workingDir,
 		Workspace:                   object.Spec.Workspace,
-		BackendConfigMap:            object.Spec.ResolvedBackendConfigRef,
+		BackendConfigMap:            backendConfigMap,
 		BackendConfigPath:           "/workspace/backend/backend.hcl",
 		PlanPath:                    "/workspace/terraform/plan.binary",
 		LockTimeout:                 lockTimeout,
@@ -296,6 +323,7 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 		VariableSecretRefs:          object.Spec.VariableSecretRefs,
 		VariableSecretVariables:     terraformSecretVariables(object.Spec.VariableSecretVariables),
 		ServiceAccountName:          object.Spec.RunnerServiceAccountName,
+		ExpectedTerraformVersion:    object.Spec.ExpectedTerraformVersion,
 		PlanRef:                     object.Spec.PlanRef,
 		PlanDigest:                  object.Spec.PlanDigest,
 	}
@@ -307,8 +335,8 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 }
 
 func sourceRootForPlan(object *platformv1alpha1.TerraformRun, workingDir string) string {
-	if object.Spec.Operation == "Plan" && object.Spec.Source.Type == terraformexec.SourceGitCommit {
-		return workingDir
+	if object.Spec.Source.Type == terraformexec.SourceGitCommit || object.Spec.Source.Type == terraformexec.SourceRetainedBundle {
+		return "/workspace/terraform"
 	}
 	return ""
 }
@@ -328,30 +356,37 @@ func (r *TerraformRunReconciler) reconcileJobStatus(ctx context.Context, object 
 }
 
 func (r *TerraformRunReconciler) captureTerminalResult(ctx context.Context, object *platformv1alpha1.TerraformRun, job *batchv1.Job) (runnerTerminalResult, error) {
-	if r.KubeClient == nil {
-		return runnerTerminalResult{}, fmt.Errorf("kubernetes client is required for terminal evidence capture")
+	if r.ArtifactEndpoint == "" || r.ArtifactRegion == "" || r.ArtifactBucket == "" {
+		return runnerTerminalResult{}, fmt.Errorf("durable terminal artifact store is not configured")
 	}
-	selector := "platform.example.io/terraform-run=" + job.Name
-	if uid := job.Labels["platform.example.io/terraform-run-uid"]; uid != "" {
-		selector += ",platform.example.io/terraform-run-uid=" + uid
-	}
-	pods, err := r.KubeClient.CoreV1().Pods(object.Namespace).List(ctx, metav1.ListOptions{LabelSelector: selector})
+	store, err := artifacts.NewS3Store(r.ArtifactEndpoint, r.ArtifactRegion, r.ArtifactBucket)
 	if err != nil {
 		return runnerTerminalResult{}, err
 	}
-	if len(pods.Items) == 0 {
-		return runnerTerminalResult{}, fmt.Errorf("terminal Job %q has no runner Pod", job.Name)
-	}
-	logReader, err := r.KubeClient.CoreV1().Pods(object.Namespace).GetLogs(pods.Items[0].Name, &corev1.PodLogOptions{Container: "terraform-runner"}).Stream(ctx)
+	key := path.Join("runs", string(object.UID), "terminal-result.json")
+	ref, content, err := store.GetVerifiedByKey(ctx, key)
 	if err != nil {
-		return runnerTerminalResult{}, err
+		return runnerTerminalResult{}, fmt.Errorf("read durable terminal result %q: %w", key, err)
 	}
-	defer logReader.Close()
-	logs, err := io.ReadAll(logReader)
-	if err != nil {
-		return runnerTerminalResult{}, err
+	if ref.Digest == "" {
+		return runnerTerminalResult{}, fmt.Errorf("durable terminal result %q has no store digest metadata", key)
 	}
-	return parseRunnerTerminalResult(string(logs))
+	var result runnerTerminalResult
+	if err := json.Unmarshal(content, &result); err != nil {
+		return runnerTerminalResult{}, fmt.Errorf("decode durable terminal result: %w", err)
+	}
+	if result.Operation == "" || result.ExecutionOutcome == "" {
+		return runnerTerminalResult{}, fmt.Errorf("durable terminal result is incomplete")
+	}
+	if result.RunUID != "" && object.UID != "" && result.RunUID != string(object.UID) {
+		return runnerTerminalResult{}, fmt.Errorf("durable terminal result TerraformRun UID mismatch")
+	}
+	if result.JobUID != "" && job != nil && job.UID != "" && result.JobUID != string(job.UID) {
+		return runnerTerminalResult{}, fmt.Errorf("durable terminal result Job UID mismatch")
+	}
+	result.TerminalResultRef = ref.Key
+	result.TerminalResultDigest = ref.Digest
+	return result, nil
 }
 
 func parseRunnerTerminalResult(logs string) (runnerTerminalResult, error) {
@@ -373,6 +408,21 @@ func (r *TerraformRunReconciler) applyTerminalResult(ctx context.Context, object
 	object.Status.EvidenceCaptured = true
 	object.Status.ArtifactsReady = result.ArtifactsReady
 	object.Status.HasChanges = result.HasChanges
+	object.Status.TerminalResultRef = result.TerminalResultRef
+	object.Status.TerminalResultDigest = result.TerminalResultDigest
+	object.Status.MutationClassification = result.MutationClassification
+	object.Status.MutationMayHaveOccurred = result.MutationMayHaveOccurred
+	if result.PlanReportRef != "" {
+		object.Status.PlanReportRef = result.PlanReportRef
+		object.Status.PlanReportDigest = result.PlanReportDigest
+	}
+	if result.EffectivePlanInputDigest != "" {
+		object.Status.EffectivePlanInputDigest = result.EffectivePlanInputDigest
+	} else {
+		object.Status.EffectivePlanInputDigest = effectiveRunInputDigest(object, result)
+	}
+	object.Status.TargetDiscoveryRef = result.TargetDiscoveryRef
+	object.Status.TargetDiscoveryDigest = result.TargetDiscoveryDigest
 	if result.PlanRef != "" {
 		object.Status.PlanRef = result.PlanRef
 		object.Status.PlanDigest = result.PlanDigest
@@ -391,18 +441,22 @@ func (r *TerraformRunReconciler) applyTerminalResult(ctx context.Context, object
 		object.Status.ResolvedBackendConfigRef = object.Spec.BackendConfigArtifactRef
 		object.Status.ResolvedBackendConfigDigest = object.Spec.BackendConfigArtifactDigest
 	}
-	if job != nil && object.Status.TerminalFinishedAt == nil {
-		finished := metav1.Now()
-		if job.Status.CompletionTime != nil {
-			finished = *job.Status.CompletionTime
-		}
+	if !result.StartedAt.IsZero() {
+		started := metav1.NewTime(result.StartedAt)
+		object.Status.TerminalStartedAt = &started
+	}
+	if !result.FinishedAt.IsZero() {
+		finished := metav1.NewTime(result.FinishedAt)
+		object.Status.TerminalFinishedAt = &finished
+	} else if job != nil && job.Status.CompletionTime != nil {
+		finished := *job.Status.CompletionTime
 		object.Status.TerminalFinishedAt = &finished
 	}
 	if object.Spec.Operation == "Plan" && (result.ExecutionOutcome == "NoChange" || result.ExecutionOutcome == "ChangesPresent") && object.Status.PlanCreatedAt == nil {
-		created := metav1.Now()
-		if object.Status.TerminalFinishedAt != nil {
-			created = *object.Status.TerminalFinishedAt
+		if object.Status.TerminalFinishedAt == nil {
+			return r.applyMissingTerminalResult(ctx, object, fmt.Errorf("trusted terminal finishedAt is required for Plan expiry"))
 		}
+		created := *object.Status.TerminalFinishedAt
 		expires := metav1.NewTime(created.Add(time.Hour))
 		object.Status.PlanCreatedAt = &created
 		object.Status.PlanExpiresAt = &expires
@@ -442,6 +496,10 @@ func (r *TerraformRunReconciler) updateExecutionStatus(ctx context.Context, obje
 	if current != nil && current.Status == condition.Status && current.Reason == condition.Reason && current.Message == condition.Message && object.Status.ObservedGeneration == object.Generation && object.Status.ExecutionOutcome == outcome {
 		return ctrl.Result{}, nil
 	}
+	observability.TerraformExecutions.WithLabelValues(object.Spec.Operation, outcome).Inc()
+	if outcome == "Indeterminate" {
+		observability.RecoveryEvents.WithLabelValues(reason).Inc()
+	}
 	object.Status.Conditions = []metav1.Condition{condition}
 	return ctrl.Result{}, r.Status().Update(ctx, object)
 }
@@ -465,4 +523,37 @@ func terraformSecretVariables(values []platformv1alpha1.SecretVariableReference)
 		result = append(result, terraformexec.VariableSecretReference{Variable: value.Variable, Name: value.SecretKeyRef.Name, Key: value.SecretKeyRef.Key})
 	}
 	return result
+}
+
+func effectiveRunInputDigest(object *platformv1alpha1.TerraformRun, result runnerTerminalResult) string {
+	if object == nil {
+		return ""
+	}
+	digest, err := terraformexec.Digest(struct {
+		SpecDigest         string
+		SourceBundleDigest string
+		BackendDigest      string
+		PlanDigest         string
+		PlanReportDigest   string
+		TerraformVersion   string
+		RunnerImageDigest  string
+		TargetIdentity     string
+		PlatformIdentity   string
+		RunnerIdentity     string
+	}{
+		SpecDigest:         object.Spec.EffectivePlanInputDigest,
+		SourceBundleDigest: result.SourceBundleDigest,
+		BackendDigest:      result.BackendConfigDigest,
+		PlanDigest:         result.PlanDigest,
+		PlanReportDigest:   result.PlanReportDigest,
+		TerraformVersion:   object.Spec.ExpectedTerraformVersion,
+		RunnerImageDigest:  object.Spec.RunnerImageDigest,
+		TargetIdentity:     object.Spec.RuntimeTargetIdentityDigest,
+		PlatformIdentity:   object.Spec.ExecutionPlatformIdentityDigest,
+		RunnerIdentity:     object.Spec.RunnerServiceAccountIdentityDigest,
+	})
+	if err != nil {
+		return ""
+	}
+	return digest
 }

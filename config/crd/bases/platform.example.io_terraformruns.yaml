@@ -150,6 +150,10 @@ spec:
                 type: string
               planRef:
                 type: string
+              planReportDigest:
+                type: string
+              planReportRef:
+                type: string
               planRunUID:
                 type: string
               resolvedBackendConfigRef:
@@ -334,6 +338,8 @@ spec:
                   - type
                   type: object
                 type: array
+              effectivePlanInputDigest:
+                type: string
               evidenceCaptured:
                 type: boolean
               executionOutcome:
@@ -358,6 +364,10 @@ spec:
                 x-kubernetes-map-type: atomic
               jobUID:
                 type: string
+              mutationClassification:
+                type: string
+              mutationMayHaveOccurred:
+                type: boolean
               observedGeneration:
                 format: int64
                 type: integer
@@ -376,6 +386,10 @@ spec:
                 type: string
               planRef:
                 type: string
+              planReportDigest:
+                type: string
+              planReportRef:
+                type: string
               resolvedBackendConfigDigest:
                 type: string
               resolvedBackendConfigRef:
@@ -384,8 +398,16 @@ spec:
                 type: string
               sourceBundleRef:
                 type: string
+              targetDiscoveryDigest:
+                type: string
+              targetDiscoveryRef:
+                type: string
               terminalFinishedAt:
                 format: date-time
+                type: string
+              terminalResultDigest:
+                type: string
+              terminalResultRef:
                 type: string
               terminalStartedAt:
                 format: date-time

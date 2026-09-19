@@ -51,11 +51,18 @@ func validateEnvironmentClass(environment *platformv1alpha1.PlatformEnvironment,
 }
 
 func classStackName(environmentName string) string {
-	name := strings.TrimRight(environmentName+"-infra", "-")
-	if len(name) > 63 {
-		name = name[:63]
+	return boundedResourceName(environmentName + "-infra")
+}
+
+func boundedResourceName(logical string) string {
+	logical = strings.Trim(strings.ToLower(logical), "-")
+	if len(logical) <= 63 {
+		return logical
 	}
-	return strings.TrimRight(name, "-")
+	hash := sha256.Sum256([]byte(logical))
+	suffix := "-" + hex.EncodeToString(hash[:])[:10]
+	prefix := strings.TrimRight(logical[:63-len(suffix)], "-")
+	return prefix + suffix
 }
 
 func classTarget(environment *platformv1alpha1.PlatformEnvironment, class *platformv1alpha1.EnvironmentClass) platformv1alpha1.TargetReference {

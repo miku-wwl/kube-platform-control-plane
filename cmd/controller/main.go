@@ -21,6 +21,7 @@ import (
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/controller"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/observability"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/reliability"
 	targetresolver "github.com/miku-wwl/kube-platform-control-plane/internal/target"
 )
@@ -77,6 +78,7 @@ func main() {
 		os.Exit(1)
 	} else {
 		setupLog.Info("reconstructed active Terraform executions", "active", len(result.Active), "overCapacity", result.OverCapacity, "safetyViolation", result.SafetyViolation, "duration", result.Duration)
+		observability.SetReconstructionState(result.OverCapacity, result.SafetyViolation)
 	}
 
 	if err := (&controller.PlatformEnvironmentReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).SetupWithManager(mgr); err != nil {
@@ -87,7 +89,7 @@ func main() {
 		setupLog.Error(err, "unable to create EnvironmentClass controller")
 		os.Exit(1)
 	}
-	if err := (&controller.InfraStackReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).SetupWithManager(mgr); err != nil {
+	if err := (&controller.InfraStackReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), ArtifactEndpoint: os.Getenv("PCP_ARTIFACT_ENDPOINT"), ArtifactRegion: os.Getenv("PCP_ARTIFACT_REGION"), ArtifactBucket: os.Getenv("PCP_ARTIFACT_BUCKET")}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create InfraStack controller")
 		os.Exit(1)
 	}

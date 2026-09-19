@@ -90,3 +90,13 @@ func TestRestoreSourceBundleRejectsUnsafeEntries(t *testing.T) {
 		t.Fatal("RestoreSourceBundle accepted invalid compression")
 	}
 }
+
+func TestBuildSourceBundleRejectsImplicitTerraformVariables(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "terraform.tfvars"), []byte(`token = "secret"`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := BuildSourceBundle(root); err == nil {
+		t.Fatal("BuildSourceBundle accepted implicit terraform.tfvars")
+	}
+}

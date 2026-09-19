@@ -125,3 +125,13 @@ func TestApplyIncludesTerraformDiagnosticsOnFailure(t *testing.T) {
 		t.Fatalf("Apply() error = %v, want Terraform diagnostics", err)
 	}
 }
+
+func TestVerifyTerraformVersionUsesMachineReadableOutput(t *testing.T) {
+	runner := &fakeRunner{results: []CommandResult{{ExitCode: 0, Stdout: `{"terraform_version":"1.14.0"}`}}}
+	if err := (Executor{Runner: runner}).VerifyTerraformVersion(context.Background(), "v1.14.0", "/workspace/terraform"); err != nil {
+		t.Fatalf("VerifyTerraformVersion() error = %v", err)
+	}
+	if got := runner.commands[0]; got != "version -json" {
+		t.Fatalf("command = %q, want version -json", got)
+	}
+}

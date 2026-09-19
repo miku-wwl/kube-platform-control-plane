@@ -34,3 +34,16 @@ resource "aws_s3_bucket" "lifecycle" {
 output "bucket_name" {
   value = aws_s3_bucket.lifecycle.bucket
 }
+
+output "target_discovery" {
+  value = {
+    provider      = var.target_provider
+    accountId     = var.target_account_id
+    region        = var.region
+    clusterName   = var.target_cluster_name
+    incarnationId = var.target_cluster_name
+    endpoint      = var.target_endpoint
+    authMode      = "kind-context"
+    kubeContext   = var.target_cluster_name
+  }
+}

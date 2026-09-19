@@ -192,6 +192,9 @@ spec:
                 type: boolean
               ownerEnvironmentUID:
                 type: string
+                x-kubernetes-validations:
+                - message: InfraStack ownerEnvironmentUID is immutable
+                  rule: self == oldSelf
               runnerServiceAccountName:
                 type: string
               runtimeMutationAllowed:
@@ -408,6 +411,50 @@ spec:
                 type: string
               lastAppliedSourceBundleRef:
                 type: string
+              lastConverged:
+                description: |-
+                  LastConvergedSourceClosure is the immutable evidence required to safely
+                  reconstruct a later Destroy. It is written for both Apply and NoChange.
+                properties:
+                  backendSnapshotDigest:
+                    type: string
+                  backendSnapshotRef:
+                    type: string
+                  effectivePlanInputDigest:
+                    type: string
+                  executionPlatformIdentityDigest:
+                    type: string
+                  generation:
+                    format: int64
+                    type: integer
+                  infrastructureExecutionIdentityDigest:
+                    type: string
+                  runnerServiceAccountIdentityDigest:
+                    type: string
+                  sourceClosureDigest:
+                    type: string
+                  sourceClosureRef:
+                    type: string
+                  targetDiscoveryDigest:
+                    type: string
+                  targetDiscoveryRef:
+                    type: string
+                  terraformRunUID:
+                    type: string
+                required:
+                - backendSnapshotDigest
+                - backendSnapshotRef
+                - effectivePlanInputDigest
+                - executionPlatformIdentityDigest
+                - generation
+                - infrastructureExecutionIdentityDigest
+                - runnerServiceAccountIdentityDigest
+                - sourceClosureDigest
+                - sourceClosureRef
+                - targetDiscoveryDigest
+                - targetDiscoveryRef
+                - terraformRunUID
+                type: object
               latestPlanRunRef:
                 description: |-
                   LocalObjectReference contains enough information to let you locate the
@@ -427,6 +474,10 @@ spec:
               observedGeneration:
                 format: int64
                 type: integer
+              targetDiscoveryDigest:
+                type: string
+              targetDiscoveryRef:
+                type: string
             type: object
         type: object
     served: true

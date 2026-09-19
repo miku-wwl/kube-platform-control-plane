@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -101,6 +102,18 @@ func (s BackendSnapshot) Validate() error {
 		if strings.Contains(lower, "access_key") || strings.Contains(lower, "secret_key") || strings.Contains(lower, "session_token") {
 			return fmt.Errorf("backend snapshot cannot contain credential field %q", key)
 		}
+	}
+	return nil
+}
+
+var backendCredentialField = regexp.MustCompile(`(?i)\b(access_key|secret_key|session_token|token)\b`)
+
+func ValidateBackendConfigContent(content []byte) error {
+	if len(content) == 0 {
+		return fmt.Errorf("backend snapshot is empty")
+	}
+	if backendCredentialField.Match(content) {
+		return fmt.Errorf("backend snapshot contains credential material")
 	}
 	return nil
 }

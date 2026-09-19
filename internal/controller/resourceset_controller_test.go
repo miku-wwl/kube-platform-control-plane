@@ -50,7 +50,7 @@ func TestBootstrapObjectsRejectsInlineSecretData(t *testing.T) {
 		Version:  "v1",
 		Resource: "secrets",
 		Object:   apiextensionsv1.JSON{Raw: []byte(`{"apiVersion":"v1","kind":"Secret","metadata":{"name":"inline"},"data":{"token":"c2VjcmV0"}}`)},
-	}})
+	}}, "environment-uid")
 	if err == nil {
 		t.Fatal("inline Secret data must be rejected")
 	}

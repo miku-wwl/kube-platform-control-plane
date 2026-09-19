@@ -3,6 +3,7 @@ package terraform
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -79,6 +80,34 @@ type ApplyResult struct {
 
 type Executor struct {
 	Runner CommandRunner
+}
+
+// VerifyTerraformVersion makes the executor fail closed before Plan or Apply
+// when the runner image does not contain the version selected by the frozen
+// EnvironmentClass.
+func (e Executor) VerifyTerraformVersion(ctx context.Context, expected string, workingDir string) error {
+	if expected == "" {
+		return nil
+	}
+	result, err := e.run(ctx, workingDir, "version", "-json")
+	if err != nil {
+		return err
+	}
+	if result.ExitCode != 0 {
+		return fmt.Errorf("terraform version verification failed with exit code %d: %s", result.ExitCode, strings.TrimSpace(result.Stderr))
+	}
+	var payload struct {
+		TerraformVersion string `json:"terraform_version"`
+	}
+	if err := json.Unmarshal([]byte(result.Stdout), &payload); err != nil {
+		return fmt.Errorf("parse terraform version -json: %w", err)
+	}
+	actual := strings.TrimPrefix(strings.TrimSpace(payload.TerraformVersion), "v")
+	want := strings.TrimPrefix(strings.TrimSpace(expected), "v")
+	if actual == "" || actual != want {
+		return fmt.Errorf("terraform version mismatch: got %q, want %q", actual, want)
+	}
+	return nil
 }
 
 func (e Executor) Plan(ctx context.Context, request Request) (PlanResult, error) {

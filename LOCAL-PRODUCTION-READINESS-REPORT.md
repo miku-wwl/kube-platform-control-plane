@@ -92,6 +92,28 @@ Not runnable:
 - Production Halter profile, storage/PVC/PV/EBS/KMS retain/delete behavior.
 - AWS 429/5xx, DNS/network partition, credential expiry, runner loss, leader loss, DR, RPO/RTO, SLI/SLO, and alert validation.
 
+## R3 contract-completion pass — current workspace
+
+The current uncommitted workspace includes the smallest scoped R3 contract closures without starting Phase 13:
+
+- durable terminal-result and sanitized plan-report artifact capture; Pod logs are no longer authoritative terminal evidence;
+- exact Job/Run identity checks, terminal mutation classification, verified `FinishedAt`-anchored Plan expiry, and immutable backend/source restoration for Apply/Destroy;
+- durable deletion fencing, stale/superseded same-generation Plan attempts, NoChange convergence evidence, retained source/backend closure, cleanup evidence, and safer bounded names;
+- target discovery on successful NoChange/Apply through `terraform output -json`, allowlist sanitization, immutable `target-discovery.json`, and fail-closed identity/profile verification;
+- ResourceSet stable ownership/readiness/deletion policy handling, strict Valkey `Available=True` plus current-generation readiness, narrow per-namespace controller Secret RBAC, Prometheus execution/recovery/runtime metrics, and a local HA manager manifest;
+- AWS SDK Go v2 artifact storage, Terraform machine-readable version verification, source-root/symlink/special-file/implicit-tfvars checks, and the fixture's target-discovery output contract.
+
+Current evidence for this pass:
+
+- `PASS_LOCAL`: `go test ./...`, `go vet ./...`, `git diff --check`, generated deepcopy/CRDs, Terraform fixture `fmt`, `init -backend=false`, and `validate`.
+- `PASS_LOCAL`: LocalStack Ultimate endpoint-scoped STS/S3 checks and immutable artifact round-trip using dummy LocalStack credentials only.
+- `PASS_LOCAL`: Kind SSA/inventory/prune/readiness integrations on `kind-pcp-target-local`.
+- `PASS_LOCAL`: current R3 controller image built locally, loaded into `kind-pcp-management-local`, started with two replicas, metrics on `:8080`, reconstruction gate ready, and manager pod restart recovery converged.
+- `PASS_LOCAL`: management ServiceAccount can read Secrets in `platform-system` and cannot read Secrets in `default`; the controller now materializes the corresponding narrow Role/RoleBinding in environment namespaces.
+- `BLOCKED_LOCAL_ENVIRONMENT`: a new current-code full live Terraform lifecycle was not rerun after the target-discovery contract was tightened; the repository contains no reusable lifecycle harness, and the prior full lifecycle evidence predates this R3 pass. The current Terraform fixture now supplies an allowlisted target-discovery output for the next controlled run.
+
+Known R3 contract gaps remain: pinned Halter compatibility, envtest assets, the host C/race toolchain, genuine NetworkPolicy enforcement with default Kind networking, live 100/500/1000 fault/soak execution, and real AWS identity/EKS/KMS/network semantics. These remain `BLOCKED_LOCAL_ENVIRONMENT` where local infrastructure is insufficient and `DEFERRED_TO_PHASE13` for Real AWS requirements; the final status therefore remains `PARTIAL`.
+
 ## Repository state
 
 - No real AWS was used.

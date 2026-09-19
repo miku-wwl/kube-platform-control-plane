@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -19,6 +18,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/artifacts"
+	targetresolver "github.com/miku-wwl/kube-platform-control-plane/internal/target"
 	terraformexec "github.com/miku-wwl/kube-platform-control-plane/internal/terraform"
 )
 
@@ -35,7 +36,10 @@ const (
 // +kubebuilder:rbac:groups=platform.example.io,resources=changeapprovals,verbs=get;list;watch
 type InfraStackReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme           *runtime.Scheme
+	ArtifactEndpoint string
+	ArtifactRegion   string
+	ArtifactBucket   string
 }
 
 func (r *InfraStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -66,6 +70,9 @@ func (r *InfraStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 		return r.reconcileDestroy(ctx, &object)
 	}
+	if object.Spec.MutationFence {
+		return r.setStackCondition(ctx, &object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "MutationFence", "Infrastructure mutation is closed by the durable deletion fence."), false)
+	}
 	return r.reconcilePresent(ctx, &object)
 }
 
@@ -79,13 +86,7 @@ func (r *InfraStackReconciler) reconcilePresent(ctx context.Context, object *pla
 
 func (r *InfraStackReconciler) reconcileDestroy(ctx context.Context, object *platformv1alpha1.InfraStack) (ctrl.Result, error) {
 	if condition := findCondition(object.Status.Conditions, ConditionReady); condition != nil && condition.Status == metav1.ConditionTrue && condition.Reason == "InfrastructureRemoved" {
-		if !object.DeletionTimestamp.IsZero() && containsString(object.Finalizers, infraStackFinalizer) {
-			object.Finalizers = removeString(object.Finalizers, infraStackFinalizer)
-			if err := r.Update(ctx, object); err != nil && !apierrors.IsNotFound(err) {
-				return ctrl.Result{}, err
-			}
-		}
-		return ctrl.Result{}, nil
+		return r.setStackCondition(ctx, object, *condition, true)
 	}
 	var runs platformv1alpha1.TerraformRunList
 	if err := r.List(ctx, &runs, client.InNamespace(object.Namespace)); err != nil {
@@ -93,40 +94,38 @@ func (r *InfraStackReconciler) reconcileDestroy(ctx context.Context, object *pla
 	}
 	for index := range runs.Items {
 		run := &runs.Items[index]
-		if run.Spec.StackRef.Name != object.Name || run.Spec.Operation != "Apply" || run.Status.JobRef == nil {
+		if run.Spec.StackRef.Name != object.Name || run.Spec.Operation != "Apply" {
 			continue
 		}
-		if run.Status.ExecutionOutcome == "Indeterminate" {
+		if run.Status.ExecutionOutcome == "Indeterminate" || (run.Status.ExecutionOutcome == "Failed" && run.Status.MutationMayHaveOccurred) {
 			return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionUnknown, "RecoveryRequired", "An active Apply is indeterminate; destroy is blocked until fresh observation and Plan."), false)
 		}
 		if run.Status.ExecutionOutcome != "Succeeded" && run.Status.ExecutionOutcome != "Failed" && run.Status.ExecutionOutcome != "Rejected" {
 			return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "DeletionHeld", "Destroy is waiting for the active Apply to reach a terminal classification."), false)
 		}
+		if run.Status.ExecutionOutcome == "Failed" && run.Status.MutationClassification != "FailedPreMutation" {
+			return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionUnknown, "RecoveryRequired", "A failed Apply may have changed infrastructure; refusing blind Destroy."), false)
+		}
 	}
 	var applied platformv1alpha1.TerraformRun
-	if object.Status.LastAppliedRunRef == nil || object.Status.LastAppliedRunRef.Name == "" {
-		for index := range runs.Items {
-			run := &runs.Items[index]
-			if run.Spec.StackRef.Name == object.Name && run.Spec.Operation == "Apply" {
-				return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "RecoveryRequired", "Destroy requires evidence for an Apply that may have changed infrastructure."), false)
+	if object.Status.LastConverged == nil {
+		if object.Status.LastAppliedRunRef == nil || object.Status.LastAppliedRunRef.Name == "" {
+			for index := range runs.Items {
+				run := &runs.Items[index]
+				if run.Spec.StackRef.Name == object.Name && run.Spec.Operation == "Apply" {
+					return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "RecoveryRequired", "Destroy requires evidence for an Apply that may have changed infrastructure."), false)
+				}
 			}
-		}
-		if condition := findCondition(object.Status.Conditions, ConditionReady); condition == nil || condition.Reason != "InfrastructureRemoved" {
-			if _, err := r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionTrue, "InfrastructureRemoved", "No successful Apply exists; Terraform infrastructure was never admitted."), true); err != nil {
-				return ctrl.Result{}, err
+			if condition := findCondition(object.Status.Conditions, ConditionReady); condition == nil || condition.Reason != "InfrastructureRemoved" {
+				if _, err := r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionTrue, "InfrastructureRemoved", "No successful Apply exists; Terraform infrastructure was never admitted."), true); err != nil {
+					return ctrl.Result{}, err
+				}
 			}
+			return ctrl.Result{}, nil
 		}
-		return ctrl.Result{}, nil
+		return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "RecoveryRequired", "The last successful convergence closure is unavailable; refusing to guess a Destroy source."), false)
 	}
-	if err := r.Get(ctx, types.NamespacedName{Name: object.Status.LastAppliedRunRef.Name, Namespace: object.Namespace}, &applied); err != nil {
-		if apierrors.IsNotFound(err) {
-			return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "RecoveryRequired", "The last successful Apply record is unavailable; refusing to guess a Destroy source."), false)
-		}
-		return ctrl.Result{}, err
-	}
-	if sourceRef, sourceDigest := retainedBundle(&applied); sourceRef == "" || sourceDigest == "" {
-		return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "RecoveryRequired", "The last successful Apply has no retained source bundle; refusing to guess a Destroy source."), false)
-	}
+	applied = *retainedRunFromClosure(object, object.Status.LastConverged)
 
 	child, err := r.ensurePlanRun(ctx, object, true, &applied)
 	if err != nil {
@@ -141,40 +140,94 @@ func (r *InfraStackReconciler) reconcileDestroy(ctx context.Context, object *pla
 		return ctrl.Result{RequeueAfter: lifecycleRequeue}, nil
 	}
 	if !object.DeletionTimestamp.IsZero() && containsString(object.Finalizers, infraStackFinalizer) {
-		object.Finalizers = removeString(object.Finalizers, infraStackFinalizer)
-		if err := r.Update(ctx, object); err != nil && !apierrors.IsNotFound(err) {
-			return ctrl.Result{}, err
-		}
+		return r.setStackCondition(ctx, object, *condition, true)
 	}
 	return ctrl.Result{}, nil
 }
 
 func (r *InfraStackReconciler) ensurePlanRun(ctx context.Context, stack *platformv1alpha1.InfraStack, destroy bool, applied ...*platformv1alpha1.TerraformRun) (*platformv1alpha1.TerraformRun, error) {
+	var runs platformv1alpha1.TerraformRunList
+	if err := r.List(ctx, &runs, client.InNamespace(stack.Namespace)); err != nil {
+		return nil, err
+	}
+	planMode := "Reconcile"
+	if destroy {
+		planMode = "Destroy"
+	}
+	var candidate *platformv1alpha1.TerraformRun
+	for index := range runs.Items {
+		item := &runs.Items[index]
+		if item.Spec.StackRef.Name != stack.Name || item.Spec.Operation != "Plan" || item.Spec.PlanMode != planMode || item.Spec.InfraStackGeneration != stack.Generation {
+			continue
+		}
+		if hasForeignController(item, stack, "InfraStack") {
+			return nil, fmt.Errorf("TerraformRun %q is owned by another InfraStack", item.Name)
+		}
+		if candidate == nil || item.CreationTimestamp.After(candidate.CreationTimestamp.Time) {
+			candidate = item
+		}
+	}
+	if candidate != nil && !planAttemptStale(candidate) {
+		if stack.UID != "" && !ownedBy(candidate, stack, "InfraStack") {
+			if err := ctrl.SetControllerReference(stack, candidate, r.Scheme); err != nil {
+				return nil, err
+			}
+			if err := r.Update(ctx, candidate); err != nil {
+				return nil, err
+			}
+		}
+		return candidate, nil
+	}
+	if candidate != nil {
+		candidate.Status.ExecutionOutcome = "Superseded"
+		candidate.Status.ObservedGeneration = candidate.Generation
+		candidate.Status.Conditions = []metav1.Condition{executionCondition(candidate.Generation, metav1.ConditionFalse, "Superseded", "A stale or failed Plan attempt was superseded by a fresh immutable attempt.")}
+		if err := r.Status().Update(ctx, candidate); err != nil {
+			return nil, err
+		}
+	}
+	if destroy && len(applied) != 1 {
+		return nil, fmt.Errorf("destroy PlanRun requires the last successful convergence closure")
+	}
 	name := planRunName(stack.Name, stack.Generation)
 	if destroy {
 		name = destroyPlanRunName(stack.Name, stack.Generation)
 	}
+	if candidate != nil {
+		name = planAttemptName(stack.Name, stack.Generation, destroy)
+	}
 	var child platformv1alpha1.TerraformRun
-	err := r.Get(ctx, client.ObjectKey{Name: name, Namespace: stack.Namespace}, &child)
-	if apierrors.IsNotFound(err) {
-		if destroy && len(applied) != 1 {
-			return nil, fmt.Errorf("destroy PlanRun requires the last successful Apply")
-		}
-		if destroy {
-			child = *buildDestroyPlanRun(stack, applied[0], name)
-		} else {
-			child = *buildPlanRun(stack, name)
-		}
-		if err := ctrl.SetControllerReference(stack, &child, r.Scheme); err != nil {
-			return nil, err
-		}
-		if err := r.Create(ctx, &child); err != nil {
-			return nil, err
-		}
-	} else if err != nil {
+	if destroy {
+		child = *buildDestroyPlanRun(stack, applied[0], name)
+	} else {
+		child = *buildPlanRun(stack, name)
+	}
+	if err := ctrl.SetControllerReference(stack, &child, r.Scheme); err != nil {
+		return nil, err
+	}
+	if err := r.Create(ctx, &child); err != nil {
 		return nil, err
 	}
 	return &child, nil
+}
+
+func planAttemptStale(run *platformv1alpha1.TerraformRun) bool {
+	if run == nil {
+		return true
+	}
+	switch run.Status.ExecutionOutcome {
+	case "Failed", "Indeterminate", "Rejected", "Expired", "Superseded":
+		return true
+	}
+	return run.Status.PlanExpiresAt != nil && !time.Now().Before(run.Status.PlanExpiresAt.Time)
+}
+
+func planAttemptName(stackName string, generation int64, destroy bool) string {
+	suffix := "plan"
+	if destroy {
+		suffix = "destroy-plan"
+	}
+	return boundedResourceName(fmt.Sprintf("%s-%s-%d-attempt-%d", stackName, suffix, generation, time.Now().UnixNano()))
 }
 
 func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.TerraformRun, destroy bool) (ctrl.Result, error) {
@@ -186,9 +239,30 @@ func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *p
 	switch plan.Status.ExecutionOutcome {
 	case "NoChange":
 		if destroy {
-			condition = lifecycleCondition(stack.Generation, metav1.ConditionTrue, "InfrastructureRemoved", "Terraform Destroy plan has no changes; infrastructure is already absent.")
+			if !runEvidenceReady(plan) {
+				condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "DestroyEvidencePending", "Terraform Destroy Plan is terminal, but durable evidence is incomplete.")
+			} else {
+				condition = lifecycleCondition(stack.Generation, metav1.ConditionTrue, "InfrastructureRemoved", "Terraform Destroy plan has no changes; infrastructure is already absent.")
+			}
 		} else {
-			condition = lifecycleCondition(stack.Generation, metav1.ConditionTrue, "InfrastructureReady", "Terraform plan has no changes; infrastructure is ready.")
+			discoveryErr := r.verifyTargetDiscovery(ctx, stack, plan)
+			closure, ok := convergenceClosure(stack, plan, plan)
+			if discoveryErr != nil {
+				ok = false
+				condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "TargetDiscoveryRejected", discoveryErr.Error())
+			}
+			if !ok {
+				if discoveryErr == nil {
+					condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "ConvergenceEvidencePending", "Terraform reported NoChange, but durable source/backend/terminal evidence is incomplete.")
+				}
+			} else {
+				status.LastConverged = closure
+				status.ConvergenceEvidenceRef = plan.Status.TerminalResultRef
+				status.ConvergenceEvidenceDigest = plan.Status.TerminalResultDigest
+				status.TargetDiscoveryRef = plan.Status.TargetDiscoveryRef
+				status.TargetDiscoveryDigest = plan.Status.TargetDiscoveryDigest
+				condition = lifecycleCondition(stack.Generation, metav1.ConditionTrue, "InfrastructureReady", "Terraform plan has no changes and durable convergence evidence is present.")
+			}
 		}
 	case "ChangesPresent":
 		condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "WaitingApproval", "Terraform plan contains changes and is waiting for a valid ChangeApproval.")
@@ -197,7 +271,7 @@ func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *p
 			return ctrl.Result{}, err
 		}
 		if found {
-			if plan.Status.PlanDigest == "" || plan.Status.SourceBundleRef == "" || plan.Status.SourceBundleDigest == "" {
+			if plan.Status.PlanDigest == "" || plan.Status.SourceBundleRef == "" || plan.Status.SourceBundleDigest == "" || !runEvidenceReady(plan) {
 				condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "PlanArtifactsPending", "A valid approval exists, but immutable plan/source artifacts are not ready.")
 			} else {
 				apply, applyErr := r.ensureApplyRun(ctx, stack, plan, approval)
@@ -220,6 +294,22 @@ func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *p
 						if status.LastAppliedSourceBundleRef == "" && apply.Spec.Source.Type == terraformexec.SourceRetainedBundle {
 							status.LastAppliedSourceBundleRef = apply.Spec.Source.Ref
 							status.LastAppliedSourceBundleDigest = apply.Spec.Source.Digest
+						}
+						closure, ok := convergenceClosure(stack, plan, apply)
+						if discoveryErr := r.verifyTargetDiscovery(ctx, stack, apply); discoveryErr != nil {
+							ok = false
+							condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "TargetDiscoveryRejected", discoveryErr.Error())
+						}
+						if !ok {
+							if condition.Reason != "TargetDiscoveryRejected" {
+								condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "ConvergenceEvidencePending", "Terraform Apply succeeded, but durable convergence evidence is incomplete.")
+							}
+						} else {
+							status.LastConverged = closure
+							status.ConvergenceEvidenceRef = apply.Status.TerminalResultRef
+							status.ConvergenceEvidenceDigest = apply.Status.TerminalResultDigest
+							status.TargetDiscoveryRef = apply.Status.TargetDiscoveryRef
+							status.TargetDiscoveryDigest = apply.Status.TargetDiscoveryDigest
 						}
 					}
 				}
@@ -256,7 +346,7 @@ func (r *InfraStackReconciler) validApprovalForPlan(ctx context.Context, plan *p
 		if approval.Spec.PlanRunRef.Name != plan.Name || approval.Spec.PlanRunUID != string(plan.UID) {
 			continue
 		}
-		if approval.Spec.PlanDigest != plan.Status.PlanDigest || approval.Spec.ExecutionContextDigest != plan.Spec.ExecutionContextDigest {
+		if approval.Spec.PlanDigest != plan.Status.PlanDigest || approval.Spec.ExecutionContextDigest != plan.Spec.ExecutionContextDigest || approval.Spec.EffectivePlanInputDigest != plan.Status.EffectivePlanInputDigest || approval.Spec.PlanReportRef != plan.Status.PlanReportRef || approval.Spec.PlanReportDigest != plan.Status.PlanReportDigest {
 			continue
 		}
 		if plan.Status.PlanExpiresAt == nil || !now.Before(plan.Status.PlanExpiresAt.Time) {
@@ -313,13 +403,60 @@ func validateApplyAdmission(stack *platformv1alpha1.InfraStack, plan *platformv1
 	if approval.Spec.ExecutionContextDigest != plan.Spec.ExecutionContextDigest {
 		return fmt.Errorf("execution context binding mismatch")
 	}
+	if plan.Status.PlanReportRef == "" || plan.Status.PlanReportDigest == "" || approval.Spec.PlanReportRef != plan.Status.PlanReportRef || approval.Spec.PlanReportDigest != plan.Status.PlanReportDigest {
+		return fmt.Errorf("plan report binding mismatch")
+	}
 	if plan.Status.PlanExpiresAt == nil || !time.Now().Before(plan.Status.PlanExpiresAt.Time) {
 		return fmt.Errorf("saved PlanRun is expired or has no trusted expiry")
 	}
-	if plan.Spec.EffectivePlanInputDigest == "" || plan.Spec.RuntimeTargetIdentityDigest == "" || plan.Spec.InfrastructureExecutionIdentityDigest == "" {
+	if plan.Status.EffectivePlanInputDigest == "" || approval.Spec.EffectivePlanInputDigest != plan.Status.EffectivePlanInputDigest || plan.Spec.RuntimeTargetIdentityDigest == "" || plan.Spec.InfrastructureExecutionIdentityDigest == "" {
 		return fmt.Errorf("PlanRun execution snapshot is incomplete")
 	}
 	return nil
+}
+
+func (r *InfraStackReconciler) verifyTargetDiscovery(ctx context.Context, stack *platformv1alpha1.InfraStack, run *platformv1alpha1.TerraformRun) error {
+	if run == nil || run.Status.TargetDiscoveryRef == "" || run.Status.TargetDiscoveryDigest == "" {
+		return fmt.Errorf("target discovery artifact is missing")
+	}
+	if r.ArtifactEndpoint == "" || r.ArtifactRegion == "" || r.ArtifactBucket == "" {
+		return fmt.Errorf("target discovery artifact store is not configured")
+	}
+	store, err := artifacts.NewS3Store(r.ArtifactEndpoint, r.ArtifactRegion, r.ArtifactBucket)
+	if err != nil {
+		return err
+	}
+	content, err := store.GetVerified(ctx, artifacts.Ref{Key: run.Status.TargetDiscoveryRef, Digest: run.Status.TargetDiscoveryDigest})
+	if err != nil {
+		return fmt.Errorf("read target discovery artifact: %w", err)
+	}
+	expectedIdentity := targetresolver.RuntimeTargetIdentity{
+		Provider: stack.Spec.RuntimeTargetIdentity.Provider, AccountID: stack.Spec.RuntimeTargetIdentity.AccountID,
+		Region: stack.Spec.RuntimeTargetIdentity.Region, ClusterARN: stack.Spec.RuntimeTargetIdentity.ClusterARN,
+		ClusterName: stack.Spec.RuntimeTargetIdentity.ClusterName, IncarnationID: stack.Spec.RuntimeTargetIdentity.IncarnationID,
+	}
+	expectedProfile := targetresolver.TargetConnectionProfile{
+		Endpoint: stack.Spec.TargetConnectionProfile.Endpoint, CACertificateDigest: stack.Spec.TargetConnectionProfile.CACertificateDigest,
+		AuthMode: stack.Spec.TargetConnectionProfile.AuthMode, NetworkRouteProfile: stack.Spec.TargetConnectionProfile.NetworkRouteProfile,
+		KubeContext: stack.Spec.TargetConnectionProfile.KubeContext,
+	}
+	if expectedIdentity.AccountID == "" {
+		expectedIdentity.AccountID = "local"
+	}
+	if expectedIdentity.Region == "" {
+		expectedIdentity.Region = "local"
+	}
+	input := targetresolver.DiscoveryInput{SourceClosureDigest: run.Status.SourceBundleDigest, BackendSnapshotDigest: run.Status.ResolvedBackendConfigDigest, EffectivePlanInputDigest: run.Status.EffectivePlanInputDigest, ExpectedTarget: expectedIdentity, ExpectedConnection: expectedProfile}
+	_, err = targetresolver.DiscoverFromTerraformOutput(content, input, func(identity targetresolver.RuntimeTargetIdentity, profile targetresolver.TargetConnectionProfile) error {
+		if identity.Provider != expectedIdentity.Provider || identity.AccountID != expectedIdentity.AccountID || identity.Region != expectedIdentity.Region || (expectedIdentity.ClusterName != "" && identity.ClusterName != expectedIdentity.ClusterName) || (expectedIdentity.IncarnationID != "" && identity.IncarnationID != expectedIdentity.IncarnationID) {
+			return fmt.Errorf("discovered runtime target does not match the InfraStack identity")
+		}
+		if profile.AuthMode != expectedProfile.AuthMode || (expectedProfile.KubeContext != "" && profile.KubeContext != expectedProfile.KubeContext) {
+			return fmt.Errorf("discovered target connection profile does not match the frozen profile")
+		}
+		return targetresolver.ValidateBinding(identity, profile)
+	})
+	return err
 }
 
 func (r *InfraStackReconciler) SetupWithManager(manager ctrl.Manager) error {
@@ -342,6 +479,15 @@ func (r *InfraStackReconciler) setStackCondition(ctx context.Context, object *pl
 		return ctrl.Result{}, err
 	}
 	if removeFinalizer && condition.Status == metav1.ConditionTrue && containsString(object.Finalizers, infraStackFinalizer) {
+		status.CleanupEvidenceRef = fmt.Sprintf("cleanup/infrastack/%s/%d", object.Name, object.Generation)
+		status.CleanupEvidenceDigest = digestIdentity(struct {
+			Name       string
+			Generation int64
+			Condition  string
+		}{object.Name, object.Generation, condition.Reason})
+		if err := r.updateStackStatus(ctx, object, status); err != nil {
+			return ctrl.Result{}, err
+		}
 		object.Finalizers = removeString(object.Finalizers, infraStackFinalizer)
 		if err := r.Update(ctx, object); err != nil && !apierrors.IsNotFound(err) {
 			return ctrl.Result{}, err
@@ -462,6 +608,69 @@ func retainedBundle(applied *platformv1alpha1.TerraformRun) (string, string) {
 	return "", ""
 }
 
+func retainedRunFromClosure(stack *platformv1alpha1.InfraStack, closure *platformv1alpha1.LastConvergedSourceClosure) *platformv1alpha1.TerraformRun {
+	return &platformv1alpha1.TerraformRun{
+		ObjectMeta: metav1.ObjectMeta{UID: types.UID(closure.TerraformRunUID)},
+		Spec: platformv1alpha1.TerraformRunSpec{
+			StackRef:                 corev1.LocalObjectReference{Name: stack.Name},
+			Source:                   platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Ref: closure.SourceClosureRef, Digest: closure.SourceClosureDigest},
+			BackendConfigArtifactRef: closure.BackendSnapshotRef, BackendConfigArtifactDigest: closure.BackendSnapshotDigest,
+			ResolvedBackendConfigRef: closure.BackendSnapshotRef,
+			Workspace:                stack.Spec.Workspace, Executor: stack.Spec.Executor, LockTimeout: stack.Spec.Backend.LockTimeout,
+			EffectivePlanInputDigest:              closure.EffectivePlanInputDigest,
+			InfrastructureExecutionIdentityDigest: closure.InfrastructureExecutionIdentityDigest,
+			RuntimeTargetIdentityDigest:           digestIdentity(stack.Spec.RuntimeTargetIdentity),
+			TargetConnectionProfileDigest:         digestIdentity(stack.Spec.TargetConnectionProfile),
+			RunnerServiceAccountName:              stack.Spec.RunnerServiceAccountName,
+			RunnerServiceAccountIdentityDigest:    closure.RunnerServiceAccountIdentityDigest,
+			ExpectedTerraformVersion:              stack.Spec.Executor.TerraformVersion,
+			RunnerImageDigest:                     stack.Spec.Executor.Image,
+		},
+		Status: platformv1alpha1.TerraformRunStatus{SourceBundleRef: closure.SourceClosureRef, SourceBundleDigest: closure.SourceClosureDigest, ResolvedBackendConfigRef: closure.BackendSnapshotRef, ResolvedBackendConfigDigest: closure.BackendSnapshotDigest, EffectivePlanInputDigest: closure.EffectivePlanInputDigest},
+	}
+}
+
+func runEvidenceReady(run *platformv1alpha1.TerraformRun) bool {
+	return run != nil && run.Status.EvidenceCaptured && run.Status.ArtifactsReady && run.Status.TerminalResultRef != "" && run.Status.TerminalResultDigest != "" && run.Status.PlanReportRef != "" && run.Status.PlanReportDigest != "" && run.Status.TargetDiscoveryRef != "" && run.Status.TargetDiscoveryDigest != ""
+}
+
+func convergenceClosure(stack *platformv1alpha1.InfraStack, sourceRun, terminalRun *platformv1alpha1.TerraformRun) (*platformv1alpha1.LastConvergedSourceClosure, bool) {
+	if stack == nil || sourceRun == nil || terminalRun == nil || !runEvidenceReady(sourceRun) || terminalRun.Status.TerminalResultRef == "" || terminalRun.Status.TerminalResultDigest == "" || terminalRun.Status.TargetDiscoveryRef == "" || terminalRun.Status.TargetDiscoveryDigest == "" {
+		return nil, false
+	}
+	sourceRef, sourceDigest := retainedBundle(sourceRun)
+	backendRef := sourceRun.Status.ResolvedBackendConfigRef
+	backendDigest := sourceRun.Status.ResolvedBackendConfigDigest
+	if backendRef == "" {
+		backendRef = sourceRun.Spec.BackendConfigArtifactRef
+		backendDigest = sourceRun.Spec.BackendConfigArtifactDigest
+	}
+	effective := terminalRun.Status.EffectivePlanInputDigest
+	if effective == "" {
+		effective = sourceRun.Status.EffectivePlanInputDigest
+	}
+	if effective == "" {
+		effective = sourceRun.Spec.EffectivePlanInputDigest
+	}
+	if sourceRef == "" || sourceDigest == "" || backendRef == "" || backendDigest == "" || effective == "" || stack.Spec.InfrastructureExecutionIdentity.Provider == "" || stack.Spec.RuntimeTargetIdentity.Provider == "" {
+		return nil, false
+	}
+	return &platformv1alpha1.LastConvergedSourceClosure{
+		SourceClosureRef:                      sourceRef,
+		SourceClosureDigest:                   sourceDigest,
+		BackendSnapshotRef:                    backendRef,
+		BackendSnapshotDigest:                 backendDigest,
+		TargetDiscoveryRef:                    terminalRun.Status.TargetDiscoveryRef,
+		TargetDiscoveryDigest:                 terminalRun.Status.TargetDiscoveryDigest,
+		EffectivePlanInputDigest:              effective,
+		InfrastructureExecutionIdentityDigest: digestIdentity(stack.Spec.InfrastructureExecutionIdentity),
+		ExecutionPlatformIdentityDigest:       digestIdentity(stack.Spec.TargetConnectionProfile),
+		RunnerServiceAccountIdentityDigest:    terminalRun.Spec.RunnerServiceAccountIdentityDigest,
+		TerraformRunUID:                       string(terminalRun.UID),
+		Generation:                            stack.Generation,
+	}, true
+}
+
 func buildApplyRun(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.TerraformRun, approval *platformv1alpha1.ChangeApproval, name string) *platformv1alpha1.TerraformRun {
 	sourceRef, sourceDigest := plan.Status.SourceBundleRef, plan.Status.SourceBundleDigest
 	if sourceRef == "" || sourceDigest == "" {
@@ -497,7 +706,7 @@ func buildApplyRun(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.Te
 			ExecutionContextDigest:                plan.Spec.ExecutionContextDigest,
 			ExecutionTargetIdentityDigest:         plan.Spec.ExecutionTargetIdentityDigest,
 			ExecutionPlatformIdentityDigest:       plan.Spec.ExecutionPlatformIdentityDigest,
-			EffectivePlanInputDigest:              plan.Spec.EffectivePlanInputDigest,
+			EffectivePlanInputDigest:              plan.Status.EffectivePlanInputDigest,
 			SourceClosureDigest:                   plan.Status.SourceBundleDigest,
 			VariablesSnapshotDigest:               plan.Spec.VariablesSnapshotDigest,
 			SecretVariableIdentityDigest:          plan.Spec.SecretVariableIdentityDigest,
@@ -512,6 +721,8 @@ func buildApplyRun(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.Te
 			PlanRunUID:                            string(plan.UID),
 			PlanRef:                               plan.Status.PlanRef,
 			PlanDigest:                            plan.Status.PlanDigest,
+			PlanReportRef:                         plan.Status.PlanReportRef,
+			PlanReportDigest:                      plan.Status.PlanReportDigest,
 			ApprovalRef:                           &corev1.LocalObjectReference{Name: approval.Name},
 			ApprovalUID:                           string(approval.UID),
 			ConcurrencyGroup:                      plan.Spec.ConcurrencyGroup,
@@ -561,28 +772,16 @@ func digestIdentity(value any) string {
 }
 
 func planRunName(stackName string, generation int64) string {
-	name := fmt.Sprintf("%s-plan-%d", stackName, generation)
-	if len(name) > 63 {
-		name = name[:63]
-	}
-	return strings.TrimRight(name, "-")
+	return boundedResourceName(fmt.Sprintf("%s-plan-%d", stackName, generation))
 }
 
 func destroyPlanRunName(stackName string, generation int64) string {
-	name := fmt.Sprintf("%s-destroy-plan-%d", stackName, generation)
-	if len(name) > 63 {
-		name = name[:63]
-	}
-	return strings.TrimRight(name, "-")
+	return boundedResourceName(fmt.Sprintf("%s-destroy-plan-%d", stackName, generation))
 }
 
 func applyRunName(planName, approvalUID string) string {
 	hash := sha256.Sum256([]byte(approvalUID))
-	name := fmt.Sprintf("%s-apply-%s", planName, hex.EncodeToString(hash[:])[:10])
-	if len(name) > 63 {
-		name = name[:63]
-	}
-	return strings.TrimRight(name, "-")
+	return boundedResourceName(fmt.Sprintf("%s-apply-%s", planName, hex.EncodeToString(hash[:])[:10]))
 }
 
 func lifecycleCondition(generation int64, status metav1.ConditionStatus, reason, message string) metav1.Condition {

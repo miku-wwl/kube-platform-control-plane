@@ -50,6 +50,10 @@ func Ready(object *unstructured.Unstructured) (bool, string, error) {
 	case "CustomResourceDefinition":
 		return conditionTrue(object, "Established")
 	case "ValkeyCluster":
+		observed, _, _ := unstructured.NestedInt64(object.Object, "status", "observedGeneration")
+		if observed < generation {
+			return false, "observedGeneration is behind", nil
+		}
 		if ready, reason, err := conditionTrue(object, "Available"); ready || err != nil {
 			return ready, reason, err
 		}

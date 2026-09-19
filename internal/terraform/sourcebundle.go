@@ -23,6 +23,10 @@ type SourceBundle struct {
 }
 
 func RestoreSourceBundle(content []byte, destination string) ([]string, error) {
+	destination, err := secureRoot(destination)
+	if err != nil {
+		return nil, err
+	}
 	decoder, err := zstd.NewReader(bytes.NewReader(content))
 	if err != nil {
 		return nil, err
@@ -49,7 +53,21 @@ func RestoreSourceBundle(content []byte, destination string) ([]string, error) {
 		if err := os.MkdirAll(filepath.Dir(filePath), 0o755); err != nil {
 			return nil, err
 		}
-		file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+		parent, err := filepath.EvalSymlinks(filepath.Dir(filePath))
+		if err != nil {
+			return nil, err
+		}
+		if outsideRoot(destination, parent) {
+			return nil, fmt.Errorf("source bundle path escapes destination through %q", filepath.Dir(header.Name))
+		}
+		if existing, err := os.Lstat(filePath); err == nil && existing.Mode()&os.ModeSymlink != 0 {
+			return nil, fmt.Errorf("source bundle refuses to overwrite symlink %q", header.Name)
+		}
+		mode := os.FileMode(header.Mode) & 0o777
+		if mode == 0 {
+			mode = 0o644
+		}
+		file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
 		if err != nil {
 			return nil, err
 		}
@@ -68,6 +86,11 @@ func RestoreSourceBundle(content []byte, destination string) ([]string, error) {
 }
 
 func BuildSourceBundle(root string) (SourceBundle, error) {
+	var err error
+	root, err = secureRoot(root)
+	if err != nil {
+		return SourceBundle{}, err
+	}
 	entries := make([]string, 0)
 	if err := filepath.WalkDir(root, func(pathName string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -88,7 +111,13 @@ func BuildSourceBundle(root string) (SourceBundle, error) {
 			return nil
 		}
 		if entry.Type()&os.ModeSymlink != 0 {
-			return nil
+			return fmt.Errorf("source closure rejects symlink %q", relative)
+		}
+		if !entry.Type().IsRegular() {
+			return fmt.Errorf("source closure rejects special file %q", relative)
+		}
+		if isImplicitTerraformVars(relative) {
+			return fmt.Errorf("implicit Terraform vars file %q is not an explicit input", relative)
 		}
 		if entry.Type().IsRegular() && bundlePathAllowed(relative) {
 			entries = append(entries, relative)
@@ -106,7 +135,14 @@ func BuildSourceBundle(root string) (SourceBundle, error) {
 	}
 	archive := tar.NewWriter(encoder)
 	for _, relative := range entries {
-		content, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(relative)))
+		fileName := filepath.Join(root, filepath.FromSlash(relative))
+		content, err := os.ReadFile(fileName)
+		if err != nil {
+			_ = archive.Close()
+			_ = encoder.Close()
+			return SourceBundle{}, err
+		}
+		info, err := os.Stat(fileName)
 		if err != nil {
 			_ = archive.Close()
 			_ = encoder.Close()
@@ -114,7 +150,7 @@ func BuildSourceBundle(root string) (SourceBundle, error) {
 		}
 		header := &tar.Header{
 			Name: relative,
-			Mode: 0o644,
+			Mode: int64(info.Mode().Perm()),
 			Size: int64(len(content)),
 		}
 		if err := archive.WriteHeader(header); err != nil {
@@ -138,6 +174,45 @@ func BuildSourceBundle(root string) (SourceBundle, error) {
 	content := compressed.Bytes()
 	hash := sha256.Sum256(content)
 	return SourceBundle{Content: content, Digest: "sha256:" + hex.EncodeToString(hash[:]), Files: entries}, nil
+}
+
+func secureRoot(root string) (string, error) {
+	if root == "" {
+		return "", fmt.Errorf("source root is required")
+	}
+	abs, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	info, err := os.Lstat(abs)
+	if err != nil {
+		return "", err
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return "", fmt.Errorf("source root must be a real directory")
+	}
+	resolved, err := filepath.EvalSymlinks(abs)
+	if err != nil {
+		return "", err
+	}
+	if !samePath(abs, resolved) {
+		return "", fmt.Errorf("source root resolves through a symlink")
+	}
+	return abs, nil
+}
+
+func outsideRoot(root, candidate string) bool {
+	relative, err := filepath.Rel(root, candidate)
+	return err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(os.PathSeparator)) || filepath.IsAbs(relative)
+}
+
+func samePath(left, right string) bool {
+	return strings.EqualFold(filepath.Clean(left), filepath.Clean(right))
+}
+
+func isImplicitTerraformVars(relative string) bool {
+	base := strings.ToLower(filepath.Base(filepath.FromSlash(relative)))
+	return base == "terraform.tfvars" || strings.HasSuffix(base, ".auto.tfvars") || strings.HasSuffix(base, ".auto.tfvars.json")
 }
 
 func bundlePathAllowed(relative string) bool {

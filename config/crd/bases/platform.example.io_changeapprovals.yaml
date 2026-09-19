@@ -49,9 +49,15 @@ spec:
             type: object
           spec:
             properties:
+              effectivePlanInputDigest:
+                type: string
               executionContextDigest:
                 type: string
               planDigest:
+                type: string
+              planReportDigest:
+                type: string
+              planReportRef:
                 type: string
               planRunRef:
                 description: |-
@@ -72,8 +78,11 @@ spec:
               planRunUID:
                 type: string
             required:
+            - effectivePlanInputDigest
             - executionContextDigest
             - planDigest
+            - planReportDigest
+            - planReportRef
             - planRunRef
             - planRunUID
             type: object
