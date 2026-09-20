@@ -181,7 +181,10 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1"), corev1.ResourceMemory: resource.MustParse("512Mi")},
 		},
 	}
-	runner.Env = append(runner.Env, corev1.EnvVar{Name: "PCP_JOB_UID", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.uid"}}})
+	runner.Env = append(runner.Env,
+		corev1.EnvVar{Name: "PCP_POD_NAME", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"}}},
+		corev1.EnvVar{Name: "PCP_POD_NAMESPACE", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"}}},
+	)
 	runner.VolumeMounts = append(runner.VolumeMounts, tmpMount)
 	if request.BackendConfigMap != "" {
 		runner.VolumeMounts = append(runner.VolumeMounts, corev1.VolumeMount{Name: "backend-config", MountPath: "/workspace/backend", ReadOnly: true})
@@ -217,7 +220,7 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 				ObjectMeta: metav1.ObjectMeta{Labels: labels},
 				Spec: corev1.PodSpec{
 					RestartPolicy:                corev1.RestartPolicyNever,
-					AutomountServiceAccountToken: pointerBool(false),
+					AutomountServiceAccountToken: pointerBool(true),
 					ServiceAccountName:           request.ServiceAccountName,
 					SecurityContext: &corev1.PodSecurityContext{
 						RunAsNonRoot:   pointerBool(true),

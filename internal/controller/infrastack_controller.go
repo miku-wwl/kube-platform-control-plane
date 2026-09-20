@@ -271,7 +271,7 @@ func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *p
 			return ctrl.Result{}, err
 		}
 		if found {
-			if plan.Status.PlanDigest == "" || plan.Status.SourceBundleRef == "" || plan.Status.SourceBundleDigest == "" || !runEvidenceReady(plan) {
+			if plan.Status.PlanDigest == "" || plan.Status.SourceBundleRef == "" || plan.Status.SourceBundleDigest == "" || !planEvidenceReady(plan) {
 				condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "PlanArtifactsPending", "A valid approval exists, but immutable plan/source artifacts are not ready.")
 			} else {
 				apply, applyErr := r.ensureApplyRun(ctx, stack, plan, approval)
@@ -617,6 +617,7 @@ func retainedRunFromClosure(stack *platformv1alpha1.InfraStack, closure *platfor
 			BackendConfigArtifactRef: closure.BackendSnapshotRef, BackendConfigArtifactDigest: closure.BackendSnapshotDigest,
 			ResolvedBackendConfigRef: closure.BackendSnapshotRef,
 			Workspace:                stack.Spec.Workspace, Executor: stack.Spec.Executor, LockTimeout: stack.Spec.Backend.LockTimeout,
+			ExecutionContextDigest:                executionContextDigest(stack.Spec),
 			EffectivePlanInputDigest:              closure.EffectivePlanInputDigest,
 			InfrastructureExecutionIdentityDigest: closure.InfrastructureExecutionIdentityDigest,
 			RuntimeTargetIdentityDigest:           digestIdentity(stack.Spec.RuntimeTargetIdentity),
@@ -631,11 +632,15 @@ func retainedRunFromClosure(stack *platformv1alpha1.InfraStack, closure *platfor
 }
 
 func runEvidenceReady(run *platformv1alpha1.TerraformRun) bool {
-	return run != nil && run.Status.EvidenceCaptured && run.Status.ArtifactsReady && run.Status.TerminalResultRef != "" && run.Status.TerminalResultDigest != "" && run.Status.PlanReportRef != "" && run.Status.PlanReportDigest != "" && run.Status.TargetDiscoveryRef != "" && run.Status.TargetDiscoveryDigest != ""
+	return planEvidenceReady(run) && run.Status.TargetDiscoveryRef != "" && run.Status.TargetDiscoveryDigest != ""
+}
+
+func planEvidenceReady(run *platformv1alpha1.TerraformRun) bool {
+	return run != nil && run.Status.EvidenceCaptured && run.Status.ArtifactsReady && run.Status.TerminalResultRef != "" && run.Status.TerminalResultDigest != "" && run.Status.PlanReportRef != "" && run.Status.PlanReportDigest != ""
 }
 
 func convergenceClosure(stack *platformv1alpha1.InfraStack, sourceRun, terminalRun *platformv1alpha1.TerraformRun) (*platformv1alpha1.LastConvergedSourceClosure, bool) {
-	if stack == nil || sourceRun == nil || terminalRun == nil || !runEvidenceReady(sourceRun) || terminalRun.Status.TerminalResultRef == "" || terminalRun.Status.TerminalResultDigest == "" || terminalRun.Status.TargetDiscoveryRef == "" || terminalRun.Status.TargetDiscoveryDigest == "" {
+	if stack == nil || sourceRun == nil || terminalRun == nil || !planEvidenceReady(sourceRun) || terminalRun.Status.TerminalResultRef == "" || terminalRun.Status.TerminalResultDigest == "" || terminalRun.Status.TargetDiscoveryRef == "" || terminalRun.Status.TargetDiscoveryDigest == "" {
 		return nil, false
 	}
 	sourceRef, sourceDigest := retainedBundle(sourceRun)

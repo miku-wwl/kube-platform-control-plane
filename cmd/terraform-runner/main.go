@@ -10,6 +10,10 @@ import (
 	"path"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+
 	"github.com/miku-wwl/kube-platform-control-plane/internal/artifacts"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/terraform"
 )
@@ -89,7 +93,6 @@ func main() {
 	flag.StringVar(&expectedVersion, "expected-terraform-version", "", "expected Terraform version")
 	flag.Parse()
 	startedAt := time.Now().UTC()
-	jobUID := os.Getenv("PCP_JOB_UID")
 
 	request := terraform.Request{
 		WorkingDir:        workingDir,
@@ -106,6 +109,11 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	jobUID, err := resolveJobUID(ctx)
+	if err != nil {
+		emit(terminalResult{RunUID: runUID, Operation: operation, StartedAt: startedAt, FinishedAt: time.Now().UTC(), ExecutionOutcome: "Failed", MutationClassification: "FailedPreMutation", Error: err.Error()})
+		os.Exit(2)
+	}
 	executor := terraform.Executor{Runner: terraform.OSCommandRunner{Binary: terraformBinary}}
 	store, storeErr := buildArtifactStore(artifactEndpoint, artifactRegion, artifactBucket)
 	if storeErr != nil {
@@ -225,6 +233,32 @@ func main() {
 		fmt.Fprintln(os.Stderr, "operation must be Plan or Apply")
 		os.Exit(2)
 	}
+}
+
+func resolveJobUID(ctx context.Context) (string, error) {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return "", fmt.Errorf("load in-cluster config for Job identity: %w", err)
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return "", fmt.Errorf("create Kubernetes client for Job identity: %w", err)
+	}
+	podName := os.Getenv("PCP_POD_NAME")
+	namespace := os.Getenv("PCP_POD_NAMESPACE")
+	if podName == "" || namespace == "" {
+		return "", fmt.Errorf("pod name and namespace are required for Job identity")
+	}
+	pod, err := clientset.CoreV1().Pods(namespace).Get(ctx, podName, metav1.GetOptions{})
+	if err != nil {
+		return "", fmt.Errorf("read runner Pod for Job identity: %w", err)
+	}
+	for _, owner := range pod.OwnerReferences {
+		if owner.Controller != nil && *owner.Controller && owner.Kind == "Job" && owner.UID != "" {
+			return string(owner.UID), nil
+		}
+	}
+	return "", fmt.Errorf("runner Pod has no controller-owned Job identity")
 }
 
 func effectiveInputDigest(request terraform.Request, expectedVersion, sourceBundleDigest, backendDigest, planDigest string) string {
@@ -426,6 +460,9 @@ func prepareArtifacts(ctx context.Context, store *artifacts.Store, request terra
 	if sourceBundleRef != "" {
 		if sourceRoot == "" || sourceBundleDigest == "" {
 			return fmt.Errorf("source root and source bundle digest are required")
+		}
+		if err := os.MkdirAll(sourceRoot, 0o755); err != nil {
+			return fmt.Errorf("create source root: %w", err)
 		}
 		content, err := store.GetVerified(ctx, artifacts.Ref{Key: sourceBundleRef, Digest: sourceBundleDigest})
 		if err != nil {

@@ -124,10 +124,6 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 			}
 		}
 	}
-	if err := r.ensureControllerSecretReader(ctx, &object); err != nil {
-		return ctrl.Result{}, err
-	}
-
 	childName := resourceSetName(object.Name)
 	var child platformv1alpha1.ResourceSet
 	getErr := r.Get(ctx, client.ObjectKey{Name: childName, Namespace: object.Namespace}, &child)
@@ -316,7 +312,7 @@ func (r *PlatformEnvironmentReconciler) ensureRunnerIdentity(ctx context.Context
 	}
 	role := &rbacv1.Role{}
 	if err := r.Get(ctx, key, role); apierrors.IsNotFound(err) {
-		role = &rbacv1.Role{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}, Rules: []rbacv1.PolicyRule{{APIGroups: []string{""}, Resources: []string{"configmaps", "secrets"}, Verbs: []string{"get"}}}}
+		role = &rbacv1.Role{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}, Rules: []rbacv1.PolicyRule{{APIGroups: []string{""}, Resources: []string{"configmaps", "pods"}, Verbs: []string{"get"}}, {APIGroups: []string{"batch"}, Resources: []string{"jobs"}, Verbs: []string{"get"}}}}
 		if err := ctrl.SetControllerReference(environment, role, r.Scheme); err != nil {
 			return err
 		}
@@ -331,42 +327,6 @@ func (r *PlatformEnvironmentReconciler) ensureRunnerIdentity(ctx context.Context
 		binding = &rbacv1.RoleBinding{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}, RoleRef: rbacv1.RoleRef{APIGroup: rbacv1.GroupName, Kind: "Role", Name: name}, Subjects: []rbacv1.Subject{{Kind: "ServiceAccount", Name: name, Namespace: environment.Namespace}}}
 		if err := ctrl.SetControllerReference(environment, binding, r.Scheme); err != nil {
 			return err
-		}
-		if err := r.Create(ctx, binding); err != nil && !apierrors.IsAlreadyExists(err) {
-			return err
-		}
-	} else if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *PlatformEnvironmentReconciler) ensureControllerSecretReader(ctx context.Context, environment *platformv1alpha1.PlatformEnvironment) error {
-	const name = "platform-control-plane-secret-reader"
-	key := client.ObjectKey{Name: name, Namespace: environment.Namespace}
-	role := &rbacv1.Role{}
-	if err := r.Get(ctx, key, role); apierrors.IsNotFound(err) {
-		role = &rbacv1.Role{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}, Rules: []rbacv1.PolicyRule{{APIGroups: []string{""}, Resources: []string{"secrets"}, Verbs: []string{"get"}}}}
-		if environment.UID != "" {
-			if err := ctrl.SetControllerReference(environment, role, r.Scheme); err != nil {
-				return err
-			}
-		}
-		if err := r.Create(ctx, role); err != nil && !apierrors.IsAlreadyExists(err) {
-			return err
-		}
-	} else if err != nil {
-		return err
-	} else if len(role.Rules) != 1 || len(role.Rules[0].Resources) != 1 || role.Rules[0].Resources[0] != "secrets" {
-		return fmt.Errorf("secret reader Role %q is not the expected narrow policy", name)
-	}
-	binding := &rbacv1.RoleBinding{}
-	if err := r.Get(ctx, key, binding); apierrors.IsNotFound(err) {
-		binding = &rbacv1.RoleBinding{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}, RoleRef: rbacv1.RoleRef{APIGroup: rbacv1.GroupName, Kind: "Role", Name: name}, Subjects: []rbacv1.Subject{{Kind: "ServiceAccount", Name: "platform-control-plane", Namespace: "platform-system"}}}
-		if environment.UID != "" {
-			if err := ctrl.SetControllerReference(environment, binding, r.Scheme); err != nil {
-				return err
-			}
 		}
 		if err := r.Create(ctx, binding); err != nil && !apierrors.IsAlreadyExists(err) {
 			return err
