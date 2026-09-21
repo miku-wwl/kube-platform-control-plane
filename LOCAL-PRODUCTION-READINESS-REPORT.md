@@ -343,3 +343,48 @@ Phase 13 is limited to live AWS configuration and evidence: IAM/STS role policie
 - No real AWS credentials or services were used; only LocalStack Ultimate, Kind, fake/mocked contracts, and local Terraform were used.
 - No commit or push was performed.
 - Stage 2 and Phase 13 were not started.
+
+## Stage 1 Repository Cleanup & E2E Consolidation
+
+```text
+REPOSITORY_CLEANUP = PASS
+STAGE1_E2E = PASS
+STAGE1_FREEZE = PASS
+```
+
+### Audit decisions
+
+| Scope | Decision | Reason |
+|---|---|---|
+| `scripts/`, `hack/`, `*.sh`, `*.ps1`, `*.py` | `KEEP` / no deletion | No such files are present in the current repository; no temporary script is being reintroduced. |
+| `test/fixtures/terraform/localstack-basic` | `KEEP` | The single fixture is used by Terraform fmt/init/validate and LocalStack regression evidence. |
+| `*_test.go` | `KEEP` | The current tests cover lifecycle fences, identity/integrity, AWS fake failures, reconstruction, runtime readiness, SSA/inventory/prune, and backpressure; no safe duplicate deletion was identified. |
+| v2.0.3 brief/detailed design and gap analysis | `KEEP` | These are the frozen architecture and historical decision record, not temporary reports. |
+| `LOCAL-PRODUCTION-READINESS-REPORT.md` | `KEEP` | This is the authoritative local evidence and limitation record. |
+| temporary validation directories, JSON reports, generated kubeconfigs, stale plan files | `DELETE` / none present | No such repository files remain; generated runtime artifacts stay outside the repository and are cleaned after execution. |
+
+### E2E consolidation
+
+The reviewer entry point is now [README.md](README.md) → [e2e/README.md](e2e/README.md). The E2E guide groups the existing evidence into five high-value lanes: full lifecycle, restart recovery, multi-target isolation, fail-closed behavior, and AWS-native offline contracts. It does not add a second LocalStack launcher or a synthetic E2E that would misrepresent unit evidence as live lifecycle proof.
+
+### Retained unit-test categories
+
+- identity, target/account/region, ARN and fail-closed validation;
+- digest, saved-plan, source-closure, evidence and reconstruction integrity;
+- fake STS/EKS/S3/KMS failure paths;
+- controller lifecycle gates, approval binding, cleanup evidence and backpressure;
+- runtime readiness, Valkey bootstrap shape, SSA/inventory/prune and Kind integration.
+
+### Final repository structure
+
+```text
+README.md
+e2e/README.md
+LOCAL-PRODUCTION-READINESS-REPORT.md
+platform-control-plane-*-v2.0.3-final-freeze-locked-r3.md
+api/ cmd/ config/ internal/ test/fixtures/terraform/
+```
+
+### Cleanup validation
+
+The current local evidence remains `PASS_LOCAL`: full lifecycle stages, restart recovery, multi-target isolation, fail-closed checks, and offline AWS identity contracts are recorded above; `go test`, `go vet`, race, Terraform, LocalStack, Kind, and `git diff --check` remain required gates. The cleanup removed eight orphaned Phase 12 `ChangeApproval` test objects from the local management Kind cluster; no PlatformEnvironment, InfraStack, TerraformRun, ResourceSet, test namespace, or test bucket remained. LocalStack retained only the design-approved `platformlens-artifacts` bucket. No real AWS was used, and no commit or push is part of this cleanup cycle.
