@@ -89,7 +89,7 @@ func main() {
 		setupLog.Error(err, "unable to create EnvironmentClass controller")
 		os.Exit(1)
 	}
-	if err := (&controller.InfraStackReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), ArtifactEndpoint: os.Getenv("PCP_ARTIFACT_ENDPOINT"), ArtifactRegion: os.Getenv("PCP_ARTIFACT_REGION"), ArtifactBucket: os.Getenv("PCP_ARTIFACT_BUCKET"), TargetVerifier: targetVerifier}).SetupWithManager(mgr); err != nil {
+	if err := (&controller.InfraStackReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), ArtifactEndpoint: os.Getenv("PCP_ARTIFACT_ENDPOINT"), ArtifactRegion: os.Getenv("PCP_ARTIFACT_REGION"), ArtifactBucket: os.Getenv("PCP_ARTIFACT_BUCKET"), ArtifactKMSKeyID: os.Getenv("PCP_ARTIFACT_KMS_KEY_ID"), TargetVerifier: targetVerifier}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create InfraStack controller")
 		os.Exit(1)
 	}
@@ -100,6 +100,7 @@ func main() {
 		ArtifactEndpoint: os.Getenv("PCP_ARTIFACT_ENDPOINT"),
 		ArtifactRegion:   os.Getenv("PCP_ARTIFACT_REGION"),
 		ArtifactBucket:   os.Getenv("PCP_ARTIFACT_BUCKET"),
+		ArtifactKMSKeyID: os.Getenv("PCP_ARTIFACT_KMS_KEY_ID"),
 		KubeClient:       kubeClient,
 		Gate:             executionGate,
 	}).SetupWithManager(mgr); err != nil {

@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"net/url"
 	"strings"
 	"time"
 
@@ -42,6 +41,10 @@ func (r RealAWSAssumeRole) AssumeRole(request AssumeRoleRequest) (AssumedSession
 	if request.RoleARN == "" || request.SessionName == "" || request.ExpectedAccount == "" || request.Region == "" {
 		return AssumedSession{}, fmt.Errorf("AWS AssumeRole requires role ARN, session name, expected account, and region")
 	}
+	expectedRoleName := roleNameFromARN(request.RoleARN)
+	if expectedRoleName == "" {
+		return AssumedSession{}, fmt.Errorf("AWS AssumeRole requires a valid IAM role ARN")
+	}
 	output, err := r.Client.AssumeRole(context.Background(), &sts.AssumeRoleInput{
 		RoleArn:         aws.String(request.RoleARN),
 		RoleSessionName: aws.String(request.SessionName),
@@ -54,6 +57,10 @@ func (r RealAWSAssumeRole) AssumeRole(request AssumeRoleRequest) (AssumedSession
 		return AssumedSession{}, fmt.Errorf("AWS AssumeRole returned incomplete session")
 	}
 	roleARN := aws.ToString(output.AssumedRoleUser.Arn)
+	actualRoleName := roleNameFromARN(roleARN)
+	if actualRoleName == "" {
+		return AssumedSession{}, fmt.Errorf("AWS AssumeRole returned an invalid assumed role ARN")
+	}
 	accountID, err := accountFromARN(roleARN)
 	if err != nil {
 		return AssumedSession{}, err
@@ -61,10 +68,10 @@ func (r RealAWSAssumeRole) AssumeRole(request AssumeRoleRequest) (AssumedSession
 	if accountID != request.ExpectedAccount {
 		return AssumedSession{}, fmt.Errorf("AWS AssumeRole account mismatch: got %q, want %q", accountID, request.ExpectedAccount)
 	}
-	if roleNameFromARN(roleARN) != roleNameFromARN(request.RoleARN) {
-		return AssumedSession{}, fmt.Errorf("AWS AssumeRole role mismatch: got %q, want %q", roleNameFromARN(roleARN), roleNameFromARN(request.RoleARN))
+	if actualRoleName != expectedRoleName {
+		return AssumedSession{}, fmt.Errorf("AWS AssumeRole role mismatch: got %q, want %q", actualRoleName, expectedRoleName)
 	}
-	if aws.ToString(output.Credentials.AccessKeyId) == "" || output.Credentials.Expiration == nil {
+	if aws.ToString(output.Credentials.AccessKeyId) == "" || aws.ToString(output.Credentials.SecretAccessKey) == "" || aws.ToString(output.Credentials.SessionToken) == "" || output.Credentials.Expiration == nil {
 		return AssumedSession{}, fmt.Errorf("AWS AssumeRole returned incomplete credentials")
 	}
 	now := time.Now
@@ -74,7 +81,16 @@ func (r RealAWSAssumeRole) AssumeRole(request AssumeRoleRequest) (AssumedSession
 	if !output.Credentials.Expiration.After(now()) {
 		return AssumedSession{}, fmt.Errorf("AWS AssumeRole returned expired credentials")
 	}
-	return AssumedSession{AccountID: accountID, RoleARN: roleARN, Region: request.Region, TokenID: aws.ToString(output.Credentials.AccessKeyId), ExpiresAt: aws.ToTime(output.Credentials.Expiration)}, nil
+	return AssumedSession{
+		AccountID:       accountID,
+		RoleARN:         roleARN,
+		Region:          request.Region,
+		AccessKeyID:     aws.ToString(output.Credentials.AccessKeyId),
+		SecretAccessKey: aws.ToString(output.Credentials.SecretAccessKey),
+		SessionToken:    aws.ToString(output.Credentials.SessionToken),
+		TokenID:         aws.ToString(output.Credentials.AccessKeyId),
+		ExpiresAt:       aws.ToTime(output.Credentials.Expiration),
+	}, nil
 }
 
 func optionalString(value string) *string {
@@ -85,30 +101,40 @@ func optionalString(value string) *string {
 }
 
 func accountFromARN(value string) (string, error) {
-	parsed, err := url.Parse(value)
-	if err != nil || parsed.Scheme != "arn" {
+	parts, err := splitARN(value)
+	if err != nil {
 		return "", fmt.Errorf("invalid AWS identity ARN %q", value)
-	}
-	parts := strings.Split(value, ":")
-	if len(parts) < 6 || parts[4] == "" {
-		return "", fmt.Errorf("AWS identity ARN %q has no account", value)
 	}
 	return parts[4], nil
 }
 
 func roleNameFromARN(value string) string {
-	parts := strings.Split(value, ":")
-	if len(parts) < 6 {
+	parts, err := splitARN(value)
+	if err != nil {
 		return ""
 	}
-	resource := strings.Split(parts[5], "/")
-	if len(resource) < 2 {
+	resourceParts := strings.Split(parts[5], "/")
+	if len(resourceParts) < 2 {
 		return ""
 	}
-	if resource[0] == "assumed-role" || resource[0] == "role" {
-		return resource[1]
+	switch resourceParts[0] {
+	case "role":
+		return resourceParts[len(resourceParts)-1]
+	case "assumed-role":
+		if len(resourceParts) < 3 {
+			return resourceParts[1]
+		}
+		return resourceParts[len(resourceParts)-2]
 	}
 	return ""
+}
+
+func splitARN(value string) ([]string, error) {
+	parts := strings.Split(value, ":")
+	if len(parts) != 6 || parts[0] != "arn" || parts[1] == "" || parts[2] == "" || parts[4] == "" || parts[5] == "" {
+		return nil, fmt.Errorf("invalid ARN")
+	}
+	return parts, nil
 }
 
 type EKSDescribeAPI interface {

@@ -35,11 +35,18 @@ type objectStore interface {
 }
 
 type Store struct {
-	client objectStore
-	bucket string
+	client   objectStore
+	bucket   string
+	kmsKeyID string
 }
 
 func NewS3Store(endpoint, region, bucket string) (*Store, error) {
+	return NewS3StoreWithKMS(endpoint, region, bucket, "")
+}
+
+// NewS3StoreWithKMS keeps the local profile unchanged while allowing an AWS
+// deployment to opt into SSE-KMS through configuration rather than code.
+func NewS3StoreWithKMS(endpoint, region, bucket, kmsKeyID string) (*Store, error) {
 	if region == "" || bucket == "" {
 		return nil, fmt.Errorf("region and bucket are required")
 	}
@@ -60,11 +67,15 @@ func NewS3Store(endpoint, region, bucket string) (*Store, error) {
 			options.UsePathStyle = isLocalEndpoint(endpoint)
 		}
 	})
-	return &Store{client: client, bucket: bucket}, nil
+	return &Store{client: client, bucket: bucket, kmsKeyID: kmsKeyID}, nil
 }
 
 func NewStore(client objectStore, bucket string) *Store {
-	return &Store{client: client, bucket: bucket}
+	return NewStoreWithKMS(client, bucket, "")
+}
+
+func NewStoreWithKMS(client objectStore, bucket, kmsKeyID string) *Store {
+	return &Store{client: client, bucket: bucket, kmsKeyID: kmsKeyID}
 }
 
 func (s *Store) PutImmutable(ctx context.Context, key string, content []byte) (Ref, error) {
@@ -72,7 +83,7 @@ func (s *Store) PutImmutable(ctx context.Context, key string, content []byte) (R
 		return Ref{}, err
 	}
 	digestValue := digest(content)
-	output, err := s.client.PutObject(ctx, &s3.PutObjectInput{
+	putInput := &s3.PutObjectInput{
 		Bucket:               aws.String(s.bucket),
 		Key:                  aws.String(key),
 		Body:                 bytes.NewReader(content),
@@ -80,7 +91,12 @@ func (s *Store) PutImmutable(ctx context.Context, key string, content []byte) (R
 		ServerSideEncryption: "AES256",
 		Metadata:             map[string]string{"sha256": digestValue},
 		IfNoneMatch:          aws.String("*"),
-	})
+	}
+	if s.kmsKeyID != "" {
+		putInput.ServerSideEncryption = "aws:kms"
+		putInput.SSEKMSKeyId = aws.String(s.kmsKeyID)
+	}
+	output, err := s.client.PutObject(ctx, putInput)
 	if err == nil {
 		versionID := ""
 		if output.VersionId != nil {

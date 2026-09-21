@@ -225,11 +225,14 @@ type AssumeRoleRequest struct {
 }
 
 type AssumedSession struct {
-	AccountID string
-	RoleARN   string
-	Region    string
-	TokenID   string
-	ExpiresAt time.Time
+	AccountID       string
+	RoleARN         string
+	Region          string
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionToken    string
+	TokenID         string
+	ExpiresAt       time.Time
 }
 
 // AssumeRole is the integration boundary for real STS. Local validation uses

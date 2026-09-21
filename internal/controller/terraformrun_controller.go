@@ -40,6 +40,7 @@ type TerraformRunReconciler struct {
 	ArtifactEndpoint string
 	ArtifactRegion   string
 	ArtifactBucket   string
+	ArtifactKMSKeyID string
 	KubeClient       kubernetes.Interface
 	Gate             *reliability.Gate
 }
@@ -317,6 +318,7 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 		ArtifactEndpoint:            r.ArtifactEndpoint,
 		ArtifactRegion:              r.ArtifactRegion,
 		ArtifactBucket:              r.ArtifactBucket,
+		ArtifactKMSKeyID:            r.ArtifactKMSKeyID,
 		ArtifactPrefix:              path.Join("runs", string(object.UID)),
 		BackendConfigArtifactRef:    object.Spec.BackendConfigArtifactRef,
 		BackendConfigArtifactDigest: object.Spec.BackendConfigArtifactDigest,
@@ -361,7 +363,7 @@ func (r *TerraformRunReconciler) captureTerminalResult(ctx context.Context, obje
 	if r.ArtifactRegion == "" || r.ArtifactBucket == "" {
 		return runnerTerminalResult{}, fmt.Errorf("durable terminal artifact store region and bucket are not configured")
 	}
-	store, err := artifacts.NewS3Store(r.ArtifactEndpoint, r.ArtifactRegion, r.ArtifactBucket)
+	store, err := artifacts.NewS3StoreWithKMS(r.ArtifactEndpoint, r.ArtifactRegion, r.ArtifactBucket, r.ArtifactKMSKeyID)
 	if err != nil {
 		return runnerTerminalResult{}, err
 	}

@@ -46,6 +46,7 @@ type JobRequest struct {
 	ArtifactEndpoint            string
 	ArtifactRegion              string
 	ArtifactBucket              string
+	ArtifactKMSKeyID            string
 	ArtifactPrefix              string
 	PlanRef                     string
 	PlanDigest                  string
@@ -142,6 +143,9 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			args = append(args, "--artifact-endpoint="+request.ArtifactEndpoint)
 		}
 		args = append(args, "--artifact-region="+request.ArtifactRegion, "--artifact-bucket="+request.ArtifactBucket)
+		if request.ArtifactKMSKeyID != "" {
+			args = append(args, "--artifact-kms-key-id="+request.ArtifactKMSKeyID)
+		}
 		if request.ArtifactPrefix != "" {
 			args = append(args, "--artifact-prefix="+request.ArtifactPrefix)
 		}
@@ -218,7 +222,6 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			corev1.EnvVar{Name: "AWS_DEFAULT_REGION", Value: request.ArtifactRegion},
 		)
 	}
-
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{Name: request.Name, Namespace: request.Namespace, Labels: labels},
 		Spec: batchv1.JobSpec{

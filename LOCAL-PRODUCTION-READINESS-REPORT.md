@@ -195,3 +195,66 @@ Remaining Phase 13 evidence must cover real IAM/STS/EKS/KMS/VPC/EC2/S3 behavior,
 - The working tree is intentionally not clean because the necessary Phase 12 implementation, tests, generated CRDs, and required documentation remain uncommitted.
 - No temporary validation directory, ad-hoc script, JSON report, or unrequested Markdown artifact was added.
 - Phase 13 was not started.
+
+## Phase 12 Final AWS Identity & KMS Closure — v2.0.4 additive portability gate
+
+This is a narrow closure of the remaining AWS portability boundaries. It does not change the PlatformEnvironment lifecycle, approval model, saved-plan execution, TargetDiscovery contract, ResourceSet lifecycle, finalizer model, CRD major semantics, or restart-recovery design.
+
+### Final status
+
+```text
+PHASE12_FINAL_FREEZE = PASS
+LOCAL_VALIDATION_PASS = PASS
+```
+
+`PASS` is limited to behavior that can be proven locally with unit tests, fake AWS SDK clients, LocalStack Ultimate, Kind, and the existing Gate0 evidence. Real AWS remains prohibited and deferred to Phase 13.
+
+### Closed gaps
+
+| Gap | Classification | Evidence / smallest fix |
+|---|---|---|
+| RuntimeRoleARN enters the EKS credential path | `PASS_LOCAL` | `TargetConnectionProfile.RoleARN` is passed to the injectable `AWSSTSTokenProvider`; configured roles call the injectable AssumeRole boundary, install temporary credentials into an AWS SDK config, and use that config for EKS token presigning. Empty role uses the base workload identity. |
+| Runtime target/account/region/role isolation | `PASS_LOCAL` | Runtime token tests cover AssumeRole denial, wrong account, wrong region, expired credentials, invalid role identity, and two target calls without cross-target credential caching. |
+| InfrastructureExecutionIdentity reaches Terraform execution | `PASS_LOCAL` | Existing Mode A is retained: `ExecutionRoleARN` is written to the controller-managed runner ServiceAccount annotation, the same ServiceAccount is propagated through InfraStack/TerraformRun/Job, and AWS-native Jobs do not receive `test/test` credentials. The full helper-chain assertion is now covered offline. |
+| Artifact encryption portability | `PASS_LOCAL` | S3 store defaults to `AES256`; optional `PCP_ARTIFACT_KMS_KEY_ID` / runner `--artifact-kms-key-id` emits `aws:kms` and the configured `SSEKMSKeyId`. LocalStack default behavior is unchanged. Fake S3 request tests cover both modes. |
+| IAM role path handling | `PASS_LOCAL` | Strict ARN parsing now extracts the final role name from simple, one-level, and nested IAM paths and rejects malformed input. |
+| Real AWS IAM/STS/EKS/KMS/network semantics | `DEFERRED_TO_PHASE13` | No real AWS calls were made or permitted. |
+
+### Changed files in this closure
+
+- `internal/target/eks_resolver.go`: RuntimeRoleARN-aware, injectable AssumeRole and AWS credential wiring for EKS token generation.
+- `internal/target/identity.go`: Temporary assumed-session credential fields for the provider boundary.
+- `internal/target/aws_adapters.go`: Strict ARN parsing, role-path handling, and complete temporary-credential validation.
+- `internal/target/aws_adapters_test.go`: Runtime-role success/failure, target isolation, refresh/no-cache, and ARN-path tests.
+- `internal/artifacts/s3.go`: Optional SSE-KMS request configuration while retaining AES256 default behavior.
+- `internal/artifacts/s3_test.go`: Fake S3 assertions for AES256 and SSE-KMS headers.
+- `internal/controller/infrastack_controller.go`, `internal/controller/terraformrun_controller.go`, `cmd/controller/main.go`: KMS configuration propagation for artifact reads and execution reconciliation.
+- `internal/terraform/job.go`, `cmd/terraform-runner/main.go`: KMS configuration propagation to Terraform runner Jobs without synthetic AWS credentials in AWS-native mode.
+- `internal/controller/phase12_aws_portability_test.go`: Full infrastructure identity → ServiceAccount → TerraformRun → Job chain assertion and KMS argument assertion.
+
+### Regression status
+
+| Check | Status | Evidence |
+|---|---|---|
+| `go test ./...` | `PASS` | Full repository test suite |
+| `go vet ./...` | `PASS` | Full repository vet run |
+| `go test -race ./...` | `PASS` | Full repository race run |
+| `git diff --check` | `PASS` | Only normal LF/CRLF conversion warnings |
+| Terraform fixture fmt/init/validate | `PASS` | LocalStack fixture; generated `.terraform` directory removed afterward |
+| LocalStack Ultimate S3/STS/artifact regression | `PASS` | Healthy local `localstack/localstack-pro:dev`, synthetic local identity only, immutable artifact round-trip |
+| Kind manager/runtime health | `PASS` | Two management manager Pods Ready; both target Kind nodes Ready; no residual test CRs |
+| Gate0 lifecycle | `PASS_LOCAL` | Existing clean current-code evidence remains valid; this closure changes no Kind lifecycle path and all lifecycle/controller regressions pass |
+| Real AWS validation | `NOT RUN` | Explicitly prohibited; Phase 13 only |
+
+### Phase 13 boundary
+
+Expected core code changes: `NONE`.
+
+Phase 13 remaining work is limited to real AWS deployment/configuration and live evidence: IAM/STS policy and AssumeRole validation, S3/KMS and backend semantics, EKS authentication and Kubernetes access, VPC/EC2/networking, quotas/throttling/eventual consistency, production Halter storage, failure injection, DR/RPO/RTO, SLI/SLO/alerts, and cost evidence. No controller redesign, CRD redesign, identity architecture redesign, TargetDiscovery redesign, or Terraform lifecycle redesign is expected from this closure.
+
+### Delivery boundary
+
+- No real AWS, real credentials, real IAM/STS/EKS/S3/KMS, or paid cloud resource was used.
+- No commit or push was performed.
+- No temporary validation directory, ad-hoc script, JSON report, or extra Markdown file was added.
+- Phase 13 and Stage 2 were not started.

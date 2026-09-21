@@ -58,6 +58,7 @@ func main() {
 	var artifactEndpoint string
 	var artifactRegion string
 	var artifactBucket string
+	var artifactKMSKeyID string
 	var artifactPrefix string
 	var sourceRoot string
 	var sourceBundleRef string
@@ -83,6 +84,7 @@ func main() {
 	flag.StringVar(&artifactEndpoint, "artifact-endpoint", "", "S3-compatible artifact endpoint")
 	flag.StringVar(&artifactRegion, "artifact-region", "us-east-1", "artifact bucket region")
 	flag.StringVar(&artifactBucket, "artifact-bucket", "", "artifact bucket")
+	flag.StringVar(&artifactKMSKeyID, "artifact-kms-key-id", "", "optional AWS KMS key ID or ARN")
 	flag.StringVar(&artifactPrefix, "artifact-prefix", "", "immutable artifact key prefix")
 	flag.StringVar(&sourceRoot, "source-root", "", "pristine source root for source bundle creation")
 	flag.StringVar(&sourceBundleRef, "source-bundle-ref", "", "immutable source bundle object key")
@@ -119,7 +121,7 @@ func main() {
 		os.Exit(2)
 	}
 	executor := terraform.Executor{Runner: terraform.OSCommandRunner{Binary: terraformBinary}}
-	store, storeErr := buildArtifactStore(artifactEndpoint, artifactRegion, artifactBucket)
+	store, storeErr := buildArtifactStore(artifactEndpoint, artifactRegion, artifactBucket, artifactKMSKeyID)
 	if storeErr != nil {
 		emit(terminalResult{RunUID: runUID, JobUID: jobUID, Operation: operation, StartedAt: startedAt, FinishedAt: time.Now().UTC(), ExecutionOutcome: "Failed", MutationClassification: "FailedPreMutation", Error: storeErr.Error()})
 		os.Exit(2)
@@ -294,14 +296,14 @@ func effectiveInputDigest(request terraform.Request, expectedVersion, sourceBund
 	return digest
 }
 
-func buildArtifactStore(endpoint, region, bucket string) (*artifacts.Store, error) {
+func buildArtifactStore(endpoint, region, bucket, kmsKeyID string) (*artifacts.Store, error) {
 	if endpoint == "" && bucket == "" {
 		return nil, nil
 	}
 	if region == "" || bucket == "" {
 		return nil, fmt.Errorf("artifact region and bucket are required")
 	}
-	return artifacts.NewS3Store(endpoint, region, bucket)
+	return artifacts.NewS3StoreWithKMS(endpoint, region, bucket, kmsKeyID)
 }
 
 func uploadPlanArtifacts(ctx context.Context, store *artifacts.Store, prefix string, request terraform.Request, sourceRoot string, result terraform.PlanResult, terminal *terminalResult) error {

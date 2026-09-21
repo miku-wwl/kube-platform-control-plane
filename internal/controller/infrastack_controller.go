@@ -40,6 +40,7 @@ type InfraStackReconciler struct {
 	ArtifactEndpoint string
 	ArtifactRegion   string
 	ArtifactBucket   string
+	ArtifactKMSKeyID string
 	TargetVerifier   targetresolver.TargetVerifier
 }
 
@@ -432,7 +433,7 @@ func (r *InfraStackReconciler) verifyTargetDiscovery(ctx context.Context, stack 
 	if r.ArtifactRegion == "" || r.ArtifactBucket == "" {
 		return targetresolver.DiscoveryResult{}, fmt.Errorf("target discovery artifact store region and bucket are not configured")
 	}
-	store, err := artifacts.NewS3Store(r.ArtifactEndpoint, r.ArtifactRegion, r.ArtifactBucket)
+	store, err := artifacts.NewS3StoreWithKMS(r.ArtifactEndpoint, r.ArtifactRegion, r.ArtifactBucket, r.ArtifactKMSKeyID)
 	if err != nil {
 		return targetresolver.DiscoveryResult{}, err
 	}

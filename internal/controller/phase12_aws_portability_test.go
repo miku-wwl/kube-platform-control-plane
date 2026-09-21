@@ -35,12 +35,19 @@ func TestAWSNativeMaterializationPathBuildsStackAndTerraformJobOffline(t *testin
 
 	run := buildPlanRun(stack, "env-plan-1")
 	run.UID = "plan-run-uid"
-	job, err := (&TerraformRunReconciler{ArtifactRegion: "us-east-1", ArtifactBucket: "native-artifacts"}).buildJob(run)
+	if run.Spec.RunnerServiceAccountName != class.Spec.RunnerProfile.ServiceAccountName {
+		t.Fatalf("TerraformRun runner ServiceAccount = %q, want %q", run.Spec.RunnerServiceAccountName, class.Spec.RunnerProfile.ServiceAccountName)
+	}
+	annotations := runnerServiceAccountAnnotations(class)
+	if annotations["eks.amazonaws.com/role-arn"] != stack.Spec.InfrastructureExecutionIdentity.RoleARN {
+		t.Fatalf("runner identity annotation = %#v, want infrastructure role %q", annotations, stack.Spec.InfrastructureExecutionIdentity.RoleARN)
+	}
+	job, err := (&TerraformRunReconciler{ArtifactRegion: "us-east-1", ArtifactBucket: "native-artifacts", ArtifactKMSKeyID: "arn:aws:kms:us-east-1:123456789012:key/example"}).buildJob(run)
 	if err != nil {
 		t.Fatalf("buildJob() error = %v", err)
 	}
 	runner := job.Spec.Template.Spec.Containers[0]
-	if job.Spec.Template.Spec.ServiceAccountName != "runner" || !containsTerraformArg(runner.Args, "--artifact-region=us-east-1") || !containsTerraformArg(runner.Args, "--artifact-bucket=native-artifacts") {
+	if job.Spec.Template.Spec.ServiceAccountName != run.Spec.RunnerServiceAccountName || !containsTerraformArg(runner.Args, "--artifact-region=us-east-1") || !containsTerraformArg(runner.Args, "--artifact-bucket=native-artifacts") || !containsTerraformArg(runner.Args, "--artifact-kms-key-id=arn:aws:kms:us-east-1:123456789012:key/example") {
 		t.Fatalf("AWS-native Terraform Job identity/artifact args = serviceAccount=%q args=%#v", job.Spec.Template.Spec.ServiceAccountName, runner.Args)
 	}
 	approval := &platformv1alpha1.ChangeApproval{ObjectMeta: metav1.ObjectMeta{Name: "approval", UID: "approval-uid"}}

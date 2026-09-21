@@ -5,7 +5,30 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
+
+type captureObjectStore struct {
+	put *s3.PutObjectInput
+}
+
+func (f *captureObjectStore) PutObject(_ context.Context, input *s3.PutObjectInput, _ ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
+	f.put = input
+	return &s3.PutObjectOutput{}, nil
+}
+
+func (f *captureObjectStore) GetObject(context.Context, *s3.GetObjectInput, ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+	return nil, nil
+}
+
+func (f *captureObjectStore) DeleteObject(context.Context, *s3.DeleteObjectInput, ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+	return &s3.DeleteObjectOutput{}, nil
+}
+
+func (f *captureObjectStore) HeadObject(context.Context, *s3.HeadObjectInput, ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
+	return &s3.HeadObjectOutput{}, nil
+}
 
 func TestValidateKeyRejectsTraversal(t *testing.T) {
 	for _, key := range []string{"", "/absolute", "runs/../plan.binary", `runs\\plan.binary`} {
@@ -32,6 +55,25 @@ func TestNewS3StoreKeepsCustomEndpointForLocalStack(t *testing.T) {
 	}
 	if store == nil || store.bucket != "local-artifacts" {
 		t.Fatalf("custom endpoint store = %#v", store)
+	}
+}
+
+func TestPutImmutableUsesAES256ByDefaultAndOptionalSSEKMS(t *testing.T) {
+	defaultCapture := &captureObjectStore{}
+	if _, err := NewStore(defaultCapture, "artifacts").PutImmutable(context.Background(), "runs/default", []byte("default")); err != nil {
+		t.Fatalf("default PutImmutable() error = %v", err)
+	}
+	if defaultCapture.put.ServerSideEncryption != "AES256" || defaultCapture.put.SSEKMSKeyId != nil {
+		t.Fatalf("default encryption = mode=%q key=%v", defaultCapture.put.ServerSideEncryption, defaultCapture.put.SSEKMSKeyId)
+	}
+
+	kmsCapture := &captureObjectStore{}
+	key := "arn:aws:kms:us-east-1:123456789012:key/example"
+	if _, err := NewStoreWithKMS(kmsCapture, "artifacts", key).PutImmutable(context.Background(), "runs/kms", []byte("kms")); err != nil {
+		t.Fatalf("KMS PutImmutable() error = %v", err)
+	}
+	if kmsCapture.put.ServerSideEncryption != "aws:kms" || kmsCapture.put.SSEKMSKeyId == nil || *kmsCapture.put.SSEKMSKeyId != key {
+		t.Fatalf("KMS encryption = mode=%q key=%v", kmsCapture.put.ServerSideEncryption, kmsCapture.put.SSEKMSKeyId)
 	}
 }
 
