@@ -21,43 +21,44 @@ const (
 )
 
 type JobRequest struct {
-	Name                        string
-	Namespace                   string
-	RunUID                      string
-	RunnerImage                 string
-	SourceType                  string
-	SourceURL                   string
-	SourceRevision              string
-	SourcePath                  string
-	SourceRoot                  string
-	SourceBundleRef             string
-	SourceBundleDigest          string
-	Operation                   string
-	Destroy                     bool
-	WorkingDir                  string
-	Workspace                   string
-	BackendConfigMap            string
-	BackendConfigPath           string
-	PlanPath                    string
-	LockTimeout                 time.Duration
-	ExecutionTimeout            time.Duration
-	Parallelism                 *int32
-	GitImage                    string
-	ArtifactEndpoint            string
-	ArtifactRegion              string
-	ArtifactBucket              string
-	ArtifactKMSKeyID            string
-	ArtifactPrefix              string
-	PlanRef                     string
-	PlanDigest                  string
-	TargetDiscoveryRef          string
-	TargetDiscoveryDigest       string
-	BackendConfigArtifactRef    string
-	BackendConfigArtifactDigest string
-	VariableSecretRefs          []corev1.LocalObjectReference
-	VariableSecretVariables     []VariableSecretReference
-	ServiceAccountName          string
-	ExpectedTerraformVersion    string
+	Name                           string
+	Namespace                      string
+	RunUID                         string
+	RunnerImage                    string
+	SourceType                     string
+	SourceURL                      string
+	SourceRevision                 string
+	SourcePath                     string
+	SourceRoot                     string
+	SourceBundleRef                string
+	SourceBundleDigest             string
+	Operation                      string
+	Destroy                        bool
+	WorkingDir                     string
+	Workspace                      string
+	BackendConfigMap               string
+	BackendConfigPath              string
+	PlanPath                       string
+	LockTimeout                    time.Duration
+	ExecutionTimeout               time.Duration
+	Parallelism                    *int32
+	GitImage                       string
+	ArtifactEndpoint               string
+	ArtifactRegion                 string
+	ArtifactBucket                 string
+	ArtifactKMSKeyID               string
+	ArtifactPrefix                 string
+	InfrastructureExecutionRoleARN string
+	PlanRef                        string
+	PlanDigest                     string
+	TargetDiscoveryRef             string
+	TargetDiscoveryDigest          string
+	BackendConfigArtifactRef       string
+	BackendConfigArtifactDigest    string
+	VariableSecretRefs             []corev1.LocalObjectReference
+	VariableSecretVariables        []VariableSecretReference
+	ServiceAccountName             string
+	ExpectedTerraformVersion       string
 }
 
 type VariableSecretReference struct {
@@ -164,6 +165,9 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 	}
 	if request.TargetDiscoveryRef != "" {
 		args = append(args, "--target-discovery-ref="+request.TargetDiscoveryRef, "--target-discovery-digest="+request.TargetDiscoveryDigest)
+	}
+	if request.InfrastructureExecutionRoleARN != "" {
+		args = append(args, "--infrastructure-execution-role-arn="+request.InfrastructureExecutionRoleARN)
 	}
 	if request.BackendConfigArtifactRef != "" {
 		args = append(args,

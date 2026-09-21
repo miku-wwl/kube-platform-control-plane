@@ -17,7 +17,7 @@ func TestAWSNativeMaterializationPathBuildsStackAndTerraformJobOffline(t *testin
 			Source:        platformv1alpha1.SourceSpec{URL: "https://example.invalid/platform.git", Revision: "0123456789012345678901234567890123456789"},
 			Backend:       platformv1alpha1.BackendSpec{Type: "s3", ConfigRef: corev1.LocalObjectReference{Name: "backend"}, AuthRef: platformv1alpha1.ServiceAccountReference{ServiceAccountName: "runner"}},
 			Executor:      platformv1alpha1.ExecutorSpec{Image: "registry.invalid/terraform-runner@sha256:runner", TerraformVersion: "1.9.0", WorkDir: "/workspace/terraform", ExecutionTimeout: metav1.Duration{Duration: time.Minute}},
-			RunnerProfile: platformv1alpha1.RunnerProfileSpec{ServiceAccountName: "runner", Image: "registry.invalid/terraform-runner@sha256:runner", TerraformVersion: "1.9.0"},
+			RunnerProfile: platformv1alpha1.RunnerProfileSpec{ServiceAccountName: "runner", ManagementRoleARN: "arn:aws:iam::123456789012:role/management", Image: "registry.invalid/terraform-runner@sha256:runner", TerraformVersion: "1.9.0"},
 			Target:        platformv1alpha1.TargetReference{Provider: "aws", Account: "123456789012", Region: "us-east-1", ClusterName: "platform", ClusterARN: "arn:aws:eks:us-east-1:123456789012:cluster/platform", ExecutionRoleARN: "arn:aws:iam::123456789012:role/infra", RuntimeRoleARN: "arn:aws:iam::123456789012:role/runtime"},
 		},
 	}
@@ -29,25 +29,34 @@ func TestAWSNativeMaterializationPathBuildsStackAndTerraformJobOffline(t *testin
 	if stack.Spec.InfrastructureExecutionIdentity.Mode != "aws-native" || stack.Spec.InfrastructureExecutionIdentity.RoleARN != class.Spec.Target.ExecutionRoleARN {
 		t.Fatalf("stack infrastructure identity = %+v", stack.Spec.InfrastructureExecutionIdentity)
 	}
+	if stack.Spec.RunnerManagementRoleARN != class.Spec.RunnerProfile.ManagementRoleARN || stack.Spec.RunnerServiceAccountName != class.Spec.Backend.AuthRef.ServiceAccountName {
+		t.Fatalf("stack management identity = serviceAccount=%q role=%q", stack.Spec.RunnerServiceAccountName, stack.Spec.RunnerManagementRoleARN)
+	}
 	if stack.Spec.RuntimeTargetIdentity.AccountID != "123456789012" || stack.Spec.TargetConnectionProfile.AuthMode != "aws-eks" || stack.Spec.TargetConnectionProfile.Endpoint != "" {
 		t.Fatalf("stack AWS target materialization = identity=%+v profile=%+v", stack.Spec.RuntimeTargetIdentity, stack.Spec.TargetConnectionProfile)
 	}
 
 	run := buildPlanRun(stack, "env-plan-1")
 	run.UID = "plan-run-uid"
+	if run.Spec.InfrastructureExecutionRoleARN != class.Spec.Target.ExecutionRoleARN || run.Spec.InfrastructureExecutionIdentityDigest == "" {
+		t.Fatalf("PlanRun execution identity = role=%q digest=%q", run.Spec.InfrastructureExecutionRoleARN, run.Spec.InfrastructureExecutionIdentityDigest)
+	}
 	if run.Spec.RunnerServiceAccountName != class.Spec.RunnerProfile.ServiceAccountName {
 		t.Fatalf("TerraformRun runner ServiceAccount = %q, want %q", run.Spec.RunnerServiceAccountName, class.Spec.RunnerProfile.ServiceAccountName)
 	}
 	annotations := runnerServiceAccountAnnotations(class)
-	if annotations["eks.amazonaws.com/role-arn"] != stack.Spec.InfrastructureExecutionIdentity.RoleARN {
-		t.Fatalf("runner identity annotation = %#v, want infrastructure role %q", annotations, stack.Spec.InfrastructureExecutionIdentity.RoleARN)
+	if annotations["eks.amazonaws.com/role-arn"] != class.Spec.RunnerProfile.ManagementRoleARN {
+		t.Fatalf("runner identity annotation = %#v, want management role %q", annotations, class.Spec.RunnerProfile.ManagementRoleARN)
+	}
+	if annotations["eks.amazonaws.com/role-arn"] == stack.Spec.InfrastructureExecutionIdentity.RoleARN {
+		t.Fatalf("runner identity collapsed into infrastructure role: %#v", annotations)
 	}
 	job, err := (&TerraformRunReconciler{ArtifactRegion: "us-east-1", ArtifactBucket: "native-artifacts", ArtifactKMSKeyID: "arn:aws:kms:us-east-1:123456789012:key/example"}).buildJob(run)
 	if err != nil {
 		t.Fatalf("buildJob() error = %v", err)
 	}
 	runner := job.Spec.Template.Spec.Containers[0]
-	if job.Spec.Template.Spec.ServiceAccountName != run.Spec.RunnerServiceAccountName || !containsTerraformArg(runner.Args, "--artifact-region=us-east-1") || !containsTerraformArg(runner.Args, "--artifact-bucket=native-artifacts") || !containsTerraformArg(runner.Args, "--artifact-kms-key-id=arn:aws:kms:us-east-1:123456789012:key/example") {
+	if job.Spec.Template.Spec.ServiceAccountName != run.Spec.RunnerServiceAccountName || !containsTerraformArg(runner.Args, "--artifact-region=us-east-1") || !containsTerraformArg(runner.Args, "--artifact-bucket=native-artifacts") || !containsTerraformArg(runner.Args, "--artifact-kms-key-id=arn:aws:kms:us-east-1:123456789012:key/example") || !containsTerraformArg(runner.Args, "--infrastructure-execution-role-arn=arn:aws:iam::123456789012:role/infra") {
 		t.Fatalf("AWS-native Terraform Job identity/artifact args = serviceAccount=%q args=%#v", job.Spec.Template.Spec.ServiceAccountName, runner.Args)
 	}
 	approval := &platformv1alpha1.ChangeApproval{ObjectMeta: metav1.ObjectMeta{Name: "approval", UID: "approval-uid"}}
@@ -56,10 +65,16 @@ func TestAWSNativeMaterializationPathBuildsStackAndTerraformJobOffline(t *testin
 	run.Status.PlanRef = "runs/plan/plan.binary"
 	run.Status.PlanDigest = "sha256:plan"
 	apply := buildApplyRun(stack, run, approval, "env-apply")
+	if apply.Spec.InfrastructureExecutionRoleARN != run.Spec.InfrastructureExecutionRoleARN || apply.Spec.InfrastructureExecutionIdentityDigest != run.Spec.InfrastructureExecutionIdentityDigest {
+		t.Fatalf("Apply execution identity changed: plan=%q/%q apply=%q/%q", run.Spec.InfrastructureExecutionRoleARN, run.Spec.InfrastructureExecutionIdentityDigest, apply.Spec.InfrastructureExecutionRoleARN, apply.Spec.InfrastructureExecutionIdentityDigest)
+	}
 	if apply.Spec.Source.Path != class.Spec.Source.Path {
 		t.Fatalf("retained Apply source path = %q, want %q", apply.Spec.Source.Path, class.Spec.Source.Path)
 	}
 	destroy := buildDestroyPlanRun(stack, apply, "env-destroy")
+	if destroy.Spec.InfrastructureExecutionRoleARN != apply.Spec.InfrastructureExecutionRoleARN || destroy.Spec.InfrastructureExecutionIdentityDigest != apply.Spec.InfrastructureExecutionIdentityDigest {
+		t.Fatalf("Destroy execution identity changed: apply=%q/%q destroy=%q/%q", apply.Spec.InfrastructureExecutionRoleARN, apply.Spec.InfrastructureExecutionIdentityDigest, destroy.Spec.InfrastructureExecutionRoleARN, destroy.Spec.InfrastructureExecutionIdentityDigest)
+	}
 	if destroy.Spec.Source.Path != class.Spec.Source.Path {
 		t.Fatalf("retained Destroy source path = %q, want %q", destroy.Spec.Source.Path, class.Spec.Source.Path)
 	}

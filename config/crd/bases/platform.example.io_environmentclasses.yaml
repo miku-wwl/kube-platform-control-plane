@@ -202,6 +202,12 @@ spec:
                     x-kubernetes-validations:
                     - message: EnvironmentClass runner profile is immutable
                       rule: self == oldSelf
+                  managementRoleARN:
+                    description: Base workload role for artifact and Terraform backend access; it must not be the target infrastructure execution role.
+                    type: string
+                    x-kubernetes-validations:
+                    - message: EnvironmentClass runner management role is immutable
+                      rule: self == oldSelf
                   serviceAccountName:
                     type: string
                     x-kubernetes-validations:

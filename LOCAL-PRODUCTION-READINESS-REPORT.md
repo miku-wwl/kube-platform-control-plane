@@ -215,7 +215,7 @@ LOCAL_VALIDATION_PASS = PASS
 |---|---|---|
 | RuntimeRoleARN enters the EKS credential path | `PASS_LOCAL` | `TargetConnectionProfile.RoleARN` is passed to the injectable `AWSSTSTokenProvider`; configured roles call the injectable AssumeRole boundary, install temporary credentials into an AWS SDK config, and use that config for EKS token presigning. Empty role uses the base workload identity. |
 | Runtime target/account/region/role isolation | `PASS_LOCAL` | Runtime token tests cover AssumeRole denial, wrong account, wrong region, expired credentials, invalid role identity, and two target calls without cross-target credential caching. |
-| InfrastructureExecutionIdentity reaches Terraform execution | `PASS_LOCAL` | Existing Mode A is retained: `ExecutionRoleARN` is written to the controller-managed runner ServiceAccount annotation, the same ServiceAccount is propagated through InfraStack/TerraformRun/Job, and AWS-native Jobs do not receive `test/test` credentials. The full helper-chain assertion is now covered offline. |
+| InfrastructureExecutionIdentity reaches Terraform execution | `PASS_LOCAL` | Superseded by the final identity-separation closure below: `ExecutionRoleARN` is propagated as a non-secret Terraform provider `assume_role` input; the runner ServiceAccount remains the management/base identity and is never annotated with the target execution role. |
 | Artifact encryption portability | `PASS_LOCAL` | S3 store defaults to `AES256`; optional `PCP_ARTIFACT_KMS_KEY_ID` / runner `--artifact-kms-key-id` emits `aws:kms` and the configured `SSEKMSKeyId`. LocalStack default behavior is unchanged. Fake S3 request tests cover both modes. |
 | IAM role path handling | `PASS_LOCAL` | Strict ARN parsing now extracts the final role name from simple, one-level, and nested IAM paths and rejects malformed input. |
 | Real AWS IAM/STS/EKS/KMS/network semantics | `DEFERRED_TO_PHASE13` | No real AWS calls were made or permitted. |
@@ -258,3 +258,88 @@ Phase 13 remaining work is limited to real AWS deployment/configuration and live
 - No commit or push was performed.
 - No temporary validation directory, ad-hoc script, JSON report, or extra Markdown file was added.
 - Phase 13 and Stage 2 were not started.
+
+## Final Management vs Execution Identity Separation — v2.0.4 additive closure
+
+This closure addresses the remaining identity-collapse risk without changing the lifecycle, approval, saved-plan, evidence, TargetDiscovery, ResourceSet, finalizer, or restart-recovery architecture.
+
+### Final freeze status
+
+```text
+PHASE12_FINAL_FREEZE = PASS
+STAGE1_FREEZE = PASS
+LOCAL_VALIDATION_PASS = PASS
+```
+
+The freeze is local/offline evidence only. Real AWS identity semantics remain Phase 13 work.
+
+### Closed gap
+
+- Management Identity is the Runner Pod base workload identity. It is represented by the management ServiceAccount selected through `BackendSpec.AuthRef`/`RunnerProfileSpec.ServiceAccountName`; an optional `RunnerProfileSpec.ManagementRoleARN` may annotate that ServiceAccount. It is not the target execution role.
+- Infrastructure Execution Identity is `InfrastructureExecutionIdentity.RoleARN` / `ExecutionRoleARN`. It is propagated as an immutable non-secret ARN through Plan, Apply, and Destroy and is consumed only by Terraform's temporary provider override:
+
+  ```text
+  Runner base identity
+      ├─ Artifact S3/KMS
+      ├─ Terraform backend S3/lock
+      └─ Terraform AWS provider assume_role(ExecutionRoleARN)
+             └─ target infrastructure mutation
+  ```
+
+- Runtime Target Identity remains the independent `RuntimeRoleARN → STS AssumeRole → EKS token → Kubernetes client` chain from the prior closure.
+- AWS execution-role account binding is fail-closed at target materialization: a role ARN from a different account, or a malformed role ARN, is rejected before infrastructure execution can be constructed.
+- `BackendSpec.AuthRef` is now consumed: when present it must match the runner profile ServiceAccount and becomes the management/base ServiceAccount reference. It is not an unused fourth AWS identity.
+- Temporary AWS credentials are not written to CR spec/status, ConfigMap, artifacts, logs, or reports. The Terraform override contains only the role ARN and is deleted after Plan/Apply; source bundling excludes the override filename.
+
+### Actual credential chains
+
+| Operation | Identity used | Local evidence |
+|---|---|---|
+| Artifact S3/KMS | Runner base/management AWS SDK credential chain; LocalStack uses synthetic `test/test` only for local endpoint | Job/store tests and LocalStack round-trip |
+| Terraform backend init/lock | Runner base/management credential chain; the provider override contains no backend block | Executor override contract and Terraform command tests |
+| Terraform Plan | Base identity for backend/artifacts; target AWS provider uses `assume_role(ExecutionRoleARN)` when configured, otherwise base identity by explicit empty-role behavior | Job argument, PlanRun role propagation, ephemeral override tests |
+| Terraform Apply | Same immutable execution role ARN and identity digest as Plan; saved plan remains the mutation input | Apply binding and Plan→Apply tests |
+| Terraform Destroy | Same execution role ARN and identity digest carried through retained Destroy Plan/Apply | Destroy propagation tests and existing Gate0 evidence |
+| EKS Runtime | Runtime base identity or `AssumeRole(RuntimeRoleARN)` for EKS token generation, independent of Terraform execution role | Fake STS/EKS token tests from prior closure |
+
+### Changed files
+
+- `api/v1alpha1/types.go`: management role, runner identity digest, and non-secret Terraform execution role propagation fields.
+- `config/crd/bases/platform.example.io_environmentclasses.yaml`, `platform.example.io_infrastacks.yaml`, `platform.example.io_terraformruns.yaml`: corresponding CRD schema fields.
+- `internal/controller/environmentclass.go`: consumes `BackendSpec.AuthRef`, materializes management identity fields, and binds identity digests.
+- `internal/controller/platformenvironment_controller.go`: removes direct ExecutionRoleARN SA annotation; manages only optional ManagementRoleARN and clears stale execution-role annotations.
+- `internal/controller/infrastack_controller.go`: preserves and validates the same execution role and management identity across Plan/Apply/Destroy.
+- `internal/controller/terraformrun_controller.go`, `internal/terraform/job.go`, `cmd/terraform-runner/main.go`: propagate the non-secret execution role ARN to the runner.
+- `internal/terraform/executor.go`: creates and removes the credential-free Terraform AWS provider `assume_role` override.
+- `internal/terraform/executor_test.go`, `internal/controller/phase12_aws_portability_test.go`, `internal/controller/platformenvironment_identity_test.go`: identity separation, propagation, ephemeral override, and no-collapse tests.
+- `internal/target/identity.go`, `internal/target/target_test.go`: fail-closed AWS execution-role ARN/account validation and wrong-account regression test.
+
+### Required regression
+
+| Check | Status |
+|---|---|
+| `gofmt` | `PASS` |
+| `go test ./...` | `PASS` |
+| `go vet ./...` | `PASS` |
+| `go test -race ./...` | `PASS` |
+| `git diff --check` | `PASS` |
+| Terraform fmt/init/validate | `PASS` |
+| LocalStack Ultimate artifact/STS regression | `PASS` |
+| Kind manager and target health | `PASS` |
+| Gate0 lifecycle baseline | `PASS_LOCAL` — preserved; no lifecycle architecture path changed |
+| Wrong-account execution role fail-closed check | `PASS_LOCAL` |
+| Real AWS calls | `NOT RUN` — explicitly prohibited |
+
+### Expected Phase 13 core code changes
+
+```text
+NONE
+```
+
+Phase 13 is limited to live AWS configuration and evidence: IAM/STS role policies, IRSA or EKS Pod Identity, S3/KMS, EKS, VPC/EC2, networking, throttling/eventual consistency, failure injection, DR/RPO/RTO, SLI/SLO, and cost validation. No identity architecture, Runner ServiceAccount semantics, controller, CRD, Terraform lifecycle, or artifact/backend redesign is expected.
+
+### Delivery boundary
+
+- No real AWS credentials or services were used; only LocalStack Ultimate, Kind, fake/mocked contracts, and local Terraform were used.
+- No commit or push was performed.
+- Stage 2 and Phase 13 were not started.

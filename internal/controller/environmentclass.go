@@ -43,6 +43,12 @@ func validateEnvironmentClass(environment *platformv1alpha1.PlatformEnvironment,
 	if len(class.Spec.AllowedRegions) > 0 && !containsString(class.Spec.AllowedRegions, region) {
 		return fmt.Errorf("region %q is not allowed by EnvironmentClass %q", region, class.Name)
 	}
+	if authName := class.Spec.Backend.AuthRef.ServiceAccountName; authName != "" && class.Spec.RunnerProfile.ServiceAccountName != "" && authName != class.Spec.RunnerProfile.ServiceAccountName {
+		return fmt.Errorf("backend authRef service account %q must match runnerProfile service account %q", authName, class.Spec.RunnerProfile.ServiceAccountName)
+	}
+	if runnerServiceAccountName(class) == "" {
+		return fmt.Errorf("a management ServiceAccount is required through backend.authRef or runnerProfile")
+	}
 	if bounds := class.Spec.CapacityBounds; bounds.MinNodeCount > 0 && environment.Spec.Capacity.NodeCount < bounds.MinNodeCount {
 		return fmt.Errorf("nodeCount %d is below EnvironmentClass minimum %d", environment.Spec.Capacity.NodeCount, bounds.MinNodeCount)
 	} else if bounds.MaxNodeCount > 0 && environment.Spec.Capacity.NodeCount > bounds.MaxNodeCount {
@@ -83,6 +89,23 @@ func classTarget(environment *platformv1alpha1.PlatformEnvironment, class *platf
 	return target
 }
 
+func runnerServiceAccountName(class *platformv1alpha1.EnvironmentClass) string {
+	if class == nil {
+		return ""
+	}
+	if name := class.Spec.Backend.AuthRef.ServiceAccountName; name != "" {
+		return name
+	}
+	return class.Spec.RunnerProfile.ServiceAccountName
+}
+
+func runnerServiceAccountIdentityDigest(name, managementRoleARN string) string {
+	return digestIdentity(struct {
+		ServiceAccountName string `json:"serviceAccountName"`
+		ManagementRoleARN  string `json:"managementRoleARN,omitempty"`
+	}{ServiceAccountName: name, ManagementRoleARN: managementRoleARN})
+}
+
 func buildClassInfraStack(environment *platformv1alpha1.PlatformEnvironment, class *platformv1alpha1.EnvironmentClass, name string, target platformv1alpha1.TargetReference) (*platformv1alpha1.InfraStack, error) {
 	approval := class.Spec.ApprovalPolicy
 	if approval == "" {
@@ -104,13 +127,16 @@ func buildClassInfraStack(environment *platformv1alpha1.PlatformEnvironment, cla
 		Spec: platformv1alpha1.InfraStackSpec{
 			Source: class.Spec.Source, Backend: class.Spec.Backend, Workspace: environment.Name, Capacity: environment.Spec.Capacity,
 			Executor: runner, DesiredState: platformv1alpha1.DesiredStatePresent, ApprovalPolicy: approval,
-			OwnerEnvironmentUID: string(environment.UID), InfrastructureExecutionIdentity: materialized.InfrastructureExecutionIdentity,
-			RunnerServiceAccountName: class.Spec.RunnerProfile.ServiceAccountName,
-			RuntimeTargetIdentity:    materialized.RuntimeTargetIdentity,
-			TargetConnectionProfile:  materialized.TargetConnectionProfile,
-			ConcurrencyGroup:         "environmentclass:" + class.Name,
-			MaxConcurrentPlans:       class.Spec.CapacityBounds.MaxConcurrentPlans,
-			MaxConcurrentApplies:     class.Spec.CapacityBounds.MaxConcurrentApplies,
+			OwnerEnvironmentUID:                string(environment.UID),
+			InfrastructureExecutionIdentity:    materialized.InfrastructureExecutionIdentity,
+			RunnerServiceAccountName:           runnerServiceAccountName(class),
+			RunnerManagementRoleARN:            class.Spec.RunnerProfile.ManagementRoleARN,
+			RunnerServiceAccountIdentityDigest: runnerServiceAccountIdentityDigest(runnerServiceAccountName(class), class.Spec.RunnerProfile.ManagementRoleARN),
+			RuntimeTargetIdentity:              materialized.RuntimeTargetIdentity,
+			TargetConnectionProfile:            materialized.TargetConnectionProfile,
+			ConcurrencyGroup:                   "environmentclass:" + class.Name,
+			MaxConcurrentPlans:                 class.Spec.CapacityBounds.MaxConcurrentPlans,
+			MaxConcurrentApplies:               class.Spec.CapacityBounds.MaxConcurrentApplies,
 		},
 	}, nil
 }

@@ -423,6 +423,12 @@ func validateApplyAdmission(stack *platformv1alpha1.InfraStack, plan *platformv1
 	if plan.Status.EffectivePlanInputDigest == "" || approval.Spec.EffectivePlanInputDigest != plan.Status.EffectivePlanInputDigest || plan.Spec.RuntimeTargetIdentityDigest == "" || plan.Spec.InfrastructureExecutionIdentityDigest == "" {
 		return fmt.Errorf("PlanRun execution snapshot is incomplete")
 	}
+	if plan.Spec.InfrastructureExecutionRoleARN != stack.Spec.InfrastructureExecutionIdentity.RoleARN {
+		return fmt.Errorf("PlanRun infrastructure execution role binding mismatch")
+	}
+	if plan.Spec.RunnerServiceAccountName != stack.Spec.RunnerServiceAccountName || plan.Spec.RunnerManagementRoleARN != stack.Spec.RunnerManagementRoleARN || plan.Spec.RunnerServiceAccountIdentityDigest != stack.Spec.RunnerServiceAccountIdentityDigest {
+		return fmt.Errorf("PlanRun management identity binding mismatch")
+	}
 	return nil
 }
 
@@ -579,6 +585,9 @@ func buildPlanRun(stack *platformv1alpha1.InfraStack, name string) *platformv1al
 			VariableSecretRefs:                    stack.Spec.Variables.SecretRefs,
 			VariableSecretVariables:               stack.Spec.Variables.SecretVariables,
 			RunnerServiceAccountName:              stack.Spec.RunnerServiceAccountName,
+			RunnerManagementRoleARN:               stack.Spec.RunnerManagementRoleARN,
+			RunnerServiceAccountIdentityDigest:    stack.Spec.RunnerServiceAccountIdentityDigest,
+			InfrastructureExecutionRoleARN:        stack.Spec.InfrastructureExecutionIdentity.RoleARN,
 			Workspace:                             stack.Spec.Workspace,
 			Executor:                              stack.Spec.Executor,
 			ExecutionContextDigest:                executionContextDigest(stack.Spec),
@@ -620,6 +629,9 @@ func buildDestroyPlanRun(stack *platformv1alpha1.InfraStack, applied *platformv1
 			VariableSecretRefs:                    applied.Spec.VariableSecretRefs,
 			VariableSecretVariables:               applied.Spec.VariableSecretVariables,
 			RunnerServiceAccountName:              applied.Spec.RunnerServiceAccountName,
+			RunnerManagementRoleARN:               applied.Spec.RunnerManagementRoleARN,
+			RunnerServiceAccountIdentityDigest:    applied.Spec.RunnerServiceAccountIdentityDigest,
+			InfrastructureExecutionRoleARN:        applied.Spec.InfrastructureExecutionRoleARN,
 			LockTimeout:                           applied.Spec.LockTimeout,
 			Workspace:                             applied.Spec.Workspace,
 			Executor:                              applied.Spec.Executor,
@@ -633,7 +645,6 @@ func buildDestroyPlanRun(stack *platformv1alpha1.InfraStack, applied *platformv1
 			InfrastructureExecutionIdentityDigest: applied.Spec.InfrastructureExecutionIdentityDigest,
 			RuntimeTargetIdentityDigest:           applied.Spec.RuntimeTargetIdentityDigest,
 			TargetConnectionProfileDigest:         applied.Spec.TargetConnectionProfileDigest,
-			RunnerServiceAccountIdentityDigest:    applied.Spec.RunnerServiceAccountIdentityDigest,
 			TerraformLockfileDigest:               applied.Spec.TerraformLockfileDigest,
 			ExpectedTerraformVersion:              applied.Spec.ExpectedTerraformVersion,
 			RunnerImageDigest:                     applied.Spec.RunnerImageDigest,
@@ -673,7 +684,9 @@ func retainedRunFromClosure(stack *platformv1alpha1.InfraStack, closure *platfor
 			RuntimeTargetIdentityDigest:           digestIdentity(stack.Spec.RuntimeTargetIdentity),
 			TargetConnectionProfileDigest:         digestIdentity(stack.Spec.TargetConnectionProfile),
 			RunnerServiceAccountName:              stack.Spec.RunnerServiceAccountName,
-			RunnerServiceAccountIdentityDigest:    closure.RunnerServiceAccountIdentityDigest,
+			RunnerManagementRoleARN:               stack.Spec.RunnerManagementRoleARN,
+			RunnerServiceAccountIdentityDigest:    stack.Spec.RunnerServiceAccountIdentityDigest,
+			InfrastructureExecutionRoleARN:        stack.Spec.InfrastructureExecutionIdentity.RoleARN,
 			ExpectedTerraformVersion:              stack.Spec.Executor.TerraformVersion,
 			RunnerImageDigest:                     stack.Spec.Executor.Image,
 		},
@@ -755,6 +768,9 @@ func buildApplyRun(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.Te
 			VariableSecretRefs:                    plan.Spec.VariableSecretRefs,
 			VariableSecretVariables:               plan.Spec.VariableSecretVariables,
 			RunnerServiceAccountName:              plan.Spec.RunnerServiceAccountName,
+			RunnerManagementRoleARN:               plan.Spec.RunnerManagementRoleARN,
+			RunnerServiceAccountIdentityDigest:    plan.Spec.RunnerServiceAccountIdentityDigest,
+			InfrastructureExecutionRoleARN:        plan.Spec.InfrastructureExecutionRoleARN,
 			LockTimeout:                           plan.Spec.LockTimeout,
 			Workspace:                             plan.Spec.Workspace,
 			Executor:                              plan.Spec.Executor,
@@ -768,7 +784,6 @@ func buildApplyRun(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.Te
 			InfrastructureExecutionIdentityDigest: plan.Spec.InfrastructureExecutionIdentityDigest,
 			RuntimeTargetIdentityDigest:           plan.Spec.RuntimeTargetIdentityDigest,
 			TargetConnectionProfileDigest:         plan.Spec.TargetConnectionProfileDigest,
-			RunnerServiceAccountIdentityDigest:    plan.Spec.RunnerServiceAccountIdentityDigest,
 			TerraformLockfileDigest:               plan.Spec.TerraformLockfileDigest,
 			ExpectedTerraformVersion:              plan.Spec.ExpectedTerraformVersion,
 			RunnerImageDigest:                     plan.Spec.RunnerImageDigest,

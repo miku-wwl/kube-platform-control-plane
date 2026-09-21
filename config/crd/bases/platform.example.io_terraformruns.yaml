@@ -79,6 +79,8 @@ spec:
                 type: string
               executionPlatformIdentityDigest:
                 type: string
+              infrastructureExecutionRoleARN:
+                type: string
               executionTargetIdentityDigest:
                 type: string
               executor:
@@ -161,6 +163,8 @@ spec:
               runnerImageDigest:
                 type: string
               runnerServiceAccountIdentityDigest:
+                type: string
+              runnerManagementRoleARN:
                 type: string
               runnerServiceAccountName:
                 type: string

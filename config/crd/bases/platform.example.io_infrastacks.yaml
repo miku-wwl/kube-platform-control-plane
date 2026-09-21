@@ -197,6 +197,10 @@ spec:
                   rule: self == oldSelf
               runnerServiceAccountName:
                 type: string
+              runnerManagementRoleARN:
+                type: string
+              runnerServiceAccountIdentityDigest:
+                type: string
               runtimeMutationAllowed:
                 type: boolean
               runtimeTargetIdentity:

@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -45,13 +47,14 @@ func (r OSCommandRunner) Run(ctx context.Context, workingDir string, args ...str
 }
 
 type Request struct {
-	WorkingDir        string
-	Workspace         string
-	BackendConfigPath string
-	PlanPath          string
-	Destroy           bool
-	LockTimeout       time.Duration
-	Parallelism       *int32
+	WorkingDir                     string
+	Workspace                      string
+	BackendConfigPath              string
+	PlanPath                       string
+	Destroy                        bool
+	LockTimeout                    time.Duration
+	Parallelism                    *int32
+	InfrastructureExecutionRoleARN string
 }
 
 type PlanOutcome string
@@ -114,6 +117,11 @@ func (e Executor) Plan(ctx context.Context, request Request) (PlanResult, error)
 	if err := request.validate(true); err != nil {
 		return PlanResult{}, err
 	}
+	cleanup, err := prepareExecutionProviderOverride(request.WorkingDir, request.InfrastructureExecutionRoleARN)
+	if err != nil {
+		return PlanResult{}, err
+	}
+	defer cleanup()
 	if err := e.init(ctx, request, false); err != nil {
 		return PlanResult{}, err
 	}
@@ -154,6 +162,11 @@ func (e Executor) Apply(ctx context.Context, request Request) (ApplyResult, erro
 	if err := request.validate(false); err != nil {
 		return ApplyResult{}, err
 	}
+	cleanup, err := prepareExecutionProviderOverride(request.WorkingDir, request.InfrastructureExecutionRoleARN)
+	if err != nil {
+		return ApplyResult{}, err
+	}
+	defer cleanup()
 	if err := e.init(ctx, request, true); err != nil {
 		return ApplyResult{}, err
 	}
@@ -184,6 +197,32 @@ func (e Executor) Apply(ctx context.Context, request Request) (ApplyResult, erro
 		return ApplyResult{ExitCode: result.ExitCode, Stdout: result.Stdout, Stderr: result.Stderr}, fmt.Errorf("terraform apply failed with exit code %d: %s", result.ExitCode, detail)
 	}
 	return ApplyResult{Succeeded: true, ExitCode: 0, Stdout: result.Stdout, Stderr: result.Stderr}, nil
+}
+
+const executionProviderOverrideFile = "zz_platform_execution_override.tf"
+
+// prepareExecutionProviderOverride keeps the Runner Pod on its management
+// workload identity while making Terraform's AWS provider assume the target
+// infrastructure role. The file is ephemeral, excluded by source bundling,
+// and contains no credentials.
+func prepareExecutionProviderOverride(workingDir, roleARN string) (func(), error) {
+	if roleARN == "" {
+		return func() {}, nil
+	}
+	if !strings.HasPrefix(roleARN, "arn:") || strings.ContainsAny(roleARN, "\"\r\n") {
+		return nil, fmt.Errorf("infrastructure execution role ARN is invalid")
+	}
+	file := filepath.Join(workingDir, executionProviderOverrideFile)
+	if _, err := os.Stat(file); err == nil {
+		return nil, fmt.Errorf("infrastructure execution provider override already exists")
+	} else if !os.IsNotExist(err) {
+		return nil, fmt.Errorf("check infrastructure execution provider override: %w", err)
+	}
+	content := fmt.Sprintf("provider \"aws\" {\n  assume_role {\n    role_arn = %q\n  }\n}\n", roleARN)
+	if err := os.WriteFile(file, []byte(content), 0o600); err != nil {
+		return nil, fmt.Errorf("write infrastructure execution provider override: %w", err)
+	}
+	return func() { _ = os.Remove(file) }, nil
 }
 
 func (e Executor) init(ctx context.Context, request Request, readonlyLockfile bool) error {

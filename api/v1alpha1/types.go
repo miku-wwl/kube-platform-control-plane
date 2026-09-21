@@ -103,6 +103,10 @@ type ValkeyIntentSpec struct {
 type RunnerProfileSpec struct {
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="EnvironmentClass runner profile is immutable"
 	ServiceAccountName string `json:"serviceAccountName"`
+	// ManagementRoleARN is the optional base workload role used for artifact
+	// and Terraform backend access. It is never the target execution role.
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="EnvironmentClass runner management role is immutable"
+	ManagementRoleARN string `json:"managementRoleARN,omitempty"`
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="EnvironmentClass runner profile is immutable"
 	Image string `json:"image"`
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="EnvironmentClass runner profile is immutable"
@@ -150,16 +154,18 @@ type InfraStackSpec struct {
 	DesiredState   DesiredState   `json:"desiredState,omitempty"`
 	ApprovalPolicy ApprovalPolicy `json:"approvalPolicy,omitempty"`
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="InfraStack ownerEnvironmentUID is immutable"
-	OwnerEnvironmentUID             string                          `json:"ownerEnvironmentUID,omitempty"`
-	InfrastructureExecutionIdentity InfrastructureExecutionIdentity `json:"infrastructureExecutionIdentity,omitempty"`
-	RuntimeTargetIdentity           RuntimeTargetIdentity           `json:"runtimeTargetIdentity,omitempty"`
-	TargetConnectionProfile         TargetConnectionProfile         `json:"targetConnectionProfile,omitempty"`
-	MutationFence                   bool                            `json:"mutationFence,omitempty"`
-	RuntimeMutationAllowed          bool                            `json:"runtimeMutationAllowed,omitempty"`
-	RunnerServiceAccountName        string                          `json:"runnerServiceAccountName,omitempty"`
-	ConcurrencyGroup                string                          `json:"concurrencyGroup,omitempty"`
-	MaxConcurrentPlans              int32                           `json:"maxConcurrentPlans,omitempty"`
-	MaxConcurrentApplies            int32                           `json:"maxConcurrentApplies,omitempty"`
+	OwnerEnvironmentUID                string                          `json:"ownerEnvironmentUID,omitempty"`
+	InfrastructureExecutionIdentity    InfrastructureExecutionIdentity `json:"infrastructureExecutionIdentity,omitempty"`
+	RuntimeTargetIdentity              RuntimeTargetIdentity           `json:"runtimeTargetIdentity,omitempty"`
+	TargetConnectionProfile            TargetConnectionProfile         `json:"targetConnectionProfile,omitempty"`
+	MutationFence                      bool                            `json:"mutationFence,omitempty"`
+	RuntimeMutationAllowed             bool                            `json:"runtimeMutationAllowed,omitempty"`
+	RunnerServiceAccountName           string                          `json:"runnerServiceAccountName,omitempty"`
+	RunnerManagementRoleARN            string                          `json:"runnerManagementRoleARN,omitempty"`
+	RunnerServiceAccountIdentityDigest string                          `json:"runnerServiceAccountIdentityDigest,omitempty"`
+	ConcurrencyGroup                   string                          `json:"concurrencyGroup,omitempty"`
+	MaxConcurrentPlans                 int32                           `json:"maxConcurrentPlans,omitempty"`
+	MaxConcurrentApplies               int32                           `json:"maxConcurrentApplies,omitempty"`
 }
 
 type SourceSpec struct {
@@ -355,6 +361,8 @@ type TerraformRunSpec struct {
 	ExecutionContextDigest          string                        `json:"executionContextDigest,omitempty"`
 	ExecutionTargetIdentityDigest   string                        `json:"executionTargetIdentityDigest,omitempty"`
 	ExecutionPlatformIdentityDigest string                        `json:"executionPlatformIdentityDigest,omitempty"`
+	InfrastructureExecutionRoleARN  string                        `json:"infrastructureExecutionRoleARN,omitempty"`
+	RunnerManagementRoleARN         string                        `json:"runnerManagementRoleARN,omitempty"`
 	PlanRunUID                      string                        `json:"planRunUID,omitempty"`
 	PlanRef                         string                        `json:"planRef,omitempty"`
 	PlanDigest                      string                        `json:"planDigest,omitempty"`

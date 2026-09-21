@@ -323,7 +323,7 @@ func splitAnnotation(value string) []string {
 }
 
 func (r *PlatformEnvironmentReconciler) ensureRunnerIdentity(ctx context.Context, environment *platformv1alpha1.PlatformEnvironment, class *platformv1alpha1.EnvironmentClass) error {
-	name := class.Spec.RunnerProfile.ServiceAccountName
+	name := runnerServiceAccountName(class)
 	if name == "" {
 		return nil
 	}
@@ -340,15 +340,20 @@ func (r *PlatformEnvironmentReconciler) ensureRunnerIdentity(ctx context.Context
 		}
 	} else if err != nil {
 		return err
-	} else if len(annotations) > 0 {
+	} else if len(annotations) > 0 || serviceAccount.Annotations != nil {
 		if serviceAccount.Labels["platform.example.io/managed-by"] != "platform-control-plane" {
-			return fmt.Errorf("AWS execution role requires controller-managed ServiceAccount %q", name)
+			return fmt.Errorf("runner management identity requires controller-managed ServiceAccount %q", name)
 		}
-		if serviceAccount.Annotations == nil || serviceAccount.Annotations["eks.amazonaws.com/role-arn"] != annotations["eks.amazonaws.com/role-arn"] {
+		desiredRole := annotations["eks.amazonaws.com/role-arn"]
+		if serviceAccount.Annotations["eks.amazonaws.com/role-arn"] != desiredRole {
 			if serviceAccount.Annotations == nil {
 				serviceAccount.Annotations = map[string]string{}
 			}
-			serviceAccount.Annotations["eks.amazonaws.com/role-arn"] = annotations["eks.amazonaws.com/role-arn"]
+			if desiredRole == "" {
+				delete(serviceAccount.Annotations, "eks.amazonaws.com/role-arn")
+			} else {
+				serviceAccount.Annotations["eks.amazonaws.com/role-arn"] = desiredRole
+			}
 			if err := r.Update(ctx, serviceAccount); err != nil {
 				return err
 			}
@@ -382,10 +387,10 @@ func (r *PlatformEnvironmentReconciler) ensureRunnerIdentity(ctx context.Context
 }
 
 func runnerServiceAccountAnnotations(class *platformv1alpha1.EnvironmentClass) map[string]string {
-	if class == nil || class.Spec.Target.Provider != targetresolver.ProviderAWS || class.Spec.Target.ExecutionRoleARN == "" {
+	if class == nil || class.Spec.Target.Provider != targetresolver.ProviderAWS || class.Spec.RunnerProfile.ManagementRoleARN == "" {
 		return nil
 	}
-	return map[string]string{"eks.amazonaws.com/role-arn": class.Spec.Target.ExecutionRoleARN}
+	return map[string]string{"eks.amazonaws.com/role-arn": class.Spec.RunnerProfile.ManagementRoleARN}
 }
 
 func validatePlatformEnvironmentSpec(object *platformv1alpha1.PlatformEnvironment) error {

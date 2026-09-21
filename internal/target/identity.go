@@ -108,11 +108,15 @@ func MaterializeTarget(input TargetExpectation) (MaterializedTarget, error) {
 		if endpoint == "" {
 			endpoint = "kubeconfig:" + input.ClusterName
 		}
-		return MaterializedTarget{
+		materialized := MaterializedTarget{
 			InfrastructureExecutionIdentity: InfrastructureExecutionIdentity{Provider: ProviderKind, Mode: ModeLocal, AccountID: account, Region: region},
 			RuntimeTargetIdentity:           RuntimeTargetIdentity{Provider: ProviderKind, AccountID: account, Region: region, ClusterARN: input.ClusterARN, ClusterName: input.ClusterName, IncarnationID: incarnation},
 			TargetConnectionProfile:         TargetConnectionProfile{Endpoint: endpoint, AuthMode: AuthKindContext, KubeContext: input.ClusterName, NetworkRouteProfile: "local-kind"},
-		}, nil
+		}
+		if err := materialized.InfrastructureExecutionIdentity.Validate(); err != nil {
+			return MaterializedTarget{}, err
+		}
+		return materialized, nil
 	case ProviderAWS:
 		if input.AccountID == "" || input.Region == "" {
 			return MaterializedTarget{}, fmt.Errorf("AWS target account ID and region are required")
@@ -127,11 +131,15 @@ func MaterializeTarget(input TargetExpectation) (MaterializedTarget, error) {
 		if incarnation == "" {
 			incarnation = input.ClusterName
 		}
-		return MaterializedTarget{
+		materialized := MaterializedTarget{
 			InfrastructureExecutionIdentity: InfrastructureExecutionIdentity{Provider: ProviderAWS, Mode: ModeAWSNative, AccountID: input.AccountID, Region: input.Region, RoleARN: input.ExecutionRoleARN},
 			RuntimeTargetIdentity:           RuntimeTargetIdentity{Provider: ProviderAWS, AccountID: input.AccountID, Region: input.Region, ClusterARN: input.ClusterARN, ClusterName: input.ClusterName, IncarnationID: incarnation},
 			TargetConnectionProfile:         TargetConnectionProfile{Endpoint: input.ConnectionProfile, AuthMode: AuthAWSEKS, NetworkRouteProfile: "aws-eks", RoleARN: input.RuntimeRoleARN},
-		}, nil
+		}
+		if err := materialized.InfrastructureExecutionIdentity.Validate(); err != nil {
+			return MaterializedTarget{}, err
+		}
+		return materialized, nil
 	default:
 		return MaterializedTarget{}, fmt.Errorf("unsupported target provider %q", input.Provider)
 	}
@@ -158,6 +166,15 @@ func (i InfrastructureExecutionIdentity) Validate() error {
 	case ProviderAWS:
 		if i.Mode != ModeAWSNative {
 			return fmt.Errorf("AWS infrastructure identity must use mode %q", ModeAWSNative)
+		}
+		if i.RoleARN != "" {
+			account, err := accountFromARN(i.RoleARN)
+			if err != nil || roleNameFromARN(i.RoleARN) == "" {
+				return fmt.Errorf("AWS infrastructure execution role ARN is invalid")
+			}
+			if account != i.AccountID {
+				return fmt.Errorf("AWS infrastructure execution role account mismatch: got %q, want %q", account, i.AccountID)
+			}
 		}
 	default:
 		return fmt.Errorf("unsupported infrastructure identity provider %q", i.Provider)

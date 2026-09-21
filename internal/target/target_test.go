@@ -47,6 +47,18 @@ func TestMaterializeTargetRejectsAWSLocalFallback(t *testing.T) {
 	}
 }
 
+func TestMaterializeTargetRejectsExecutionRoleFromWrongAccount(t *testing.T) {
+	if _, err := MaterializeTarget(TargetExpectation{
+		Provider:         ProviderAWS,
+		AccountID:        "123456789012",
+		Region:           "us-east-1",
+		ClusterName:      "platform",
+		ExecutionRoleARN: "arn:aws:iam::999999999999:role/platform/terraform-runner",
+	}); err == nil {
+		t.Fatal("execution role from the wrong account was accepted")
+	}
+}
+
 func TestTargetClientFactoryRejectsWrongTargetProfile(t *testing.T) {
 	factory := NewTargetClientFactory()
 	client := dynamicfake.NewSimpleDynamicClient(runtime.NewScheme())

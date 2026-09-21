@@ -59,6 +59,7 @@ func main() {
 	var artifactRegion string
 	var artifactBucket string
 	var artifactKMSKeyID string
+	var infrastructureExecutionRoleARN string
 	var artifactPrefix string
 	var sourceRoot string
 	var sourceBundleRef string
@@ -85,6 +86,7 @@ func main() {
 	flag.StringVar(&artifactRegion, "artifact-region", "us-east-1", "artifact bucket region")
 	flag.StringVar(&artifactBucket, "artifact-bucket", "", "artifact bucket")
 	flag.StringVar(&artifactKMSKeyID, "artifact-kms-key-id", "", "optional AWS KMS key ID or ARN")
+	flag.StringVar(&infrastructureExecutionRoleARN, "infrastructure-execution-role-arn", "", "optional Terraform AWS provider AssumeRole ARN")
 	flag.StringVar(&artifactPrefix, "artifact-prefix", "", "immutable artifact key prefix")
 	flag.StringVar(&sourceRoot, "source-root", "", "pristine source root for source bundle creation")
 	flag.StringVar(&sourceBundleRef, "source-bundle-ref", "", "immutable source bundle object key")
@@ -101,12 +103,13 @@ func main() {
 	startedAt := time.Now().UTC()
 
 	request := terraform.Request{
-		WorkingDir:        workingDir,
-		Workspace:         workspace,
-		BackendConfigPath: backendConfig,
-		PlanPath:          planPath,
-		LockTimeout:       lockTimeout,
-		Destroy:           destroy,
+		WorkingDir:                     workingDir,
+		Workspace:                      workspace,
+		BackendConfigPath:              backendConfig,
+		PlanPath:                       planPath,
+		LockTimeout:                    lockTimeout,
+		Destroy:                        destroy,
+		InfrastructureExecutionRoleARN: infrastructureExecutionRoleARN,
 	}
 	if parallelism > 0 {
 		value := int32(parallelism)

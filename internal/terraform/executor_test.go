@@ -2,6 +2,8 @@ package terraform
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -11,6 +13,38 @@ import (
 type fakeRunner struct {
 	commands []string
 	results  []CommandResult
+}
+
+func TestPrepareExecutionProviderOverrideIsEphemeralAndCredentialFree(t *testing.T) {
+	dir := t.TempDir()
+	roleARN := "arn:aws:iam::123456789012:role/platform/prod/terraform-runner"
+	cleanup, err := prepareExecutionProviderOverride(dir, roleARN)
+	if err != nil {
+		t.Fatalf("prepareExecutionProviderOverride() error = %v", err)
+	}
+	file := filepath.Join(dir, executionProviderOverrideFile)
+	content, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatalf("read provider override = %v", err)
+	}
+	if !strings.Contains(string(content), "assume_role") || !strings.Contains(string(content), roleARN) || strings.Contains(string(content), "secret_access_key") {
+		t.Fatalf("provider override content = %q", content)
+	}
+	cleanup()
+	if _, err := os.Stat(file); !os.IsNotExist(err) {
+		t.Fatalf("provider override was not removed: %v", err)
+	}
+	noRoleCleanup, err := prepareExecutionProviderOverride(dir, "")
+	if err != nil {
+		t.Fatalf("empty role should use base identity: %v", err)
+	}
+	noRoleCleanup()
+}
+
+func TestPrepareExecutionProviderOverrideRejectsUnsafeRoleARN(t *testing.T) {
+	if _, err := prepareExecutionProviderOverride(t.TempDir(), "not-an-arn"); err == nil {
+		t.Fatal("invalid execution role ARN was accepted")
+	}
 }
 
 func (f *fakeRunner) Run(_ context.Context, _ string, args ...string) (CommandResult, error) {
