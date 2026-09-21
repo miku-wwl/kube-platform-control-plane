@@ -45,6 +45,30 @@ func TestResourceSetWithoutTargetClientFailsClosed(t *testing.T) {
 	}
 }
 
+func TestResourceSetAWSTargetRequiresTrustedDiscovery(t *testing.T) {
+	object := &platformv1alpha1.ResourceSet{Spec: platformv1alpha1.ResourceSetSpec{Target: platformv1alpha1.TargetReference{Provider: "aws", Account: "123456789012", Region: "us-east-1", ClusterName: "platform"}}}
+	if _, _, err := resourceSetTargetBinding(object); err == nil {
+		t.Fatal("AWS ResourceSet without trusted discovery was accepted")
+	}
+}
+
+func TestResourceSetUsesTrustedDiscoveryBinding(t *testing.T) {
+	object := &platformv1alpha1.ResourceSet{Spec: platformv1alpha1.ResourceSetSpec{
+		Target:                         platformv1alpha1.TargetReference{Provider: "aws", Account: "999999999999", Region: "us-east-1", ClusterName: "desired-name"},
+		TargetDiscoveryRef:             "runs/app/target-discovery.json",
+		TargetDiscoveryDigest:          "sha256:discovery",
+		TrustedRuntimeTargetIdentity:   &platformv1alpha1.RuntimeTargetIdentity{Provider: "aws", AccountID: "123456789012", Region: "us-east-1", ClusterARN: "arn:aws:eks:us-east-1:123456789012:cluster/actual", ClusterName: "actual", IncarnationID: "arn:aws:eks:us-east-1:123456789012:cluster/actual"},
+		TrustedTargetConnectionProfile: &platformv1alpha1.TargetConnectionProfile{Endpoint: "https://actual.eks.example", CACertificateData: "Y2E=", AuthMode: "aws-eks", NetworkRouteProfile: "aws-eks"},
+	}}
+	identity, profile, err := resourceSetTargetBinding(object)
+	if err != nil {
+		t.Fatalf("resourceSetTargetBinding() error = %v", err)
+	}
+	if identity.AccountID != "123456789012" || identity.ClusterName != "actual" || profile.Endpoint != "https://actual.eks.example" {
+		t.Fatalf("trusted binding = identity=%+v profile=%+v", identity, profile)
+	}
+}
+
 func TestBootstrapObjectsRejectsInlineSecretData(t *testing.T) {
 	_, err := bootstrapObjects([]platformv1alpha1.RuntimeObject{{
 		Version:  "v1",

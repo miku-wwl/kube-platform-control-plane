@@ -211,6 +211,23 @@ func TestInfraStackDoesNotReplanAfterInfrastructureRemoval(t *testing.T) {
 	}
 }
 
+func TestDestroyApplyRequiresDurableRetainedDiscoveryEvidence(t *testing.T) {
+	apply := &platformv1alpha1.TerraformRun{Status: platformv1alpha1.TerraformRunStatus{ExecutionOutcome: "Succeeded", EvidenceCaptured: true, ArtifactsReady: false}}
+	condition := applyCondition(4, apply, true)
+	if condition.Status != metav1.ConditionFalse || condition.Reason != "DestroyEvidencePending" {
+		t.Fatalf("incomplete destroy evidence condition = %+v", condition)
+	}
+	apply.Status.ArtifactsReady = true
+	apply.Status.TerminalResultRef = "runs/apply/terminal-result.json"
+	apply.Status.TerminalResultDigest = "sha256:terminal"
+	apply.Status.TargetDiscoveryRef = "runs/apply/target-discovery.json"
+	apply.Status.TargetDiscoveryDigest = "sha256:discovery"
+	condition = applyCondition(4, apply, true)
+	if condition.Status != metav1.ConditionTrue || condition.Reason != "InfrastructureRemoved" {
+		t.Fatalf("complete destroy evidence condition = %+v", condition)
+	}
+}
+
 func phase61Stack() *platformv1alpha1.InfraStack {
 	return &platformv1alpha1.InfraStack{
 		ObjectMeta: metav1.ObjectMeta{Name: "stack", Namespace: "platform-system", Generation: 1, UID: types.UID("stack-uid"), Finalizers: []string{infraStackFinalizer}},

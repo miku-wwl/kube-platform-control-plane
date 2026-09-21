@@ -53,6 +53,12 @@ func (in *InfraStackStatus) DeepCopyInto(out *InfraStackStatus) {
 	if in.LastAppliedRunRef != nil {
 		out.LastAppliedRunRef = in.LastAppliedRunRef.DeepCopy()
 	}
+	if in.DiscoveredRuntimeTargetIdentity != nil {
+		out.DiscoveredRuntimeTargetIdentity = in.DiscoveredRuntimeTargetIdentity.DeepCopy()
+	}
+	if in.DiscoveredTargetConnectionProfile != nil {
+		out.DiscoveredTargetConnectionProfile = in.DiscoveredTargetConnectionProfile.DeepCopy()
+	}
 }
 
 func (in *TerraformRunSpec) DeepCopyInto(out *TerraformRunSpec) {

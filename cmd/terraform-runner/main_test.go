@@ -6,7 +6,7 @@ import (
 )
 
 func TestSanitizeTargetDiscoveryAllowlist(t *testing.T) {
-	content, err := sanitizeTargetDiscovery([]byte(`{"target_discovery":{"value":{"provider":"kind","accountId":"local","region":"local","clusterName":"kind-target","incarnationId":"kind-target","endpoint":"kubeconfig:kind-target","authMode":"kind-context","kubeContext":"kind-target","secret":"must-not-survive"}}}`))
+	content, err := sanitizeTargetDiscovery([]byte(`{"target_discovery":{"value":{"provider":"kind","accountId":"local","region":"local","clusterName":"kind-target","incarnationId":"kind-target","endpoint":"kubeconfig:kind-target","authMode":"kind-context","kubeContext":"kind-target","caCertificateData":"must-be-preserved-for-aws","sourceClosureDigest":"sha256:source","backendSnapshotDigest":"sha256:backend","effectivePlanInputDigest":"sha256:input","secret":"must-not-survive"}}}`))
 	if err != nil {
 		t.Fatalf("sanitizeTargetDiscovery() error = %v", err)
 	}
@@ -19,6 +19,9 @@ func TestSanitizeTargetDiscoveryAllowlist(t *testing.T) {
 	}
 	if string(values["provider"]) != `"kind"` {
 		t.Fatalf("provider = %s, want kind", values["provider"])
+	}
+	if string(values["caCertificateData"]) != `"must-be-preserved-for-aws"` {
+		t.Fatalf("caCertificateData = %s, want preserved value", values["caCertificateData"])
 	}
 }
 

@@ -40,6 +40,7 @@ type InfraStackReconciler struct {
 	ArtifactEndpoint string
 	ArtifactRegion   string
 	ArtifactBucket   string
+	TargetVerifier   targetresolver.TargetVerifier
 }
 
 func (r *InfraStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -233,6 +234,12 @@ func planAttemptName(stackName string, generation int64, destroy bool) string {
 func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.TerraformRun, destroy bool) (ctrl.Result, error) {
 	status := stack.Status
 	status.ObservedGeneration = stack.Generation
+	if stack.Status.ObservedGeneration != stack.Generation {
+		status.DiscoveredRuntimeTargetIdentity = nil
+		status.DiscoveredTargetConnectionProfile = nil
+		status.TargetDiscoveryRef = ""
+		status.TargetDiscoveryDigest = ""
+	}
 	status.LatestPlanRunRef = &corev1.LocalObjectReference{Name: plan.Name}
 
 	condition := lifecycleCondition(stack.Generation, metav1.ConditionFalse, "PlanPending", "Terraform PlanRun is pending.")
@@ -245,7 +252,7 @@ func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *p
 				condition = lifecycleCondition(stack.Generation, metav1.ConditionTrue, "InfrastructureRemoved", "Terraform Destroy plan has no changes; infrastructure is already absent.")
 			}
 		} else {
-			discoveryErr := r.verifyTargetDiscovery(ctx, stack, plan)
+			discovery, discoveryErr := r.verifyTargetDiscovery(ctx, stack, plan)
 			closure, ok := convergenceClosure(stack, plan, plan)
 			if discoveryErr != nil {
 				ok = false
@@ -261,6 +268,7 @@ func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *p
 				status.ConvergenceEvidenceDigest = plan.Status.TerminalResultDigest
 				status.TargetDiscoveryRef = plan.Status.TargetDiscoveryRef
 				status.TargetDiscoveryDigest = plan.Status.TargetDiscoveryDigest
+				setDiscoveredTarget(&status, discovery)
 				condition = lifecycleCondition(stack.Generation, metav1.ConditionTrue, "InfrastructureReady", "Terraform plan has no changes and durable convergence evidence is present.")
 			}
 		}
@@ -296,7 +304,8 @@ func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *p
 							status.LastAppliedSourceBundleDigest = apply.Spec.Source.Digest
 						}
 						closure, ok := convergenceClosure(stack, plan, apply)
-						if discoveryErr := r.verifyTargetDiscovery(ctx, stack, apply); discoveryErr != nil {
+						discovery, discoveryErr := r.verifyTargetDiscovery(ctx, stack, apply)
+						if discoveryErr != nil {
 							ok = false
 							condition = lifecycleCondition(stack.Generation, metav1.ConditionFalse, "TargetDiscoveryRejected", discoveryErr.Error())
 						}
@@ -310,6 +319,7 @@ func (r *InfraStackReconciler) reconcilePlanResult(ctx context.Context, stack *p
 							status.ConvergenceEvidenceDigest = apply.Status.TerminalResultDigest
 							status.TargetDiscoveryRef = apply.Status.TargetDiscoveryRef
 							status.TargetDiscoveryDigest = apply.Status.TargetDiscoveryDigest
+							setDiscoveredTarget(&status, discovery)
 						}
 					}
 				}
@@ -415,20 +425,20 @@ func validateApplyAdmission(stack *platformv1alpha1.InfraStack, plan *platformv1
 	return nil
 }
 
-func (r *InfraStackReconciler) verifyTargetDiscovery(ctx context.Context, stack *platformv1alpha1.InfraStack, run *platformv1alpha1.TerraformRun) error {
+func (r *InfraStackReconciler) verifyTargetDiscovery(ctx context.Context, stack *platformv1alpha1.InfraStack, run *platformv1alpha1.TerraformRun) (targetresolver.DiscoveryResult, error) {
 	if run == nil || run.Status.TargetDiscoveryRef == "" || run.Status.TargetDiscoveryDigest == "" {
-		return fmt.Errorf("target discovery artifact is missing")
+		return targetresolver.DiscoveryResult{}, fmt.Errorf("target discovery artifact is missing")
 	}
-	if r.ArtifactEndpoint == "" || r.ArtifactRegion == "" || r.ArtifactBucket == "" {
-		return fmt.Errorf("target discovery artifact store is not configured")
+	if r.ArtifactRegion == "" || r.ArtifactBucket == "" {
+		return targetresolver.DiscoveryResult{}, fmt.Errorf("target discovery artifact store region and bucket are not configured")
 	}
 	store, err := artifacts.NewS3Store(r.ArtifactEndpoint, r.ArtifactRegion, r.ArtifactBucket)
 	if err != nil {
-		return err
+		return targetresolver.DiscoveryResult{}, err
 	}
 	content, err := store.GetVerified(ctx, artifacts.Ref{Key: run.Status.TargetDiscoveryRef, Digest: run.Status.TargetDiscoveryDigest})
 	if err != nil {
-		return fmt.Errorf("read target discovery artifact: %w", err)
+		return targetresolver.DiscoveryResult{}, fmt.Errorf("read target discovery artifact: %w", err)
 	}
 	expectedIdentity := targetresolver.RuntimeTargetIdentity{
 		Provider: stack.Spec.RuntimeTargetIdentity.Provider, AccountID: stack.Spec.RuntimeTargetIdentity.AccountID,
@@ -436,27 +446,57 @@ func (r *InfraStackReconciler) verifyTargetDiscovery(ctx context.Context, stack 
 		ClusterName: stack.Spec.RuntimeTargetIdentity.ClusterName, IncarnationID: stack.Spec.RuntimeTargetIdentity.IncarnationID,
 	}
 	expectedProfile := targetresolver.TargetConnectionProfile{
-		Endpoint: stack.Spec.TargetConnectionProfile.Endpoint, CACertificateDigest: stack.Spec.TargetConnectionProfile.CACertificateDigest,
+		Endpoint: stack.Spec.TargetConnectionProfile.Endpoint, CACertificateData: stack.Spec.TargetConnectionProfile.CACertificateData, CACertificateDigest: stack.Spec.TargetConnectionProfile.CACertificateDigest,
 		AuthMode: stack.Spec.TargetConnectionProfile.AuthMode, NetworkRouteProfile: stack.Spec.TargetConnectionProfile.NetworkRouteProfile,
-		KubeContext: stack.Spec.TargetConnectionProfile.KubeContext,
+		KubeContext: stack.Spec.TargetConnectionProfile.KubeContext, RoleARN: stack.Spec.TargetConnectionProfile.RoleARN,
 	}
 	if expectedIdentity.AccountID == "" {
+		if expectedIdentity.Provider == targetresolver.ProviderAWS {
+			return targetresolver.DiscoveryResult{}, fmt.Errorf("AWS target account is required before discovery")
+		}
 		expectedIdentity.AccountID = "local"
 	}
 	if expectedIdentity.Region == "" {
+		if expectedIdentity.Provider == targetresolver.ProviderAWS {
+			return targetresolver.DiscoveryResult{}, fmt.Errorf("AWS target region is required before discovery")
+		}
 		expectedIdentity.Region = "local"
 	}
 	input := targetresolver.DiscoveryInput{SourceClosureDigest: run.Status.SourceBundleDigest, BackendSnapshotDigest: run.Status.ResolvedBackendConfigDigest, EffectivePlanInputDigest: run.Status.EffectivePlanInputDigest, ExpectedTarget: expectedIdentity, ExpectedConnection: expectedProfile}
-	_, err = targetresolver.DiscoverFromTerraformOutput(content, input, func(identity targetresolver.RuntimeTargetIdentity, profile targetresolver.TargetConnectionProfile) error {
-		if identity.Provider != expectedIdentity.Provider || identity.AccountID != expectedIdentity.AccountID || identity.Region != expectedIdentity.Region || (expectedIdentity.ClusterName != "" && identity.ClusterName != expectedIdentity.ClusterName) || (expectedIdentity.IncarnationID != "" && identity.IncarnationID != expectedIdentity.IncarnationID) {
+	verifier := r.TargetVerifier
+	if expectedIdentity.Provider == targetresolver.ProviderKind {
+		verifier = targetresolver.VerifyLocalKindTarget(expectedProfile.KubeContext)
+	}
+	if verifier == nil {
+		return targetresolver.DiscoveryResult{}, fmt.Errorf("trusted target verifier is not configured for provider %q", expectedIdentity.Provider)
+	}
+	result, err := targetresolver.DiscoverFromTerraformOutputContext(ctx, content, input, targetresolver.TargetVerifierFunc(func(ctx context.Context, identity targetresolver.RuntimeTargetIdentity, profile targetresolver.TargetConnectionProfile) error {
+		if identity.Provider != expectedIdentity.Provider || identity.AccountID != expectedIdentity.AccountID || identity.Region != expectedIdentity.Region || (expectedIdentity.ClusterName != "" && identity.ClusterName != expectedIdentity.ClusterName) || (expectedIdentity.ClusterARN != "" && identity.ClusterARN != expectedIdentity.ClusterARN) {
 			return fmt.Errorf("discovered runtime target does not match the InfraStack identity")
 		}
 		if profile.AuthMode != expectedProfile.AuthMode || (expectedProfile.KubeContext != "" && profile.KubeContext != expectedProfile.KubeContext) {
 			return fmt.Errorf("discovered target connection profile does not match the frozen profile")
 		}
-		return targetresolver.ValidateBinding(identity, profile)
-	})
-	return err
+		if err := targetresolver.ValidateBinding(identity, profile); err != nil {
+			return err
+		}
+		return verifier.Verify(ctx, identity, profile)
+	}))
+	return result, err
+}
+
+func setDiscoveredTarget(status *platformv1alpha1.InfraStackStatus, discovery targetresolver.DiscoveryResult) {
+	status.DiscoveredRuntimeTargetIdentity = &platformv1alpha1.RuntimeTargetIdentity{
+		Provider: discovery.RuntimeTargetIdentity.Provider, AccountID: discovery.RuntimeTargetIdentity.AccountID,
+		Region: discovery.RuntimeTargetIdentity.Region, ClusterARN: discovery.RuntimeTargetIdentity.ClusterARN,
+		ClusterName: discovery.RuntimeTargetIdentity.ClusterName, IncarnationID: discovery.RuntimeTargetIdentity.IncarnationID,
+	}
+	status.DiscoveredTargetConnectionProfile = &platformv1alpha1.TargetConnectionProfile{
+		Endpoint: discovery.TargetConnection.Endpoint, CACertificateData: discovery.TargetConnection.CACertificateData,
+		CACertificateDigest: discovery.TargetConnection.CACertificateDigest, AuthMode: discovery.TargetConnection.AuthMode,
+		NetworkRouteProfile: discovery.TargetConnection.NetworkRouteProfile, KubeContext: discovery.TargetConnection.KubeContext,
+		RoleARN: discovery.TargetConnection.RoleARN,
+	}
 }
 
 func (r *InfraStackReconciler) SetupWithManager(manager ctrl.Manager) error {
@@ -500,6 +540,9 @@ func applyCondition(generation int64, apply *platformv1alpha1.TerraformRun, dest
 	switch apply.Status.ExecutionOutcome {
 	case "Succeeded":
 		if destroy {
+			if !destroyEvidenceReady(apply) {
+				return lifecycleCondition(generation, metav1.ConditionFalse, "DestroyEvidencePending", "Terraform Destroy Apply succeeded, but durable terminal or retained target-discovery evidence is incomplete.")
+			}
 			return lifecycleCondition(generation, metav1.ConditionTrue, "InfrastructureRemoved", "Terraform Destroy Apply completed successfully.")
 		}
 		return lifecycleCondition(generation, metav1.ConditionTrue, "InfrastructureReady", "Terraform Apply completed successfully.")
@@ -510,6 +553,10 @@ func applyCondition(generation int64, apply *platformv1alpha1.TerraformRun, dest
 	default:
 		return lifecycleCondition(generation, metav1.ConditionFalse, "Applying", "Terraform ApplyRun is executing.")
 	}
+}
+
+func destroyEvidenceReady(run *platformv1alpha1.TerraformRun) bool {
+	return run != nil && run.Status.EvidenceCaptured && run.Status.ArtifactsReady && run.Status.TerminalResultRef != "" && run.Status.TerminalResultDigest != "" && run.Status.TargetDiscoveryRef != "" && run.Status.TargetDiscoveryDigest != ""
 }
 
 func buildPlanRun(stack *platformv1alpha1.InfraStack, name string) *platformv1alpha1.TerraformRun {
@@ -563,10 +610,12 @@ func buildDestroyPlanRun(stack *platformv1alpha1.InfraStack, applied *platformv1
 			InfraStackGeneration:                  stack.Generation,
 			Operation:                             "Plan",
 			PlanMode:                              "Destroy",
-			Source:                                platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Ref: sourceRef, Digest: sourceDigest},
+			Source:                                platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Path: applied.Spec.Source.Path, Ref: sourceRef, Digest: sourceDigest},
 			ResolvedBackendConfigRef:              applied.Spec.ResolvedBackendConfigRef,
 			BackendConfigArtifactRef:              backendRef,
 			BackendConfigArtifactDigest:           backendDigest,
+			TargetDiscoveryRef:                    applied.Status.TargetDiscoveryRef,
+			TargetDiscoveryDigest:                 applied.Status.TargetDiscoveryDigest,
 			VariableSecretRefs:                    applied.Spec.VariableSecretRefs,
 			VariableSecretVariables:               applied.Spec.VariableSecretVariables,
 			RunnerServiceAccountName:              applied.Spec.RunnerServiceAccountName,
@@ -613,7 +662,7 @@ func retainedRunFromClosure(stack *platformv1alpha1.InfraStack, closure *platfor
 		ObjectMeta: metav1.ObjectMeta{UID: types.UID(closure.TerraformRunUID)},
 		Spec: platformv1alpha1.TerraformRunSpec{
 			StackRef:                 corev1.LocalObjectReference{Name: stack.Name},
-			Source:                   platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Ref: closure.SourceClosureRef, Digest: closure.SourceClosureDigest},
+			Source:                   platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Path: stack.Spec.Source.Path, Ref: closure.SourceClosureRef, Digest: closure.SourceClosureDigest},
 			BackendConfigArtifactRef: closure.BackendSnapshotRef, BackendConfigArtifactDigest: closure.BackendSnapshotDigest,
 			ResolvedBackendConfigRef: closure.BackendSnapshotRef,
 			Workspace:                stack.Spec.Workspace, Executor: stack.Spec.Executor, LockTimeout: stack.Spec.Backend.LockTimeout,
@@ -627,7 +676,7 @@ func retainedRunFromClosure(stack *platformv1alpha1.InfraStack, closure *platfor
 			ExpectedTerraformVersion:              stack.Spec.Executor.TerraformVersion,
 			RunnerImageDigest:                     stack.Spec.Executor.Image,
 		},
-		Status: platformv1alpha1.TerraformRunStatus{SourceBundleRef: closure.SourceClosureRef, SourceBundleDigest: closure.SourceClosureDigest, ResolvedBackendConfigRef: closure.BackendSnapshotRef, ResolvedBackendConfigDigest: closure.BackendSnapshotDigest, EffectivePlanInputDigest: closure.EffectivePlanInputDigest},
+		Status: platformv1alpha1.TerraformRunStatus{SourceBundleRef: closure.SourceClosureRef, SourceBundleDigest: closure.SourceClosureDigest, ResolvedBackendConfigRef: closure.BackendSnapshotRef, ResolvedBackendConfigDigest: closure.BackendSnapshotDigest, EffectivePlanInputDigest: closure.EffectivePlanInputDigest, TargetDiscoveryRef: closure.TargetDiscoveryRef, TargetDiscoveryDigest: closure.TargetDiscoveryDigest},
 	}
 }
 
@@ -698,7 +747,7 @@ func buildApplyRun(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.Te
 			InfraStackGeneration:                  stack.Generation,
 			Operation:                             "Apply",
 			PlanMode:                              plan.Spec.PlanMode,
-			Source:                                platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Ref: sourceRef, Digest: sourceDigest},
+			Source:                                platformv1alpha1.PlanRunSourceSpec{Type: terraformexec.SourceRetainedBundle, Path: plan.Spec.Source.Path, Ref: sourceRef, Digest: sourceDigest},
 			ResolvedBackendConfigRef:              plan.Spec.ResolvedBackendConfigRef,
 			BackendConfigArtifactRef:              backendRef,
 			BackendConfigArtifactDigest:           backendDigest,
@@ -728,6 +777,8 @@ func buildApplyRun(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.Te
 			PlanDigest:                            plan.Status.PlanDigest,
 			PlanReportRef:                         plan.Status.PlanReportRef,
 			PlanReportDigest:                      plan.Status.PlanReportDigest,
+			TargetDiscoveryRef:                    plan.Spec.TargetDiscoveryRef,
+			TargetDiscoveryDigest:                 plan.Spec.TargetDiscoveryDigest,
 			ApprovalRef:                           &corev1.LocalObjectReference{Name: approval.Name},
 			ApprovalUID:                           string(approval.UID),
 			ConcurrencyGroup:                      plan.Spec.ConcurrencyGroup,

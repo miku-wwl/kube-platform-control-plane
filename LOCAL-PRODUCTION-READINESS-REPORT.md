@@ -122,3 +122,76 @@ Known R3 contract gaps remain: pinned Halter compatibility, envtest assets, the 
 - No commit was created and nothing was pushed to GitHub.
 - No temporary validation directory, ad-hoc script, JSON report, or unrequested Markdown artifact was added inside the repository; the required report and Terraform fixture are the only requested validation artifacts.
 - The working tree is intentionally **not Git-clean** because the scoped Stage 0/Phase 7–12 implementation, tests, configuration, fixture, and this report remain uncommitted.
+
+## Phase 12 AWS Portability Closure — v2.0.4 additive gate
+
+This section is the current Phase 12 portability verdict and supersedes only the older Phase 12 portability wording above. The historical R3 report remains unchanged for unrelated Halter/envtest/NetworkPolicy/high-scale limitations.
+
+### Final status
+
+```text
+PHASE12_AWS_PORTABILITY_GATE = PASS
+LOCAL_VALIDATION_PASS
+```
+
+This means all Phase 12 behavior that can reasonably be validated with unit tests, fake AWS SDK adapters, Kind, LocalStack Ultimate, and real Terraform CLI against LocalStack passed. It is not production validation on Real AWS.
+
+### Acceptance classification
+
+| Acceptance criterion | Classification | Evidence / boundary |
+|---|---|---|
+| AWS-native artifact store with empty endpoint and standard SDK resolution | `PASS_LOCAL` | S3 constructor/job tests; native mode emits region/bucket and no synthetic credentials |
+| LocalStack artifact endpoint and immutable artifact contract | `PASS_LOCAL` | LocalStack Ultimate S3/STS checks and immutable artifact round-trip |
+| Provider-aware Kind/AWS target materialization | `PASS_LOCAL` | Target materialization and binding tests; AWS never falls back to Kind |
+| Trusted target discovery and ResourceSet propagation | `PASS_LOCAL` | Digest-bound discovery tests plus live env5 InfraStack/ResourceSet trusted status |
+| Multi-target isolation and wrong-target fail-closed behavior | `PASS_LOCAL` | Kind target integration and target resolver tests |
+| STS AssumeRole, EKS verifier, EKS token/client boundaries | `PASS_LOCAL` | Injectable fake SDK/presigner tests; no live AWS calls |
+| Distinct infrastructure/runtime identities and runner role boundary | `PASS_LOCAL` | Controller helper-chain and identity/RBAC tests |
+| Destroy retained source/backend/target-discovery closure | `PASS_LOCAL` | Live env5 saved-plan Destroy carried `--target-discovery-ref`/digest and finalizer cleanup completed |
+| Destroy evidence fail-closed behavior | `PASS_LOCAL` | Regression test requires terminal, artifact, and retained discovery evidence before `InfrastructureRemoved` |
+| Real AWS IAM/STS/EKS/KMS/network semantics | `DEFERRED_TO_PHASE13` | Real AWS prohibited in this work cycle |
+| Live AWS quotas/throttling/cost/DR/RPO/RTO/SLO evidence | `DEFERRED_TO_PHASE13` | Requires production-like AWS services |
+
+### Live lifecycle evidence
+
+The clean local env5 run observed:
+
+`PlatformEnvironment create → EnvironmentClass validation → InfraStack → Terraform Plan ChangesPresent → digest-bound ChangeApproval → saved-plan Apply SucceededPostMutation → LocalStack infrastructure ready → trusted target discovery → ResourceSet readiness → PlatformEnvironment EnvironmentReady → safe capacity update → Plan NoChange → manager restart recovery → delete finalizer → Destroy Plan ChangesPresent → digest-bound Destroy Approval → retained-evidence Destroy Apply → InfrastructureRemoved → ResourceSet/InfraStack/PlatformEnvironment cleanup`.
+
+The live fixture intentionally had an empty RuntimeProfile, so its ResourceSet correctly reported `RuntimeEmpty`. Valkey bootstrap/readiness and SSA/inventory/prune behavior remain covered by the existing Kind runtime/controller integration tests and prior Gate0 evidence; they are not misreported as live env5 Valkey objects.
+
+### Bugs found and smallest fixes
+
+- AWS-native desired profiles incorrectly required a custom endpoint. The endpoint is now optional for AWS-native mode and strict for custom LocalStack mode.
+- Apply/Destroy retained source paths were dropped. The source path now survives Apply and Destroy reconstruction.
+- Destroy Apply attempted to regenerate target discovery from post-destroy Terraform output. It now verifies and retains the previously trusted discovery artifact; the controller also blocks finalizer removal until Destroy evidence is complete.
+- Kind LocalStack output region (`us-east-1`) was incorrectly compared as the Kind runtime region. Kind keeps its local runtime identity while AWS remains strict.
+- Apply workspace creation was made explicit for clean saved-plan Pods; no re-plan is performed.
+
+### Regression status
+
+| Check | Status |
+|---|---|
+| `go test ./...` | `PASS` |
+| `go vet ./...` | `PASS` |
+| `go test -race ./...` | `PASS` (local run completed) |
+| `git diff --check` | `PASS` |
+| Terraform fixture fmt/init/validate | `PASS` |
+| LocalStack Ultimate S3/STS/Terraform | `PASS` |
+| Kind target/runtime/SSA/inventory/prune | `PASS` |
+| AWS-native mocked/offline adapters | `PASS` |
+| Real AWS validation | `NOT RUN` by explicit prohibition |
+
+### Phase 13 boundary
+
+Expected Phase 13 code diff is configuration/wiring and live-verification setup only: AWS-native endpoint profiles, IAM/STS role policy, EKS cluster/account configuration, KMS/S3 backend settings, network controls, and production test fixtures. No new core controller architecture or CRD is expected from the Phase 12 closure. Phase 13 was not started.
+
+Remaining Phase 13 evidence must cover real IAM/STS/EKS/KMS/VPC/EC2/S3 behavior, quotas/throttling/eventual consistency, production Halter storage, AWS failure injection, DR/RPO/RTO, SLI/SLO/alerts, and cost controls.
+
+### Delivery boundary
+
+- No real AWS was used; only LocalStack Ultimate, Kind, fake/injectable AWS adapters, and local Terraform were used.
+- The repository was not committed or pushed, as requested.
+- The working tree is intentionally not clean because the necessary Phase 12 implementation, tests, generated CRDs, and required documentation remain uncommitted.
+- No temporary validation directory, ad-hoc script, JSON report, or unrequested Markdown artifact was added.
+- Phase 13 was not started.

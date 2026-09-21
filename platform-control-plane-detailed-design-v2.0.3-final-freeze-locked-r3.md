@@ -1539,3 +1539,15 @@ AI workload platform
 后续普通 implementation detail 作为 bug/security/test fix 处理。
 
 只有真实 E2E、安全测试或 Real AWS evidence 证明 architecture contract 错误时，才重新 architecture review。
+
+## Phase 12 AWS Portability Addendum v2.0.4
+
+The following rules are normative for the frozen Phase 1–12 design:
+
+1. `EndpointProfile.Mode=aws-native` permits an empty desired endpoint and uses AWS SDK default endpoint resolution. A custom endpoint is required only for LocalStack/custom emulators.
+2. AWS target materialization must carry distinct infrastructure execution and runtime role identities. Missing account, region, cluster identity, HTTPS endpoint, CA data, or binding evidence fails closed.
+3. `TargetDiscoveryRef` and its digest are immutable evidence. Discovery is sanitized, digest-bound to source/backend/effective input, and propagated from `InfraStack` status to `ResourceSet` before runtime mutation.
+4. A retained Destroy Plan/Apply carries the previously trusted target-discovery reference. Destroy Apply verifies that artifact and does not require `terraform output` to reproduce a discovery object after resources are removed.
+5. The target client factory routes Kind context and AWS EKS authentication through separate resolver boundaries. Real AWS SDK adapters are injectable and are not called by local tests.
+
+The Phase 13 boundary is configuration and real-service validation only: AWS-native profiles, IAM/STS/EKS/KMS/network configuration, and live evidence. This addendum does not introduce a Phase 13 controller, CRD, or workflow.

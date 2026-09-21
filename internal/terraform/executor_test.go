@@ -126,6 +126,28 @@ func TestApplyIncludesTerraformDiagnosticsOnFailure(t *testing.T) {
 	}
 }
 
+func TestApplyCreatesMissingWorkspaceWithoutReplanning(t *testing.T) {
+	runner := &fakeRunner{results: []CommandResult{{ExitCode: 0}, {ExitCode: 1}, {ExitCode: 0}, {ExitCode: 0}}}
+	result, err := (Executor{Runner: runner}).Apply(context.Background(), Request{
+		WorkingDir:        "/workspace/terraform",
+		Workspace:         "clean-state",
+		BackendConfigPath: "/workspace/backend-config",
+		PlanPath:          "/workspace/plan.binary",
+	})
+	if err != nil || !result.Succeeded {
+		t.Fatalf("Apply() result=%+v err=%v", result, err)
+	}
+	want := []string{
+		"init -input=false -no-color -lockfile readonly -backend-config /workspace/backend-config",
+		"workspace select clean-state",
+		"workspace new clean-state",
+		"apply -input=false -no-color /workspace/plan.binary",
+	}
+	if !reflect.DeepEqual(runner.commands, want) {
+		t.Fatalf("commands = %#v, want %#v", runner.commands, want)
+	}
+}
+
 func TestVerifyTerraformVersionUsesMachineReadableOutput(t *testing.T) {
 	runner := &fakeRunner{results: []CommandResult{{ExitCode: 0, Stdout: `{"terraform_version":"1.14.0"}`}}}
 	if err := (Executor{Runner: runner}).VerifyTerraformVersion(context.Background(), "v1.14.0", "/workspace/terraform"); err != nil {

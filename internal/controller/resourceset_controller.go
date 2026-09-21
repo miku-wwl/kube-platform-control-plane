@@ -105,7 +105,7 @@ func (r *ResourceSetReconciler) reconcilePresent(ctx context.Context, object *pl
 	if targetClient == nil {
 		return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionUnknown, "RuntimeClientUnavailable", "target Kubernetes client is not configured; runtime mutation is disabled")
 	}
-	target := targetIdentity(object.Spec.Target)
+	target := resourceSetRuntimeTarget(object)
 	objects, err := bootstrapObjects(object.Spec.Resources, object.Spec.OwnershipID)
 	if err != nil {
 		return r.setRuntimeStatus(ctx, object, nil, false, metav1.ConditionFalse, "RuntimeObjectRejected", err.Error())
@@ -146,7 +146,7 @@ func (r *ResourceSetReconciler) reconcileDelete(ctx context.Context, object *pla
 	}
 	cleanupCtx, cancel := context.WithTimeout(ctx, defaultCleanupTimeout)
 	defer cancel()
-	target := targetIdentity(object.Spec.Target)
+	target := resourceSetRuntimeTarget(object)
 	if err := r.pruneInventory(cleanupCtx, object.Status.Inventory, target, targetClient); err != nil {
 		if errors.Is(err, errCleanupPending) {
 			return ctrl.Result{RequeueAfter: 250 * time.Millisecond}, nil
@@ -164,40 +164,12 @@ func (r *ResourceSetReconciler) reconcileDelete(ctx context.Context, object *pla
 }
 
 func (r *ResourceSetReconciler) targetClient(ctx context.Context, object *platformv1alpha1.ResourceSet) (dynamic.Interface, error) {
+	identity, profile, err := resourceSetTargetBinding(object)
+	if err != nil {
+		return nil, err
+	}
 	if r.TargetResolver == nil {
 		return r.TargetClient, nil
-	}
-	identity := targetresolver.RuntimeTargetIdentity{
-		Provider:      object.Spec.Target.Provider,
-		AccountID:     object.Spec.Target.Account,
-		Region:        object.Spec.Target.Region,
-		ClusterARN:    object.Spec.Target.ClusterARN,
-		ClusterName:   object.Spec.Target.ClusterName,
-		IncarnationID: object.Spec.Target.IncarnationID,
-	}
-	if identity.IncarnationID == "" {
-		identity.IncarnationID = object.Spec.Target.ClusterID
-	}
-	if identity.IncarnationID == "" {
-		identity.IncarnationID = object.Spec.Target.ClusterName
-	}
-	if identity.AccountID == "" {
-		identity.AccountID = "local"
-	}
-	if identity.Region == "" {
-		identity.Region = "local"
-	}
-	profile := targetresolver.TargetConnectionProfile{
-		Endpoint:            object.Spec.Target.ConnectionProfileRef,
-		AuthMode:            "kind-context",
-		KubeContext:         object.Spec.Target.ClusterName,
-		NetworkRouteProfile: "local-kind",
-	}
-	if profile.Endpoint == "" {
-		profile.Endpoint = "kubeconfig:" + object.Spec.Target.ClusterName
-	}
-	if object.Spec.Target.Provider == "aws" {
-		profile.AuthMode = "aws-eks"
 	}
 	return r.TargetResolver.Client(ctx, identity, profile)
 }
@@ -306,7 +278,7 @@ func (r *ResourceSetReconciler) runtimeReadiness(ctx context.Context, inventory 
 func (r *ResourceSetReconciler) setRuntimeStatus(ctx context.Context, object *platformv1alpha1.ResourceSet, inventory []runtimer.InventoryItem, limitExceeded bool, conditionStatus metav1.ConditionStatus, reason, message string) (ctrl.Result, error) {
 	status := object.Status
 	status.ObservedGeneration = object.Generation
-	digest, err := targetIdentity(object.Spec.Target).Digest()
+	digest, err := resourceSetRuntimeTarget(object).Digest()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -415,6 +387,43 @@ func targetIdentity(reference platformv1alpha1.TargetReference) runtimer.TargetI
 		account = "local"
 	}
 	return runtimer.TargetIdentity{Provider: reference.Provider, Account: account, Region: reference.Region, ClusterName: reference.ClusterName, ClusterID: reference.ClusterID, ClusterARN: reference.ClusterARN, IncarnationID: incarnation}
+}
+
+func resourceSetRuntimeTarget(object *platformv1alpha1.ResourceSet) runtimer.TargetIdentity {
+	if object != nil && object.Spec.TrustedRuntimeTargetIdentity != nil {
+		identity := object.Spec.TrustedRuntimeTargetIdentity
+		return runtimer.TargetIdentity{Provider: identity.Provider, Account: identity.AccountID, Region: identity.Region, ClusterName: identity.ClusterName, ClusterID: identity.ClusterName, ClusterARN: identity.ClusterARN, IncarnationID: identity.IncarnationID}
+	}
+	return targetIdentity(object.Spec.Target)
+}
+
+func resourceSetTargetBinding(object *platformv1alpha1.ResourceSet) (targetresolver.RuntimeTargetIdentity, targetresolver.TargetConnectionProfile, error) {
+	if object == nil {
+		return targetresolver.RuntimeTargetIdentity{}, targetresolver.TargetConnectionProfile{}, fmt.Errorf("ResourceSet is required")
+	}
+	if object.Spec.TrustedRuntimeTargetIdentity != nil || object.Spec.TrustedTargetConnectionProfile != nil {
+		if object.Spec.TrustedRuntimeTargetIdentity == nil || object.Spec.TrustedTargetConnectionProfile == nil || object.Spec.TargetDiscoveryRef == "" || object.Spec.TargetDiscoveryDigest == "" {
+			return targetresolver.RuntimeTargetIdentity{}, targetresolver.TargetConnectionProfile{}, fmt.Errorf("trusted target discovery is incomplete")
+		}
+		identity := object.Spec.TrustedRuntimeTargetIdentity
+		profile := object.Spec.TrustedTargetConnectionProfile
+		binding := targetresolver.RuntimeTargetIdentity{Provider: identity.Provider, AccountID: identity.AccountID, Region: identity.Region, ClusterARN: identity.ClusterARN, ClusterName: identity.ClusterName, IncarnationID: identity.IncarnationID}
+		connection := targetresolver.TargetConnectionProfile{Endpoint: profile.Endpoint, CACertificateData: profile.CACertificateData, CACertificateDigest: profile.CACertificateDigest, AuthMode: profile.AuthMode, NetworkRouteProfile: profile.NetworkRouteProfile, KubeContext: profile.KubeContext, RoleARN: profile.RoleARN}
+		if err := targetresolver.ValidateBinding(binding, connection); err != nil {
+			return targetresolver.RuntimeTargetIdentity{}, targetresolver.TargetConnectionProfile{}, err
+		}
+		return binding, connection, nil
+	}
+	if object.Spec.Target.Provider == targetresolver.ProviderAWS {
+		return targetresolver.RuntimeTargetIdentity{}, targetresolver.TargetConnectionProfile{}, fmt.Errorf("AWS runtime mutation requires trusted target discovery")
+	}
+	materialized, err := materializeTarget(object.Spec.Target)
+	if err != nil {
+		return targetresolver.RuntimeTargetIdentity{}, targetresolver.TargetConnectionProfile{}, err
+	}
+	identity := materialized.RuntimeTargetIdentity
+	profile := materialized.TargetConnectionProfile
+	return targetresolver.RuntimeTargetIdentity{Provider: identity.Provider, AccountID: identity.AccountID, Region: identity.Region, ClusterARN: identity.ClusterARN, ClusterName: identity.ClusterName, IncarnationID: identity.IncarnationID}, targetresolver.TargetConnectionProfile{Endpoint: profile.Endpoint, CACertificateData: profile.CACertificateData, CACertificateDigest: profile.CACertificateDigest, AuthMode: profile.AuthMode, NetworkRouteProfile: profile.NetworkRouteProfile, KubeContext: profile.KubeContext, RoleARN: profile.RoleARN}, nil
 }
 
 func fieldManager(object *platformv1alpha1.ResourceSet) string {

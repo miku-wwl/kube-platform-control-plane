@@ -21,6 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
+	targetresolver "github.com/miku-wwl/kube-platform-control-plane/internal/target"
 )
 
 const (
@@ -92,7 +93,11 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 		var classStack platformv1alpha1.InfraStack
 		classStackErr := r.Get(ctx, client.ObjectKey{Name: stackRefName, Namespace: object.Namespace}, &classStack)
 		if apierrors.IsNotFound(classStackErr) {
-			classStack = *buildClassInfraStack(&object, class, stackRefName, target)
+			desiredStack, buildErr := buildClassInfraStack(&object, class, stackRefName, target)
+			if buildErr != nil {
+				return r.setEnvironmentCondition(ctx, &object, "ClassRejected", buildErr.Error(), metav1.ConditionFalse)
+			}
+			classStack = *desiredStack
 			if err := ctrl.SetControllerReference(&object, &classStack, r.Scheme); err != nil {
 				return ctrl.Result{}, err
 			}
@@ -114,7 +119,10 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 				}
 				return ctrl.Result{RequeueAfter: environmentRequeue}, nil
 			}
-			desiredStack := buildClassInfraStack(&object, class, stackRefName, target)
+			desiredStack, buildErr := buildClassInfraStack(&object, class, stackRefName, target)
+			if buildErr != nil {
+				return r.setEnvironmentCondition(ctx, &object, "ClassRejected", buildErr.Error(), metav1.ConditionFalse)
+			}
 			if !reflect.DeepEqual(classStack.Spec, desiredStack.Spec) {
 				classStack.Spec = desiredStack.Spec
 				if err := r.Update(ctx, &classStack); err != nil {
@@ -169,6 +177,24 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 	childSpec.Target = target
 	childSpec.Resources = classObjects
 	childSpec.RuntimeTargetIdentityDigest = targetDigest
+	childSpec.TrustedRuntimeTargetIdentity = nil
+	childSpec.TrustedTargetConnectionProfile = nil
+	childSpec.TargetDiscoveryRef = ""
+	childSpec.TargetDiscoveryDigest = ""
+	if stack.Status.DiscoveredRuntimeTargetIdentity != nil && stack.Status.DiscoveredTargetConnectionProfile != nil {
+		childSpec.TrustedRuntimeTargetIdentity = stack.Status.DiscoveredRuntimeTargetIdentity.DeepCopy()
+		childSpec.TrustedTargetConnectionProfile = stack.Status.DiscoveredTargetConnectionProfile.DeepCopy()
+		childSpec.TargetDiscoveryRef = stack.Status.TargetDiscoveryRef
+		childSpec.TargetDiscoveryDigest = stack.Status.TargetDiscoveryDigest
+		if trustedDigest, digestErr := targetresolver.Digest(stack.Status.DiscoveredRuntimeTargetIdentity); digestErr == nil {
+			targetDigest = trustedDigest
+			childSpec.RuntimeTargetIdentityDigest = trustedDigest
+		}
+	}
+	trustedDiscovery := childSpec.TrustedRuntimeTargetIdentity != nil && childSpec.TrustedTargetConnectionProfile != nil && childSpec.TargetDiscoveryRef != "" && childSpec.TargetDiscoveryDigest != ""
+	if target.Provider == "aws" && !trustedDiscovery {
+		stackReady = false
+	}
 	childSpec.RuntimeMutationAllowed = stackReady && !stack.Spec.MutationFence
 	childSpec.MutationFence = stack.Spec.MutationFence || !stackReady
 	if !reflect.DeepEqual(child.Spec, childSpec) {
@@ -195,8 +221,12 @@ func (r *PlatformEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.
 		status.InfraStackRef = &corev1.LocalObjectReference{Name: stackRefName}
 	}
 	identity := targetRuntimeIdentity(target)
-	status.TargetIdentity = &identity
 	connection := environmentTargetConnection(target)
+	if stack.Status.DiscoveredRuntimeTargetIdentity != nil && stack.Status.DiscoveredTargetConnectionProfile != nil {
+		identity = *stack.Status.DiscoveredRuntimeTargetIdentity
+		connection = *stack.Status.DiscoveredTargetConnectionProfile
+	}
+	status.TargetIdentity = &identity
 	status.TargetConnection = &connection
 	status.ResourceSetRef = &corev1.LocalObjectReference{Name: child.Name}
 
@@ -297,10 +327,11 @@ func (r *PlatformEnvironmentReconciler) ensureRunnerIdentity(ctx context.Context
 	if name == "" {
 		return nil
 	}
+	annotations := runnerServiceAccountAnnotations(class)
 	serviceAccount := &corev1.ServiceAccount{}
 	key := client.ObjectKey{Name: name, Namespace: environment.Namespace}
 	if err := r.Get(ctx, key, serviceAccount); apierrors.IsNotFound(err) {
-		serviceAccount = &corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}}}
+		serviceAccount = &corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-control-plane"}, Annotations: annotations}}
 		if err := ctrl.SetControllerReference(environment, serviceAccount, r.Scheme); err != nil {
 			return err
 		}
@@ -309,6 +340,19 @@ func (r *PlatformEnvironmentReconciler) ensureRunnerIdentity(ctx context.Context
 		}
 	} else if err != nil {
 		return err
+	} else if len(annotations) > 0 {
+		if serviceAccount.Labels["platform.example.io/managed-by"] != "platform-control-plane" {
+			return fmt.Errorf("AWS execution role requires controller-managed ServiceAccount %q", name)
+		}
+		if serviceAccount.Annotations == nil || serviceAccount.Annotations["eks.amazonaws.com/role-arn"] != annotations["eks.amazonaws.com/role-arn"] {
+			if serviceAccount.Annotations == nil {
+				serviceAccount.Annotations = map[string]string{}
+			}
+			serviceAccount.Annotations["eks.amazonaws.com/role-arn"] = annotations["eks.amazonaws.com/role-arn"]
+			if err := r.Update(ctx, serviceAccount); err != nil {
+				return err
+			}
+		}
 	}
 	role := &rbacv1.Role{}
 	if err := r.Get(ctx, key, role); apierrors.IsNotFound(err) {
@@ -335,6 +379,13 @@ func (r *PlatformEnvironmentReconciler) ensureRunnerIdentity(ctx context.Context
 		return err
 	}
 	return nil
+}
+
+func runnerServiceAccountAnnotations(class *platformv1alpha1.EnvironmentClass) map[string]string {
+	if class == nil || class.Spec.Target.Provider != targetresolver.ProviderAWS || class.Spec.Target.ExecutionRoleARN == "" {
+		return nil
+	}
+	return map[string]string{"eks.amazonaws.com/role-arn": class.Spec.Target.ExecutionRoleARN}
 }
 
 func validatePlatformEnvironmentSpec(object *platformv1alpha1.PlatformEnvironment) error {

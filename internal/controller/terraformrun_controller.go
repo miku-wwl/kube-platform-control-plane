@@ -326,6 +326,8 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 		ExpectedTerraformVersion:    object.Spec.ExpectedTerraformVersion,
 		PlanRef:                     object.Spec.PlanRef,
 		PlanDigest:                  object.Spec.PlanDigest,
+		TargetDiscoveryRef:          object.Spec.TargetDiscoveryRef,
+		TargetDiscoveryDigest:       object.Spec.TargetDiscoveryDigest,
 	}
 	if object.Spec.Source.Type == terraformexec.SourceRetainedBundle {
 		request.SourceBundleRef = object.Spec.Source.Ref
@@ -356,8 +358,8 @@ func (r *TerraformRunReconciler) reconcileJobStatus(ctx context.Context, object 
 }
 
 func (r *TerraformRunReconciler) captureTerminalResult(ctx context.Context, object *platformv1alpha1.TerraformRun, job *batchv1.Job) (runnerTerminalResult, error) {
-	if r.ArtifactEndpoint == "" || r.ArtifactRegion == "" || r.ArtifactBucket == "" {
-		return runnerTerminalResult{}, fmt.Errorf("durable terminal artifact store is not configured")
+	if r.ArtifactRegion == "" || r.ArtifactBucket == "" {
+		return runnerTerminalResult{}, fmt.Errorf("durable terminal artifact store region and bucket are not configured")
 	}
 	store, err := artifacts.NewS3Store(r.ArtifactEndpoint, r.ArtifactRegion, r.ArtifactBucket)
 	if err != nil {

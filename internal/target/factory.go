@@ -22,6 +22,31 @@ type ClientResolver interface {
 	Client(context.Context, RuntimeTargetIdentity, TargetConnectionProfile) (dynamic.Interface, error)
 }
 
+// ProviderClientResolver keeps runtime reconciliation provider-neutral. The
+// ResourceSet only asks for a client; Kind and EKS authentication stay behind
+// this adapter boundary.
+type ProviderClientResolver struct {
+	Kind ClientResolver
+	AWS  ClientResolver
+}
+
+func (r ProviderClientResolver) Client(ctx context.Context, identity RuntimeTargetIdentity, profile TargetConnectionProfile) (dynamic.Interface, error) {
+	switch profile.AuthMode {
+	case AuthKindContext:
+		if r.Kind == nil {
+			return nil, fmt.Errorf("kind target resolver is not configured")
+		}
+		return r.Kind.Client(ctx, identity, profile)
+	case AuthAWSEKS:
+		if r.AWS == nil {
+			return nil, fmt.Errorf("AWS EKS target resolver is not configured")
+		}
+		return r.AWS.Client(ctx, identity, profile)
+	default:
+		return nil, fmt.Errorf("unsupported target auth mode %q", profile.AuthMode)
+	}
+}
+
 func NewTargetClientFactory() *TargetClientFactory {
 	return &TargetClientFactory{clients: map[string]dynamic.Interface{}, profiles: map[string]TargetConnectionProfile{}}
 }

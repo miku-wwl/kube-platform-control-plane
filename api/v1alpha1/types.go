@@ -233,6 +233,11 @@ type TargetReference struct {
 	IncarnationID string `json:"incarnationID,omitempty"`
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="EnvironmentClass target is immutable"
 	ConnectionProfileRef string `json:"connectionProfileRef,omitempty"`
+	// ExecutionRoleARN is used only by the infrastructure execution adapter.
+	// Runtime Kubernetes authentication is represented separately by the
+	// TargetConnectionProfile.
+	ExecutionRoleARN string `json:"executionRoleARN,omitempty"`
+	RuntimeRoleARN   string `json:"runtimeRoleARN,omitempty"`
 }
 
 type InfrastructureExecutionIdentity struct {
@@ -254,11 +259,15 @@ type RuntimeTargetIdentity struct {
 }
 
 type TargetConnectionProfile struct {
-	Endpoint            string `json:"endpoint"`
+	// Endpoint is optional on the desired AWS-native profile and is populated
+	// by trusted target discovery before runtime mutation is enabled.
+	Endpoint            string `json:"endpoint,omitempty"`
+	CACertificateData   string `json:"caCertificateData,omitempty"`
 	CACertificateDigest string `json:"caCertificateDigest,omitempty"`
 	AuthMode            string `json:"authMode"`
 	NetworkRouteProfile string `json:"networkRouteProfile,omitempty"`
 	KubeContext         string `json:"kubeContext,omitempty"`
+	RoleARN             string `json:"roleARN,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=Present;Destroy
@@ -278,21 +287,23 @@ const (
 )
 
 type InfraStackStatus struct {
-	ObservedGeneration            int64                        `json:"observedGeneration,omitempty"`
-	Conditions                    []metav1.Condition           `json:"conditions,omitempty"`
-	LatestPlanRunRef              *corev1.LocalObjectReference `json:"latestPlanRunRef,omitempty"`
-	LastAppliedRunRef             *corev1.LocalObjectReference `json:"lastAppliedRunRef,omitempty"`
-	LastAppliedSourceBundleRef    string                       `json:"lastAppliedSourceBundleRef,omitempty"`
-	LastAppliedSourceBundleDigest string                       `json:"lastAppliedSourceBundleDigest,omitempty"`
-	LastConverged                 *LastConvergedSourceClosure  `json:"lastConverged,omitempty"`
-	ConvergenceEvidenceRef        string                       `json:"convergenceEvidenceRef,omitempty"`
-	ConvergenceEvidenceDigest     string                       `json:"convergenceEvidenceDigest,omitempty"`
-	TargetDiscoveryRef            string                       `json:"targetDiscoveryRef,omitempty"`
-	TargetDiscoveryDigest         string                       `json:"targetDiscoveryDigest,omitempty"`
-	DriftReportRef                string                       `json:"driftReportRef,omitempty"`
-	DriftReportDigest             string                       `json:"driftReportDigest,omitempty"`
-	CleanupEvidenceRef            string                       `json:"cleanupEvidenceRef,omitempty"`
-	CleanupEvidenceDigest         string                       `json:"cleanupEvidenceDigest,omitempty"`
+	ObservedGeneration                int64                        `json:"observedGeneration,omitempty"`
+	Conditions                        []metav1.Condition           `json:"conditions,omitempty"`
+	LatestPlanRunRef                  *corev1.LocalObjectReference `json:"latestPlanRunRef,omitempty"`
+	LastAppliedRunRef                 *corev1.LocalObjectReference `json:"lastAppliedRunRef,omitempty"`
+	LastAppliedSourceBundleRef        string                       `json:"lastAppliedSourceBundleRef,omitempty"`
+	LastAppliedSourceBundleDigest     string                       `json:"lastAppliedSourceBundleDigest,omitempty"`
+	LastConverged                     *LastConvergedSourceClosure  `json:"lastConverged,omitempty"`
+	ConvergenceEvidenceRef            string                       `json:"convergenceEvidenceRef,omitempty"`
+	ConvergenceEvidenceDigest         string                       `json:"convergenceEvidenceDigest,omitempty"`
+	TargetDiscoveryRef                string                       `json:"targetDiscoveryRef,omitempty"`
+	TargetDiscoveryDigest             string                       `json:"targetDiscoveryDigest,omitempty"`
+	DiscoveredRuntimeTargetIdentity   *RuntimeTargetIdentity       `json:"discoveredRuntimeTargetIdentity,omitempty"`
+	DiscoveredTargetConnectionProfile *TargetConnectionProfile     `json:"discoveredTargetConnectionProfile,omitempty"`
+	DriftReportRef                    string                       `json:"driftReportRef,omitempty"`
+	DriftReportDigest                 string                       `json:"driftReportDigest,omitempty"`
+	CleanupEvidenceRef                string                       `json:"cleanupEvidenceRef,omitempty"`
+	CleanupEvidenceDigest             string                       `json:"cleanupEvidenceDigest,omitempty"`
 }
 
 // LastConvergedSourceClosure is the immutable evidence required to safely
@@ -328,45 +339,50 @@ type TerraformRun struct {
 
 // +kubebuilder:validation:XValidation:rule="self == oldSelf",message="TerraformRun spec is immutable"
 type TerraformRunSpec struct {
-	StackRef                              corev1.LocalObjectReference   `json:"stackRef"`
-	InfraStackGeneration                  int64                         `json:"infraStackGeneration"`
-	Operation                             string                        `json:"operation"`
-	PlanMode                              string                        `json:"planMode"`
-	Source                                PlanRunSourceSpec             `json:"source"`
-	ResolvedBackendConfigRef              string                        `json:"resolvedBackendConfigRef,omitempty"`
-	BackendConfigArtifactRef              string                        `json:"backendConfigArtifactRef,omitempty"`
-	BackendConfigArtifactDigest           string                        `json:"backendConfigArtifactDigest,omitempty"`
-	VariableSecretRefs                    []corev1.LocalObjectReference `json:"variableSecretRefs,omitempty"`
-	VariableSecretVariables               []SecretVariableReference     `json:"variableSecretVariables,omitempty"`
-	LockTimeout                           metav1.Duration               `json:"lockTimeout,omitempty"`
-	Workspace                             string                        `json:"workspace"`
-	Executor                              ExecutorSpec                  `json:"executor"`
-	ExecutionContextDigest                string                        `json:"executionContextDigest,omitempty"`
-	ExecutionTargetIdentityDigest         string                        `json:"executionTargetIdentityDigest,omitempty"`
-	ExecutionPlatformIdentityDigest       string                        `json:"executionPlatformIdentityDigest,omitempty"`
-	PlanRunUID                            string                        `json:"planRunUID,omitempty"`
-	PlanRef                               string                        `json:"planRef,omitempty"`
-	PlanDigest                            string                        `json:"planDigest,omitempty"`
-	PlanReportRef                         string                        `json:"planReportRef,omitempty"`
-	PlanReportDigest                      string                        `json:"planReportDigest,omitempty"`
-	ApprovalRef                           *corev1.LocalObjectReference  `json:"approvalRef,omitempty"`
-	ApprovalUID                           string                        `json:"approvalUID,omitempty"`
-	EffectivePlanInputDigest              string                        `json:"effectivePlanInputDigest,omitempty"`
-	SourceClosureDigest                   string                        `json:"sourceClosureDigest,omitempty"`
-	VariablesSnapshotDigest               string                        `json:"variablesSnapshotDigest,omitempty"`
-	SecretVariableIdentityDigest          string                        `json:"secretVariableIdentityDigest,omitempty"`
-	InfrastructureExecutionIdentityDigest string                        `json:"infrastructureExecutionIdentityDigest,omitempty"`
-	RuntimeTargetIdentityDigest           string                        `json:"runtimeTargetIdentityDigest,omitempty"`
-	TargetConnectionProfileDigest         string                        `json:"targetConnectionProfileDigest,omitempty"`
-	RunnerServiceAccountIdentityDigest    string                        `json:"runnerServiceAccountIdentityDigest,omitempty"`
-	TerraformLockfileDigest               string                        `json:"terraformLockfileDigest,omitempty"`
-	ExpectedTerraformVersion              string                        `json:"expectedTerraformVersion,omitempty"`
-	RunnerImageDigest                     string                        `json:"runnerImageDigest,omitempty"`
-	MutationFence                         bool                          `json:"mutationFence,omitempty"`
-	RunnerServiceAccountName              string                        `json:"runnerServiceAccountName,omitempty"`
-	ConcurrencyGroup                      string                        `json:"concurrencyGroup,omitempty"`
-	MaxConcurrentPlans                    int32                         `json:"maxConcurrentPlans,omitempty"`
-	MaxConcurrentApplies                  int32                         `json:"maxConcurrentApplies,omitempty"`
+	StackRef                        corev1.LocalObjectReference   `json:"stackRef"`
+	InfraStackGeneration            int64                         `json:"infraStackGeneration"`
+	Operation                       string                        `json:"operation"`
+	PlanMode                        string                        `json:"planMode"`
+	Source                          PlanRunSourceSpec             `json:"source"`
+	ResolvedBackendConfigRef        string                        `json:"resolvedBackendConfigRef,omitempty"`
+	BackendConfigArtifactRef        string                        `json:"backendConfigArtifactRef,omitempty"`
+	BackendConfigArtifactDigest     string                        `json:"backendConfigArtifactDigest,omitempty"`
+	VariableSecretRefs              []corev1.LocalObjectReference `json:"variableSecretRefs,omitempty"`
+	VariableSecretVariables         []SecretVariableReference     `json:"variableSecretVariables,omitempty"`
+	LockTimeout                     metav1.Duration               `json:"lockTimeout,omitempty"`
+	Workspace                       string                        `json:"workspace"`
+	Executor                        ExecutorSpec                  `json:"executor"`
+	ExecutionContextDigest          string                        `json:"executionContextDigest,omitempty"`
+	ExecutionTargetIdentityDigest   string                        `json:"executionTargetIdentityDigest,omitempty"`
+	ExecutionPlatformIdentityDigest string                        `json:"executionPlatformIdentityDigest,omitempty"`
+	PlanRunUID                      string                        `json:"planRunUID,omitempty"`
+	PlanRef                         string                        `json:"planRef,omitempty"`
+	PlanDigest                      string                        `json:"planDigest,omitempty"`
+	PlanReportRef                   string                        `json:"planReportRef,omitempty"`
+	PlanReportDigest                string                        `json:"planReportDigest,omitempty"`
+	// Target discovery is carried forward for retained Destroy runs. Terraform
+	// destroy output is not required to reproduce the already trusted target
+	// binding after mutation.
+	TargetDiscoveryRef                    string                       `json:"targetDiscoveryRef,omitempty"`
+	TargetDiscoveryDigest                 string                       `json:"targetDiscoveryDigest,omitempty"`
+	ApprovalRef                           *corev1.LocalObjectReference `json:"approvalRef,omitempty"`
+	ApprovalUID                           string                       `json:"approvalUID,omitempty"`
+	EffectivePlanInputDigest              string                       `json:"effectivePlanInputDigest,omitempty"`
+	SourceClosureDigest                   string                       `json:"sourceClosureDigest,omitempty"`
+	VariablesSnapshotDigest               string                       `json:"variablesSnapshotDigest,omitempty"`
+	SecretVariableIdentityDigest          string                       `json:"secretVariableIdentityDigest,omitempty"`
+	InfrastructureExecutionIdentityDigest string                       `json:"infrastructureExecutionIdentityDigest,omitempty"`
+	RuntimeTargetIdentityDigest           string                       `json:"runtimeTargetIdentityDigest,omitempty"`
+	TargetConnectionProfileDigest         string                       `json:"targetConnectionProfileDigest,omitempty"`
+	RunnerServiceAccountIdentityDigest    string                       `json:"runnerServiceAccountIdentityDigest,omitempty"`
+	TerraformLockfileDigest               string                       `json:"terraformLockfileDigest,omitempty"`
+	ExpectedTerraformVersion              string                       `json:"expectedTerraformVersion,omitempty"`
+	RunnerImageDigest                     string                       `json:"runnerImageDigest,omitempty"`
+	MutationFence                         bool                         `json:"mutationFence,omitempty"`
+	RunnerServiceAccountName              string                       `json:"runnerServiceAccountName,omitempty"`
+	ConcurrencyGroup                      string                       `json:"concurrencyGroup,omitempty"`
+	MaxConcurrentPlans                    int32                        `json:"maxConcurrentPlans,omitempty"`
+	MaxConcurrentApplies                  int32                        `json:"maxConcurrentApplies,omitempty"`
 }
 
 type PlanRunSourceSpec struct {
@@ -426,13 +442,17 @@ type ResourceSet struct {
 }
 
 type ResourceSetSpec struct {
-	Target                      TargetReference `json:"target"`
-	OwnershipID                 string          `json:"ownershipID,omitempty"`
-	MaxInventoryItems           int32           `json:"maxInventoryItems,omitempty"`
-	Resources                   []RuntimeObject `json:"resources,omitempty"`
-	RuntimeMutationAllowed      bool            `json:"runtimeMutationAllowed,omitempty"`
-	MutationFence               bool            `json:"mutationFence,omitempty"`
-	RuntimeTargetIdentityDigest string          `json:"runtimeTargetIdentityDigest,omitempty"`
+	Target                         TargetReference          `json:"target"`
+	TrustedRuntimeTargetIdentity   *RuntimeTargetIdentity   `json:"trustedRuntimeTargetIdentity,omitempty"`
+	TrustedTargetConnectionProfile *TargetConnectionProfile `json:"trustedTargetConnectionProfile,omitempty"`
+	TargetDiscoveryRef             string                   `json:"targetDiscoveryRef,omitempty"`
+	TargetDiscoveryDigest          string                   `json:"targetDiscoveryDigest,omitempty"`
+	OwnershipID                    string                   `json:"ownershipID,omitempty"`
+	MaxInventoryItems              int32                    `json:"maxInventoryItems,omitempty"`
+	Resources                      []RuntimeObject          `json:"resources,omitempty"`
+	RuntimeMutationAllowed         bool                     `json:"runtimeMutationAllowed,omitempty"`
+	MutationFence                  bool                     `json:"mutationFence,omitempty"`
+	RuntimeTargetIdentityDigest    string                   `json:"runtimeTargetIdentityDigest,omitempty"`
 }
 
 type RuntimeObject struct {

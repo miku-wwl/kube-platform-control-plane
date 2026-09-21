@@ -130,6 +130,69 @@ func TestBuildJobPassesBackendArtifactRestorePath(t *testing.T) {
 	}
 }
 
+func TestBuildJobAWSNativeArtifactStoreDoesNotInjectSyntheticCredentials(t *testing.T) {
+	job, err := BuildJob(JobRequest{
+		Name:               "native-plan-run",
+		Namespace:          "platform-system",
+		RunUID:             "run-uid",
+		RunnerImage:        "registry.example/runner@sha256:runner",
+		SourceType:         SourceRetainedBundle,
+		SourceBundleRef:    "runs/source-bundle.tar.zst",
+		SourceBundleDigest: "sha256:bundle",
+		ArtifactRegion:     "us-east-1",
+		ArtifactBucket:     "native-artifacts",
+		ArtifactPrefix:     "runs/run-uid",
+		Operation:          "Plan",
+		WorkingDir:         "/workspace/terraform",
+		Workspace:          "default",
+		PlanPath:           "/workspace/terraform/plan.binary",
+		ExecutionTimeout:   time.Minute,
+	})
+	if err != nil {
+		t.Fatalf("BuildJob() error = %v", err)
+	}
+	runner := job.Spec.Template.Spec.Containers[0]
+	if !contains(runner.Args, "--artifact-region=us-east-1") || !contains(runner.Args, "--artifact-bucket=native-artifacts") {
+		t.Fatalf("native artifact args = %#v", runner.Args)
+	}
+	if hasLiteralEnv(runner.Env, "AWS_ACCESS_KEY_ID", "test") || hasLiteralEnv(runner.Env, "AWS_SECRET_ACCESS_KEY", "test") {
+		t.Fatalf("AWS-native job received synthetic credentials = %#v", runner.Env)
+	}
+}
+
+func TestBuildJobCarriesRetainedTargetDiscoveryForDestroy(t *testing.T) {
+	job, err := BuildJob(JobRequest{
+		Name:                  "destroy-apply",
+		Namespace:             "platform-system",
+		RunUID:                "run-uid",
+		RunnerImage:           "registry.example/runner@sha256:runner",
+		SourceType:            SourceRetainedBundle,
+		SourceBundleRef:       "runs/source-bundle.tar.zst",
+		SourceBundleDigest:    "sha256:bundle",
+		ArtifactEndpoint:      "http://localstack:4566",
+		ArtifactRegion:        "us-east-1",
+		ArtifactBucket:        "artifacts",
+		ArtifactPrefix:        "runs/run-uid",
+		TargetDiscoveryRef:    "runs/apply/target-discovery.json",
+		TargetDiscoveryDigest: "sha256:discovery",
+		Operation:             "Apply",
+		Destroy:               true,
+		WorkingDir:            "/workspace/terraform",
+		Workspace:             "default",
+		PlanPath:              "/workspace/terraform/plan.binary",
+		PlanRef:               "runs/plan/plan.binary",
+		PlanDigest:            "sha256:plan",
+		ExecutionTimeout:      time.Minute,
+	})
+	if err != nil {
+		t.Fatalf("BuildJob() error = %v", err)
+	}
+	args := job.Spec.Template.Spec.Containers[0].Args
+	if !contains(args, "--target-discovery-ref=runs/apply/target-discovery.json") || !contains(args, "--target-discovery-digest=sha256:discovery") {
+		t.Fatalf("destroy target discovery args = %#v", args)
+	}
+}
+
 func TestBuildJobRejectsDestroyFromGitCommit(t *testing.T) {
 	_, err := BuildJob(JobRequest{
 		Name:             "destroy-run",

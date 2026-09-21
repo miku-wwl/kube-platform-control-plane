@@ -157,7 +157,11 @@ func (e Executor) Apply(ctx context.Context, request Request) (ApplyResult, erro
 	if err := e.init(ctx, request, true); err != nil {
 		return ApplyResult{}, err
 	}
-	if err := e.selectWorkspace(ctx, request, false); err != nil {
+	// The plan Pod's local .terraform workspace marker is intentionally not
+	// part of the source bundle. Recreate the named remote workspace when a
+	// clean Apply Pod does not see it yet; the saved plan remains the only
+	// mutation input and no re-plan is performed.
+	if err := e.selectWorkspace(ctx, request, true); err != nil {
 		return ApplyResult{}, err
 	}
 

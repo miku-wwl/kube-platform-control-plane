@@ -66,6 +66,8 @@ func main() {
 	var planDigest string
 	var backendConfigRef string
 	var backendConfigDigest string
+	var targetDiscoveryRef string
+	var targetDiscoveryDigest string
 	var runUID string
 	var expectedVersion string
 
@@ -89,6 +91,8 @@ func main() {
 	flag.StringVar(&planDigest, "plan-digest", "", "saved plan digest")
 	flag.StringVar(&backendConfigRef, "backend-config-ref", "", "immutable backend snapshot object key")
 	flag.StringVar(&backendConfigDigest, "backend-config-digest", "", "backend snapshot digest")
+	flag.StringVar(&targetDiscoveryRef, "target-discovery-ref", "", "trusted target discovery object key to retain for Destroy")
+	flag.StringVar(&targetDiscoveryDigest, "target-discovery-digest", "", "trusted target discovery digest to retain for Destroy")
 	flag.StringVar(&runUID, "run-uid", "", "immutable TerraformRun UID")
 	flag.StringVar(&expectedVersion, "expected-terraform-version", "", "expected Terraform version")
 	flag.Parse()
@@ -156,7 +160,8 @@ func main() {
 				terminal.Error = uploadErr.Error()
 			}
 			if result.Outcome == terraform.PlanNoChange && terminal.ArtifactsReady {
-				if uploadErr := uploadTargetDiscovery(ctx, store, artifactPrefix, request); uploadErr != nil {
+				terminal.EffectivePlanInputDigest = effectiveInputDigest(request, expectedVersion, terminal.SourceBundleDigest, terminal.BackendConfigDigest, terminal.PlanDigest)
+				if uploadErr := uploadTargetDiscovery(ctx, store, artifactPrefix, request, discoveryEvidence{SourceClosureDigest: terminal.SourceBundleDigest, BackendSnapshotDigest: terminal.BackendConfigDigest, EffectivePlanInputDigest: terminal.EffectivePlanInputDigest}); uploadErr != nil {
 					terminal.ArtifactsReady = false
 					terminal.Error = uploadErr.Error()
 				} else {
@@ -212,14 +217,26 @@ func main() {
 			}
 		}
 		if result.Succeeded && store != nil {
-			if uploadErr := uploadTargetDiscovery(ctx, store, artifactPrefix, request); uploadErr != nil {
-				terminal.ArtifactsReady = false
-				terminal.Error = uploadErr.Error()
-			} else {
-				terminal.TargetDiscoveryRef = artifactKey(artifactPrefix, "target-discovery.json")
-				if ref, _, headErr := store.GetVerifiedByKey(ctx, terminal.TargetDiscoveryRef); headErr == nil {
-					terminal.TargetDiscoveryDigest = ref.Digest
+			terminal.EffectivePlanInputDigest = effectiveInputDigest(request, expectedVersion, sourceBundleDigest, backendConfigDigest, planDigest)
+			var discoveryErr error
+			if request.Destroy && targetDiscoveryRef != "" {
+				discoveryErr = retainTargetDiscovery(ctx, store, targetDiscoveryRef, targetDiscoveryDigest)
+				if discoveryErr == nil {
+					terminal.TargetDiscoveryRef = targetDiscoveryRef
+					terminal.TargetDiscoveryDigest = targetDiscoveryDigest
 				}
+			} else {
+				discoveryErr = uploadTargetDiscovery(ctx, store, artifactPrefix, request, discoveryEvidence{SourceClosureDigest: sourceBundleDigest, BackendSnapshotDigest: backendConfigDigest, EffectivePlanInputDigest: terminal.EffectivePlanInputDigest})
+				if discoveryErr == nil {
+					terminal.TargetDiscoveryRef = artifactKey(artifactPrefix, "target-discovery.json")
+					if ref, _, headErr := store.GetVerifiedByKey(ctx, terminal.TargetDiscoveryRef); headErr == nil {
+						terminal.TargetDiscoveryDigest = ref.Digest
+					}
+				}
+			}
+			if discoveryErr != nil {
+				terminal.ArtifactsReady = false
+				terminal.Error = discoveryErr.Error()
 			}
 		}
 		terminal.EffectivePlanInputDigest = effectiveInputDigest(request, expectedVersion, sourceBundleDigest, backendConfigDigest, planDigest)
@@ -281,8 +298,8 @@ func buildArtifactStore(endpoint, region, bucket string) (*artifacts.Store, erro
 	if endpoint == "" && bucket == "" {
 		return nil, nil
 	}
-	if endpoint == "" || bucket == "" {
-		return nil, fmt.Errorf("artifact endpoint and bucket must be provided together")
+	if region == "" || bucket == "" {
+		return nil, fmt.Errorf("artifact region and bucket are required")
 	}
 	return artifacts.NewS3Store(endpoint, region, bucket)
 }
@@ -345,7 +362,13 @@ func uploadPlanArtifacts(ctx context.Context, store *artifacts.Store, prefix str
 	return nil
 }
 
-func uploadTargetDiscovery(ctx context.Context, store *artifacts.Store, prefix string, request terraform.Request) error {
+type discoveryEvidence struct {
+	SourceClosureDigest      string
+	BackendSnapshotDigest    string
+	EffectivePlanInputDigest string
+}
+
+func uploadTargetDiscovery(ctx context.Context, store *artifacts.Store, prefix string, request terraform.Request, evidence discoveryEvidence) error {
 	if store == nil {
 		return fmt.Errorf("target discovery requires artifact store")
 	}
@@ -360,8 +383,38 @@ func uploadTargetDiscovery(ctx context.Context, store *artifacts.Store, prefix s
 	if err != nil {
 		return err
 	}
+	var values map[string]json.RawMessage
+	if err := json.Unmarshal(sanitized, &values); err != nil {
+		return fmt.Errorf("decode sanitized target discovery: %w", err)
+	}
+	for key, value := range map[string]string{
+		"sourceClosureDigest": evidence.SourceClosureDigest, "backendSnapshotDigest": evidence.BackendSnapshotDigest, "effectivePlanInputDigest": evidence.EffectivePlanInputDigest,
+	} {
+		if value == "" {
+			return fmt.Errorf("target discovery evidence %s is required", key)
+		}
+		encoded, marshalErr := json.Marshal(value)
+		if marshalErr != nil {
+			return marshalErr
+		}
+		values[key] = encoded
+	}
+	sanitized, err = json.Marshal(values)
+	if err != nil {
+		return fmt.Errorf("marshal target discovery evidence: %w", err)
+	}
 	if _, err := store.PutImmutable(ctx, artifactKey(prefix, "target-discovery.json"), sanitized); err != nil {
 		return fmt.Errorf("upload target discovery: %w", err)
+	}
+	return nil
+}
+
+func retainTargetDiscovery(ctx context.Context, store *artifacts.Store, ref, digest string) error {
+	if ref == "" || digest == "" {
+		return fmt.Errorf("retained target discovery ref and digest are required")
+	}
+	if _, err := store.GetVerified(ctx, artifacts.Ref{Key: ref, Digest: digest}); err != nil {
+		return fmt.Errorf("verify retained target discovery: %w", err)
 	}
 	return nil
 }
@@ -371,7 +424,7 @@ func sanitizeTargetDiscovery(content []byte) ([]byte, error) {
 	if err := json.Unmarshal(content, &values); err != nil {
 		return nil, fmt.Errorf("decode terraform target discovery output: %w", err)
 	}
-	allowed := map[string]struct{}{"provider": {}, "accountId": {}, "region": {}, "clusterArn": {}, "clusterName": {}, "incarnationId": {}, "endpoint": {}, "caCertificateDigest": {}, "authMode": {}, "kubeContext": {}}
+	allowed := map[string]struct{}{"provider": {}, "accountId": {}, "region": {}, "clusterArn": {}, "clusterName": {}, "incarnationId": {}, "endpoint": {}, "caCertificateData": {}, "caCertificateDigest": {}, "authMode": {}, "kubeContext": {}, "sourceClosureDigest": {}, "backendSnapshotDigest": {}, "effectivePlanInputDigest": {}}
 	result := map[string]json.RawMessage{}
 	for key, value := range values {
 		if _, ok := allowed[key]; ok {

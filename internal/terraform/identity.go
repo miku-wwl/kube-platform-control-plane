@@ -18,6 +18,7 @@ type TargetIdentity struct {
 }
 
 type EndpointProfile struct {
+	Mode                   string            `json:"mode"`
 	GatewayEndpoint        string            `json:"gatewayEndpoint"`
 	ProviderEndpoints      map[string]string `json:"providerEndpoints"`
 	BackendEndpoints       map[string]string `json:"backendEndpoints"`
@@ -27,15 +28,35 @@ type EndpointProfile struct {
 	EKSEndpointTranslation string            `json:"eksEndpointTranslationPolicy,omitempty"`
 }
 
+const (
+	EndpointModeCustom = "custom-endpoint"
+	EndpointModeAWS    = "aws-native"
+)
+
 func (p EndpointProfile) Validate() error {
-	if p.GatewayEndpoint == "" || p.AccountID == "" || p.Region == "" {
-		return fmt.Errorf("endpoint profile gateway, account ID, and region are required")
+	if p.Mode == "" {
+		return fmt.Errorf("endpoint profile mode is required")
 	}
-	if p.S3AddressingMode == "" {
-		return fmt.Errorf("endpoint profile S3 addressing mode is required")
+	if p.AccountID == "" || p.Region == "" {
+		return fmt.Errorf("endpoint profile account ID and region are required")
 	}
-	if p.ProviderEndpoints["s3"] == "" || p.BackendEndpoints["s3"] == "" {
-		return fmt.Errorf("endpoint profile must route provider and backend S3")
+	switch p.Mode {
+	case EndpointModeCustom:
+		if p.GatewayEndpoint == "" {
+			return fmt.Errorf("custom endpoint profile gateway endpoint is required")
+		}
+		if p.S3AddressingMode == "" {
+			return fmt.Errorf("custom endpoint profile S3 addressing mode is required")
+		}
+		if p.ProviderEndpoints["s3"] == "" || p.BackendEndpoints["s3"] == "" {
+			return fmt.Errorf("custom endpoint profile must route provider and backend S3")
+		}
+	case EndpointModeAWS:
+		if p.GatewayEndpoint != "" || len(p.ProviderEndpoints) != 0 || len(p.BackendEndpoints) != 0 {
+			return fmt.Errorf("AWS-native endpoint profile cannot contain custom endpoints")
+		}
+	default:
+		return fmt.Errorf("unsupported endpoint profile mode %q", p.Mode)
 	}
 	return nil
 }

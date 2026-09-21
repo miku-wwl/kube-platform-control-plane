@@ -208,6 +208,14 @@ spec:
                 x-kubernetes-map-type: atomic
               targetConnectionProfileDigest:
                 type: string
+              targetDiscoveryDigest:
+                type: string
+              targetDiscoveryRef:
+                description: |-
+                  Target discovery is carried forward for retained Destroy runs. Terraform
+                  destroy output is not required to reproduce the already trusted target
+                  binding after mutation.
+                type: string
               terraformLockfileDigest:
                 type: string
               variableSecretRefs:

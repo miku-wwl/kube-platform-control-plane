@@ -110,6 +110,12 @@ spec:
                     x-kubernetes-validations:
                     - message: EnvironmentClass target is immutable
                       rule: self == oldSelf
+                  executionRoleARN:
+                    description: |-
+                      ExecutionRoleARN is used only by the infrastructure execution adapter.
+                      Runtime Kubernetes authentication is represented separately by the
+                      TargetConnectionProfile.
+                    type: string
                   incarnationID:
                     type: string
                     x-kubernetes-validations:
@@ -125,9 +131,57 @@ spec:
                     x-kubernetes-validations:
                     - message: EnvironmentClass target is immutable
                       rule: self == oldSelf
+                  runtimeRoleARN:
+                    type: string
                 required:
                 - clusterName
                 - provider
+                type: object
+              targetDiscoveryDigest:
+                type: string
+              targetDiscoveryRef:
+                type: string
+              trustedRuntimeTargetIdentity:
+                properties:
+                  accountID:
+                    type: string
+                  clusterARN:
+                    type: string
+                  clusterName:
+                    type: string
+                  incarnationID:
+                    type: string
+                  provider:
+                    type: string
+                  region:
+                    type: string
+                required:
+                - accountID
+                - incarnationID
+                - provider
+                - region
+                type: object
+              trustedTargetConnectionProfile:
+                properties:
+                  authMode:
+                    type: string
+                  caCertificateData:
+                    type: string
+                  caCertificateDigest:
+                    type: string
+                  endpoint:
+                    description: |-
+                      Endpoint is optional on the desired AWS-native profile and is populated
+                      by trusted target discovery before runtime mutation is enabled.
+                    type: string
+                  kubeContext:
+                    type: string
+                  networkRouteProfile:
+                    type: string
+                  roleARN:
+                    type: string
+                required:
+                - authMode
                 type: object
             required:
             - target

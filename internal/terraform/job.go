@@ -49,6 +49,8 @@ type JobRequest struct {
 	ArtifactPrefix              string
 	PlanRef                     string
 	PlanDigest                  string
+	TargetDiscoveryRef          string
+	TargetDiscoveryDigest       string
 	BackendConfigArtifactRef    string
 	BackendConfigArtifactDigest string
 	VariableSecretRefs          []corev1.LocalObjectReference
@@ -135,8 +137,11 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 	if request.Parallelism != nil {
 		args = append(args, fmt.Sprintf("--parallelism=%d", *request.Parallelism))
 	}
-	if request.ArtifactEndpoint != "" {
-		args = append(args, "--artifact-endpoint="+request.ArtifactEndpoint, "--artifact-region="+request.ArtifactRegion, "--artifact-bucket="+request.ArtifactBucket)
+	if request.ArtifactBucket != "" {
+		if request.ArtifactEndpoint != "" {
+			args = append(args, "--artifact-endpoint="+request.ArtifactEndpoint)
+		}
+		args = append(args, "--artifact-region="+request.ArtifactRegion, "--artifact-bucket="+request.ArtifactBucket)
 		if request.ArtifactPrefix != "" {
 			args = append(args, "--artifact-prefix="+request.ArtifactPrefix)
 		}
@@ -152,6 +157,9 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 	}
 	if request.PlanRef != "" {
 		args = append(args, "--plan-ref="+request.PlanRef, "--plan-digest="+request.PlanDigest)
+	}
+	if request.TargetDiscoveryRef != "" {
+		args = append(args, "--target-discovery-ref="+request.TargetDiscoveryRef, "--target-discovery-digest="+request.TargetDiscoveryDigest)
 	}
 	if request.BackendConfigArtifactRef != "" {
 		args = append(args,
@@ -302,20 +310,20 @@ func (r JobRequest) validate() error {
 	if r.BackendConfigMap != "" && r.BackendConfigPath == "" {
 		return fmt.Errorf("backend config path is required when a backend ConfigMap is mounted")
 	}
-	if r.ArtifactEndpoint != "" && (r.ArtifactRegion == "" || r.ArtifactBucket == "") {
-		return fmt.Errorf("artifact region and bucket are required with artifact endpoint")
+	if r.ArtifactBucket != "" && r.ArtifactRegion == "" {
+		return fmt.Errorf("artifact region is required with artifact bucket")
 	}
-	if r.ArtifactBucket != "" && r.ArtifactEndpoint == "" {
-		return fmt.Errorf("artifact endpoint is required with artifact bucket")
+	if r.ArtifactPrefix != "" && r.ArtifactBucket == "" {
+		return fmt.Errorf("artifact bucket is required with artifact prefix")
 	}
-	if r.ArtifactPrefix != "" && r.ArtifactEndpoint == "" {
-		return fmt.Errorf("artifact endpoint is required with artifact prefix")
-	}
-	if r.SourceBundleRef != "" && r.ArtifactEndpoint == "" {
-		return fmt.Errorf("artifact endpoint is required for retained source bundle")
+	if r.SourceBundleRef != "" && (r.ArtifactRegion == "" || r.ArtifactBucket == "") {
+		return fmt.Errorf("artifact region and bucket are required for retained source bundle")
 	}
 	if r.PlanRef != "" && r.PlanDigest == "" {
 		return fmt.Errorf("plan digest is required with plan ref")
+	}
+	if r.TargetDiscoveryRef != "" && r.TargetDiscoveryDigest == "" {
+		return fmt.Errorf("target discovery digest is required with target discovery ref")
 	}
 	if r.BackendConfigArtifactRef != "" && r.BackendConfigArtifactDigest == "" {
 		return fmt.Errorf("backend artifact digest is required with backend artifact ref")

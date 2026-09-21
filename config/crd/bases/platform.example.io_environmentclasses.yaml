@@ -325,6 +325,12 @@ spec:
                     x-kubernetes-validations:
                     - message: EnvironmentClass target is immutable
                       rule: self == oldSelf
+                  executionRoleARN:
+                    description: |-
+                      ExecutionRoleARN is used only by the infrastructure execution adapter.
+                      Runtime Kubernetes authentication is represented separately by the
+                      TargetConnectionProfile.
+                    type: string
                   incarnationID:
                     type: string
                     x-kubernetes-validations:
@@ -340,6 +346,8 @@ spec:
                     x-kubernetes-validations:
                     - message: EnvironmentClass target is immutable
                       rule: self == oldSelf
+                  runtimeRoleARN:
+                    type: string
                 required:
                 - clusterName
                 - provider

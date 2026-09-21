@@ -40,10 +40,11 @@ type Store struct {
 }
 
 func NewS3Store(endpoint, region, bucket string) (*Store, error) {
-	if endpoint == "" || region == "" || bucket == "" {
-		return nil, fmt.Errorf("endpoint, region, and bucket are required")
+	if region == "" || bucket == "" {
+		return nil, fmt.Errorf("region and bucket are required")
 	}
 	loadOptions := []func(*awsconfig.LoadOptions) error{awsconfig.WithRegion(region)}
+	customEndpoint := endpoint != ""
 	if isLocalEndpoint(endpoint) {
 		loadOptions = append(loadOptions, awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("test", "test", "")))
 	}
@@ -52,8 +53,12 @@ func NewS3Store(endpoint, region, bucket string) (*Store, error) {
 		return nil, err
 	}
 	client := s3.NewFromConfig(cfg, func(options *s3.Options) {
-		options.UsePathStyle = true
-		options.BaseEndpoint = aws.String(endpoint)
+		if customEndpoint {
+			options.BaseEndpoint = aws.String(endpoint)
+			// LocalStack's gateway requires path-style addressing. Native AWS
+			// uses the SDK's standard endpoint and addressing resolution.
+			options.UsePathStyle = isLocalEndpoint(endpoint)
+		}
 	})
 	return &Store{client: client, bucket: bucket}, nil
 }

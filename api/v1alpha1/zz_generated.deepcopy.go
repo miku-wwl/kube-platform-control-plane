@@ -556,6 +556,12 @@ func (in *ResourceSetList) DeepCopyObject() runtime.Object {
 func (in *ResourceSetSpec) DeepCopyInto(out *ResourceSetSpec) {
 	*out = *in
 	out.Target = in.Target
+	if in.TrustedRuntimeTargetIdentity != nil {
+		out.TrustedRuntimeTargetIdentity = in.TrustedRuntimeTargetIdentity.DeepCopy()
+	}
+	if in.TrustedTargetConnectionProfile != nil {
+		out.TrustedTargetConnectionProfile = in.TrustedTargetConnectionProfile.DeepCopy()
+	}
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
 		*out = make([]RuntimeObject, len(*in))

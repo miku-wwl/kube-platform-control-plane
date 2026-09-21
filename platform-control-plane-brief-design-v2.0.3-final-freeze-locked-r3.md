@@ -148,3 +148,15 @@ Core regression gate PASS
 + SLI / SLO / alerts PASS
 + Reproducible E2E / CI PASS
 ```
+
+## Phase 12 AWS Portability Addendum v2.0.4
+
+This is an additive portability closure. The v2.0.3 freeze remains the historical architecture baseline; no Phase 13 implementation is started here.
+
+- AWS-native artifact storage uses the standard AWS SDK endpoint resolution when the endpoint is empty. LocalStack uses an explicit endpoint and test-only credentials scoped to local runner Jobs.
+- Target materialization is provider-aware. Kind remains `local`/`kind-context`; AWS requires account, region, cluster identity, HTTPS endpoint, CA data, and AWS EKS authentication. There is no AWS-to-Kind fallback.
+- Terraform discovery is immutable evidence. The runner sanitizes the allowlisted discovery object and records source-closure, backend-snapshot, and effective-input digests. ResourceSet receives only the trusted discovered identity/profile.
+- Destroy reuses the retained target-discovery artifact from the last convergence closure. Terraform Destroy output is not treated as a new target-discovery source.
+- Infrastructure execution identity and runtime target identity remain separate, with injectable STS/AssumeRole, EKS verification, and target-client resolver boundaries.
+
+Real IAM/STS/EKS/KMS/network verification remains explicitly deferred to Phase 13.

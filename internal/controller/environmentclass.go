@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
+	targetresolver "github.com/miku-wwl/kube-platform-control-plane/internal/target"
 )
 
 func environmentClassSpecDigest(class *platformv1alpha1.EnvironmentClass) string {
@@ -47,6 +48,9 @@ func validateEnvironmentClass(environment *platformv1alpha1.PlatformEnvironment,
 	} else if bounds.MaxNodeCount > 0 && environment.Spec.Capacity.NodeCount > bounds.MaxNodeCount {
 		return fmt.Errorf("nodeCount %d exceeds EnvironmentClass maximum %d", environment.Spec.Capacity.NodeCount, bounds.MaxNodeCount)
 	}
+	if _, err := materializeTarget(classTarget(environment, class)); err != nil {
+		return fmt.Errorf("target materialization rejected: %w", err)
+	}
 	return nil
 }
 
@@ -79,7 +83,7 @@ func classTarget(environment *platformv1alpha1.PlatformEnvironment, class *platf
 	return target
 }
 
-func buildClassInfraStack(environment *platformv1alpha1.PlatformEnvironment, class *platformv1alpha1.EnvironmentClass, name string, target platformv1alpha1.TargetReference) *platformv1alpha1.InfraStack {
+func buildClassInfraStack(environment *platformv1alpha1.PlatformEnvironment, class *platformv1alpha1.EnvironmentClass, name string, target platformv1alpha1.TargetReference) (*platformv1alpha1.InfraStack, error) {
 	approval := class.Spec.ApprovalPolicy
 	if approval == "" {
 		approval = platformv1alpha1.ApprovalPolicyManual
@@ -91,33 +95,24 @@ func buildClassInfraStack(environment *platformv1alpha1.PlatformEnvironment, cla
 	if runner.TerraformVersion == "" {
 		runner.TerraformVersion = class.Spec.RunnerProfile.TerraformVersion
 	}
-	identity := platformv1alpha1.InfrastructureExecutionIdentity{
-		Provider:  target.Provider,
-		Mode:      "local",
-		AccountID: target.Account,
-		Region:    target.Region,
-	}
-	if identity.AccountID == "" {
-		identity.AccountID = "local"
-	}
-	runtimeIdentity := platformv1alpha1.RuntimeTargetIdentity{
-		Provider: target.Provider, AccountID: identity.AccountID, Region: target.Region,
-		ClusterARN: target.ClusterARN, ClusterName: target.ClusterName, IncarnationID: target.IncarnationID,
+	materialized, err := materializeTarget(target)
+	if err != nil {
+		return nil, err
 	}
 	return &platformv1alpha1.InfraStack{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace},
 		Spec: platformv1alpha1.InfraStackSpec{
 			Source: class.Spec.Source, Backend: class.Spec.Backend, Workspace: environment.Name, Capacity: environment.Spec.Capacity,
 			Executor: runner, DesiredState: platformv1alpha1.DesiredStatePresent, ApprovalPolicy: approval,
-			OwnerEnvironmentUID: string(environment.UID), InfrastructureExecutionIdentity: identity,
+			OwnerEnvironmentUID: string(environment.UID), InfrastructureExecutionIdentity: materialized.InfrastructureExecutionIdentity,
 			RunnerServiceAccountName: class.Spec.RunnerProfile.ServiceAccountName,
-			RuntimeTargetIdentity:    runtimeIdentity,
-			TargetConnectionProfile:  platformv1alpha1.TargetConnectionProfile{Endpoint: target.ConnectionProfileRef, AuthMode: "kind-context", KubeContext: target.ClusterName, NetworkRouteProfile: "local-kind"},
+			RuntimeTargetIdentity:    materialized.RuntimeTargetIdentity,
+			TargetConnectionProfile:  materialized.TargetConnectionProfile,
 			ConcurrencyGroup:         "environmentclass:" + class.Name,
 			MaxConcurrentPlans:       class.Spec.CapacityBounds.MaxConcurrentPlans,
 			MaxConcurrentApplies:     class.Spec.CapacityBounds.MaxConcurrentApplies,
 		},
-	}
+	}, nil
 }
 
 func classRuntimeObjects(class *platformv1alpha1.EnvironmentClass) []platformv1alpha1.RuntimeObject {
@@ -128,26 +123,58 @@ func classRuntimeObjects(class *platformv1alpha1.EnvironmentClass) []platformv1a
 }
 
 func targetRuntimeIdentity(target platformv1alpha1.TargetReference) platformv1alpha1.RuntimeTargetIdentity {
-	incarnation := target.IncarnationID
-	if incarnation == "" {
-		incarnation = target.ClusterID
-	}
-	if incarnation == "" {
-		incarnation = target.ClusterName
-	}
-	account := target.Account
-	if account == "" {
-		account = "local"
-	}
-	return platformv1alpha1.RuntimeTargetIdentity{Provider: target.Provider, AccountID: account, Region: target.Region, ClusterARN: target.ClusterARN, ClusterName: target.ClusterName, IncarnationID: incarnation}
+	materialized, _ := materializeTarget(target)
+	return materialized.RuntimeTargetIdentity
 }
 
 func environmentTargetConnection(target platformv1alpha1.TargetReference) platformv1alpha1.TargetConnectionProfile {
-	authMode := "kind-context"
-	if target.Provider == "aws" {
-		authMode = "aws-eks"
+	materialized, _ := materializeTarget(target)
+	return materialized.TargetConnectionProfile
+}
+
+func materializeTarget(target platformv1alpha1.TargetReference) (platformv1alpha1.InfraStackSpec, error) {
+	materialized, err := targetresolver.MaterializeTarget(targetresolver.TargetExpectation{
+		Provider:          target.Provider,
+		AccountID:         target.Account,
+		Region:            target.Region,
+		ClusterARN:        target.ClusterARN,
+		ClusterName:       target.ClusterName,
+		ClusterID:         target.ClusterID,
+		IncarnationID:     target.IncarnationID,
+		ConnectionProfile: target.ConnectionProfileRef,
+		ExecutionRoleARN:  target.ExecutionRoleARN,
+		RuntimeRoleARN:    target.RuntimeRoleARN,
+	})
+	if err != nil {
+		return platformv1alpha1.InfraStackSpec{}, err
 	}
-	return platformv1alpha1.TargetConnectionProfile{Endpoint: target.ConnectionProfileRef, AuthMode: authMode, KubeContext: target.ClusterName, NetworkRouteProfile: "local-kind"}
+	return platformv1alpha1.InfraStackSpec{
+		InfrastructureExecutionIdentity: platformv1alpha1.InfrastructureExecutionIdentity{
+			Provider:       materialized.InfrastructureExecutionIdentity.Provider,
+			Mode:           materialized.InfrastructureExecutionIdentity.Mode,
+			AccountID:      materialized.InfrastructureExecutionIdentity.AccountID,
+			Region:         materialized.InfrastructureExecutionIdentity.Region,
+			RoleARN:        materialized.InfrastructureExecutionIdentity.RoleARN,
+			SessionProfile: materialized.InfrastructureExecutionIdentity.SessionProfile,
+		},
+		RuntimeTargetIdentity: platformv1alpha1.RuntimeTargetIdentity{
+			Provider:      materialized.RuntimeTargetIdentity.Provider,
+			AccountID:     materialized.RuntimeTargetIdentity.AccountID,
+			Region:        materialized.RuntimeTargetIdentity.Region,
+			ClusterARN:    materialized.RuntimeTargetIdentity.ClusterARN,
+			ClusterName:   materialized.RuntimeTargetIdentity.ClusterName,
+			IncarnationID: materialized.RuntimeTargetIdentity.IncarnationID,
+		},
+		TargetConnectionProfile: platformv1alpha1.TargetConnectionProfile{
+			Endpoint:            materialized.TargetConnectionProfile.Endpoint,
+			CACertificateData:   materialized.TargetConnectionProfile.CACertificateData,
+			CACertificateDigest: materialized.TargetConnectionProfile.CACertificateDigest,
+			AuthMode:            materialized.TargetConnectionProfile.AuthMode,
+			NetworkRouteProfile: materialized.TargetConnectionProfile.NetworkRouteProfile,
+			KubeContext:         materialized.TargetConnectionProfile.KubeContext,
+			RoleARN:             materialized.TargetConnectionProfile.RoleARN,
+		},
+	}, nil
 }
 
 func ownerUID(environment *platformv1alpha1.PlatformEnvironment) types.UID {

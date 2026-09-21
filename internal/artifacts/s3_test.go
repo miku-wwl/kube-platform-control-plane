@@ -15,6 +15,26 @@ func TestValidateKeyRejectsTraversal(t *testing.T) {
 	}
 }
 
+func TestNewS3StoreSupportsAWSNativeEndpointResolution(t *testing.T) {
+	store, err := NewS3Store("", "us-east-1", "native-artifacts")
+	if err != nil {
+		t.Fatalf("NewS3Store() native error = %v", err)
+	}
+	if store == nil || store.bucket != "native-artifacts" {
+		t.Fatalf("native store = %#v", store)
+	}
+}
+
+func TestNewS3StoreKeepsCustomEndpointForLocalStack(t *testing.T) {
+	store, err := NewS3Store("http://localhost:4566", "us-east-1", "local-artifacts")
+	if err != nil {
+		t.Fatalf("NewS3Store() custom endpoint error = %v", err)
+	}
+	if store == nil || store.bucket != "local-artifacts" {
+		t.Fatalf("custom endpoint store = %#v", store)
+	}
+}
+
 func TestLocalStackImmutableArtifactRoundTrip(t *testing.T) {
 	endpoint := os.Getenv("PCP_LOCALSTACK_ENDPOINT")
 	bucket := os.Getenv("PCP_ARTIFACT_BUCKET")

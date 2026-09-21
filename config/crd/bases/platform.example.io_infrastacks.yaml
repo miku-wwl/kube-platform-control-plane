@@ -246,17 +246,23 @@ spec:
                 properties:
                   authMode:
                     type: string
+                  caCertificateData:
+                    type: string
                   caCertificateDigest:
                     type: string
                   endpoint:
+                    description: |-
+                      Endpoint is optional on the desired AWS-native profile and is populated
+                      by trusted target discovery before runtime mutation is enabled.
                     type: string
                   kubeContext:
                     type: string
                   networkRouteProfile:
                     type: string
+                  roleARN:
+                    type: string
                 required:
                 - authMode
-                - endpoint
                 type: object
               variables:
                 properties:
@@ -387,6 +393,48 @@ spec:
                 type: string
               convergenceEvidenceRef:
                 type: string
+              discoveredRuntimeTargetIdentity:
+                properties:
+                  accountID:
+                    type: string
+                  clusterARN:
+                    type: string
+                  clusterName:
+                    type: string
+                  incarnationID:
+                    type: string
+                  provider:
+                    type: string
+                  region:
+                    type: string
+                required:
+                - accountID
+                - incarnationID
+                - provider
+                - region
+                type: object
+              discoveredTargetConnectionProfile:
+                properties:
+                  authMode:
+                    type: string
+                  caCertificateData:
+                    type: string
+                  caCertificateDigest:
+                    type: string
+                  endpoint:
+                    description: |-
+                      Endpoint is optional on the desired AWS-native profile and is populated
+                      by trusted target discovery before runtime mutation is enabled.
+                    type: string
+                  kubeContext:
+                    type: string
+                  networkRouteProfile:
+                    type: string
+                  roleARN:
+                    type: string
+                required:
+                - authMode
+                type: object
               driftReportDigest:
                 type: string
               driftReportRef:

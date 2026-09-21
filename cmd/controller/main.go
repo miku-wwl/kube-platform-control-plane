@@ -65,7 +65,7 @@ func main() {
 		setupLog.Error(err, "unable to create Kubernetes client for terminal evidence capture")
 		os.Exit(1)
 	}
-	targetClient, targetFactory, err := buildTargetClient()
+	targetClient, targetResolver, targetVerifier, err := buildTargetClient()
 	if err != nil {
 		setupLog.Error(err, "unable to create target Kubernetes client")
 		os.Exit(1)
@@ -89,7 +89,7 @@ func main() {
 		setupLog.Error(err, "unable to create EnvironmentClass controller")
 		os.Exit(1)
 	}
-	if err := (&controller.InfraStackReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), ArtifactEndpoint: os.Getenv("PCP_ARTIFACT_ENDPOINT"), ArtifactRegion: os.Getenv("PCP_ARTIFACT_REGION"), ArtifactBucket: os.Getenv("PCP_ARTIFACT_BUCKET")}).SetupWithManager(mgr); err != nil {
+	if err := (&controller.InfraStackReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), ArtifactEndpoint: os.Getenv("PCP_ARTIFACT_ENDPOINT"), ArtifactRegion: os.Getenv("PCP_ARTIFACT_REGION"), ArtifactBucket: os.Getenv("PCP_ARTIFACT_BUCKET"), TargetVerifier: targetVerifier}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create InfraStack controller")
 		os.Exit(1)
 	}
@@ -106,7 +106,7 @@ func main() {
 		setupLog.Error(err, "unable to create TerraformRun controller")
 		os.Exit(1)
 	}
-	if err := (&controller.ResourceSetReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), TargetClient: targetClient, TargetResolver: targetFactory}).SetupWithManager(mgr); err != nil {
+	if err := (&controller.ResourceSetReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), TargetClient: targetClient, TargetResolver: targetResolver}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create ResourceSet controller")
 		os.Exit(1)
 	}
@@ -130,42 +130,53 @@ func main() {
 	}
 }
 
-func buildTargetClient() (dynamic.Interface, *targetresolver.TargetClientFactory, error) {
+func buildTargetClient() (dynamic.Interface, targetresolver.ClientResolver, targetresolver.TargetVerifier, error) {
 	contextNames := splitNonEmpty(os.Getenv("PCP_TARGET_CONTEXTS"))
 	if len(contextNames) == 0 {
 		contextNames = splitNonEmpty(os.Getenv("PCP_TARGET_CONTEXT"))
 	}
-	if len(contextNames) == 0 {
-		return nil, nil, nil
-	}
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	if kubeconfig := os.Getenv("PCP_KUBECONFIG"); kubeconfig != "" {
-		loadingRules.ExplicitPath = kubeconfig
-	}
-	factory := targetresolver.NewTargetClientFactory()
+	var factory *targetresolver.TargetClientFactory
+	var kindResolver targetresolver.ClientResolver
 	var first dynamic.Interface
-	for _, contextName := range contextNames {
-		targetConfig, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-			loadingRules,
-			&clientcmd.ConfigOverrides{CurrentContext: contextName},
-		).ClientConfig()
-		if err != nil {
-			return nil, nil, err
+	if len(contextNames) > 0 {
+		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+		if kubeconfig := os.Getenv("PCP_KUBECONFIG"); kubeconfig != "" {
+			loadingRules.ExplicitPath = kubeconfig
 		}
-		client, err := dynamic.NewForConfig(targetConfig)
-		if err != nil {
-			return nil, nil, err
+		factory = targetresolver.NewTargetClientFactory()
+		for _, contextName := range contextNames {
+			targetConfig, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+				loadingRules,
+				&clientcmd.ConfigOverrides{CurrentContext: contextName},
+			).ClientConfig()
+			if err != nil {
+				return nil, nil, nil, err
+			}
+			client, err := dynamic.NewForConfig(targetConfig)
+			if err != nil {
+				return nil, nil, nil, err
+			}
+			identity := targetresolver.RuntimeTargetIdentity{Provider: targetresolver.ProviderKind, AccountID: "local", Region: "local", ClusterName: contextName, IncarnationID: contextName}
+			profile := targetresolver.TargetConnectionProfile{Endpoint: "kubeconfig:" + contextName, AuthMode: targetresolver.AuthKindContext, KubeContext: contextName, NetworkRouteProfile: "local-kind"}
+			if err := factory.Register(identity, profile, client); err != nil {
+				return nil, nil, nil, err
+			}
+			if first == nil {
+				first = client
+			}
 		}
-		identity := targetresolver.RuntimeTargetIdentity{Provider: "kind", AccountID: "local", Region: "local", ClusterName: contextName, IncarnationID: contextName}
-		profile := targetresolver.TargetConnectionProfile{Endpoint: "kubeconfig:" + contextName, AuthMode: "kind-context", KubeContext: contextName, NetworkRouteProfile: "local-kind"}
-		if err := factory.Register(identity, profile, client); err != nil {
-			return nil, nil, err
-		}
-		if first == nil {
-			first = client
-		}
+		kindResolver = factory
 	}
-	return first, factory, nil
+	var awsResolver targetresolver.ClientResolver
+	var targetVerifier targetresolver.TargetVerifier
+	if strings.EqualFold(os.Getenv("PCP_ENABLE_AWS_EKS"), "true") {
+		awsResolver = targetresolver.EKSTargetResolver{TokenProvider: targetresolver.NewAWSSTSTokenProvider()}
+		targetVerifier = targetresolver.NewAWSEKSVerifier()
+	}
+	if kindResolver == nil && awsResolver == nil {
+		return nil, nil, nil, nil
+	}
+	return first, targetresolver.ProviderClientResolver{Kind: kindResolver, AWS: awsResolver}, targetVerifier, nil
 }
 
 func splitNonEmpty(value string) []string {

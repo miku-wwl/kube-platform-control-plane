@@ -37,6 +37,7 @@ func TestBackendSnapshotRejectsCredentialsAndRequiresLockfile(t *testing.T) {
 
 func TestEndpointProfileDigestCoversProviderAndBackendRouting(t *testing.T) {
 	profile := EndpointProfile{
+		Mode:            EndpointModeCustom,
 		GatewayEndpoint: "http://localhost:4566",
 		ProviderEndpoints: map[string]string{
 			"s3":  "http://localhost:4566",
@@ -60,5 +61,47 @@ func TestEndpointProfileDigestCoversProviderAndBackendRouting(t *testing.T) {
 	}
 	if first == second {
 		t.Fatal("backend routing change did not change endpoint profile digest")
+	}
+	native, err := (EndpointProfile{Mode: EndpointModeAWS, AccountID: "000000000000", Region: "us-east-1"}).Digest()
+	if err != nil {
+		t.Fatalf("native profile Digest() error = %v", err)
+	}
+	if native == first {
+		t.Fatal("custom and AWS-native endpoint profiles collided")
+	}
+}
+
+func TestBackendSnapshotSupportsNativeAndCustomS3Settings(t *testing.T) {
+	native := BackendSnapshot{Type: "s3", Bucket: "state", Key: "native.tfstate", Region: "us-east-1", UseLockfile: true}
+	if err := native.Validate(); err != nil {
+		t.Fatalf("native backend snapshot Validate() error = %v", err)
+	}
+	custom := native
+	custom.Key = "custom.tfstate"
+	custom.EndpointSettings = map[string]string{"endpoint": "http://localhost:4566", "force_path_style": "true"}
+	if err := custom.Validate(); err != nil {
+		t.Fatalf("custom backend snapshot Validate() error = %v", err)
+	}
+}
+
+func TestEndpointProfileSupportsAWSNativeWithoutCustomEndpoints(t *testing.T) {
+	profile := EndpointProfile{Mode: EndpointModeAWS, AccountID: "123456789012", Region: "us-east-1"}
+	if err := profile.Validate(); err != nil {
+		t.Fatalf("AWS-native profile Validate() error = %v", err)
+	}
+	digest, err := profile.Digest()
+	if err != nil || digest == "" {
+		t.Fatalf("AWS-native profile Digest() = %q, error = %v", digest, err)
+	}
+	profile.GatewayEndpoint = "http://localhost:4566"
+	if err := profile.Validate(); err == nil {
+		t.Fatal("AWS-native profile accepted a custom gateway endpoint")
+	}
+}
+
+func TestEndpointProfileRequiresExplicitMode(t *testing.T) {
+	profile := EndpointProfile{AccountID: "local", Region: "local", GatewayEndpoint: "http://localhost:4566", ProviderEndpoints: map[string]string{"s3": "http://localhost:4566"}, BackendEndpoints: map[string]string{"s3": "http://localhost:4566"}, S3AddressingMode: "path"}
+	if err := profile.Validate(); err == nil {
+		t.Fatal("endpoint profile without explicit mode was accepted")
 	}
 }

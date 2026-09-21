@@ -236,3 +236,22 @@ Phase 7～13
 ```
 
 普通实现发现作为 correctness/security/test fix；只有真实 E2E、安全或 Real AWS evidence 证明 architecture contract 错误时，才重新 architecture review。
+
+## 11. Phase 12 AWS Portability Exit Gate Addendum v2.0.4
+
+Closed locally:
+
+- AWS-native S3 artifact-store construction with empty endpoint and no synthetic credentials.
+- Provider-aware Kind/AWS target materialization, identity separation, target-discovery evidence, trusted ResourceSet propagation, and wrong-target fail-closed checks.
+- Injectable STS AssumeRole, EKS DescribeCluster verification, EKS token/client boundary, and multi-target resolver isolation.
+- Terraform retained source/backend closure and Destroy target-discovery retention. Destroy evidence is required before finalizer removal.
+- Controller-managed AWS runner role annotation boundary and scoped local Job credential behavior.
+
+Validated with unit tests, fake SDK adapters, Kind, LocalStack Ultimate, real Terraform CLI against LocalStack, live manager restart, safe update, approval, Apply, Destroy, and finalizer cleanup.
+
+Deferred to Phase 13:
+
+- Real AWS IAM/STS/EKS/KMS/VPC/EC2/S3 semantics, quotas, throttling, networking, cost controls, and production identity/account isolation.
+- Real AWS production Halter storage profile, DR/RPO/RTO, SLI/SLO/alert evidence, and production rollback/failure injection.
+
+No Phase 13 code path was started in this work cycle.
