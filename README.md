@@ -17,12 +17,14 @@ The controller manages infrastructure execution, target discovery, runtime SSA/i
 ## Current status
 
 ```text
-STAGE1_FREEZE = PASS
+STAGE1_E2E_AUTOMATION = IMPLEMENTED
+STAGE1_LIVE_E2E = PASS_LOCAL (run 20260923220530-54550173; lifecycle/recovery/runtime update/multi-target/fail-closed/cleanup)
 PHASE12_FINAL_FREEZE = PASS
-LOCAL_VALIDATION_PASS = PASS
+STAGE1_LOCAL_VALIDATION = PASS_LOCAL
+PRODUCTION_AWS_VALIDATION = NOT_RUN (outside Stage 1)
 ```
 
-Evidence is local-only: LocalStack Ultimate, Kind, Terraform CLI, fake/injectable AWS contracts, and local Kubernetes controllers. Real AWS is intentionally deferred to Phase 13. Stage 2 is not started.
+Stage 1 E2E evidence is local-only: LocalStack Ultimate, Kind, Terraform CLI, and local Kubernetes controllers. Real AWS is outside this stage. Stage 2 is not started.
 
 Authoritative documents:
 
@@ -39,7 +41,7 @@ Authoritative documents:
 - Docker Desktop
 - Kind and `kubectl`
 - LocalStack Ultimate started externally at `http://localhost:4566`
-- one Kind management cluster and two Kind target clusters
+- Docker Desktop with permission to create temporary Kind clusters
 
 The repository does not start a second LocalStack container. This keeps the local AWS boundary explicit and prevents accidental use of real AWS credentials or endpoints.
 
@@ -57,6 +59,18 @@ terraform -chdir=test/fixtures/terraform/localstack-basic init -backend=false -i
 terraform -chdir=test/fixtures/terraform/localstack-basic validate
 ```
 
+Run the complete real local Stage 1 harness. LocalStack Ultimate must already be running; the harness creates and deletes three unique Kind clusters and never starts LocalStack itself:
+
+```powershell
+# Windows equivalent when GNU make is not installed
+powershell -NoProfile -ExecutionPolicy Bypass -File e2e/Run-Stage1E2E.ps1 -Suite all
+
+# On CI/Linux/macOS with make
+make e2e
+```
+
+Component lanes are available as `make e2e-lifecycle`, `make e2e-recovery`, `make e2e-multitarget`, and `make e2e-failclosed`. The harness writes only text evidence under `artifacts/e2e/<run-id>/`, which is ignored by Git, and verifies cleanup of its owned Kind clusters, LocalStack buckets, temporary Git server, and source directory in `finally`.
+
 Run the Kind integration lanes with the target context explicitly selected:
 
 ```powershell
@@ -65,7 +79,7 @@ go test ./internal/runtime -run 'TestKind' -count=1
 go test ./internal/controller -run 'TestKindResourceSetControllerSSAInventoryAndPrune' -count=1
 ```
 
-The complete lifecycle, restart recovery, multi-target, fail-closed, and AWS-native offline evidence is summarized in [LOCAL-PRODUCTION-READINESS-REPORT.md](LOCAL-PRODUCTION-READINESS-REPORT.md). The evidence boundary is explicit: local emulators and fake adapters do not prove production AWS semantics.
+The complete Stage 1 lifecycle, restart recovery, runtime update, multi-target, and fail-closed evidence from this host is in `artifacts/e2e/20260923220530-54550173/summary.txt` (Git-ignored). Broader readiness is summarized in [LOCAL-PRODUCTION-READINESS-REPORT.md](LOCAL-PRODUCTION-READINESS-REPORT.md); this Stage 1 result makes no production AWS claim.
 
 ## Repository layout
 
@@ -79,5 +93,5 @@ internal/runtime/            SSA, readiness, inventory, Valkey bootstrap
 internal/target/             identity, discovery, client isolation, AWS seams
 internal/terraform/          source closure, saved-plan execution, evidence
 test/fixtures/terraform/     LocalStack Terraform fixture
-e2e/                         Stage 1 E2E evidence guide
+e2e/                         Stage 1 real E2E harness and evidence guide
 ```

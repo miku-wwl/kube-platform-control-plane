@@ -1,0 +1,9 @@
+.git
+artifacts
+e2e
+test
+*.md
+*.tfstate
+*.tfstate.*
+**/.terraform
+**/.terraform.lock.hcl

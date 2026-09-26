@@ -5,6 +5,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func TestBuildJobEnforcesTerraformJobContract(t *testing.T) {
@@ -46,6 +47,9 @@ func TestBuildJobEnforcesTerraformJobContract(t *testing.T) {
 	runner := job.Spec.Template.Spec.Containers[0]
 	if runner.Command[0] != "terraform-runner" || runner.Args[0] != "--operation=Plan" {
 		t.Fatalf("runner command = %#v args=%#v", runner.Command, runner.Args)
+	}
+	if got := runner.Resources.Limits[corev1.ResourceMemory]; got.Cmp(resource.MustParse("1Gi")) != 0 {
+		t.Fatalf("runner memory limit = %s, want 1Gi", got.String())
 	}
 	if runner.Args[len(runner.Args)-1] != "--parallelism=10" {
 		t.Fatalf("runner args = %#v", runner.Args)

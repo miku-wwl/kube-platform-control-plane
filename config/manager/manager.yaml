@@ -26,11 +26,12 @@ spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - topologyKey: kubernetes.io/hostname
-              weight: 100
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/name: platform-control-plane
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: platform-control-plane
       securityContext:
         runAsNonRoot: true
         seccompProfile:

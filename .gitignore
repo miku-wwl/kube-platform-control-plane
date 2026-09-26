@@ -1,0 +1,4 @@
+artifacts/e2e/
+test/fixtures/terraform/localstack-basic/.terraform/
+*.tfstate
+*.tfstate.*
