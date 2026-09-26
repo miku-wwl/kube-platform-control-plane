@@ -4,10 +4,12 @@ Kubernetes control plane for declarative platform environments. It keeps infrast
 
 ```text
 PlatformEnvironment
+  -> EnvironmentClass
   -> InfraStack
       -> Terraform Plan
       -> ChangeApproval
       -> exact saved-plan Apply
+  -> TargetDiscovery
   -> ResourceSet runtime reconciliation
   -> EnvironmentReady
 ```
@@ -17,22 +19,38 @@ The controller manages infrastructure execution, target discovery, runtime SSA/i
 ## Current status
 
 ```text
-STAGE1_E2E_AUTOMATION = IMPLEMENTED
-STAGE1_LIVE_E2E = PASS_LOCAL (run 20260923220530-54550173; lifecycle/recovery/runtime update/multi-target/fail-closed/cleanup)
-PHASE12_FINAL_FREEZE = PASS
 STAGE1_LOCAL_VALIDATION = PASS_LOCAL
-PRODUCTION_AWS_VALIDATION = NOT_RUN (outside Stage 1)
+STAGE1_E2E = PASS
+STAGE1_FREEZE = PASS
 ```
 
-Stage 1 E2E evidence is local-only: LocalStack Ultimate, Kind, Terraform CLI, and local Kubernetes controllers. Real AWS is outside this stage. Stage 2 is not started.
+Stage 1 was validated with LocalStack Ultimate, Kind, Terraform CLI, and local Kubernetes controllers. Real AWS validation has not been performed. Stage 2 and Stage 3 have not started.
 
-Authoritative documents:
+Validated locally:
 
-- [Detailed frozen design](platform-control-plane-detailed-design-v2.0.3-final-freeze-locked-r3.md)
-- [Brief frozen design](platform-control-plane-brief-design-v2.0.3-final-freeze-locked-r3.md)
-- [Gap analysis](platform-control-plane-gap-analysis-v2.0.3-final-freeze-locked-r3.md)
-- [Local production readiness report](LOCAL-PRODUCTION-READINESS-REPORT.md)
-- [Stage 1 E2E and evidence guide](e2e/README.md)
+- PlatformEnvironment creation and InfraStack/TerraformRun reconciliation
+- Terraform Plan, explicit approval, and exact saved-plan Apply against LocalStack
+- Kind runtime readiness, ResourceSet SSA/inventory, and bootstrap resources
+- Safe runtime update and a new-generation Terraform NoChange
+- Manager restart during active Plan and after Ready, without duplicate Apply
+- Two-target isolation and the configured concurrent-Apply limit
+- Fail-closed handling of missing approval, wrong target, and incomplete discovery
+- ResourceSet prune, Terraform Destroy, finalizer cleanup, and owned-resource cleanup
+
+Architecture overview:
+
+- [Current architecture and invariants](docs/architecture.md)
+
+## Core resources
+
+| Resource | Purpose |
+|---|---|
+| PlatformEnvironment | User-facing desired environment and lifecycle owner |
+| EnvironmentClass | Reusable policy and typed infrastructure/runtime inputs |
+| InfraStack | Controller-materialized infrastructure intent |
+| TerraformRun | Immutable Plan, Apply, or Destroy attempt |
+| ChangeApproval | Approval bound to exact Plan evidence |
+| ResourceSet | Runtime SSA, ownership inventory, readiness, and prune |
 
 ## Local prerequisites
 
@@ -41,9 +59,10 @@ Authoritative documents:
 - Docker Desktop
 - Kind and `kubectl`
 - LocalStack Ultimate started externally at `http://localhost:4566`
-- Docker Desktop with permission to create temporary Kind clusters
 
 The repository does not start a second LocalStack container. This keeps the local AWS boundary explicit and prevents accidental use of real AWS credentials or endpoints.
+
+The E2E harness needs Docker access to create three disposable Kind clusters and network reachability from Kind nodes to the host LocalStack endpoint. It never creates or deletes the externally managed LocalStack container.
 
 ## Validation
 
@@ -51,6 +70,7 @@ Run the deterministic repository checks from the root:
 
 ```powershell
 go test ./...
+go build ./cmd/controller ./cmd/terraform-runner
 go vet ./...
 go test -race ./...
 git diff --check
@@ -71,6 +91,14 @@ make e2e
 
 Component lanes are available as `make e2e-lifecycle`, `make e2e-recovery`, `make e2e-multitarget`, and `make e2e-failclosed`. The harness writes only text evidence under `artifacts/e2e/<run-id>/`, which is ignored by Git, and verifies cleanup of its owned Kind clusters, LocalStack buckets, temporary Git server, and source directory in `finally`.
 
+The lanes are:
+
+- `all`: lifecycle, recovery, multi-target, fail-closed, and cleanup
+- `lifecycle`: create, approval/apply, safe update, and destroy
+- `recovery`: lifecycle with manager restarts during and after reconciliation
+- `multitarget`: two target clusters, identity isolation, and concurrency limit
+- `failclosed`: rejection paths with no runtime side effects
+
 Run the Kind integration lanes with the target context explicitly selected:
 
 ```powershell
@@ -79,7 +107,13 @@ go test ./internal/runtime -run 'TestKind' -count=1
 go test ./internal/controller -run 'TestKindResourceSetControllerSSAInventoryAndPrune' -count=1
 ```
 
-The complete Stage 1 lifecycle, restart recovery, runtime update, multi-target, and fail-closed evidence from this host is in `artifacts/e2e/20260923220530-54550173/summary.txt` (Git-ignored). Broader readiness is summarized in [LOCAL-PRODUCTION-READINESS-REPORT.md](LOCAL-PRODUCTION-READINESS-REPORT.md); this Stage 1 result makes no production AWS claim.
+## Typical development loop
+
+1. Keep changes within the API, controller, runner, or target/runtime package they affect.
+2. Run the Go test and vet checks before using an integration environment.
+3. For lifecycle or runtime changes, start LocalStack Ultimate externally and run `make e2e`.
+4. Inspect the generated summary and logs locally; do not commit temporary E2E output.
+5. Treat LocalStack/Kind results as local validation only, not as real-AWS proof.
 
 ## Repository layout
 
@@ -88,10 +122,11 @@ api/                         CRD Go types
 cmd/controller/              management controller entrypoint
 cmd/terraform-runner/        Terraform runner entrypoint
 config/                      CRDs, RBAC, manager security manifests
+docs/architecture.md         current lifecycle and safety invariants
 internal/controller/         lifecycle and runtime controllers
 internal/runtime/            SSA, readiness, inventory, Valkey bootstrap
 internal/target/             identity, discovery, client isolation, AWS seams
 internal/terraform/          source closure, saved-plan execution, evidence
 test/fixtures/terraform/     LocalStack Terraform fixture
-e2e/                         Stage 1 real E2E harness and evidence guide
+e2e/                         Stage 1 real E2E harness
 ```
