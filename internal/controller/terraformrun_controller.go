@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
-	"strings"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -392,21 +391,6 @@ func (r *TerraformRunReconciler) captureTerminalResult(ctx context.Context, obje
 	result.TerminalResultRef = ref.Key
 	result.TerminalResultDigest = ref.Digest
 	return result, nil
-}
-
-func parseRunnerTerminalResult(logs string) (runnerTerminalResult, error) {
-	lines := strings.Split(logs, "\n")
-	for index := len(lines) - 1; index >= 0; index-- {
-		line := strings.TrimSpace(lines[index])
-		if line == "" {
-			continue
-		}
-		var result runnerTerminalResult
-		if err := json.Unmarshal([]byte(line), &result); err == nil && result.Operation != "" && result.ExecutionOutcome != "" {
-			return result, nil
-		}
-	}
-	return runnerTerminalResult{}, fmt.Errorf("runner terminal result was not found in Pod logs")
 }
 
 func (r *TerraformRunReconciler) applyTerminalResult(ctx context.Context, object *platformv1alpha1.TerraformRun, result runnerTerminalResult, job *batchv1.Job) (ctrl.Result, error) {

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
 	targetresolver "github.com/miku-wwl/kube-platform-control-plane/internal/target"
@@ -201,11 +200,4 @@ func materializeTarget(target platformv1alpha1.TargetReference) (platformv1alpha
 			RoleARN:             materialized.TargetConnectionProfile.RoleARN,
 		},
 	}, nil
-}
-
-func ownerUID(environment *platformv1alpha1.PlatformEnvironment) types.UID {
-	if environment == nil {
-		return ""
-	}
-	return environment.UID
 }

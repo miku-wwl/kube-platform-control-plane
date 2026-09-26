@@ -859,10 +859,3 @@ func applyRunName(planName, approvalUID string) string {
 func lifecycleCondition(generation int64, status metav1.ConditionStatus, reason, message string) metav1.Condition {
 	return metav1.Condition{Type: ConditionReady, Status: status, ObservedGeneration: generation, Reason: reason, Message: message, LastTransitionTime: metav1.Now()}
 }
-
-func sameCondition(left, right *metav1.Condition) bool {
-	if left == nil || right == nil {
-		return left == right
-	}
-	return left.Type == right.Type && left.Status == right.Status && left.ObservedGeneration == right.ObservedGeneration && left.Reason == right.Reason && left.Message == right.Message
-}

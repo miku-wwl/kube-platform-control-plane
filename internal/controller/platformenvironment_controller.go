@@ -552,10 +552,6 @@ func (r *PlatformEnvironmentReconciler) mapInfraStack(ctx context.Context, objec
 	return requests
 }
 
-func buildResourceSet(environment *platformv1alpha1.PlatformEnvironment, name string) *platformv1alpha1.ResourceSet {
-	return buildResourceSetForTarget(environment, name, environment.Spec.Target, nil)
-}
-
 func buildResourceSetForTarget(environment *platformv1alpha1.PlatformEnvironment, name string, target platformv1alpha1.TargetReference, resources []platformv1alpha1.RuntimeObject) *platformv1alpha1.ResourceSet {
 	ownershipID := string(environment.UID)
 	if ownershipID == "" {

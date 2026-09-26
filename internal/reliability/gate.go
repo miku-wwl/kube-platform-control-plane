@@ -23,22 +23,6 @@ type WorkItem struct {
 	MaxConcurrentApplies int
 }
 
-type Metrics struct {
-	Submitted        int
-	Completed        int
-	MaxActivePlans   int
-	MaxActiveApplies int
-	MaxStackApplies  int
-	DuplicateIDs     int
-	GateReady        bool
-	OverCapacity     bool
-	SafetyViolation  bool
-}
-
-type Snapshot struct {
-	Active []WorkItem
-}
-
 type Gate struct {
 	mu                 sync.Mutex
 	maxPlans           int
@@ -50,34 +34,13 @@ type Gate struct {
 	activeByApplyGroup map[string]int
 	startedIDs         map[string]bool
 	activeItems        map[string]WorkItem
-	metrics            Metrics
-	condition          *sync.Cond
 	gateReady          bool
 	overCapacity       bool
 	safetyViolation    bool
 }
 
 func NewGate(maxPlans, maxApplies int) *Gate {
-	gate := &Gate{maxPlans: maxPlans, maxApplies: maxApplies, activeByStack: map[string]int{}, activeByPlanGroup: map[string]int{}, activeByApplyGroup: map[string]int{}, startedIDs: map[string]bool{}, activeItems: map[string]WorkItem{}, gateReady: true}
-	gate.condition = sync.NewCond(&gate.mu)
-	return gate
-}
-
-func (g *Gate) Acquire(item WorkItem) error {
-	g.mu.Lock()
-	defer g.mu.Unlock()
-	if err := validateItem(item); err != nil {
-		return err
-	}
-	if g.startedIDs[item.ID] {
-		g.metrics.DuplicateIDs++
-		return fmt.Errorf("work item %q was already started", item.ID)
-	}
-	for !g.gateReady || !g.available(item) || g.overCapacity || g.safetyViolation {
-		g.condition.Wait()
-	}
-	g.reserveLocked(item)
-	return nil
+	return &Gate{maxPlans: maxPlans, maxApplies: maxApplies, activeByStack: map[string]int{}, activeByPlanGroup: map[string]int{}, activeByApplyGroup: map[string]int{}, startedIDs: map[string]bool{}, activeItems: map[string]WorkItem{}, gateReady: true}
 }
 
 // TryAcquire reserves a slot without blocking. It is used by reconcilers so a
@@ -134,21 +97,12 @@ func (g *Gate) reserveLocked(item WorkItem) {
 		if item.ConcurrencyGroup != "" {
 			g.activeByPlanGroup[item.ConcurrencyGroup]++
 		}
-		if g.activePlans > g.metrics.MaxActivePlans {
-			g.metrics.MaxActivePlans = g.activePlans
-		}
 		return
 	}
 	g.activeApplies++
 	g.activeByStack[item.Stack]++
 	if item.ConcurrencyGroup != "" {
 		g.activeByApplyGroup[item.ConcurrencyGroup]++
-	}
-	if g.activeApplies > g.metrics.MaxActiveApplies {
-		g.metrics.MaxActiveApplies = g.activeApplies
-	}
-	if g.activeByStack[item.Stack] > g.metrics.MaxStackApplies {
-		g.metrics.MaxStackApplies = g.activeByStack[item.Stack]
 	}
 }
 
@@ -172,11 +126,9 @@ func (g *Gate) Release(item WorkItem) {
 		}
 	}
 	delete(g.activeItems, item.ID)
-	g.metrics.Completed++
 	if g.activePlans <= g.maxPlans && g.activeApplies <= g.maxApplies {
 		g.overCapacity = false
 	}
-	g.condition.Broadcast()
 }
 
 func (g *Gate) available(item WorkItem) bool {
@@ -190,16 +142,6 @@ func (g *Gate) available(item WorkItem) bool {
 		return false
 	}
 	return item.ConcurrencyGroup == "" || item.MaxConcurrentApplies <= 0 || g.activeByApplyGroup[item.ConcurrencyGroup] < item.MaxConcurrentApplies
-}
-
-func (g *Gate) Metrics() Metrics {
-	g.mu.Lock()
-	defer g.mu.Unlock()
-	metrics := g.metrics
-	metrics.GateReady = g.gateReady
-	metrics.OverCapacity = g.overCapacity
-	metrics.SafetyViolation = g.safetyViolation
-	return metrics
 }
 
 type ReconstructionResult struct {
@@ -246,7 +188,6 @@ func (g *Gate) Reconstruct(items []WorkItem) ReconstructionResult {
 	result.OverCapacity = g.overCapacity
 	result.SafetyViolation = g.safetyViolation
 	result.Duration = time.Since(started)
-	g.condition.Broadcast()
 	return result
 }
 
@@ -278,58 +219,4 @@ func (g *Gate) ReadyCheck(_ *http.Request) error {
 		return fmt.Errorf("execution reconstruction gate is not ready")
 	}
 	return nil
-}
-
-func (g *Gate) Snapshot() Snapshot {
-	g.mu.Lock()
-	defer g.mu.Unlock()
-	active := make([]WorkItem, 0, g.activePlans+g.activeApplies)
-	for _, item := range g.activeItems {
-		active = append(active, item)
-	}
-	return Snapshot{Active: active}
-}
-
-func (g *Gate) Restore(items []WorkItem) error {
-	g.mu.Lock()
-	defer g.mu.Unlock()
-	for _, item := range items {
-		if err := validateItem(item); err != nil {
-			return err
-		}
-		if g.startedIDs[item.ID] || g.activeItems[item.ID].ID != "" {
-			return fmt.Errorf("cannot restore duplicate active run %q", item.ID)
-		}
-		if !g.available(item) {
-			return fmt.Errorf("cannot restore active run %q: concurrency capacity exceeded", item.ID)
-		}
-		if item.Kind == KindPlan {
-			g.reserveLocked(item)
-		} else {
-			if g.activeByStack[item.Stack] > 0 {
-				return fmt.Errorf("cannot restore multiple active applies for stack %q", item.Stack)
-			}
-			g.reserveLocked(item)
-		}
-	}
-	return nil
-}
-
-func Execute(items []WorkItem, maxPlans, maxApplies int) Metrics {
-	gate := NewGate(maxPlans, maxApplies)
-	var wait sync.WaitGroup
-	wait.Add(len(items))
-	for _, item := range items {
-		item := item
-		go func() {
-			defer wait.Done()
-			if err := gate.Acquire(item); err == nil {
-				gate.Release(item)
-			}
-		}()
-	}
-	wait.Wait()
-	metrics := gate.Metrics()
-	metrics.Submitted = len(items)
-	return metrics
 }

@@ -21,10 +21,6 @@ func skeletonCondition(generation int64) metav1.Condition {
 	}
 }
 
-func readyConditionPresent(conditions []metav1.Condition) bool {
-	return apiMeta.IsStatusConditionTrue(conditions, ConditionReady)
-}
-
 func skeletonConditionCurrent(conditions []metav1.Condition, generation int64) bool {
 	condition := apiMeta.FindStatusCondition(conditions, ConditionReady)
 	return condition != nil &&

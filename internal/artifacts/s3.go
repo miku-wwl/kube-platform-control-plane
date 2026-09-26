@@ -27,21 +27,10 @@ type Ref struct {
 	VersionID string
 }
 
-type objectStore interface {
-	PutObject(context.Context, *s3.PutObjectInput, ...func(*s3.Options)) (*s3.PutObjectOutput, error)
-	GetObject(context.Context, *s3.GetObjectInput, ...func(*s3.Options)) (*s3.GetObjectOutput, error)
-	DeleteObject(context.Context, *s3.DeleteObjectInput, ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
-	HeadObject(context.Context, *s3.HeadObjectInput, ...func(*s3.Options)) (*s3.HeadObjectOutput, error)
-}
-
 type Store struct {
-	client   objectStore
+	client   *s3.Client
 	bucket   string
 	kmsKeyID string
-}
-
-func NewS3Store(endpoint, region, bucket string) (*Store, error) {
-	return NewS3StoreWithKMS(endpoint, region, bucket, "")
 }
 
 // NewS3StoreWithKMS keeps the local profile unchanged while allowing an AWS
@@ -68,14 +57,6 @@ func NewS3StoreWithKMS(endpoint, region, bucket, kmsKeyID string) (*Store, error
 		}
 	})
 	return &Store{client: client, bucket: bucket, kmsKeyID: kmsKeyID}, nil
-}
-
-func NewStore(client objectStore, bucket string) *Store {
-	return NewStoreWithKMS(client, bucket, "")
-}
-
-func NewStoreWithKMS(client objectStore, bucket, kmsKeyID string) *Store {
-	return &Store{client: client, bucket: bucket, kmsKeyID: kmsKeyID}
 }
 
 func (s *Store) PutImmutable(ctx context.Context, key string, content []byte) (Ref, error) {

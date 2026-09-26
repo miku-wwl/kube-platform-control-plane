@@ -76,20 +76,6 @@ type PlatformIdentity struct {
 	RunnerImageDigest string `json:"runnerImageDigest"`
 }
 
-type ExecutionContext struct {
-	SourceBundleDigest              string `json:"sourceBundleDigest"`
-	ResolvedBackendConfigDigest     string `json:"resolvedBackendConfigDigest"`
-	TerraformVersion                string `json:"terraformVersion"`
-	TerraformLockfileDigest         string `json:"terraformLockfileDigest"`
-	VariablesIdentityDigest         string `json:"variablesIdentityDigest"`
-	BackendConfigIdentityDigest     string `json:"backendConfigIdentityDigest"`
-	Workspace                       string `json:"workspace"`
-	RunnerImageDigest               string `json:"runnerImageDigest"`
-	ExecutionTargetIdentityDigest   string `json:"executionTargetIdentityDigest"`
-	ExecutionPlatformIdentityDigest string `json:"executionPlatformIdentityDigest"`
-	TerraformParallelism            *int32 `json:"terraformParallelism,omitempty"`
-}
-
 type BackendSnapshot struct {
 	Type             string            `json:"type"`
 	Bucket           string            `json:"bucket"`
