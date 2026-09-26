@@ -26,14 +26,6 @@ type RealAWSAssumeRole struct {
 	Now    func() time.Time
 }
 
-func NewRealAWSAssumeRole(ctx context.Context, region string) (*RealAWSAssumeRole, error) {
-	cfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(region))
-	if err != nil {
-		return nil, err
-	}
-	return &RealAWSAssumeRole{Client: sts.NewFromConfig(cfg), Now: time.Now}, nil
-}
-
 func (r RealAWSAssumeRole) AssumeRole(request AssumeRoleRequest) (AssumedSession, error) {
 	if r.Client == nil {
 		return AssumedSession{}, fmt.Errorf("AWS STS client is not configured")
@@ -227,9 +219,7 @@ func certificateDigest(data string) string {
 
 var _ EKSDescribeAPI = (*eks.Client)(nil)
 
-// DecodeEKSCA is shared by the EKS client resolver and tests. EKS returns
-// certificate-authority data as base64; accepting raw bytes keeps the fake
-// adapter convenient without changing production semantics.
+// DecodeEKSCA decodes the certificate-authority data returned by EKS.
 func DecodeEKSCA(data string) ([]byte, error) {
 	decoded, err := base64.StdEncoding.DecodeString(data)
 	if err == nil {

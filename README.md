@@ -99,14 +99,6 @@ The lanes are:
 - `multitarget`: two target clusters, identity isolation, and concurrency limit
 - `failclosed`: rejection paths with no runtime side effects
 
-Run the Kind integration lanes with the target context explicitly selected:
-
-```powershell
-$env:PCP_TARGET_CONTEXT = "kind-pcp-target-local"
-go test ./internal/runtime -run 'TestKind' -count=1
-go test ./internal/controller -run 'TestKindResourceSetControllerSSAInventoryAndPrune' -count=1
-```
-
 ## Typical development loop
 
 1. Keep changes within the API, controller, runner, or target/runtime package they affect.
@@ -124,7 +116,7 @@ cmd/terraform-runner/        Terraform runner entrypoint
 config/                      CRDs, RBAC, manager security manifests
 docs/architecture.md         current lifecycle and safety invariants
 internal/controller/         lifecycle and runtime controllers
-internal/runtime/            SSA, readiness, inventory, Valkey bootstrap
+internal/runtime/            SSA, readiness, inventory, runtime bootstrap
 internal/target/             identity, discovery, client isolation, AWS seams
 internal/terraform/          source closure, saved-plan execution, evidence
 test/fixtures/terraform/     LocalStack Terraform fixture
