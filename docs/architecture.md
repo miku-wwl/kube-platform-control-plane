@@ -114,9 +114,14 @@ ResourceSet; Terraform Destroy output is not treated as new target identity.
 ```text
 Developer / Operator
         ↓
-React Console / AI Draft Builder
+React Console / AI Platform Builder
         ↓
-platform-api (read model + deterministic validation)
+platform-api (draft request)
+  └── Foundry Local
+        ↓ structured JSON
+platform-api (strict parse + deterministic validation)
+        ↓ typed preview
+Human review + explicit submit
         ↓
 Kubernetes API
         ↓
@@ -138,12 +143,11 @@ plan/evidence digest. There is intentionally no Apply API or console action.
 The optional `plan-visualization.json` is derived from `terraform show -json`
 for the exact saved Plan and contains only allowlisted resource metadata.
 Failure to store it does not fail the Plan. It is read-only UI evidence and is
-not part of approval or Apply admission. The AI provider emits a constrained
-draft only; the API validates class, namespace, region, and capacity before
-showing typed YAML, and a separate human action submits the resource. The
-default provider is deterministic; optional Bedrock configuration is limited
-to a loopback LocalStack endpoint. The unauthenticated API and web UI are
-local operator tools, not production endpoints.
+not part of approval or Apply admission. Foundry Local emits a constrained
+JSON intent only; the API strictly parses it and validates class, namespace,
+registered target, region, Valkey settings, and capacity before showing typed
+YAML. A separate human action submits the resource. The unauthenticated API
+and web UI are local operator tools, not production endpoints.
 
 ## Validation boundary
 

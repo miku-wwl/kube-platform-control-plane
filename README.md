@@ -72,18 +72,25 @@ Architecture overview:
 
 The repository does not start a second LocalStack container. This keeps the local AWS boundary explicit and prevents accidental use of real AWS credentials or endpoints.
 
+Local development responsibilities are separate: Kind provides the Kubernetes runtime, the externally managed LocalStack Ultimate instance simulates AWS infrastructure, and Foundry Local provides Stage 2 LLM inference.
+
 ## Local console
 
-Run the existing control plane against the management Kind cluster first. In another PowerShell terminal, point the API at the same local kubeconfig and LocalStack artifact bucket used by the manager:
+Run the existing control plane against the management Kind cluster first. In another PowerShell terminal, use the same local kubeconfig and LocalStack artifact bucket as the manager, and start/configure Foundry Local before starting the API:
 
 ```powershell
 $env:PCP_ARTIFACT_ENDPOINT = "http://localhost:4566"
 $env:PCP_ARTIFACT_REGION = "us-east-1"
 $env:PCP_ARTIFACT_BUCKET = "<the manager's artifact bucket>"
+foundry server restart --port 39839 --idle-timeout 0
+$env:FOUNDRY_LOCAL_ENDPOINT = "http://127.0.0.1:39839"
+$env:FOUNDRY_LOCAL_MODEL = "phi-4-mini"
 go run ./cmd/platform-api
 ```
 
-The API binds to `127.0.0.1:8090` by default and refuses non-local artifact endpoints. AI drafts default to deterministic local mode. To opt into LocalStack Bedrock, set `AI_PROVIDER=bedrock`, `AWS_ENDPOINT_URL=http://localhost:4566`, `AWS_REGION=us-east-1`, and `BEDROCK_MODEL_ID` before starting the API; it uses LocalStack-only test credentials and rejects remote endpoints.
+The API binds to `127.0.0.1:8090` by default and refuses non-local artifact or inference endpoints. Stage 2 AI drafts use Foundry Local by default.
+
+For deterministic offline development only, set `AI_PROVIDER=deterministic`. Foundry Local drafts are advisory; the platform API validates them and requires a separate explicit human action to create a `PlatformEnvironment`.
 
 In another terminal:
 

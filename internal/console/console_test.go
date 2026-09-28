@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -198,12 +199,204 @@ func TestDraftRequiresSeparateExplicitEnvironmentSubmit(t *testing.T) {
 	}
 }
 
-func TestBedrockProviderRejectsRemoteEndpoint(t *testing.T) {
-	t.Setenv("AI_PROVIDER", "bedrock")
-	t.Setenv("AWS_ENDPOINT_URL", "https://bedrock-runtime.us-east-1.amazonaws.com")
-	if _, _, err := NewDraftGeneratorFromEnvironment(); err == nil {
-		t.Fatal("remote Bedrock endpoint was accepted")
+func TestFoundryLocalDraftGeneratorContract(t *testing.T) {
+	const intentJSON = `{"name":"demo-dev","region":"us-east-1","nodeCount":2,"valkeyEnabled":true,"valkeyShards":1,"valkeyReplicas":1}`
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost || r.URL.Path != "/v1/chat/completions" {
+			t.Errorf("unexpected Foundry request: %s %s", r.Method, r.URL.Path)
+		}
+		var request struct {
+			Model          string            `json:"model"`
+			ResponseFormat map[string]string `json:"response_format"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Errorf("decode chat request: %v", err)
+		}
+		if request.Model != "phi-4-mini" || request.ResponseFormat["type"] != "json_object" {
+			t.Errorf("unexpected model or response format: %+v", request)
+		}
+		_, _ = io.WriteString(w, `{"choices":[{"message":{"role":"assistant","content":`+mustJSONString(t, intentJSON)+`,"tool_calls":[]},"finish_reason":"stop"}]}`)
+	}))
+	defer server.Close()
+
+	generator, err := newFoundryLocalDraftGenerator(server.URL, "phi-4-mini", server.Client())
+	if err != nil {
+		t.Fatal(err)
 	}
+	intent, err := generator.Generate(context.Background(), DraftRequest{Description: "Create an environment with cache and 2 nodes", Namespace: "default", ClassRef: "dev-small"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if intent.Name != "demo-dev" || intent.Namespace != "default" || intent.ClassRef != "dev-small" || intent.NodeCount != 2 || intent.Region != "us-east-1" || !intent.ValkeyEnabled || intent.ValkeyShards != 1 || intent.ValkeyReplicas != 1 {
+		t.Fatalf("unexpected typed intent: %+v", intent)
+	}
+}
+
+func TestFoundryLocalStructuredOutputFailsClosed(t *testing.T) {
+	valid := `{"name":"demo-dev","region":"us-east-1","nodeCount":1,"valkeyEnabled":false,"valkeyShards":0,"valkeyReplicas":0}`
+	cases := map[string]string{
+		"prose":            "Here is the JSON: " + valid,
+		"malformed":        `{"name":`,
+		"unknown field":    strings.TrimSuffix(valid, "}") + `,"apiVersion":"v1"}`,
+		"missing field":    `{"name":"demo-dev","region":"us-east-1","nodeCount":1,"valkeyEnabled":false,"valkeyShards":0}`,
+		"null field":       `{"name":null,"region":"us-east-1","nodeCount":1,"valkeyEnabled":false,"valkeyShards":0,"valkeyReplicas":0}`,
+		"invalid capacity": `{"name":"demo-dev","region":"us-east-1","nodeCount":0,"valkeyEnabled":false,"valkeyShards":0,"valkeyReplicas":0}`,
+		"unexpected cache": `{"name":"demo-dev","region":"us-east-1","nodeCount":1,"valkeyEnabled":false,"valkeyShards":1,"valkeyReplicas":0}`,
+	}
+	for name, content := range cases {
+		t.Run(name, func(t *testing.T) {
+			if _, err := decodeFoundryIntent(content); err == nil {
+				t.Fatal("invalid structured output was accepted")
+			}
+		})
+	}
+	if _, err := newFoundryLocalDraftGenerator("https://example.com:443", "phi-4-mini", nil); err == nil {
+		t.Fatal("remote inference endpoint was accepted")
+	}
+}
+
+func TestFoundryDraftAppliesExplicitCacheIntentDeterministically(t *testing.T) {
+	cases := []struct {
+		name        string
+		description string
+		wantEnabled bool
+	}{
+		{name: "explicit enable", description: "Create a development environment with cache enabled", wantEnabled: true},
+		{name: "explicit disable", description: "Create a development environment without cache", wantEnabled: false},
+		{name: "ambiguous request", description: "Create a small development environment", wantEnabled: false},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			intent := applyExplicitValkeyIntent(test.description, DraftIntent{ValkeyEnabled: !test.wantEnabled})
+			if intent.ValkeyEnabled != test.wantEnabled {
+				t.Fatalf("unexpected Valkey choice for %q: %+v", test.description, intent)
+			}
+			if test.wantEnabled && (intent.ValkeyShards != 1 || intent.ValkeyReplicas != 1) {
+				t.Fatalf("enabled Valkey did not receive supported default topology: %+v", intent)
+			}
+			if !test.wantEnabled && (intent.ValkeyShards != 0 || intent.ValkeyReplicas != 0) {
+				t.Fatalf("disabled Valkey retained topology: %+v", intent)
+			}
+		})
+	}
+}
+
+func TestMalformedFoundryDraftDoesNotCreateResources(t *testing.T) {
+	model := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = io.WriteString(w, `{"choices":[{"message":{"content":"not JSON"}}]}`)
+	}))
+	defer model.Close()
+	generator, err := newFoundryLocalDraftGenerator(model.URL, "phi-4-mini", model.Client())
+	if err != nil {
+		t.Fatal(err)
+	}
+	class := readyDraftClass()
+	namespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "default"}}
+	_, kubeClient, err := testServer(t, class, namespace)
+	if err != nil {
+		t.Fatal(err)
+	}
+	api, err := NewServer(kubeClient, nil, foundryLocalProvider, generator, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := json.Marshal(DraftRequest{Description: "Create a development environment", Namespace: "default", ClassRef: "dev-small"})
+	response := httptest.NewRecorder()
+	api.Handler().ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/api/drafts", bytes.NewReader(body)))
+	if response.Code != http.StatusBadGateway {
+		t.Fatalf("malformed model output returned %d: %s", response.Code, response.Body.String())
+	}
+	var environments platformv1alpha1.PlatformEnvironmentList
+	var approvals platformv1alpha1.ChangeApprovalList
+	var runs platformv1alpha1.TerraformRunList
+	for _, objectList := range []client.ObjectList{&environments, &approvals, &runs} {
+		if err := kubeClient.List(context.Background(), objectList); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if len(environments.Items) != 0 || len(approvals.Items) != 0 || len(runs.Items) != 0 {
+		t.Fatal("malformed draft caused a platform resource or approval to be created")
+	}
+}
+
+func TestFoundryLocalLiveDraftScenarios(t *testing.T) {
+	if os.Getenv("PCP_RUN_FOUNDRY_LOCAL_INTEGRATION") != "1" {
+		t.Skip("set PCP_RUN_FOUNDRY_LOCAL_INTEGRATION=1 to run live local inference scenarios")
+	}
+	provider, generator, err := NewDraftGeneratorFromEnvironment()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if provider != foundryLocalProvider {
+		t.Fatalf("live local inference expected provider %q, got %q", foundryLocalProvider, provider)
+	}
+	class := readyDraftClass()
+	namespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "default"}}
+	server, kubeClient, err := testServer(t, class, namespace)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cases := []struct {
+		name        string
+		description string
+		wantNodes   int32
+		wantValkey  bool
+	}{
+		{name: "small development", description: "Create a small development environment", wantNodes: 1},
+		{name: "cache and two nodes", description: "Create a development environment with cache enabled and 2 nodes", wantNodes: 2, wantValkey: true},
+	}
+	for _, scenario := range cases {
+		t.Run(scenario.name, func(t *testing.T) {
+			intent, err := generator.Generate(context.Background(), DraftRequest{Description: scenario.description, Namespace: "default", ClassRef: "dev-small"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if intent.NodeCount != scenario.wantNodes || intent.ValkeyEnabled != scenario.wantValkey {
+				t.Fatalf("live model missed requested intent: %+v", intent)
+			}
+			candidate, _, err := server.validateEnvironmentRequest(context.Background(), CreateEnvironmentRequest{Name: intent.Name, Namespace: intent.Namespace, ClassRef: intent.ClassRef, Region: intent.Region, NodeCount: intent.NodeCount, ValkeyEnabled: intent.ValkeyEnabled, ValkeyShards: intent.ValkeyShards, ValkeyReplicas: intent.ValkeyReplicas})
+			if err != nil {
+				t.Fatalf("deterministic validation rejected live draft: %v", err)
+			}
+			if candidate.Spec.ClassRef == nil || candidate.Spec.ClassRef.Name != "dev-small" {
+				t.Fatalf("draft is not a typed class-based PlatformEnvironment: %+v", candidate.Spec)
+			}
+			preview, err := environmentYAML(candidate)
+			if err != nil || preview == "" {
+				t.Fatalf("typed draft did not render a preview: %q, %v", preview, err)
+			}
+		})
+	}
+	t.Run("ambiguous request", func(t *testing.T) {
+		intent, err := generator.Generate(context.Background(), DraftRequest{Description: "Set up something useful for me", Namespace: "default", ClassRef: "dev-small"})
+		if err != nil {
+			return // A deterministic fail-closed rejection is safe for an ambiguous request.
+		}
+		candidate, _, validationErr := server.validateEnvironmentRequest(context.Background(), CreateEnvironmentRequest{Name: intent.Name, Namespace: intent.Namespace, ClassRef: intent.ClassRef, Region: intent.Region, NodeCount: intent.NodeCount, ValkeyEnabled: intent.ValkeyEnabled, ValkeyShards: intent.ValkeyShards, ValkeyReplicas: intent.ValkeyReplicas})
+		if validationErr == nil && (candidate.Spec.Capacity.NodeCount != 1 || candidate.Spec.Valkey.Enabled) {
+			t.Fatalf("ambiguous request was not handled conservatively: %+v", candidate.Spec)
+		}
+	})
+	var environments platformv1alpha1.PlatformEnvironmentList
+	if err := kubeClient.List(context.Background(), &environments); err != nil {
+		t.Fatal(err)
+	}
+	if len(environments.Items) != 0 {
+		t.Fatal("live draft generation submitted a PlatformEnvironment without explicit human action")
+	}
+}
+
+func readyDraftClass() *platformv1alpha1.EnvironmentClass {
+	return &platformv1alpha1.EnvironmentClass{ObjectMeta: metav1.ObjectMeta{Name: "dev-small", Generation: 1}, Spec: platformv1alpha1.EnvironmentClassSpec{Target: platformv1alpha1.TargetReference{Provider: "Kind", ClusterName: "kind-local", Region: "us-east-1"}, AllowedRegions: []string{"us-east-1"}, CapacityBounds: platformv1alpha1.CapacityBounds{MinNodeCount: 1, MaxNodeCount: 2, MaxEnvironments: 3}}, Status: platformv1alpha1.EnvironmentClassStatus{ObservedGeneration: 1, Conditions: []metav1.Condition{{Type: "Ready", Status: metav1.ConditionTrue}}}}
+}
+
+func mustJSONString(t *testing.T, value string) string {
+	t.Helper()
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(encoded)
 }
 
 func approvalFixture(t *testing.T) (*Server, client.Client, *platformv1alpha1.TerraformRun) {
