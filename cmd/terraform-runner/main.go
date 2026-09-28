@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/miku-wwl/kube-platform-control-plane/internal/artifacts"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/planview"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/terraform"
 )
 
@@ -323,7 +324,7 @@ func uploadPlanArtifacts(ctx context.Context, store *artifacts.Store, prefix str
 	}
 	terminal.PlanRef = planRef.Key
 	terminal.PlanDigest = planRef.Digest
-	report, err := buildPlanReport(ctx, request, result, planRef.Digest)
+	report, visualization, err := buildPlanReport(ctx, request, result, planRef.Digest, path.Base(prefix))
 	if err != nil {
 		return err
 	}
@@ -337,6 +338,13 @@ func uploadPlanArtifacts(ctx context.Context, store *artifacts.Store, prefix str
 	}
 	terminal.PlanReportRef = reportRef.Key
 	terminal.PlanReportDigest = reportRef.Digest
+	// Visualization is additive explanatory evidence only. Its absence must not
+	// fail a Plan or change the exact saved-plan approval/apply contract.
+	if len(visualization) > 0 {
+		if _, visualizationErr := store.PutImmutable(ctx, artifactKey(prefix, "plan-visualization.json"), visualization); visualizationErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: optional plan visualization was not retained: %v\n", visualizationErr)
+		}
+	}
 	if request.BackendConfigPath != "" {
 		backendContent, err := os.ReadFile(request.BackendConfigPath)
 		if err != nil {
@@ -464,14 +472,14 @@ type planReport struct {
 	GeneratedAt     time.Time      `json:"generatedAt"`
 }
 
-func buildPlanReport(ctx context.Context, request terraform.Request, result terraform.PlanResult, planDigest string) (planReport, error) {
+func buildPlanReport(ctx context.Context, request terraform.Request, result terraform.PlanResult, planDigest, runUID string) (planReport, []byte, error) {
 	show := terraform.OSCommandRunner{Binary: "terraform"}
 	command, err := show.Run(ctx, request.WorkingDir, "show", "-json", request.PlanPath)
 	if err != nil {
-		return planReport{}, fmt.Errorf("terraform show plan report: %w", err)
+		return planReport{}, nil, fmt.Errorf("terraform show plan report: %w", err)
 	}
 	if command.ExitCode != 0 {
-		return planReport{}, fmt.Errorf("terraform show plan report failed: %s", command.Stderr)
+		return planReport{}, nil, fmt.Errorf("terraform show plan report failed: %s", command.Stderr)
 	}
 	var payload struct {
 		ResourceChanges []struct {
@@ -481,7 +489,7 @@ func buildPlanReport(ctx context.Context, request terraform.Request, result terr
 		} `json:"resource_changes"`
 	}
 	if err := json.Unmarshal([]byte(command.Stdout), &payload); err != nil {
-		return planReport{}, fmt.Errorf("parse terraform show plan report: %w", err)
+		return planReport{}, nil, fmt.Errorf("parse terraform show plan report: %w", err)
 	}
 	actions := map[string]int{}
 	for _, resource := range payload.ResourceChanges {
@@ -489,7 +497,12 @@ func buildPlanReport(ctx context.Context, request terraform.Request, result terr
 			actions[action]++
 		}
 	}
-	return planReport{PlanDigest: planDigest, Outcome: string(result.Outcome), HasChanges: result.HasChanges, ResourceActions: actions, GeneratedAt: time.Now().UTC()}, nil
+	report := planReport{PlanDigest: planDigest, Outcome: string(result.Outcome), HasChanges: result.HasChanges, ResourceActions: actions, GeneratedAt: time.Now().UTC()}
+	var visualization []byte
+	if view, viewErr := planview.Parse([]byte(command.Stdout), runUID, planDigest); viewErr == nil {
+		visualization, _ = json.Marshal(view)
+	}
+	return report, visualization, nil
 }
 
 func persistTerminalResult(ctx context.Context, store *artifacts.Store, prefix string, result *terminalResult) error {

@@ -109,6 +109,42 @@ captured in the effective Plan input. Content digests bind review and execution
 to the same source and artifacts. TargetDiscovery is trusted input to
 ResourceSet; Terraform Destroy output is not treated as new target identity.
 
+## Stage 2 experience layer
+
+```text
+Developer / Operator
+        ↓
+React Console / AI Draft Builder
+        ↓
+platform-api (read model + deterministic validation)
+        ↓
+Kubernetes API
+        ↓
+PlatformEnvironment
+        ↓
+Existing Stage 1 Control Plane
+        ↓
+Terraform + Target Kubernetes
+```
+
+Kubernetes remains the sole state store. The local API projects existing
+resources, conditions, runs, approvals, and evidence into UI-safe views; it
+does not run a second workflow engine. Create/update/delete requests change
+only the top-level `PlatformEnvironment`, leaving reconciliation, cleanup,
+and Terraform destroy to the existing controllers. Approval creates the
+existing immutable `ChangeApproval` bound to the PlanRun UID and every current
+plan/evidence digest. There is intentionally no Apply API or console action.
+
+The optional `plan-visualization.json` is derived from `terraform show -json`
+for the exact saved Plan and contains only allowlisted resource metadata.
+Failure to store it does not fail the Plan. It is read-only UI evidence and is
+not part of approval or Apply admission. The AI provider emits a constrained
+draft only; the API validates class, namespace, region, and capacity before
+showing typed YAML, and a separate human action submits the resource. The
+default provider is deterministic; optional Bedrock configuration is limited
+to a loopback LocalStack endpoint. The unauthenticated API and web UI are
+local operator tools, not production endpoints.
+
 ## Validation boundary
 
 Stage 1 is validated locally with the real Terraform CLI, LocalStack Ultimate,

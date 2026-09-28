@@ -176,10 +176,15 @@ function Test-LocalStack {
     $healthText | Set-Content (Join-Path $script:ArtifactRoot 'localstack-health.txt') -Encoding UTF8
     if ($healthText -notmatch '"s3"\s*:\s*"(available|running|active)"') { throw "LocalStack S3 is not available: $healthText" }
     if ($healthText -notmatch '"sts"\s*:\s*"(available|running|active)"') { throw "LocalStack STS is not available: $healthText" }
-    $names = Invoke-Tool -File 'docker' -Arguments @('ps', '--format', '{{.Names}}')
-    $container = @($names -split "`r?`n" | Where-Object { $_ -match 'localstack' } | Select-Object -First 1)
-    if (-not $container) { throw 'A running LocalStack container was not found; start LocalStack Ultimate externally first.' }
-    $script:LocalStackContainer = $container
+    $containers = Invoke-Tool -File 'docker' -Arguments @('ps', '--format', '{{.Names}}|{{.Image}}')
+    $localStackContainers = @($containers -split "`r?`n" | ForEach-Object {
+        $parts = $_.Split('|', 2)
+        if ($parts.Count -eq 2 -and $parts[1] -match '(?i)(?:^|/)localstack/localstack(?:-pro)?(?::|$)') {
+            [pscustomobject]@{ Name = $parts[0]; Image = $parts[1] }
+        }
+    })
+    if ($localStackContainers.Count -ne 1) { throw "Expected exactly one running LocalStack service container, found $($localStackContainers.Count); start LocalStack Ultimate externally first." }
+    $script:LocalStackContainer = $localStackContainers[0].Name
     $identity = Invoke-Tool -File 'docker' -Arguments @('exec', $script:LocalStackContainer, 'awslocal', 'sts', 'get-caller-identity')
     $identity | Set-Content (Join-Path $script:ArtifactRoot 'localstack-identity.txt') -Encoding UTF8
     if ($identity -notmatch '000000000000') { throw "Unexpected LocalStack identity: $identity" }
