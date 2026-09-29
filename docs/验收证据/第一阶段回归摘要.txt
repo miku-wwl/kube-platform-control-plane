@@ -1,0 +1,13 @@
+﻿run_id=20260928230444-54dc02d7
+suite=all
+localstack_endpoint=http://localhost:4566
+real_aws_used=false
+results=
+FULL_LIFECYCLE=PASS create=stage1-2026092823044454dc02d7 plan=ChangesPresent apply=Succeeded runtime=stage1-svc-2026092823044454dc02d7 bucket=pcp-e2e-2026092823044454dc02d7
+RESTART_RECOVERY=PASS leader restarted during active Plan and after Ready; one Plan Job, one Apply, stable discovery/inventory/approval/runtime
+UPDATE_RUNTIME=PASS v2 class changed target Service annotation in place; Service/inventory UID stable; LocalStack bucket retained; no extra Apply
+UPDATE_DELETE=PASS runtime updated in place, capacity reconciliation=NoChange, destroy=completed bucket=pcp-e2e-2026092823044454dc02d7
+MULTI_TARGET=PASS A=kind-pcp-e2e-2026092823044454dc02d7-target-a/multi-svc-a-202609282304 B=kind-pcp-e2e-2026092823044454dc02d7-target-b/multi-svc-b-202609282304
+FAIL_CLOSED=PASS unapproved Plan, unregistered target, and incomplete trusted discovery produced no runtime mutation
+CLEANUP=PASS owned Kind clusters, LocalStack buckets, and temporary state verified absent
+STAGE1_E2E=PASS all requested local Stage 1 lanes and cleanup completed
