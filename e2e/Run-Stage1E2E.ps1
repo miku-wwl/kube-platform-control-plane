@@ -222,8 +222,8 @@ function Build-Images {
     $script:ManagerImage = "platform-control-plane:$tag"
     $script:RunnerImage = "platform-terraform-runner:$tag"
     Write-Stage "Building $($script:ManagerImage) and $($script:RunnerImage)"
-    Invoke-Tool -File 'docker' -Arguments @('build', '-t', $script:ManagerImage, '-f', 'Dockerfile', '.') -LogName 'manager-build.txt' | Out-Null
-    Invoke-Tool -File 'docker' -Arguments @('build', '-t', $script:RunnerImage, '-f', 'runner.Dockerfile', '.') -LogName 'runner-build.txt' | Out-Null
+    Invoke-Tool -File 'docker' -Arguments @('build', '--no-cache', '-t', $script:ManagerImage, '-f', 'Dockerfile', '.') -LogName 'manager-build.txt' | Out-Null
+    Invoke-Tool -File 'docker' -Arguments @('build', '--no-cache', '-t', $script:RunnerImage, '-f', 'runner.Dockerfile', '.') -LogName 'runner-build.txt' | Out-Null
     Prepare-GitImage
     foreach ($cluster in $script:OwnedClusters) {
         Invoke-Tool -File 'kind' -Arguments @('load', 'docker-image', $script:ManagerImage, '--name', $cluster) -LogName "$cluster-load-manager.txt" | Out-Null

@@ -22,10 +22,10 @@ The controller manages infrastructure execution, target discovery, runtime SSA/i
 STAGE1_LOCAL_VALIDATION = PASS_LOCAL
 STAGE1_E2E = PASS
 STAGE1_FREEZE = PASS
-STAGE2_ADVANCED_EXPERIENCE = PARTIAL_LOCAL
+STAGE2_ADVANCED_EXPERIENCE = PASS_LOCAL
 ```
 
-Stage 1 is frozen and was validated with LocalStack Ultimate, Kind, Terraform CLI, and local Kubernetes controllers. Stage 2 adds a local operator console above the existing engine. Its API-driven create/plan/approval/apply/Ready flow passed locally; Destroy Apply completion and browser-rendered acceptance remain unverified. Stage 3 and real AWS validation have not started.
+Stage 1 is frozen and was validated with LocalStack Ultimate, Kind, Terraform CLI, and local Kubernetes controllers. Stage 2 adds a local operator console above the existing engine. Its browser-driven draft, create, exact Plan approval, Apply, Ready, update, and delete/Destroy lifecycle passed locally with Foundry Local inference and current-source images. Stage 3 and real AWS validation have not started.
 
 Validated locally:
 
