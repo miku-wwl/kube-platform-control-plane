@@ -3,7 +3,8 @@ param(
     [ValidateSet('all', 'lifecycle', 'recovery', 'multitarget', 'failclosed', 'clean')]
     [string]$Suite = 'all',
     [string]$LocalStackEndpoint = $(if ($env:PCP_LOCALSTACK_ENDPOINT) { $env:PCP_LOCALSTACK_ENDPOINT } else { 'http://localhost:4566' }),
-    [switch]$KeepArtifacts
+    [switch]$KeepArtifacts,
+    [switch]$Stage2Session
 )
 
 Set-StrictMode -Version Latest
@@ -41,6 +42,7 @@ $script:OwnedBuckets = New-Object System.Collections.Generic.List[string]
 $script:EnvironmentNames = New-Object System.Collections.Generic.List[string]
 $script:SuiteCompleted = $false
 $script:ExitCode = 0
+$script:ImageObservations = @{}
 
 New-Item -ItemType Directory -Force -Path $script:ArtifactRoot, $script:LogRoot, $script:StateRoot | Out-Null
 
@@ -218,6 +220,7 @@ function New-Clusters {
 }
 
 function Build-Images {
+    Save-SourceState
     $tag = "local-$($script:RunId.ToLower())"
     $script:ManagerImage = "platform-control-plane:$tag"
     $script:RunnerImage = "platform-terraform-runner:$tag"
@@ -230,6 +233,48 @@ function Build-Images {
         Invoke-Tool -File 'kind' -Arguments @('load', 'docker-image', $script:RunnerImage, '--name', $cluster) -LogName "$cluster-load-runner.txt" | Out-Null
         Invoke-Tool -File 'kind' -Arguments @('load', 'docker-image', 'alpine/git:2.45.2', '--name', $cluster) -LogName "$cluster-load-git.txt" | Out-Null
     }
+}
+
+function Save-SourceState {
+    $paths = (Invoke-Tool -File 'git' -Arguments @('-c', 'core.quotePath=false', 'ls-files')).Trim() -split "`r?`n" | Where-Object { $_ -and $_ -notlike 'docs/*' -and $_ -ne 'README.md' } | Sort-Object
+    $files = @($paths | ForEach-Object { [ordered]@{ path = $_; sha256 = (Get-FileHash -LiteralPath (Join-Path $script:RepoRoot $_) -Algorithm SHA256).Hash.ToLower() } })
+    $canonical = ($files | ForEach-Object { "$($_.path)=$($_.sha256)" }) -join "`n"
+    $hash = [Security.Cryptography.SHA256]::Create()
+    try { $fingerprint = ([BitConverter]::ToString($hash.ComputeHash([Text.Encoding]::UTF8.GetBytes($canonical)))).Replace('-', '').ToLower() } finally { $hash.Dispose() }
+    [ordered]@{ head = (Invoke-Tool -File 'git' -Arguments @('rev-parse', 'HEAD')).Trim(); workingTree = (Invoke-Tool -File 'git' -Arguments @('status', '--porcelain')); runtimeSourceSHA256 = $fingerprint; files = $files } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $script:ArtifactRoot 'source-state.json') -Encoding UTF8
+}
+
+function Save-ImageEvidence {
+    $pods = Get-KubeJson -Arguments @('get', 'pods', '-n', 'platform-system')
+    foreach ($pod in $pods.items) {
+        foreach ($container in $pod.spec.containers) {
+            if ($container.image -notin @($script:ManagerImage, $script:RunnerImage)) { continue }
+            $statuses = $pod.status.PSObject.Properties['containerStatuses']
+            if (-not $statuses) { continue }
+            $status = @($statuses.Value | Where-Object { $_.name -eq $container.name }) | Select-Object -First 1
+            if (-not $status -or -not $status.imageID) { continue }
+            $script:ImageObservations["$($pod.metadata.uid)/$($container.name)"] = [ordered]@{ pod = $pod.metadata.name; podUID = $pod.metadata.uid; node = $pod.spec.nodeName; container = $container.name; requestedImage = $container.image; runningImageID = $status.imageID }
+        }
+    }
+    $images = @(@{ component = 'controller'; tag = $script:ManagerImage; dockerfile = 'Dockerfile' }, @{ component = 'terraform-runner'; tag = $script:RunnerImage; dockerfile = 'runner.Dockerfile' }) | ForEach-Object { [ordered]@{ component = $_.component; tag = $_.tag; dockerfile = $_.dockerfile; builtImageID = (Invoke-Tool -File 'docker' -Arguments @('image', 'inspect', '--format', '{{.Id}}', $_.tag)).Trim() } }
+    [ordered]@{ runId = $script:RunId; images = @($images); observedPods = @($script:ImageObservations.Values) } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $script:ArtifactRoot 'image-evidence.json') -Encoding UTF8
+}
+
+function Wait-Stage2Session {
+    $suffix = $script:RunId.ToLower().Replace('-', '')
+    $name = 'stage2-' + $suffix.Substring(0, 16)
+    $bucket = 'pcp-stage2-' + $suffix
+    $script:OwnedBuckets.Add($bucket)
+    $source = New-GitSource -TargetContext $script:TargetAContext -BucketName $bucket -Name 'source-stage2'
+    $source | Add-Member -NotePropertyName URL -NotePropertyValue ($script:SourceA.URL -replace '/[^/]+$', '/source-stage2.git')
+    New-BackendConfig -Name "$name-backend" -Key "stage2/$suffix/environment.tfstate"
+    New-EnvironmentClass -Name "$name-class" -Source $source -BackendConfigName "$name-backend" -RuntimeName "$name-svc"
+    $hold = Join-Path $script:ArtifactRoot 'stage2-hold.flag'
+    'Remove this file after browser acceptance and evidence capture to release owned-resource cleanup.' | Set-Content -LiteralPath $hold -Encoding UTF8
+    [ordered]@{ runId = $script:RunId; managementKubeconfig = $script:ManagementKubeconfig; targetKubeconfig = $script:TargetKubeconfigA; artifactBucket = $script:ArtifactBucket; managedBucket = $bucket; className = "$name-class"; serviceName = "$name-svc"; runtimeNamespace = 'default'; environmentName = $name; stateRoot = $script:StateRoot; holdFile = $hold } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $script:ArtifactRoot 'stage2-session.json') -Encoding UTF8
+    Write-Summary
+    Write-Stage "STAGE2_SESSION_READY $($script:ArtifactRoot)"
+    while (Test-Path -LiteralPath $hold) { Save-ImageEvidence; Start-Sleep -Seconds 10 }
 }
 
 function Prepare-GitImage {
@@ -315,6 +360,7 @@ function Install-Manager {
     } | Out-Null
     $ready = Invoke-Kubectl -Arguments @('get', 'deployment/platform-control-plane', '-n', 'platform-system', '-o', 'jsonpath={.status.readyReplicas}')
     if ($ready.Trim() -ne '2') { throw "manager deployment is not fully ready: $ready" }
+    Save-ImageEvidence
 }
 
 function New-GitSource {
@@ -436,6 +482,7 @@ function Wait-Plan {
         return $null
     }
     if ($plan.status.executionOutcome -notin @('ChangesPresent', 'NoChange')) { throw "Expected terminal Plan outcome, got $($plan.status.executionOutcome)" }
+    Save-ImageEvidence
     return $plan
 }
 
@@ -746,7 +793,12 @@ function Cleanup {
     foreach ($cluster in $script:OwnedClusters) { try { Invoke-Tool -File 'kind' -Arguments @('delete', 'cluster', '--name', $cluster) -AllowedExitCodes @(0, 1) | Out-Null } catch {} }
     if ($script:OriginalGitImageID) { try { Invoke-Tool -File 'docker' -Arguments @('tag', $script:OriginalGitImageID, 'alpine/git:2.45.2') | Out-Null } catch {} }
     if ($script:OwnedGitImage) { try { Invoke-Tool -File 'docker' -Arguments @('image', 'rm', $script:OwnedGitImage) -AllowedExitCodes @(0, 1) | Out-Null } catch {} }
-    if (-not $KeepArtifacts -and (Test-Path $script:StateRoot)) { Remove-Item -LiteralPath $script:StateRoot -Recurse -Force -ErrorAction SilentlyContinue }
+    if (-not $KeepArtifacts -and (Test-Path -LiteralPath $script:StateRoot)) {
+        $resolved = (Resolve-Path -LiteralPath $script:StateRoot).Path
+        $expected = [IO.Path]::GetFullPath((Join-Path ([IO.Path]::GetTempPath()) ('pcp-stage1-e2e-' + $script:RunId)))
+        if ($resolved -ne $expected) { throw "Refusing cleanup outside this run's verified temporary directory: $resolved" }
+        Remove-Item -LiteralPath $resolved -Recurse -Force -ErrorAction SilentlyContinue
+    }
 }
 
 function Verify-Cleanup {
@@ -806,6 +858,10 @@ try {
         if ($Suite -in @('all', 'multitarget')) { Invoke-MultiTarget }
         if ($Suite -in @('all', 'failclosed')) { Invoke-FailClosed }
         $script:SuiteCompleted = $true
+        if ($Stage2Session) {
+            if ($Suite -ne 'all') { throw 'Stage2Session requires the full Stage 1 suite (-Suite all).' }
+            Wait-Stage2Session
+        }
     }
 } catch {
     Write-Host $_.Exception.Message -ForegroundColor Red

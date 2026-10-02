@@ -1,0 +1,303 @@
+﻿{
+    "head":  "d1bb98e82778346b85484a1ddf4383dff99fac33",
+    "workingTree":  " M e2e/Run-Stage1E2E.ps1\n M internal/console/console_test.go\n M internal/console/readmodel.go\n M web/src/App.tsx\n?? artifacts/\n?? \"docs/\\303\\251\\302\\252\\305\\222\\303\\246\\342\\200\\235\\302\\266\\303\\250\\302\\257\\302\\201\\303\\246\\302\\215\\302\\256/\"",
+    "runtimeSourceSHA256":  "d5c4227432ba9765cbbf6a4b841535f8083bcd528699ccd68414c65ee9e615b2",
+    "files":  [
+                  {
+                      "path":  ".dockerignore",
+                      "sha256":  "662c3ae8fc9af3f4215ecf3436d5fcaa52b5d58f73912c5a3845372b89dc477a"
+                  },
+                  {
+                      "path":  ".gitignore",
+                      "sha256":  "80e84c24b008631ccc2e0a23faa0eb62eb1f04ae8bc841fde4612aa75a05193c"
+                  },
+                  {
+                      "path":  "api/v1alpha1/deepcopy_helpers.go",
+                      "sha256":  "399bb624f88a6776418ca43f11fce5776a0b00dabf3d631c1408aecdb6a43097"
+                  },
+                  {
+                      "path":  "api/v1alpha1/groupversion_info.go",
+                      "sha256":  "1699741a8f9259ea1690116f94b0f69134a4da426c9981401565655c977b3beb"
+                  },
+                  {
+                      "path":  "api/v1alpha1/types.go",
+                      "sha256":  "156fc62c086b503f1dbe3cd6b060e3986b67961c3e60c13d74fd0f782ac1072a"
+                  },
+                  {
+                      "path":  "api/v1alpha1/zz_generated.deepcopy.go",
+                      "sha256":  "1e54a457be173c6d4636570b0c63c7de64a2925f618a2e790a5bd59532e1daaa"
+                  },
+                  {
+                      "path":  "cmd/controller/main.go",
+                      "sha256":  "5e8cf082d346dc3c11dafb0a8dcbc8c518371a1bcebdce844a29e38ab8367bb4"
+                  },
+                  {
+                      "path":  "cmd/platform-api/main.go",
+                      "sha256":  "848aa471951e8ff4f00ff8316750a77e70f1c8283de5d4ceaa203028338613a6"
+                  },
+                  {
+                      "path":  "cmd/terraform-runner/main.go",
+                      "sha256":  "98da5bebf5c52489e3d1f2db678eb15746e111f9218481e57e46f532f357634e"
+                  },
+                  {
+                      "path":  "cmd/terraform-runner/main_test.go",
+                      "sha256":  "0f5f9e4ccd63f4cef7ba087ef55f0698500831277f2b38bbf37bddf73b6ce00a"
+                  },
+                  {
+                      "path":  "config/crd/bases/platform.example.io_changeapprovals.yaml",
+                      "sha256":  "9204cbf80ce208226bde2512a30038c33f3710f968b438ca1d1636ce0af14310"
+                  },
+                  {
+                      "path":  "config/crd/bases/platform.example.io_environmentclasses.yaml",
+                      "sha256":  "baf99d3a562658ed86530532583a0e639be88198c464991a445f4f8c854b4ddc"
+                  },
+                  {
+                      "path":  "config/crd/bases/platform.example.io_infrastacks.yaml",
+                      "sha256":  "fa1336c25908d40f179e64c6e35638e112b30e4ffea1a29cb14a812d3a24d255"
+                  },
+                  {
+                      "path":  "config/crd/bases/platform.example.io_platformenvironments.yaml",
+                      "sha256":  "194464f8c65031a8f57f6cf8109132b4766b3ed0a4f669fb306fcf54e2936c1e"
+                  },
+                  {
+                      "path":  "config/crd/bases/platform.example.io_resourcesets.yaml",
+                      "sha256":  "7df4cd464b0fd8f202bdd23201b88165134823caaf4b678da8bb6c0c498efc3b"
+                  },
+                  {
+                      "path":  "config/crd/bases/platform.example.io_terraformruns.yaml",
+                      "sha256":  "1a7b0e3b066fb465a6fa068b5fb784bbba43ef743d4779951261e4dc009db23e"
+                  },
+                  {
+                      "path":  "config/crd/bases/platform.example.io_valkeyclusters.yaml",
+                      "sha256":  "619edc4373f97430587f70cda6e268a6b9fc51982832d744894b252e5162fb3b"
+                  },
+                  {
+                      "path":  "config/manager/manager.yaml",
+                      "sha256":  "78e758a16d0a7b1d8bbb29965fa4b9dde0f64f297c538a30f41612f66ffe509a"
+                  },
+                  {
+                      "path":  "config/manager/namespace.yaml",
+                      "sha256":  "73e017aaa7c20dd35707ef5ada3c11bef0ddc189af5909d190438ed3ad3bb426"
+                  },
+                  {
+                      "path":  "config/manager/networkpolicy.yaml",
+                      "sha256":  "61685f969d6020b8f188fc57851c110bd8c518b09abfaf2e89616dcc79eac5ee"
+                  },
+                  {
+                      "path":  "config/rbac/role.yaml",
+                      "sha256":  "58d9fcf90b1ccc87313eadfc54b52e7573bd6067e20b17fb77275771588cf590"
+                  },
+                  {
+                      "path":  "config/rbac/role_binding.yaml",
+                      "sha256":  "e94a6e0d70a57757936764a0eb5ce7e813f86c624164365052b74db93261a768"
+                  },
+                  {
+                      "path":  "config/rbac/service_account.yaml",
+                      "sha256":  "5f6e9267c45696ec77006989ce20380f72d72b8a8d3e879aeb4b522b274596e0"
+                  },
+                  {
+                      "path":  "config/rbac/tenant-roles.yaml",
+                      "sha256":  "e0194c39977e19583ba21e25414355d54affe7dbac538c7330a311d1ee859bae"
+                  },
+                  {
+                      "path":  "Dockerfile",
+                      "sha256":  "4c4c10a389712d6cdc3290e75360726551b9de7eb3720f8ea8231430120fe59a"
+                  },
+                  {
+                      "path":  "e2e/Run-Stage1E2E.ps1",
+                      "sha256":  "519a1ba7168c34dc3c9e05c85aea5e589d11e4454f437617d6ce689b30587838"
+                  },
+                  {
+                      "path":  "go.mod",
+                      "sha256":  "0aebab65aeba1d4a1f2a7cfcae4fb4690de2ffe1476ee8f6959128c2cca96a2a"
+                  },
+                  {
+                      "path":  "go.sum",
+                      "sha256":  "b202f5d0d61241bfb4662ae6dee084b49ee1703863f7a3cc2201efe646a4302a"
+                  },
+                  {
+                      "path":  "internal/artifacts/s3.go",
+                      "sha256":  "06e7dbd174bf1b880563931d2b18e970f698429cd932a5f9e0f461ccad61115a"
+                  },
+                  {
+                      "path":  "internal/console/ai.go",
+                      "sha256":  "e61ab10c0cc622002c9a5137f3844a9efb9ba38bcadbc41adb3e5a4c02822417"
+                  },
+                  {
+                      "path":  "internal/console/console_test.go",
+                      "sha256":  "96e33baeb26778fc064353a113cc8b14ae8addf9f0b1978db5358943b425dcfb"
+                  },
+                  {
+                      "path":  "internal/console/readmodel.go",
+                      "sha256":  "3a12834fa829aebf4d184036301867d58d7bd9bdc8b22b5413f7474a72927a1f"
+                  },
+                  {
+                      "path":  "internal/console/server.go",
+                      "sha256":  "cc289168db8f0119a98035e8fab5d5cfa1672e3e3dd408e53ef123973db747d3"
+                  },
+                  {
+                      "path":  "internal/controller/conditions.go",
+                      "sha256":  "03e0c0adf1efb9008df3e84695c7dbbe4ea53d2450a2b57f5338f7877c6d82d7"
+                  },
+                  {
+                      "path":  "internal/controller/environmentclass.go",
+                      "sha256":  "062e860e84348aeb164f67b9aefd3adfc01e9e3a45ae85d1e6a35273b70d5606"
+                  },
+                  {
+                      "path":  "internal/controller/environmentclass_controller.go",
+                      "sha256":  "fccea58f99880014816131cee25d799c034658d126c3b12f87210249d36bb1a0"
+                  },
+                  {
+                      "path":  "internal/controller/infrastack_controller.go",
+                      "sha256":  "1afdeba88c813a42d131c45ecbc29e12e5bb842aae8bcdaa7ff7bef931b16d58"
+                  },
+                  {
+                      "path":  "internal/controller/platformenvironment_controller.go",
+                      "sha256":  "bf52afa6ec582123651505a4d697aa6b8a66c6e140989519151ac9eff70c48a1"
+                  },
+                  {
+                      "path":  "internal/controller/resourceset_controller.go",
+                      "sha256":  "27d11691f000a3dd05c3eddb6b0f7cca81231d7329115da7081d0555a63340c1"
+                  },
+                  {
+                      "path":  "internal/controller/terraformrun_controller.go",
+                      "sha256":  "b665feda600c9a6080e082cd6d106591b5e9a36e0b3ca1150c8d13358117e13f"
+                  },
+                  {
+                      "path":  "internal/controller/terraformrun_reconstruction.go",
+                      "sha256":  "487f11a0cbde8265189796c2d818885ebf0b5f8dd279bbe3cfce770bed0c4964"
+                  },
+                  {
+                      "path":  "internal/observability/metrics.go",
+                      "sha256":  "33c0e7faeec14c037c2af7dd38a9dccc60ce59d6084d1b91f24ee50d9a3b1de9"
+                  },
+                  {
+                      "path":  "internal/planview/plan.go",
+                      "sha256":  "ac2faeaf3ad91c284f3a320bf74550a2a79b349e303ec7306a6e6d5d8a5cb200"
+                  },
+                  {
+                      "path":  "internal/planview/plan_test.go",
+                      "sha256":  "3209ca1d90aa2767515b5eb6be7e8469265a8da4f09663b0ddc2a46fd6b412f8"
+                  },
+                  {
+                      "path":  "internal/reliability/gate.go",
+                      "sha256":  "113d03e2b90f0520418aac48709fa96e5479aff6a822a865057a86200122ac05"
+                  },
+                  {
+                      "path":  "internal/runtime/bootstrap.go",
+                      "sha256":  "662c1f309c481bbbf65a99188baa5af2f528c3bdbe58e228fc85c30c04564759"
+                  },
+                  {
+                      "path":  "internal/runtime/readiness.go",
+                      "sha256":  "bd551915e6fa82865873d4f85b6ebdfd1f4fd4be7013255cc878582bdd3bd656"
+                  },
+                  {
+                      "path":  "internal/runtime/runtime.go",
+                      "sha256":  "747874d561a2248677af1d2bbaa75c2ffdd4f4d48431eab4ed1296d4d70391d9"
+                  },
+                  {
+                      "path":  "internal/target/aws_adapters.go",
+                      "sha256":  "4a647706cccbab4500b1cea979fb80e9f5e772fd1da5d47980d08e4a0de92f2a"
+                  },
+                  {
+                      "path":  "internal/target/discovery.go",
+                      "sha256":  "637b7054de14163ca04211c38e938c9dc7b9c0ca775fc858d03140090adfb091"
+                  },
+                  {
+                      "path":  "internal/target/eks_resolver.go",
+                      "sha256":  "e8aabfd54c293478d75234eb0d931da0cd9d0360499a55776e7e95ae4e1a437f"
+                  },
+                  {
+                      "path":  "internal/target/factory.go",
+                      "sha256":  "0659bf1e22e8cfbdd784a1fe35ef94f24729b1daf29175ac2267e85a96d6163e"
+                  },
+                  {
+                      "path":  "internal/target/identity.go",
+                      "sha256":  "3be9ad7be33d8b751d67fb7bc5804c2a3956b645e96d6fbb08fadd79cabe0422"
+                  },
+                  {
+                      "path":  "internal/terraform/executor.go",
+                      "sha256":  "3d033b8181fd7009491bce543076691e8949dae90bf3c21eaccfc2b51eefcd42"
+                  },
+                  {
+                      "path":  "internal/terraform/executor_test.go",
+                      "sha256":  "f2b587e586fee2187a01766e6d1b659da0cf95ea23dc8074840348396e8fd12a"
+                  },
+                  {
+                      "path":  "internal/terraform/identity.go",
+                      "sha256":  "ea72a2fcc04cfe82694ae24285b0b1d17771c776d1c96f8c245433d8d062fbe8"
+                  },
+                  {
+                      "path":  "internal/terraform/job.go",
+                      "sha256":  "662568a94ac5b140406c979d62ada4077aa2df059dda6bcf6c3dd8883764e1f9"
+                  },
+                  {
+                      "path":  "internal/terraform/sourcebundle.go",
+                      "sha256":  "2695986954d62fc5136c4909b0a7bc17b18e499c41d30f6986200cffc44b37d8"
+                  },
+                  {
+                      "path":  "internal/terraform/sourcebundle_test.go",
+                      "sha256":  "cdfa4d58ddf7ee369ad99d64023310ce1fdabf4903ab4e47ebae4c6bc1ac1d56"
+                  },
+                  {
+                      "path":  "LICENSE",
+                      "sha256":  "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6"
+                  },
+                  {
+                      "path":  "Makefile",
+                      "sha256":  "0d48f42557dc744c5f97093a1b9163485bdae5bd162436cf51df67661bbf1430"
+                  },
+                  {
+                      "path":  "runner.Dockerfile",
+                      "sha256":  "f9fc4cf2e0891f13b8cb774b45d6e4b1a1c3df8600a4b3190fee3ea82aaf59b4"
+                  },
+                  {
+                      "path":  "test/fixtures/terraform/localstack-basic/.terraform.lock.hcl",
+                      "sha256":  "308e7eb06178be13639e24174f3ad443b17b5f74a93c2ccf97980d091422351b"
+                  },
+                  {
+                      "path":  "test/fixtures/terraform/localstack-basic/main.tf",
+                      "sha256":  "9c72a56d4e4d13ad3fecd0bf0b3d425c0f069dba5320af5e4babb1f6d3df4d71"
+                  },
+                  {
+                      "path":  "test/fixtures/terraform/localstack-basic/variables.tf",
+                      "sha256":  "fae6b5517983dbd14e6b993546c7c38dc32b6126c7e5bf323b9986690dc0eef4"
+                  },
+                  {
+                      "path":  "web/index.html",
+                      "sha256":  "73fb2054138c5557f487631fd338ecb352fdf817e2fc0d6823396b1ddc100187"
+                  },
+                  {
+                      "path":  "web/package.json",
+                      "sha256":  "34f0e741c4f104e986ddfd3029fd5dfa7a2c3274f85f74a021b3f2d5610d401a"
+                  },
+                  {
+                      "path":  "web/package-lock.json",
+                      "sha256":  "88e63ae7cf9360aa4d54f68452d96295a0eac8a62af9308d2b2693ecf1d44c49"
+                  },
+                  {
+                      "path":  "web/src/api.ts",
+                      "sha256":  "08af48798715ac2a25e8b50afb54cc5d81a5d75e6ca92b70ee34ac9496e00f0f"
+                  },
+                  {
+                      "path":  "web/src/App.tsx",
+                      "sha256":  "e9bc34966219cbb12c98c6a9484b7fa5df8f9c22d6dd0b3741776100efcd7118"
+                  },
+                  {
+                      "path":  "web/src/main.tsx",
+                      "sha256":  "1bc96e7259b2a03be76f16192b302b484a79d574ad26ec513b99fa4681839efe"
+                  },
+                  {
+                      "path":  "web/src/styles.css",
+                      "sha256":  "8eba36109b9657b390326f2fb39d671b7d3c5d038bc34f319c3c6317bdc1bf0f"
+                  },
+                  {
+                      "path":  "web/tsconfig.json",
+                      "sha256":  "56b55683999ce35f13f4600db77a832dc8bc393ee7c35d2f4582a7fcb9f4ac2a"
+                  },
+                  {
+                      "path":  "web/vite.config.ts",
+                      "sha256":  "a0ecd1627680b2d029bf47199e5f80764e56a7484d862cf83195c134b7e17288"
+                  }
+              ]
+}

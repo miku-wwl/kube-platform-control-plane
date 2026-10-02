@@ -1,0 +1,2 @@
+npm notice run platform-console@0.1.0 lint
+npm notice run tsc --noEmit

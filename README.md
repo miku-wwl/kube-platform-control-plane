@@ -27,6 +27,13 @@ STAGE2_ADVANCED_EXPERIENCE = PASS_LOCAL
 
 Stage 1 is frozen and was validated with LocalStack Ultimate, Kind, Terraform CLI, and local Kubernetes controllers. Stage 2 adds a local operator console above the existing engine. Its browser-driven draft, create, exact Plan approval, Apply, Ready, update, and delete/Destroy lifecycle passed locally with Foundry Local inference and current-source images. Stage 3 and real AWS validation have not started.
 
+The 2026-10-02 closure run passed all 13 acceptance gates: a fresh full Stage 1 regression exited zero, initial and final quality checks passed, and owned test resources were cleaned. Source snapshots and running Pod identities tie both local runs to the delivered code.
+
+- [第二阶段本地端到端验收报告](docs/第二阶段本地端到端验收报告.md): 7 test cases, methods, results, and 14 real browser screenshots.
+- [第二阶段收官差距评审](docs/第二阶段收官差距评审.md): all five original gaps resolved; the initial review is preserved as history.
+- [本轮收官证据索引](docs/验收证据/20261002收官/本轮证据索引.md): source/build identity, command exits, exact approval bindings, live model checks, and cleanup queries.
+- [项目文档清单](docs/项目文档清单.md): current documents and evidence entry points.
+
 Validated locally:
 
 - PlatformEnvironment creation and InfraStack/TerraformRun reconciliation

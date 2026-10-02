@@ -1,0 +1,36 @@
+[22:11:05] Checking local toolchain
+[22:11:06] Checking external LocalStack at http://localhost:4566
+[22:11:11] Creating Kind cluster pcp-e2e-20261002091105bcba191a-management
+[22:11:58] Creating Kind cluster pcp-e2e-20261002091105bcba191a-target-a
+[22:12:43] Creating Kind cluster pcp-e2e-20261002091105bcba191a-target-b
+[22:13:36] Building platform-control-plane:local-20261002091105-bcba191a and platform-terraform-runner:local-20261002091105-bcba191a
+[22:17:24] Installing CRDs, RBAC, and controller into management Kind
+[22:18:31] Restarting leader manager Pod platform-control-plane-7689576fd8-vhr7w while Terraform Plan Job stage1-20261002091105bcba191a-infra-plan-1 is active
+FULL_LIFECYCLE PASS
+[22:21:25] Restarting leader manager Pod platform-control-plane-7689576fd8-r8bjd after EnvironmentReady to verify reconstruction
+RESTART_RECOVERY PASS
+UPDATE_RUNTIME PASS
+[22:24:54] Deleting stage1-20261002091105bcba191a and completing destroy lifecycle
+[22:24:54] Waiting for ResourceSet prune stage1-svc-20261002091105bcba191a
+[22:24:55] Waiting for Terraform Destroy Plan
+[22:26:41] Approving and waiting for Terraform Destroy Apply
+[22:27:55] Waiting for LocalStack managed bucket removal
+[22:27:57] Waiting for PlatformEnvironment finalizer removal
+UPDATE_DELETE PASS
+MULTI_TARGET PASS
+[22:33:57] Deleting multi-env-a-202610020911 and completing destroy lifecycle
+[22:33:58] Waiting for ResourceSet prune multi-svc-a-202610020911
+[22:33:58] Waiting for Terraform Destroy Plan
+[22:35:32] Approving and waiting for Terraform Destroy Apply
+[22:36:44] Waiting for LocalStack managed bucket removal
+[22:36:45] Waiting for PlatformEnvironment finalizer removal
+[22:36:46] Deleting multi-env-b-202610020911 and completing destroy lifecycle
+[22:36:46] Waiting for ResourceSet prune multi-svc-b-202610020911
+[22:36:47] Waiting for Terraform Destroy Plan
+[22:38:23] Approving and waiting for Terraform Destroy Apply
+[22:39:34] Waiting for LocalStack managed bucket removal
+[22:39:35] Waiting for PlatformEnvironment finalizer removal
+FAIL_CLOSED PASS
+[22:39:40] Cleaning only resources owned by this E2E run
+CLEANUP PASS
+STAGE1_E2E PASS

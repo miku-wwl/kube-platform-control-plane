@@ -1,0 +1,110 @@
+{
+  "runId": "20261002045552-909ca16f",
+  "capturedAtUTC": "2026-10-02T08:59:38.3334751Z",
+  "images": [
+    {
+      "component": "controller",
+      "tag": "platform-control-plane:local-20261002045552-909ca16f",
+      "builtOCIIndexDigest": "sha256:aa86e7e9a0f4eed91f03c2d9c1af5449f8527916da0904b2c4f979029afc565d",
+      "actualPodImageID": "docker.io/library/import-2026-10-02@sha256:7f6c65b431da5edf933409fb91ec44b2884724f8b2412df17b40a09addaeb1bc",
+      "node": "pcp-e2e-20261002045552909ca16f-management-control-plane",
+      "builtIndexIncludedByRunningIndex": true,
+      "kindImportIndex": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.index.v1+json",
+        "manifests": [
+          {
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "digest": "sha256:aa86e7e9a0f4eed91f03c2d9c1af5449f8527916da0904b2c4f979029afc565d",
+            "size": 856,
+            "annotations": {
+              "io.containerd.image.name": "docker.io/library/platform-control-plane:local-20261002045552-909ca16f",
+              "org.opencontainers.image.ref.name": "local-20261002045552-909ca16f"
+            }
+          }
+        ]
+      },
+      "builtIndex": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.index.v1+json",
+        "manifests": [
+          {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:77f947e5c0f929551e9042d6759f4388e1823f0d2fe9f3c1f9b5eab8b038902d",
+            "size": 2940,
+            "platform": {
+              "architecture": "amd64",
+              "os": "linux"
+            }
+          },
+          {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:ddc8205c6a441257b892a209efe6c4431979ac1940a7e8138d803e52ed1a2ed5",
+            "size": 837,
+            "annotations": {
+              "vnd.docker.reference.digest": "sha256:77f947e5c0f929551e9042d6759f4388e1823f0d2fe9f3c1f9b5eab8b038902d",
+              "vnd.docker.reference.type": "attestation-manifest"
+            },
+            "platform": {
+              "architecture": "unknown",
+              "os": "unknown"
+            }
+          }
+        ]
+      },
+      "observedPodCount": 4
+    },
+    {
+      "component": "terraform-runner",
+      "tag": "platform-terraform-runner:local-20261002045552-909ca16f",
+      "builtOCIIndexDigest": "sha256:398f7fb1ca87ecf5aecbd3bbf337c3cdf4d6d0a8160b0f8b69bd62b49f276c7a",
+      "actualPodImageID": "docker.io/library/import-2026-10-02@sha256:bab2f1fd15a71aaa8ab2990f506d15182deae504acbf23d416e4f68712d4378e",
+      "node": "pcp-e2e-20261002045552909ca16f-management-control-plane",
+      "builtIndexIncludedByRunningIndex": true,
+      "kindImportIndex": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.index.v1+json",
+        "manifests": [
+          {
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "digest": "sha256:398f7fb1ca87ecf5aecbd3bbf337c3cdf4d6d0a8160b0f8b69bd62b49f276c7a",
+            "size": 856,
+            "annotations": {
+              "io.containerd.image.name": "docker.io/library/platform-terraform-runner:local-20261002045552-909ca16f",
+              "org.opencontainers.image.ref.name": "local-20261002045552-909ca16f"
+            }
+          }
+        ]
+      },
+      "builtIndex": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.index.v1+json",
+        "manifests": [
+          {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:4f5a4f972ab1dbd6d7e892d479b2bb157f53de13f8f27fe7efbfe8cf97fb7270",
+            "size": 1248,
+            "platform": {
+              "architecture": "amd64",
+              "os": "linux"
+            }
+          },
+          {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:e9426a636fbc88b4c458202e9ffb08598770e1c02d1f4606921bc65884909112",
+            "size": 837,
+            "annotations": {
+              "vnd.docker.reference.digest": "sha256:4f5a4f972ab1dbd6d7e892d479b2bb157f53de13f8f27fe7efbfe8cf97fb7270",
+              "vnd.docker.reference.type": "attestation-manifest"
+            },
+            "platform": {
+              "architecture": "unknown",
+              "os": "unknown"
+            }
+          }
+        ]
+      },
+      "observedPodCount": 16
+    }
+  ]
+}

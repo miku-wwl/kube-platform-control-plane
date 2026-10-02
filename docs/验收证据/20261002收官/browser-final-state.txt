@@ -1,0 +1,44 @@
+2026-10-02T09:01:09.411Z
+Browser tab: 1, Title: "Platform Control Plane", URL: "http://127.0.0.1:5173/".
+0 AXWebArea Platform Control Plane, URL: 127.0.0.1:5173/
+	1 container root
+		2 container
+			3 text P
+			4 button ◫ Environments
+				5 text ◫
+				6 text Environments
+			7 text LOCAL MODE
+		8 container
+			9 text PLATFORM ENGINEERING / LOCAL
+			10 heading Environments, Value: 1
+				11 text Environments
+			12 button ↻, Help: Refresh
+			13 button ＋ New environment ＋
+				14 text ＋ New environment
+				40 text ＋
+			16 text CONTROL PLANE OVERVIEW
+			17 heading Understand every environment, from intent to runtime., Value: 2
+				18 text Understand every environment,
+				19 text from intent to runtime.
+			20 text Live read model from the Kubernetes-native control plane.
+			21 container
+				22 text K8s  ↗  IaC
+			23 container
+				24 text ◫ TOTAL ENVIRONMENTS 0 ◫
+			25 container
+				26 text ✓ READY 0 ✓
+			27 container
+				28 text ◇ AWAITING APPROVAL 0 ◇
+			29 container
+				30 text ⌁ CONTROL PLANE ONLINE ⌁
+			31 text YOUR FLEET
+			32 heading Platform environments 0, Value: 3
+				33 text Platform environments  0
+			34 button ＋ Create environment
+			35 text ⌘
+			36 text No environments yet
+			37 text Start with a typed EnvironmentClass and a reviewed draft.
+			38 button Open platform builder
+			39 text Live status Refreshes every 8 seconds ◈ Kubernetes is the source of truth. AI proposes · API validates · controllers reconcile · Terraform executes.
+
+The focused UI element is 0 AXWebArea Platform Control Plane, URL: 127.0.0.1:5173/

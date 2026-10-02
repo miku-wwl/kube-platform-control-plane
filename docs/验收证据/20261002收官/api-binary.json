@@ -1,0 +1,7 @@
+{
+  "runtimeSourceSHA256": "d5c4227432ba9765cbbf6a4b841535f8083bcd528699ccd68414c65ee9e615b2",
+  "binarySHA256": "7ef0f445e6f75e0f646cf8db77b4fb9fb6a5d9ab8f3b0b91352a5b07bde20952",
+  "command": "go build -o artifacts/validation/platform-api.exe ./cmd/platform-api",
+  "exitCode": 0,
+  "builtAtUTC": "2026-10-02T05:08:25.4257676Z"
+}

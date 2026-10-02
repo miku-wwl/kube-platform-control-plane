@@ -1,0 +1,177 @@
+{
+  "runId": "20261002045552-909ca16f",
+  "phase": "DestroyPlan",
+  "capturedAtUTC": "2026-10-02T05:36:22.9611271Z",
+  "environmentName": "stage2-2026100204555290",
+  "namespace": "platform-system",
+  "checks": {
+    "environmentExists": true,
+    "planExists": true,
+    "planChangesPresent": true,
+    "noApplyBeforeApproval": true,
+    "bucketExpectedState": true,
+    "deletionTimestampPresent": true,
+    "runtimePrunedBeforeDestroy": true,
+    "destroyPreviewOneDelete": true
+  },
+  "environment": {
+    "uid": "c71ec297-9b70-4d42-9e39-559691b8df2c",
+    "generation": 3,
+    "deletionTimestamp": "2026-10-02T05:34:47Z",
+    "spec": {
+      "capacity": {
+        "nodeCount": 2
+      },
+      "classRef": {
+        "name": "stage2-2026100204555290-class"
+      },
+      "desiredState": "Present",
+      "infraStackRef": {
+        "name": ""
+      },
+      "region": "local",
+      "target": {
+        "clusterName": "",
+        "provider": ""
+      },
+      "valkey": {}
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastTransitionTime": "2026-10-02T05:34:47Z",
+          "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal.",
+          "observedGeneration": 3,
+          "reason": "Deleting",
+          "status": "False",
+          "type": "Ready"
+        }
+      ],
+      "infraStackRef": {
+        "name": "stage2-2026100204555290-infra"
+      },
+      "observedGeneration": 3,
+      "resourceSetRef": {
+        "name": "stage2-2026100204555290-resources"
+      },
+      "targetConnection": {
+        "authMode": "kind-context",
+        "endpoint": "kubeconfig:kind-pcp-e2e-20261002045552909ca16f-target-a",
+        "kubeContext": "kind-pcp-e2e-20261002045552909ca16f-target-a",
+        "networkRouteProfile": "local-kind"
+      },
+      "targetIdentity": {
+        "accountID": "local",
+        "clusterName": "kind-pcp-e2e-20261002045552909ca16f-target-a",
+        "incarnationID": "kind-pcp-e2e-20261002045552909ca16f-target-a",
+        "provider": "kind",
+        "region": "local"
+      }
+    }
+  },
+  "plan": {
+    "name": "stage2-2026100204555290-infra-destroy-plan-4",
+    "uid": "5025d7b8-24c3-4e60-b037-b292ac187faf",
+    "mode": "Destroy",
+    "outcome": "ChangesPresent",
+    "status": {
+      "artifactsReady": true,
+      "conditions": [
+        {
+          "lastTransitionTime": "2026-10-02T05:36:19Z",
+          "message": "Terraform runner terminal result captured.",
+          "observedGeneration": 1,
+          "reason": "TerraformSucceeded",
+          "status": "True",
+          "type": "Ready"
+        }
+      ],
+      "effectivePlanInputDigest": "sha256:ece74b92cdfb8172e35e0abc28672cab074f484cde806c62b38b76ff27e9ab88",
+      "evidenceCaptured": true,
+      "executionOutcome": "ChangesPresent",
+      "hasChanges": true,
+      "jobRef": {
+        "name": "stage2-2026100204555290-infra-destroy-plan-4"
+      },
+      "jobUID": "5c3efbeb-1d85-4935-b599-0e2955f364ba",
+      "mutationClassification": "NoMutation",
+      "observedGeneration": 1,
+      "planCreatedAt": "2026-10-02T05:36:04Z",
+      "planDigest": "sha256:cc5eba61eab25a6e92717e1bbb987c0cb9d8e5099a6a84c4481d1318b369930b",
+      "planExpiresAt": "2026-10-02T06:36:04Z",
+      "planRef": "runs/5025d7b8-24c3-4e60-b037-b292ac187faf/plan.binary",
+      "planReportDigest": "sha256:4d62f8798b02d36e798781d5f345371f80cba38793119232afedf67c3280e3b8",
+      "planReportRef": "runs/5025d7b8-24c3-4e60-b037-b292ac187faf/plan-report.json",
+      "resolvedBackendConfigDigest": "sha256:9f626a0949b6cb3e43f400d2520c987b9f5eed7f37cf06dca49fd1d98bdc6525",
+      "resolvedBackendConfigRef": "runs/5025d7b8-24c3-4e60-b037-b292ac187faf/backend-config.hcl",
+      "sourceBundleDigest": "sha256:dde4057c8bdf941d540fef0a5a3d4fd5a87b5996d70b30ca4a979802484cdef8",
+      "sourceBundleRef": "runs/5025d7b8-24c3-4e60-b037-b292ac187faf/source-bundle.tar.zst",
+      "terminalFinishedAt": "2026-10-02T05:36:04Z",
+      "terminalResultDigest": "sha256:ce18a006899ce469dfd10d347af31ca302a30e6d432ead40e9d018c9858f3c46",
+      "terminalResultRef": "runs/5025d7b8-24c3-4e60-b037-b292ac187faf/terminal-result.json",
+      "terminalStartedAt": "2026-10-02T05:34:49Z"
+    }
+  },
+  "bucket": {
+    "command": "awslocal s3api head-bucket --bucket pcp-stage2-20261002045552909ca16f",
+    "exitCode": 0,
+    "output": "{\n    \"BucketArn\": \"arn:aws:s3:::pcp-stage2-20261002045552909ca16f\",\n    \"BucketRegion\": \"us-east-1\",\n    \"AccessPointAlias\": false\n}",
+    "expectedPresent": true
+  },
+  "planPreview": {
+    "terraformRun": {
+      "namespace": "platform-system",
+      "name": "stage2-2026100204555290-infra-destroy-plan-4",
+      "uid": "5025d7b8-24c3-4e60-b037-b292ac187faf",
+      "operation": "Plan",
+      "planMode": "Destroy",
+      "state": "Ready",
+      "reason": "TerraformSucceeded",
+      "message": "Terraform runner terminal result captured.",
+      "outcome": "ChangesPresent",
+      "hasChanges": true,
+      "planDigest": "sha256:cc5eba61eab25a6e92717e1bbb987c0cb9d8e5099a6a84c4481d1318b369930b",
+      "planRef": "runs/5025d7b8-24c3-4e60-b037-b292ac187faf/plan.binary",
+      "planReportRef": "runs/5025d7b8-24c3-4e60-b037-b292ac187faf/plan-report.json",
+      "planReportDigest": "sha256:4d62f8798b02d36e798781d5f345371f80cba38793119232afedf67c3280e3b8",
+      "effectivePlanInputDigest": "sha256:ece74b92cdfb8172e35e0abc28672cab074f484cde806c62b38b76ff27e9ab88",
+      "executionContextDigest": "sha256:74d5b592e1db13fe676cd980a9f849fd0cea8107533f07a30eb025ebfa2749bc",
+      "planExpiresAt": "2026-10-02T06:36:04Z",
+      "planCreatedAt": "2026-10-02T05:36:04Z",
+      "artifactsReady": true,
+      "evidenceCaptured": true,
+      "terminalStartedAt": "2026-10-02T05:34:49Z",
+      "terminalFinishedAt": "2026-10-02T05:36:04Z",
+      "createdAt": "2026-10-02T05:34:48Z"
+    },
+    "available": true,
+    "message": "Derived from the immutable Terraform plan; informational only.",
+    "graph": {
+      "version": 1,
+      "terraformRunUID": "5025d7b8-24c3-4e60-b037-b292ac187faf",
+      "planDigest": "sha256:cc5eba61eab25a6e92717e1bbb987c0cb9d8e5099a6a84c4481d1318b369930b",
+      "nodes": [
+        {
+          "address": "aws_s3_bucket.lifecycle",
+          "type": "aws_s3_bucket",
+          "provider": "registry.terraform.io/hashicorp/aws",
+          "action": "delete",
+          "before": {
+            "arn": "arn:aws:s3:::pcp-stage2-20261002045552909ca16f",
+            "bucket": "pcp-stage2-20261002045552909ca16f",
+            "id": "pcp-stage2-20261002045552909ca16f",
+            "region": "us-east-1"
+          }
+        }
+      ],
+      "edges": [],
+      "summary": {
+        "create": 0,
+        "update": 0,
+        "delete": 1,
+        "replace": 0,
+        "noOp": 0
+      }
+    }
+  }
+}

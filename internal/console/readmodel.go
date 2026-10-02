@@ -383,7 +383,9 @@ func runView(run *platformv1alpha1.TerraformRun, approvals []*platformv1alpha1.C
 }
 
 func approvalView(approval *platformv1alpha1.ChangeApproval) ApprovalView {
-	state := "Pending"
+	// The immutable object records the human decision. Controller status is
+	// optional and must not make a recorded decision look unsubmitted.
+	state := "Recorded"
 	if approval.Status.ApprovedAt != nil {
 		state = "Approved"
 	} else if condition := findReady(approval.Status.Conditions); condition != nil {
@@ -395,7 +397,7 @@ func matchingApprovals(approvals []platformv1alpha1.ChangeApproval, run *platfor
 	result := make([]*platformv1alpha1.ChangeApproval, 0)
 	for i := range approvals {
 		item := &approvals[i]
-		if item.Namespace == run.Namespace && item.Spec.PlanRunRef.Name == run.Name && item.Spec.PlanRunUID == string(run.UID) {
+		if item.Namespace == run.Namespace && approvalMatchesRun(item, run) {
 			result = append(result, item)
 		}
 	}

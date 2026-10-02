@@ -1,0 +1,10 @@
+{
+  "provider": "foundry-local",
+  "endpoint": "http://127.0.0.1:39839",
+  "modelAlias": "phi-4-mini",
+  "loadedVariant": "Phi-4-mini-instruct-generic-gpu:5",
+  "command": "go test ./internal/console -run TestFoundryLocalLiveDraftScenarios -count=1 -v",
+  "exitCode": 0,
+  "capturedAtUTC": "2026-10-02T05:04:23.7672781Z",
+  "resolvedSetupIssue": "After service restart, model was cached but not loaded; initial HTTP 400 resolved by foundry model load phi-4-mini."
+}

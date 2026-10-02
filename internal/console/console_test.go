@@ -33,6 +33,13 @@ func TestApprovePlanCreatesExactImmutableBinding(t *testing.T) {
 	if response.Code != http.StatusCreated {
 		t.Fatalf("status %d: %s", response.Code, response.Body.String())
 	}
+	var view ApprovalView
+	if err := json.Unmarshal(response.Body.Bytes(), &view); err != nil {
+		t.Fatal(err)
+	}
+	if view.State != "Recorded" || view.ApprovedAt != nil {
+		t.Fatalf("immutable approval should be recorded without invented controller status: %+v", view)
+	}
 	var approvals platformv1alpha1.ChangeApprovalList
 	if err := kubeClient.List(context.Background(), &approvals, client.InNamespace(run.Namespace)); err != nil {
 		t.Fatal(err)
@@ -118,6 +125,22 @@ func TestEnvironmentSummaryRequiresApprovalForChangesPresentPlan(t *testing.T) {
 	summary := environmentSummary(environment, nil, nil, nil, []*platformv1alpha1.TerraformRun{run}, nil)
 	if summary.LatestApproval != "Required" {
 		t.Fatalf("expected approval to be required for ChangesPresent plan, got %q", summary.LatestApproval)
+	}
+}
+
+func TestReadModelIgnoresMismatchedApprovalBinding(t *testing.T) {
+	_, _, run := approvalFixture(t)
+	approval := platformv1alpha1.ChangeApproval{ObjectMeta: metav1.ObjectMeta{Name: "decision", Namespace: run.Namespace}, Spec: platformv1alpha1.ChangeApprovalSpec{
+		PlanRunRef: corev1.LocalObjectReference{Name: run.Name}, PlanRunUID: string(run.UID), PlanDigest: run.Status.PlanDigest,
+		ExecutionContextDigest: run.Spec.ExecutionContextDigest, EffectivePlanInputDigest: run.Status.EffectivePlanInputDigest,
+		PlanReportRef: run.Status.PlanReportRef, PlanReportDigest: run.Status.PlanReportDigest,
+	}}
+	if related := matchingApprovals([]platformv1alpha1.ChangeApproval{approval}, run); len(related) != 1 || runView(run, related).Approval.State != "Recorded" {
+		t.Fatal("valid immutable approval was not displayed as recorded")
+	}
+	approval.Spec.PlanReportDigest = "sha256:stale"
+	if related := matchingApprovals([]platformv1alpha1.ChangeApproval{approval}, run); len(related) != 0 || runView(run, related).Approval != nil {
+		t.Fatal("mismatched approval was displayed as approval of the current plan")
 	}
 }
 

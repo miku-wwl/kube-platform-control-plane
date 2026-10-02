@@ -1,0 +1,10 @@
+=== RUN   TestFoundryLocalLiveDraftScenarios
+=== RUN   TestFoundryLocalLiveDraftScenarios/small_development
+=== RUN   TestFoundryLocalLiveDraftScenarios/cache_and_two_nodes
+=== RUN   TestFoundryLocalLiveDraftScenarios/ambiguous_request
+--- PASS: TestFoundryLocalLiveDraftScenarios (16.66s)
+    --- PASS: TestFoundryLocalLiveDraftScenarios/small_development (6.59s)
+    --- PASS: TestFoundryLocalLiveDraftScenarios/cache_and_two_nodes (5.04s)
+    --- PASS: TestFoundryLocalLiveDraftScenarios/ambiguous_request (5.03s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/console	17.114s

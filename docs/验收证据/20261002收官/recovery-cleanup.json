@@ -1,0 +1,38 @@
+{
+  "runId": "20261002045552-909ca16f",
+  "capturedAtUTC": "2026-10-02T09:07:37.1072609Z",
+  "originalHarnessExit": "NOT OBSERVED: interrupted before final summary",
+  "recoveryCleanup": "PASS",
+  "ownedClusters": [
+    "pcp-e2e-20261002045552909ca16f-management",
+    "pcp-e2e-20261002045552909ca16f-target-a",
+    "pcp-e2e-20261002045552909ca16f-target-b"
+  ],
+  "ownedBuckets": [
+    "pcp-e2e-artifacts-20261002045552909ca16f",
+    "pcp-e2e-20261002045552909ca16f",
+    "pcp-e2e-multi-20261002045552909ca16f-a",
+    "pcp-e2e-multi-20261002045552909ca16f-b",
+    "pcp-stage2-20261002045552909ca16f"
+  ],
+  "ownedClustersRemaining": [],
+  "ownedBucketsRemaining": [],
+  "temporaryStateExists": false,
+  "steps": [
+    {
+      "command": "kind delete cluster --name pcp-e2e-20261002045552909ca16f-management",
+      "exitCode": 0,
+      "output": "Deleting cluster \"pcp-e2e-20261002045552909ca16f-management\" ...\nDeleted nodes: [\"pcp-e2e-20261002045552909ca16f-management-control-plane\"]"
+    },
+    {
+      "command": "kind delete cluster --name pcp-e2e-20261002045552909ca16f-target-a",
+      "exitCode": 0,
+      "output": "Deleting cluster \"pcp-e2e-20261002045552909ca16f-target-a\" ...\nDeleted nodes: [\"pcp-e2e-20261002045552909ca16f-target-a-control-plane\"]"
+    },
+    {
+      "command": "kind delete cluster --name pcp-e2e-20261002045552909ca16f-target-b",
+      "exitCode": 0,
+      "output": "Deleting cluster \"pcp-e2e-20261002045552909ca16f-target-b\" ...\nDeleted nodes: [\"pcp-e2e-20261002045552909ca16f-target-b-control-plane\"]"
+    }
+  ]
+}
