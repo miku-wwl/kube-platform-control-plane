@@ -32,13 +32,9 @@ type DiscoveryResult struct {
 	EffectivePlanInputDigest string                  `json:"effectivePlanInputDigest"`
 }
 
-// DiscoverFromTerraformOutput consumes only an allowlisted, non-sensitive
+// DiscoverFromTerraformOutputContext consumes only an allowlisted, non-sensitive
 // output object. The verifier represents trusted local Kind discovery or the
 // future AWS DescribeCluster boundary.
-func DiscoverFromTerraformOutput(output []byte, input DiscoveryInput, verifier TargetVerifier) (DiscoveryResult, error) {
-	return DiscoverFromTerraformOutputContext(context.Background(), output, input, verifier)
-}
-
 func DiscoverFromTerraformOutputContext(ctx context.Context, output []byte, input DiscoveryInput, verifier TargetVerifier) (DiscoveryResult, error) {
 	if input.SourceClosureDigest == "" || input.BackendSnapshotDigest == "" || input.EffectivePlanInputDigest == "" {
 		return DiscoveryResult{}, fmt.Errorf("discovery requires convergence evidence digests")

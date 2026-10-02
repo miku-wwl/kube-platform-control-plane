@@ -29,10 +29,7 @@ Stage 1 is frozen and was validated with LocalStack Ultimate, Kind, Terraform CL
 
 The 2026-10-02 closure run passed all 13 acceptance gates: a fresh full Stage 1 regression exited zero, initial and final quality checks passed, and owned test resources were cleaned. Source and running artifact identity were checked during that run. The documentation retains Chinese results and browser screenshots.
 
-- [第二阶段本地端到端验收报告](docs/第二阶段本地端到端验收报告.md): 7 test cases, methods, results, and 14 real browser screenshots.
-- [第二阶段收官差距评审](docs/第二阶段收官差距评审.md): the five original gaps and their completed fixes.
-- [第二阶段验收结果汇总](docs/第二阶段验收结果汇总.md): a concise Chinese summary of scenario results, regression, quality checks, and known limits.
-- [项目文档清单](docs/项目文档清单.md): everyday reading entry points.
+- [第二阶段本地端到端验收报告](docs/第二阶段本地端到端验收报告.md): 7 acceptance cases, cleanup regression, methods, results, and 16 real browser screenshots.
 
 Validated locally:
 
@@ -138,6 +135,8 @@ make e2e
 ```
 
 Component lanes are available as `make e2e-lifecycle`, `make e2e-recovery`, `make e2e-multitarget`, and `make e2e-failclosed`. The harness writes only text evidence under `artifacts/e2e/<run-id>/`, which is ignored by Git, and verifies cleanup of its owned Kind clusters, LocalStack buckets, temporary Git server, and source directory in `finally`.
+
+For Stage 2 browser regression, run the same command with `-Stage2Session`. After the full Stage 1 lanes, `stage2-session.json` in the run directory supplies the management kubeconfig, artifact bucket, and a fresh EnvironmentClass. Use those values with the local console setup above. Complete draft → explicit create → Plan approval → Ready → update → name-confirmed delete → separate Destroy approval, then stop the console processes and remove that run's `stage2-hold.flag`. The harness completes cleanup and reports its final result. An intermediate session summary is not the final Stage 1 PASS.
 
 The lanes are:
 

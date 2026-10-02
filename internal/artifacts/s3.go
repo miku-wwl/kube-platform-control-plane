@@ -129,14 +129,6 @@ func (s *Store) GetVerifiedByKey(ctx context.Context, key string) (Ref, []byte, 
 	return ref, content, err
 }
 
-func (s *Store) Delete(ctx context.Context, key string) error {
-	if err := validateKey(key); err != nil {
-		return err
-	}
-	_, err := s.client.DeleteObject(ctx, &s3.DeleteObjectInput{Bucket: aws.String(s.bucket), Key: aws.String(key)})
-	return err
-}
-
 func (s *Store) head(ctx context.Context, key string) (Ref, error) {
 	result, err := s.client.HeadObject(ctx, &s3.HeadObjectInput{Bucket: aws.String(s.bucket), Key: aws.String(key)})
 	if err != nil {

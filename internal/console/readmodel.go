@@ -3,8 +3,6 @@ package console
 import (
 	"context"
 	"sort"
-	"strings"
-	"time"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -565,26 +563,3 @@ func briefRun(run *platformv1alpha1.TerraformRun) *RunBrief {
 	return brief
 }
 func approvalPtr(value ApprovalView) *ApprovalView { return &value }
-
-func lastChangedAt(conditions []metav1.Condition, creation metav1.Time) *metav1.Time {
-	latest := creation
-	for _, condition := range conditions {
-		if condition.LastTransitionTime.After(latest.Time) {
-			latest = condition.LastTransitionTime
-		}
-	}
-	if latest.IsZero() {
-		return nil
-	}
-	return &latest
-}
-func isReady(value string) bool { return strings.EqualFold(value, "ready") }
-func maxTime(values ...metav1.Time) metav1.Time {
-	var latest time.Time
-	for _, value := range values {
-		if value.Time.After(latest) {
-			latest = value.Time
-		}
-	}
-	return metav1.NewTime(latest)
-}
