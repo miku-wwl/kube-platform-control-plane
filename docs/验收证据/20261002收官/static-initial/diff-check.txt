@@ -1,4 +1,0 @@
-﻿warning: in the working copy of 'e2e/Run-Stage1E2E.ps1', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'internal/console/console_test.go', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'internal/console/readmodel.go', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'web/src/App.tsx', LF will be replaced by CRLF the next time Git touches it

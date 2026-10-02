@@ -1,7 +1,0 @@
-{
-  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File e2e/Run-Stage1E2E.ps1 -Suite all",
-  "exitCode": 0,
-  "startedAtUTC": "2026-10-02T09:11:04.1323292Z",
-  "finishedAtUTC": "2026-10-02T09:40:04.8562518Z",
-  "runDirectory": "D:\\workshop\\sep\\kube-platform-control-plane\\artifacts\\e2e\\20261002091105-bcba191a"
-}

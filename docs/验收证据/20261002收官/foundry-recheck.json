@@ -1,7 +1,0 @@
-{
-  "provider": "foundry-local",
-  "endpoint": "http://127.0.0.1:39839",
-  "modelAlias": "phi-4-mini",
-  "exitCode": 0,
-  "capturedAtUTC": "2026-10-02T09:11:38.3745077Z"
-}

@@ -1,7 +1,0 @@
-warning: in the working copy of 'docs/第二阶段收官差距评审.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'docs/第二阶段本地端到端验收报告.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'docs/项目文档清单.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'e2e/Run-Stage1E2E.ps1', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'internal/console/console_test.go', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'internal/console/readmodel.go', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'web/src/App.tsx', LF will be replaced by CRLF the next time Git touches it
