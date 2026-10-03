@@ -59,6 +59,11 @@ type EnvironmentSummary struct {
 
 type ClassView struct {
 	Name           string                          `json:"name"`
+	UID            string                          `json:"uid"`
+	Version        string                          `json:"version"`
+	UsageCount     int32                           `json:"usageCount"`
+	CreatedAt      metav1.Time                     `json:"createdAt"`
+	Deleting       bool                            `json:"deleting"`
 	Provider       string                          `json:"provider"`
 	TargetCluster  string                          `json:"targetCluster"`
 	DefaultRegion  string                          `json:"defaultRegion,omitempty"`
@@ -294,6 +299,12 @@ func (data *snapshot) detail(environment *platformv1alpha1.PlatformEnvironment) 
 func classView(class *platformv1alpha1.EnvironmentClass) ClassView {
 	condition := findReady(class.Status.Conditions)
 	view := ClassView{Name: class.Name, Provider: class.Spec.Target.Provider, TargetCluster: class.Spec.Target.ClusterName, DefaultRegion: class.Spec.Target.Region, AllowedRegions: append([]string(nil), class.Spec.AllowedRegions...), CapacityBounds: class.Spec.CapacityBounds, Ready: meta.IsStatusConditionTrue(class.Status.Conditions, "Ready")}
+	view.UID = string(class.UID)
+	view.Version = class.Spec.Version
+	view.UsageCount = class.Status.UsageCount
+	view.CreatedAt = class.CreationTimestamp
+	view.Deleting = !class.DeletionTimestamp.IsZero()
+	view.Ready = view.Ready && class.Status.ObservedGeneration == class.Generation && !view.Deleting
 	if condition != nil {
 		view.ReadyReason = condition.Reason
 	}

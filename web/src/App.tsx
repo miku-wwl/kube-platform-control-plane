@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { request, envPath, type Approval, type ClassInfo, type DraftResponse, type Environment, type EnvironmentDetail, type PlanView, type TerraformRun, type TimelineEvent } from './api'
 import { useI18n } from './i18n'
+import { ClassManager } from './ClassManager'
 
-type Screen = 'dashboard' | 'builder' | 'detail'
+type Screen = 'dashboard' | 'builder' | 'detail' | 'classes'
 type DetailTab = 'overview' | 'architecture' | 'terraform' | 'timeline'
 
 function App() {
   const { language, setLanguage, t } = useI18n()
-  const [screen, setScreen] = useState<Screen>('dashboard')
+  const [screen, setScreen] = useState<Screen>(() => window.location.hash === '#classes' ? 'classes' : window.location.hash === '#builder' ? 'builder' : 'dashboard')
   const [tab, setTab] = useState<DetailTab>('overview')
   const [environments, setEnvironments] = useState<Environment[]>([])
   const [classes, setClasses] = useState<ClassInfo[]>([])
+  const [builderClass, setBuilderClass] = useState('')
   const [selected, setSelected] = useState<Pick<Environment, 'namespace' | 'name'> | null>(null)
   const [detail, setDetail] = useState<EnvironmentDetail | null>(null)
   const [plan, setPlan] = useState<PlanView | null>(null)
@@ -18,6 +20,11 @@ function App() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    const hash = screen === 'classes' ? '#classes' : screen === 'builder' ? '#builder' : ''
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${hash}`)
+  }, [screen])
 
   const refresh = useCallback(async () => {
     try {
@@ -109,17 +116,19 @@ function App() {
       <nav className="primary-nav">
         <button className={screen === 'dashboard' || screen === 'detail' ? 'active' : ''} onClick={() => navigate('dashboard')}><span className="nav-icon">◫</span> {t('Environments')} <span className="nav-count">{environments.length}</span></button>
         <button className={screen === 'builder' ? 'active' : ''} onClick={() => navigate('builder')}><span className="nav-icon">＋</span> {t('Platform builder')}</button>
+        <button className={screen === 'classes' ? 'active' : ''} onClick={() => navigate('classes')}><span className="nav-icon">▤</span> {t('Environment classes')} <span className="nav-count">{classes.length}</span></button>
       </nav>
       <div className="sidebar-bottom"><div className="local-indicator"><span className="pulse"/> {t('LOCAL MODE')}</div><p>Kind · LocalStack</p><small>{t('Stage 1 engine · frozen')}</small></div>
     </aside>
 
     <main className="main-area">
-      <header className="topbar"><div><div className="eyebrow">{t('PLATFORM ENGINEERING / LOCAL')}</div><h1>{screen === 'builder' ? t('Platform builder') : screen === 'detail' ? selected?.name || t('Environment') : t('Environments')}</h1></div><div className="top-actions"><div className="language-switch" role="group" aria-label={t('Language')}><button type="button" aria-label={t('Switch language to English')} aria-pressed={language === 'en'} className={language === 'en' ? 'selected' : ''} onClick={() => setLanguage('en')}>EN</button><button type="button" aria-label={t('Switch language to Chinese')} aria-pressed={language === 'zh'} className={language === 'zh' ? 'selected' : ''} onClick={() => setLanguage('zh')}>中文</button></div><span className="connected"><i/> {t('API connected')}</span><button className="icon-button" title={t('Refresh')} aria-label={t('Refresh')} onClick={() => void refresh()}>↻</button><button className="button button-primary" onClick={() => navigate('builder')}>＋ {t('New environment')}</button></div></header>
+      <header className="topbar"><div><div className="eyebrow">{t('PLATFORM ENGINEERING / LOCAL')}</div><h1>{screen === 'classes' ? t('Environment classes') : screen === 'builder' ? t('Platform builder') : screen === 'detail' ? selected?.name || t('Environment') : t('Environments')}</h1></div><div className="top-actions"><div className="language-switch" role="group" aria-label={t('Language')}><button type="button" aria-label={t('Switch language to English')} aria-pressed={language === 'en'} className={language === 'en' ? 'selected' : ''} onClick={() => setLanguage('en')}>EN</button><button type="button" aria-label={t('Switch language to Chinese')} aria-pressed={language === 'zh'} className={language === 'zh' ? 'selected' : ''} onClick={() => setLanguage('zh')}>中文</button></div><span className="connected"><i/> {t('API connected')}</span><button className="icon-button" title={t('Refresh')} aria-label={t('Refresh')} onClick={() => void refresh()}>↻</button><button className="button button-primary" onClick={() => navigate('builder')}>＋ {t('New environment')}</button></div></header>
       {error && <div className="alert alert-error"><span>!</span><div><strong>{t('Request could not be completed')}</strong><p>{error}</p></div><button aria-label={t('Close')} onClick={() => setError('')}>×</button></div>}
       {notice && <div className="alert alert-success"><span>✓</span><div><strong>{t('Workflow updated')}</strong><p>{notice}</p></div><button aria-label={t('Close')} onClick={() => setNotice('')}>×</button></div>}
 
       {screen === 'dashboard' && <Dashboard environments={environments} readyCount={readyCount} loading={loading} onOpen={openEnvironment} onBuild={() => navigate('builder')} />}
-      {screen === 'builder' && <Builder classes={classes} onCancel={() => navigate('dashboard')} onCreated={created} />}
+      {screen === 'builder' && <Builder classes={classes} initialClass={builderClass} onManageClasses={() => navigate('classes')} onCancel={() => navigate('dashboard')} onCreated={created} />}
+      {screen === 'classes' && <ClassManager classes={classes} loading={loading} onChanged={refresh} onUse={name => { setBuilderClass(name); navigate('builder') }} />}
       {screen === 'detail' && detail && <Detail detail={detail} plan={plan} tab={tab} busy={busy} onTab={setTab} onApprove={approve} onUpdate={updateCapacity} onDelete={removeEnvironment} onOpenRun={() => setTab('terraform')} />}
       {screen === 'detail' && !detail && !error && <div className="loading-state"><div className="spinner"/> {t('Loading environment evidence…')}</div>}
     </main>
@@ -142,12 +151,12 @@ function Dashboard({ environments, readyCount, loading, onOpen, onBuild }: { env
 
 function Stat({ label, value, icon, tone, small = false }: { label: string; value: string | number; icon: string; tone: string; small?: boolean }) { return <div className="stat-card"><div className={`stat-icon ${tone}`}>{icon}</div><div><span>{label}</span><strong className={small ? 'small-value' : ''}>{value}</strong></div><div className="stat-decoration">{icon}</div></div> }
 
-function Builder({ classes, onCancel, onCreated }: { classes: ClassInfo[]; onCancel: () => void; onCreated: (value: Pick<Environment,'namespace'|'name'>) => Promise<void> }) {
+function Builder({ classes, initialClass, onManageClasses, onCancel, onCreated }: { classes: ClassInfo[]; initialClass: string; onManageClasses: () => void; onCancel: () => void; onCreated: (value: Pick<Environment,'namespace'|'name'>) => Promise<void> }) {
   const { t, language } = useI18n()
   const [description,setDescription]=useState(()=>t('Create a small development platform with Valkey cache'))
   const [name,setName]=useState('')
   const [namespace,setNamespace]=useState('default')
-  const [classRef,setClassRef]=useState('')
+  const [classRef,setClassRef]=useState(initialClass)
   const [region,setRegion]=useState('')
   const [nodeCount,setNodeCount]=useState(1)
   const [draft,setDraft]=useState<DraftResponse|null>(null)
@@ -155,7 +164,7 @@ function Builder({ classes, onCancel, onCreated }: { classes: ClassInfo[]; onCan
   const [error,setError]=useState('')
   const selectedClass=classes.find(item=>item.name===classRef)
   useEffect(()=>{setDescription(current=>current==='Create a small development platform with Valkey cache'||current==='创建一个带有 Valkey 缓存的小型开发平台'?t('Create a small development platform with Valkey cache'):current)},[language,t])
-  useEffect(()=>{if(!classRef&&classes.length>0){const ready=classes.find(item=>item.ready);if(ready)setClassRef(ready.name)}},[classes,classRef])
+  useEffect(()=>{if(!classes.some(item=>item.name===classRef&&item.ready)){setClassRef(classes.find(item=>item.ready)?.name||'');setRegion('')}},[classes,classRef])
 
   const generate=async()=>{setPending(true);setError('');setDraft(null);try{const value=await request<DraftResponse>('/api/drafts',{method:'POST',body:JSON.stringify({description,name,namespace,classRef,region,nodeCount})});setDraft(value);if(!value.valid)setError(value.errors?.join('; ')||t('Draft validation failed'))}catch(value){setError((value as Error).message)}finally{setPending(false)}}
   const submit=async()=>{if(!draft?.valid)return;setPending(true);setError('');try{await request('/api/environments',{method:'POST',body:JSON.stringify(draft.intent)});await onCreated({namespace:draft.intent.namespace,name:draft.intent.name})}catch(value){setError((value as Error).message)}finally{setPending(false)}}
@@ -163,6 +172,7 @@ function Builder({ classes, onCancel, onCreated }: { classes: ClassInfo[]; onCan
     <div className="builder-grid"><section className="panel builder-form"><div className="panel-title"><span className="step-number">01</span><div><h3>{t('Describe desired state')}</h3><p>{t('AI output stays a proposal until you explicitly submit it.')}</p></div></div><label className="field-label">{t('Natural-language request')}</label><textarea className="text-area" rows={4} value={description} onChange={event=>setDescription(event.target.value)} placeholder={t('Describe a development or test environment…')}/><div className="form-grid"><label><span className="field-label">{t('Environment name')} <small>{t('optional')}</small></span><input className="text-input" value={name} onChange={event=>setName(event.target.value)} placeholder={t('generated from description')}/></label><label><span className="field-label">{t('Namespace')}</span><input className="text-input" value={namespace} onChange={event=>setNamespace(event.target.value)}/></label><label><span className="field-label">{t('Environment class')}</span><select className="text-input" value={classRef} onChange={event=>{setClassRef(event.target.value);setRegion('')}}><option value="">{t('Select a ready class')}</option>{classes.map(item=><option key={item.name} value={item.name} disabled={!item.ready}>{item.name}{item.ready?'':t(' · not ready')}</option>)}</select></label><label><span className="field-label">{t('Region')} <small>{t('class default')}</small></span><select className="text-input" value={region} onChange={event=>setRegion(event.target.value)}><option value="">{selectedClass?.defaultRegion||t('Use class default')}</option>{(selectedClass?.allowedRegions||[]).map(value=><option key={value} value={value}>{value}</option>)}</select></label><label><span className="field-label">{t('Node count')}</span><input className="text-input" type="number" min={selectedClass?.capacityBounds.minNodeCount||0} max={selectedClass?.capacityBounds.maxNodeCount||1000} value={nodeCount} onChange={event=>setNodeCount(Number(event.target.value))}/></label></div>
       {selectedClass&&<div className="class-summary"><span className="class-summary-icon">⌘</span><div><strong>{selectedClass.name}</strong><p>{selectedClass.provider} · {t('target ')}{selectedClass.targetCluster} · {selectedClass.defaultRegion||t('region not fixed')}</p></div><span className="ready-label"><i/> {selectedClass.ready?t('READY'):t('NOT READY')}</span></div>}
       <div className="form-actions"><button className="button button-secondary" onClick={onCancel}>{t('Cancel')}</button><button className="button button-primary" onClick={()=>void generate()} disabled={pending||!classRef||!selectedClass?.ready}><span>✦</span> {pending?t('Generating…'):t('Generate draft')}</button></div>
+      {!classes.some(item => item.ready) && <div className="class-empty-note"><p>{t('Create a ready environment class before generating a draft.')}</p><button type="button" className="button button-secondary" onClick={onManageClasses}>{t('Manage environment classes')}</button></div>}
       {error&&<p className="inline-error">{error}</p>}
     </section>
     <section className="draft-panel"><div className="draft-panel-head"><div><div className="section-kicker">{t('02 · REVIEW BEFORE SUBMIT')}</div><h3>{t('Draft preview')}</h3></div><span className="provider-chip">{draft?.provider||t('LOCAL DRAFT')}</span></div>{draft?.valid?<><div className="draft-summary"><div className="draft-check">✓</div><div><strong>{draft.intent.namespace}/{draft.intent.name}</strong><p>{draft.intent.classRef} · {draft.intent.nodeCount} {t('nodes')} · {draft.intent.region||t('class region')}</p></div></div>{draft.warnings?.map(item=><div className="warning-note" key={item}>ⓘ {item}</div>)}<pre className="yaml-preview">{draft.yaml}</pre><button className="button button-primary submit-draft" disabled={pending} onClick={()=>void submit()}>{pending?t('Submitting…'):t('Submit PlatformEnvironment')} <span>→</span></button><p className="approval-note">{t('Submitting creates only the top-level Kubernetes resource. No Plan is approved and no infrastructure is applied by this button.')}</p></>:<div className="draft-placeholder"><div className="placeholder-grid"/><div className="sparkle">✦</div><strong>{t('Your typed manifest preview appears here')}</strong><p>{t('Generate a draft, review its validation result and YAML, then submit explicitly.')}</p></div>}</section></div>

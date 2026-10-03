@@ -105,6 +105,38 @@ npm --prefix web run dev
 
 Open `http://127.0.0.1:5173`. Vite proxies `/api` to the local API. This unauthenticated console is for a local operator only; do not expose it beyond the developer workstation. With GNU Make installed, `make api`, `make web`, `make web-build`, and `make stage2-check` are available.
 
+### Environment class management
+
+Open **Environment classes / 环境类别管理** in the sidebar. The form creates a
+cluster-scoped `EnvironmentClass`; classes are stored in Kubernetes. Fill in the
+name/version, target, default and allowed regions, pinned infrastructure
+repository commit, backend configuration reference, runner image/identity,
+capacity limits and approval policy. Optional runtime settings are under Advanced
+settings.
+
+Use **Validate configuration** to check typed inputs and Kubernetes admission
+without saving anything. **Create class** saves only the class, then the page
+refreshes its controller conditions. When Ready, **Use this class** opens the
+builder with that class selected and its configured region choices. Ready means
+class admission/reconciliation; source access, backend availability, runner image
+availability and the infrastructure lifecycle are checked later. The referenced
+ConfigMap containing `backend.hcl` must exist in each environment namespace before
+that environment can execute Terraform.
+
+Class specifications are immutable. **Copy as new version** preserves the
+configuration in a new form and requires a unique class name/version. Existing
+environments keep their original class. An unused class may be deleted after name
+confirmation; the API checks current environment references and Kubernetes
+UID/resource-version preconditions, and leaves controller finalizers in charge.
+Class management retains backend configuration and infrastructure. Inline Secret
+resources and credentials are rejected; legacy credential values are redacted in
+class details and those classes cannot be copied from the UI.
+
+The local API provides `GET /api/classes`, `GET /api/classes/{name}`,
+`POST /api/classes/validate`, `POST /api/classes`, and
+`DELETE /api/classes/{name}`. Class changes require a new class. Creating or
+validating a class neither submits an environment nor approves a Terraform Plan.
+
 The E2E harness needs Docker access to create three disposable Kind clusters and network reachability from Kind nodes to the host LocalStack endpoint. It never creates or deletes the externally managed LocalStack container.
 
 ## Validation

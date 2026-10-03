@@ -8,8 +8,22 @@ export type Environment = {
 }
 export type ClassInfo = {
   name: string; provider: string; targetCluster: string; defaultRegion?: string; allowedRegions?: string[]
-  capacityBounds: { minNodeCount: number; maxNodeCount: number; maxEnvironments: number }; ready: boolean; readyReason?: string
+  uid: string; version: string; usageCount: number; createdAt: string; deleting: boolean
+  capacityBounds: { minNodeCount?: number; maxNodeCount?: number; maxEnvironments?: number; maxConcurrentPlans?: number; maxConcurrentApplies?: number }; ready: boolean; readyReason?: string
 }
+export type RuntimeObject = { group?: string; version: string; resource: string; object: Record<string, unknown>; wave?: number; ownershipID?: string; readinessPolicy?: string; deletionPolicy?: string }
+export type ClassSpec = {
+  version: string
+  source: { url: string; revision: string; path: string }
+  backend: { type: string; configRef: { name: string }; authRef: { serviceAccountName: string }; lockTimeout: string }
+  executor: { terraformVersion: string; image: string; workDir: string; executionTimeout: string; parallelism?: number; runtimeOS?: string; runtimeArchitecture?: string }
+  runnerProfile: { serviceAccountName: string; image: string; imageDigest: string; terraformVersion: string; managementRoleARN?: string }
+  runtimeProfile: { operatorImage?: string; operatorImageDigest?: string; operatorManifestRef?: string; valkeyImage?: string; networkPolicyProfile?: string; runtimeObjects?: RuntimeObject[] }
+  target: { provider: string; account?: string; region?: string; clusterName: string; clusterID?: string; clusterARN?: string; incarnationID?: string; connectionProfileRef?: string; executionRoleARN?: string; runtimeRoleARN?: string }
+  allowedRegions?: string[]; capacityBounds: ClassInfo['capacityBounds']; approvalPolicy: 'Manual' | 'Automatic'; dataRetentionPolicy?: string
+}
+export type ClassDetail = ClassInfo & { spec: ClassSpec; conditions: Condition[]; specDigest?: string; redacted: boolean; yaml: string }
+export type ClassValidation = { valid: boolean; errors: string[]; warnings: string[]; yaml?: string }
 export type Approval = { namespace: string; name: string; planRun: string; planRunUID: string; state: string; planDigest: string; createdAt: string; approvedAt?: string }
 export type TerraformRun = {
   namespace: string; name: string; uid: string; operation: string; planMode?: string; state: string; reason?: string; message?: string

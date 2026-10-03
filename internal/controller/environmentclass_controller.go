@@ -7,8 +7,10 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
 )
@@ -84,5 +86,14 @@ func (r *EnvironmentClassReconciler) updateClassStatus(ctx context.Context, clas
 }
 
 func (r *EnvironmentClassReconciler) SetupWithManager(manager ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(manager).For(&platformv1alpha1.EnvironmentClass{}).Complete(r)
+	return ctrl.NewControllerManagedBy(manager).
+		For(&platformv1alpha1.EnvironmentClass{}).
+		Watches(&platformv1alpha1.PlatformEnvironment{}, handler.EnqueueRequestsFromMapFunc(func(_ context.Context, object client.Object) []ctrl.Request {
+			environment, ok := object.(*platformv1alpha1.PlatformEnvironment)
+			if !ok || environment.Spec.ClassRef == nil || environment.Spec.ClassRef.Name == "" {
+				return nil
+			}
+			return []ctrl.Request{{NamespacedName: types.NamespacedName{Name: environment.Spec.ClassRef.Name}}}
+		})).
+		Complete(r)
 }

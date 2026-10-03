@@ -56,6 +56,10 @@ func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", s.health)
 	mux.HandleFunc("GET /api/classes", s.listClasses)
+	mux.HandleFunc("POST /api/classes", s.createClass)
+	mux.HandleFunc("POST /api/classes/validate", s.validateClass)
+	mux.HandleFunc("GET /api/classes/{name}", s.getClass)
+	mux.HandleFunc("DELETE /api/classes/{name}", s.deleteClass)
 	mux.HandleFunc("GET /api/environments", s.listEnvironments)
 	mux.HandleFunc("POST /api/environments", s.createEnvironment)
 	mux.HandleFunc("GET /api/environments/{namespace}/{name}", s.getEnvironment)
@@ -112,8 +116,15 @@ func (s *Server) listClasses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	items := make([]ClassView, 0, len(classes.Items))
+	usage, err := s.classUsage(r.Context())
+	if err != nil {
+		s.writeObjectError(w, err, "PlatformEnvironment")
+		return
+	}
 	for i := range classes.Items {
-		items = append(items, classView(&classes.Items[i]))
+		view := classView(&classes.Items[i])
+		view.UsageCount = usage[view.Name]
+		items = append(items, view)
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].Name < items[j].Name })
 	writeJSON(w, http.StatusOK, items)
@@ -497,6 +508,9 @@ func (s *Server) validateEnvironmentRequest(ctx context.Context, request CreateE
 	}
 	if class.Generation > 0 && class.Status.ObservedGeneration != class.Generation {
 		return nil, nil, errors.New("EnvironmentClass has not reconciled its current generation")
+	}
+	if !class.DeletionTimestamp.IsZero() {
+		return nil, nil, errors.New("EnvironmentClass is being deleted")
 	}
 	if !meta.IsStatusConditionTrue(class.Status.Conditions, "Ready") {
 		return nil, nil, errors.New("EnvironmentClass is not Ready")
