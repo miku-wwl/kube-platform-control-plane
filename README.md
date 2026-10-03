@@ -25,11 +25,11 @@ STAGE1_FREEZE = PASS
 STAGE2_ADVANCED_EXPERIENCE = PASS_LOCAL
 ```
 
-Stage 1 is frozen and was validated with LocalStack Ultimate, Kind, Terraform CLI, and local Kubernetes controllers. Stage 2 adds a local operator console above the existing engine. Its browser-driven draft, create, exact Plan approval, Apply, Ready, update, and delete/Destroy lifecycle passed locally with Foundry Local inference and current-source images. Stage 3 and real AWS validation have not started.
+Stage 1 is frozen and was validated with LocalStack Ultimate, Kind, Terraform CLI, and local Kubernetes controllers. Stage 2 adds a local operator console above the existing engine. Its draft, create, exact Plan approval, Apply, Ready, update, and delete/Destroy lifecycle passed locally in the 2026-10-02/03 runs. Class/template management passed browser validation on 2026-10-03/04. These are dated acceptance results; Stage 3 and real AWS validation have not started.
 
 The 2026-10-02 closure run passed all 13 acceptance gates: a fresh full Stage 1 regression exited zero, initial and final quality checks passed, and owned test resources were cleaned. Source and running artifact identity were checked during that run. The documentation retains Chinese results and browser screenshots.
 
-- [第二阶段本地端到端验收报告](docs/第二阶段本地端到端验收报告.md): 7 acceptance cases, cleanup regression, methods, results, and 16 real browser screenshots.
+- [网页手动测试步骤与截图](docs/环境类别与模板网页手动测试及验收报告.md): class/template tests and environment lifecycle steps, with each screenshot's validation period identified.
 
 Validated locally:
 
@@ -48,6 +48,8 @@ Stage 2 experience capabilities:
 - React/TypeScript console for environments, conditions, timeline, Terraform evidence, and plan changes
 - Exact-plan approval through the existing immutable `ChangeApproval`; there is no Apply API or UI action
 - AI-assisted typed drafts with deterministic validation and a separate explicit submit action
+- Environment class management, Kind starter presets, persisted project templates and independent configuration copies
+- Persistent English/Chinese console language selection
 - Optional plan visualization artifact derived from `terraform show -json`; it is not used by approval or Apply
 
 Architecture overview:

@@ -1,7 +1,77 @@
 # Architecture
 
-This document describes the current control-plane contracts. It is a concise
-guide to the running design, not a phase-by-phase implementation history.
+Updated: 2026-10-04. Source baseline: `e1a2d1c`.
+
+This document describes the current components, persisted state, configuration
+flow and execution contracts.
+
+## Configuration flow
+
+```mermaid
+flowchart TD
+    Preset[Small / team Kind preset] --> Draft[Independent form draft]
+    Template[Saved project template] -->|Copy spec| Draft
+    Existing[Existing EnvironmentClass] -->|Copy with new name and version| Draft
+    Blank[Blank form with common defaults] --> Draft
+    Draft --> Validate[Typed validation + Kubernetes dry-run]
+    Validate -->|Save as template| CM[Template ConfigMap]
+    Validate -->|Create class| Class[EnvironmentClass]
+    Class --> ClassController[EnvironmentClass controller]
+    ClassController --> Ready[Current-generation class Ready]
+    Ready --> Builder[Platform builder class and region selection]
+    Builder --> PE[Explicit PlatformEnvironment submission]
+```
+
+### Presets and saved templates
+
+- Starter presets are frontend defaults. Small Kind uses node bounds 1–3,
+  three environments, one concurrent Plan and one concurrent Apply. Team Kind
+  uses 1–10, ten environments, two Plans and one Apply. Both select Manual.
+- Presets leave project-specific source, target, backend and Runner connections
+  for the operator to fill. Startup does not create example classes.
+- A saved template is a ConfigMap named `pcp-class-template-{name}` in the
+  management cluster's `default` namespace. Labels identify its configuration
+  kind and `platform-api` ownership; `template.json` stores name, title,
+  description and the full class spec. It is not another CRD.
+- Using a template or existing class copies its spec into an independent draft.
+  Source/backend sections start collapsed for configured copies. Changes do not
+  update the template, source class or existing environments.
+- Names are unique. There is no template update endpoint: save a revised snapshot
+  under a new name. Refresh discards unsaved drafts; saved templates survive API
+  restart. Deleting the Kind cluster deletes its templates.
+- Template deletion requires the exact machine name and UID, with Kubernetes
+  UID/resourceVersion preconditions. Existing classes remain independent.
+
+### Class admission, readiness and deletion
+
+The form validates typed inputs and uses Kubernetes dry-run without persisting
+an EnvironmentClass. An edit invalidates the previous validation result.
+Creating a class repeats typed validation and writes a cluster-scoped object;
+it does not create an environment, Runner Job or runtime resource.
+
+Class inputs include a pinned 40–64 digit source commit, repository-relative
+Terraform directory, backend ConfigMap reference, matching backend/Runner
+ServiceAccount, Runner image and identity, target, region limits, capacity,
+execution settings and optional runtimeObjects. Inline credentials and Secret
+objects are rejected; legacy sensitive values are redacted and cannot be copied.
+
+`EnvironmentClassReconciler` records the spec digest and observed generation,
+tracks PlatformEnvironment references, installs
+`platform.example.io/environmentclass-finalizer`, and reports `ClassValidated`.
+An externally changed admitted spec is marked not Ready with `ClassSpecChanged`.
+The management API has no class update endpoint: changes require a new named
+version.
+
+Class Ready means admitted configuration and controller processing. It does not
+prove that the backend exists, the source can be fetched, the Runner image can
+run, or infrastructure/runtime resources are ready. Only current Ready classes
+are usable in the builder. Regions come from the selected class's default region
+and allowedRegions; they are not cloud discovery.
+
+Class deletion checks the exact name, UID and current reference count. The API
+rejects a referenced class; the controller also keeps its finalizer while any
+environment references it. Deleting an unused class leaves referenced backend
+configuration and infrastructure untouched.
 
 ## Lifecycle
 
@@ -27,8 +97,8 @@ Runtime Reconciliation
 EnvironmentReady
 ~~~
 
-One PlatformEnvironment owns one dedicated runtime target. Multiple
-environments can target different clusters.
+Each PlatformEnvironment binds to its intended runtime target through trusted
+discovery. Different environments can select different clusters.
 
 Creation starts from the user-facing PlatformEnvironment. Its EnvironmentClass
 defines the approved infrastructure source, backend, execution identity, and
@@ -50,8 +120,9 @@ removes finalizers.
 
 | Resource | Responsibility |
 |---|---|
+| Template ConfigMap | API-managed reusable configuration snapshot, independent of classes |
 | PlatformEnvironment | User-facing desired state and lifecycle owner |
-| EnvironmentClass | Reusable, typed environment policy and execution inputs |
+| EnvironmentClass | Typed inputs; class controller records spec identity, current Ready, usage and deletion protection |
 | InfraStack | Materialized infrastructure intent and convergence state |
 | TerraformRun | Immutable Plan, Apply, or Destroy execution attempt |
 | ChangeApproval | Explicit approval bound to one exact Plan and its evidence |
@@ -132,13 +203,41 @@ Existing Stage 1 Control Plane
 Terraform + Target Kubernetes
 ```
 
-Kubernetes remains the sole state store. The local API projects existing
-resources, conditions, runs, approvals, and evidence into UI-safe views; it
-does not run a second workflow engine. Create/update/delete requests change
-only the top-level `PlatformEnvironment`, leaving reconciliation, cleanup,
-and Terraform destroy to the existing controllers. Approval creates the
-existing immutable `ChangeApproval` bound to the PlanRun UID and every current
-plan/evidence digest. There is intentionally no Apply API or console action.
+The React console also provides class/template management before the AI builder.
+The console normally runs at `127.0.0.1:5173`, with `/api` proxied to the local
+API at `127.0.0.1:8090`. EN/Chinese preference is persisted locally; language
+changes retain a form draft.
+
+Kubernetes stores desired state, conditions, execution records, approvals and
+template ConfigMaps. Artifact storage holds source bundles, saved plans, backend
+snapshots and reports; local validation uses LocalStack for this object storage.
+The API projects resources and evidence into UI-safe views and does not run a
+second workflow engine or application database.
+
+Environment create/update/delete requests change the top-level
+`PlatformEnvironment`. Class and template requests write their own Kubernetes
+objects. Reconciliation, runtime cleanup and Terraform destroy remain controller
+responsibilities. Approval creates the immutable `ChangeApproval` bound to the
+PlanRun UID and every current plan/evidence digest. There is no Apply endpoint.
+`Recorded` means an approval decision was saved, not that Apply succeeded.
+
+### API write boundaries
+
+| Route / action | Write or effect |
+| --- | --- |
+| `POST /api/drafts` | Calls the configured provider; strictly parses and validates intent; no resource creation |
+| `POST /api/classes/validate` | Typed validation and Kubernetes dry-run; no persisted class |
+| `POST /api/classes` | Creates an EnvironmentClass; controller supplies status |
+| `DELETE /api/classes/{name}` | Requests unused class deletion after identity/usage checks |
+| `POST /api/class-templates` | Creates the template ConfigMap in management `default` |
+| `DELETE /api/class-templates/{name}` | Deletes only the identified template ConfigMap |
+| Environment create/update/delete | Writes or requests deletion of PlatformEnvironment |
+| `POST /api/terraform-runs/{namespace}/{name}/approve` | Creates ChangeApproval bound to the selected Plan and evidence |
+| List/detail/plan/timeline routes | Read-only views of resources and artifacts |
+
+The API needs class-resource and template-ConfigMap permissions in addition to
+the environment and approval permissions. Human approval records a decision;
+controllers determine when the matching saved plan may execute.
 
 The optional `plan-visualization.json` is derived from `terraform show -json`
 for the exact saved Plan and contains only allowlisted resource metadata.
@@ -149,6 +248,21 @@ registered target, region, Valkey settings, and capacity before showing typed
 YAML. A separate human action submits the resource. The unauthenticated API
 and web UI are local operator tools, not production endpoints.
 
+Timeline views reconstruct available conditions and immutable run timestamps;
+they are not a complete event audit log.
+
+## Current implementation limits
+
+| Configuration | Current behavior |
+| --- | --- |
+| `approvalPolicy: Manual` | Changed plans wait for explicit matching ChangeApproval |
+| `approvalPolicy: Automatic` | Accepted and stored; no automatic approval producer exists. Controllers still require ChangeApproval |
+| `valkeyImage`, Operator image/digest/manifest, network policy profile | Stored configuration; these fields do not automatically generate runtime resources |
+| `dataRetentionPolicy` | Stored configuration; no deletion policy implementation consumes it |
+| `runtimeObjects` | Supported runtime input after infrastructure/target admission |
+| `PCP_ENABLE_TERRAFORM_EXECUTION=false` | Class/template management works; Runner execution is disabled |
+| `PCP_ENABLE_AWS_EKS=false` | Real AWS EKS target execution is not enabled |
+
 ## Validation boundary
 
 Stage 1 is validated locally with the real Terraform CLI, LocalStack Ultimate,
@@ -156,3 +270,17 @@ Kind management and target clusters, and real Kubernetes controllers. This
 validates local lifecycle, recovery, target isolation, and fail-closed
 behavior. Real AWS IAM, STS, EKS, KMS, networking, quotas, and service semantics
 have not been validated.
+
+| Scope | Evidence date / boundary |
+| --- | --- |
+| Environment lifecycle, recovery, isolation and Destroy | Historical 2026-10-02/03 Kind + LocalStack + Foundry Local acceptance; not rerun by a documentation edit |
+| Class/template browser workflow | 2026-10-03/04: 40 browser assertions; actual persistence, controller Ready, API restart, copying, selection and cleanup |
+| Manual procedure and screenshots | [网页手动测试及验收报告](环境类别与模板网页手动测试及验收报告.md) |
+| Real AWS / production | Not validated |
+
+## Source map
+
+- [API routes](../internal/console/server.go), [class admission/deletion](../internal/console/classes.go), [template storage](../internal/console/class_templates.go).
+- [Class controller](../internal/controller/environmentclass_controller.go), [class materialization](../internal/controller/environmentclass.go).
+- [Console class flow](../web/src/ClassManager.tsx), [preset defaults](../web/src/classTemplates.ts).
+- [Infrastructure reconciliation](../internal/controller/infrastack_controller.go), [Runner admission](../internal/controller/terraformrun_controller.go).
