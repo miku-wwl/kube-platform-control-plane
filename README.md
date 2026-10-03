@@ -107,8 +107,27 @@ Open `http://127.0.0.1:5173`. Vite proxies `/api` to the local API. This unauthe
 
 ### Environment class management
 
-Open **Environment classes / 环境类别管理** in the sidebar. The form creates a
-cluster-scoped `EnvironmentClass`; classes are stored in Kubernetes. Fill in the
+Open **Environment classes / 环境类别管理** in the sidebar, then **Create class**.
+Choose a small/team Kind starter preset, a saved project template, or an existing
+class before adjusting the form. Saved templates retain project connections,
+runtime resources and policy settings; their source/backend/runner sections start
+collapsed so you can focus on name, version, target and capacity. Starter presets
+provide policy defaults and require real project references on the first use.
+**Start from a blank form** remains available.
+
+After validation, **Save as template** stores a reusable configuration snapshot in
+a labeled `pcp-class-template-{name}` ConfigMap in the management cluster's
+`default` namespace. The console's Kubernetes identity needs get/list/create/delete
+ConfigMap permissions there. Saving a template does not create an EnvironmentClass
+or environment. Templates survive API restarts and are available from other
+browsers connected to the same console. Template names are unique; saving with an
+existing name is rejected. Drafts receive independent copies, including optional
+runtime settings, and class names are suggested without reusing an existing name.
+Deleting a template requires its name and UID and retains existing classes and
+environments. Inline credentials are rejected in saved templates as in classes.
+
+The form creates a cluster-scoped `EnvironmentClass`; classes are stored in
+Kubernetes. Fill in the
 name/version, target, default and allowed regions, pinned infrastructure
 repository commit, backend configuration reference, runner image/identity,
 capacity limits and approval policy. Optional runtime settings are under Advanced
@@ -136,6 +155,9 @@ The local API provides `GET /api/classes`, `GET /api/classes/{name}`,
 `POST /api/classes/validate`, `POST /api/classes`, and
 `DELETE /api/classes/{name}`. Class changes require a new class. Creating or
 validating a class neither submits an environment nor approves a Terraform Plan.
+Template endpoints are `GET /api/class-templates`, `POST /api/class-templates`,
+and `DELETE /api/class-templates/{name}`. Saved templates are snapshots; adjustments
+to a draft affect the new class rather than the template.
 
 The E2E harness needs Docker access to create three disposable Kind clusters and network reachability from Kind nodes to the host LocalStack endpoint. It never creates or deletes the externally managed LocalStack container.
 

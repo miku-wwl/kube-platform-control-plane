@@ -24,6 +24,7 @@ export type ClassSpec = {
 }
 export type ClassDetail = ClassInfo & { spec: ClassSpec; conditions: Condition[]; specDigest?: string; redacted: boolean; yaml: string }
 export type ClassValidation = { valid: boolean; errors: string[]; warnings: string[]; yaml?: string }
+export type ClassTemplate = { name: string; title: string; description: string; spec: ClassSpec; uid: string; createdAt: string; redacted: boolean }
 export type Approval = { namespace: string; name: string; planRun: string; planRunUID: string; state: string; planDigest: string; createdAt: string; approvedAt?: string }
 export type TerraformRun = {
   namespace: string; name: string; uid: string; operation: string; planMode?: string; state: string; reason?: string; message?: string
