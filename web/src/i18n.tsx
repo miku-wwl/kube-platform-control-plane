@@ -146,7 +146,7 @@ const chinese: Record<string, string> = {
   'Backend configuration must exist in each environment namespace. Source access, runner images and infrastructure execution are checked when an environment is created.': '每个环境命名空间需要预先配置引用的后端。来源是否可访问、Runner 镜像和基础设施执行能力会在创建环境时检查。',
   'Working…': '正在处理…',
   'Validate configuration': '校验配置',
-  'Class saved. Waiting for the controller to report Ready.': '类别已保存，正在等待控制器报告就绪。',
+  'Class saved. Controller status is shown below.': '类别已保存，请查看下方控制器状态。',
   'Environment class removed.': '环境类别已删除。',
   'Class deletion requested. The controller protects classes still in use.': '已请求删除类别。控制器会保护仍被使用的类别。',
   'LOCAL MODE': '本地模式',

@@ -54,7 +54,7 @@ export function ClassManager({ classes, loading, onChanged, onUse }: { classes: 
   }
   const created = async (value: ClassDetail) => {
     setSelected(value.name); setDetail(value); setMode('detail')
-    setNotice(t('Class saved. Waiting for the controller to report Ready.'))
+    setNotice(t('Class saved. Controller status is shown below.'))
     await onChanged()
   }
   const remove = async () => {

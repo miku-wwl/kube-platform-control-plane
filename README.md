@@ -107,6 +107,9 @@ Open `http://127.0.0.1:5173`. Vite proxies `/api` to the local API. This unauthe
 
 ### Environment class management
 
+Chinese manual browser test steps, parameter examples, and the latest scoped local
+acceptance results: [环境类别与模板网页手动测试及验收报告](docs/环境类别与模板网页手动测试及验收报告.md).
+
 Open **Environment classes / 环境类别管理** in the sidebar, then **Create class**.
 Choose a small/team Kind starter preset, a saved project template, or an existing
 class before adjusting the form. Saved templates retain project connections,
