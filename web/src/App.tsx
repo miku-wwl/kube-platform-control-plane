@@ -1,14 +1,29 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { request, envPath, type Approval, type ClassInfo, type DraftResponse, type Environment, type EnvironmentDetail, type PlanView, type TerraformRun, type TimelineEvent } from './api'
+import { Boxes, ChevronRight, Layers, LayoutDashboard, Plus, RefreshCw } from 'lucide-react'
+import {
+  request,
+  envPath,
+  type Approval,
+  type ClassInfo,
+  type Environment,
+  type EnvironmentDetail,
+  type PlanView,
+  type TerraformRun,
+} from './api'
 import { useI18n } from './i18n'
 import { ClassManager } from './ClassManager'
+import { Alert, LoadingState } from './components/ui'
+import { Builder, Dashboard, Detail } from './ConsoleViews'
 
 type Screen = 'dashboard' | 'builder' | 'detail' | 'classes'
 type DetailTab = 'overview' | 'architecture' | 'terraform' | 'timeline'
+type Notice = { key: string; values?: Record<string, string | number> }
 
 function App() {
   const { language, setLanguage, t } = useI18n()
-  const [screen, setScreen] = useState<Screen>(() => window.location.hash === '#classes' ? 'classes' : window.location.hash === '#builder' ? 'builder' : 'dashboard')
+  const [screen, setScreen] = useState<Screen>(() =>
+    window.location.hash === '#classes' ? 'classes' : window.location.hash === '#builder' ? 'builder' : 'dashboard'
+  )
   const [tab, setTab] = useState<DetailTab>('overview')
   const [environments, setEnvironments] = useState<Environment[]>([])
   const [classes, setClasses] = useState<ClassInfo[]>([])
@@ -19,7 +34,8 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState<Notice | null>(null)
+  const [apiState, setApiState] = useState<'connecting' | 'connected' | 'unavailable'>('connecting')
 
   useEffect(() => {
     const hash = screen === 'classes' ? '#classes' : screen === 'builder' ? '#builder' : ''
@@ -28,25 +44,49 @@ function App() {
 
   const refresh = useCallback(async () => {
     try {
-      const [items, classItems] = await Promise.all([request<Environment[]>('/api/environments'), request<ClassInfo[]>('/api/classes')])
+      const [items, classItems] = await Promise.all([
+        request<Environment[]>('/api/environments'),
+        request<ClassInfo[]>('/api/classes'),
+      ])
       setEnvironments(items)
       setClasses(classItems)
+      setApiState('connected')
       setError('')
-    } catch (value) { setError((value as Error).message) }
-    finally { setLoading(false) }
+    } catch (value) {
+      setApiState('unavailable')
+      setError((value as Error).message)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   const openEnvironment = useCallback(async (environment: Pick<Environment, 'namespace' | 'name'>) => {
-    setSelected(environment); setScreen('detail'); setTab('overview'); setDetail(null); setPlan(null); setError('')
+    setSelected(environment)
+    setScreen('detail')
+    setTab('overview')
+    setDetail(null)
+    setPlan(null)
+    setError('')
     try {
       const value = await request<EnvironmentDetail>(envPath(environment))
       setDetail(value)
       const planRun = value.infrastructureDetail?.latestPlanRun
-      if (planRun) setPlan(await request<PlanView>(`/api/terraform-runs/${encodeURIComponent(environment.namespace)}/${encodeURIComponent(planRun)}/plan`))
-    } catch (reason) { setError((reason as Error).message) }
+      if (planRun)
+        setPlan(
+          await request<PlanView>(
+            `/api/terraform-runs/${encodeURIComponent(environment.namespace)}/${encodeURIComponent(planRun)}/plan`
+          )
+        )
+    } catch (reason) {
+      setError((reason as Error).message)
+    }
   }, [])
 
-  useEffect(() => { void refresh(); const timer = window.setInterval(() => void refresh(), 8000); return () => window.clearInterval(timer) }, [refresh])
+  useEffect(() => {
+    void refresh()
+    const timer = window.setInterval(() => void refresh(), 8000)
+    return () => window.clearInterval(timer)
+  }, [refresh])
   useEffect(() => {
     if (!selected || screen !== 'detail') return
     let active = true
@@ -56,163 +96,308 @@ function App() {
         if (!active) return
         setDetail(value)
         const latest = value.infrastructureDetail?.latestPlanRun
-        setPlan(latest ? await request<PlanView>(`/api/terraform-runs/${encodeURIComponent(selected.namespace)}/${encodeURIComponent(latest)}/plan`) : null)
+        setPlan(
+          latest
+            ? await request<PlanView>(
+                `/api/terraform-runs/${encodeURIComponent(selected.namespace)}/${encodeURIComponent(latest)}/plan`
+              )
+            : null
+        )
       } catch (reason) {
         if (!active) return
         if ((reason as Error).message === 'PlatformEnvironment was not found') {
-          setSelected(null); setDetail(null); setPlan(null); setScreen('dashboard')
-          setError(''); setNotice(t('Environment removed after finalizer cleanup.')); void refresh()
-        } else { setError((reason as Error).message) }
+          setSelected(null)
+          setDetail(null)
+          setPlan(null)
+          setScreen('dashboard')
+          setError('')
+          setNotice({ key: 'Environment removed after finalizer cleanup.' })
+          void refresh()
+        } else {
+          setError((reason as Error).message)
+        }
       }
     }
     const timer = window.setInterval(() => void load(), 6000)
-    return () => { active = false; window.clearInterval(timer) }
+    return () => {
+      active = false
+      window.clearInterval(timer)
+    }
   }, [selected, screen, refresh, t])
 
-  const readyCount = useMemo(() => environments.filter(item => item.ready).length, [environments])
-  const navigate = (next: Screen) => { setScreen(next); setError(''); setNotice('') }
+  const readyCount = useMemo(() => environments.filter((item) => item.ready).length, [environments])
+  const navigate = (next: Screen) => {
+    setScreen(next)
+    setError('')
+    setNotice(null)
+  }
 
   const approve = async (run: TerraformRun) => {
     if (!selected) return
-    setBusy(true); setError(''); setNotice('')
+    setBusy(true)
+    setError('')
+    setNotice(null)
     try {
-      const result = await request<Approval>(`/api/terraform-runs/${encodeURIComponent(run.namespace)}/${encodeURIComponent(run.name)}/approve`, {
-        method: 'POST', body: JSON.stringify({ planRunUID: run.uid, planDigest: run.planDigest, executionContextDigest: run.executionContextDigest, effectivePlanInputDigest: run.effectivePlanInputDigest, planReportRef: run.planReportRef, planReportDigest: run.planReportDigest }),
+      const result = await request<Approval>(
+        `/api/terraform-runs/${encodeURIComponent(run.namespace)}/${encodeURIComponent(run.name)}/approve`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            planRunUID: run.uid,
+            planDigest: run.planDigest,
+            executionContextDigest: run.executionContextDigest,
+            effectivePlanInputDigest: run.effectivePlanInputDigest,
+            planReportRef: run.planReportRef,
+            planReportDigest: run.planReportDigest,
+          }),
+        }
+      )
+      setNotice({
+        key: 'Approval {{name}} recorded against this exact plan. The existing controller will reconcile it.',
+        values: { name: result.name },
       })
-      setNotice(t('Approval {{name}} recorded against this exact plan. The existing controller will reconcile it.', { name: result.name }))
-      await openEnvironment(selected); await refresh()
-    } catch (reason) { setError((reason as Error).message) }
-    finally { setBusy(false) }
+      await openEnvironment(selected)
+      await refresh()
+    } catch (reason) {
+      setError((reason as Error).message)
+    } finally {
+      setBusy(false)
+    }
   }
 
   const created = async (environment: Pick<Environment, 'namespace' | 'name'>) => {
-    await refresh(); setNotice(t('PlatformEnvironment submitted. Terraform Plan and all later steps remain under the existing control plane.')); await openEnvironment(environment)
+    await refresh()
+    setNotice({
+      key: 'PlatformEnvironment submitted. Terraform Plan and all later steps remain under the existing control plane.',
+    })
+    await openEnvironment(environment)
   }
 
   const updateCapacity = async (nodeCount: number) => {
     if (!detail) return
-    setBusy(true); setError(''); setNotice('')
+    setBusy(true)
+    setError('')
+    setNotice(null)
     try {
-      await request(envPath(detail), { method: 'PUT', body: JSON.stringify({ uid: detail.uid, generation: detail.generation, nodeCount }) })
+      await request(envPath(detail), {
+        method: 'PUT',
+        body: JSON.stringify({ uid: detail.uid, generation: detail.generation, nodeCount }),
+      })
     } catch (reason) {
       const message = (reason as Error).message
-      if (message.includes('StaleEnvironment')) { setError(t('The environment changed while this page was open. Refresh the detail and try again.')) }
-      else { setError(message) }
-    } finally { setBusy(false); await openEnvironment(detail) }
+      if (message.includes('StaleEnvironment')) {
+        setError(t('The environment changed while this page was open. Refresh the detail and try again.'))
+      } else {
+        setError(message)
+      }
+    } finally {
+      setBusy(false)
+      await openEnvironment(detail)
+    }
   }
 
   const removeEnvironment = async () => {
     if (!detail || detail.deleting) return
-    setBusy(true); setError(''); setNotice('')
-    try { await request(envPath(detail), { method: 'DELETE', body: JSON.stringify({ uid: detail.uid }) }); setNotice(t('Deletion requested. Cleanup is running through existing finalizers; this console does not execute Terraform.')); await refresh() }
-    catch (reason) { setError((reason as Error).message) }
-    finally { setBusy(false) }
+    setBusy(true)
+    setError('')
+    setNotice(null)
+    try {
+      await request(envPath(detail), { method: 'DELETE', body: JSON.stringify({ uid: detail.uid }) })
+      setNotice({
+        key: 'Deletion requested. Cleanup is running through existing finalizers; this console does not execute Terraform.',
+      })
+      await refresh()
+    } catch (reason) {
+      setError((reason as Error).message)
+    } finally {
+      setBusy(false)
+    }
   }
 
-  return <div className="app-shell">
-    <aside className="sidebar">
-      <div className="brand"><div className="brand-mark">P</div><div><strong>PLATFORM</strong><small>CONTROL PLANE</small></div></div>
-      <div className="workspace-label">{t('LOCAL WORKSPACE')}</div>
-      <nav className="primary-nav">
-        <button className={screen === 'dashboard' || screen === 'detail' ? 'active' : ''} onClick={() => navigate('dashboard')}><span className="nav-icon">◫</span> {t('Environments')} <span className="nav-count">{environments.length}</span></button>
-        <button className={screen === 'builder' ? 'active' : ''} onClick={() => navigate('builder')}><span className="nav-icon">＋</span> {t('Platform builder')}</button>
-        <button className={screen === 'classes' ? 'active' : ''} onClick={() => navigate('classes')}><span className="nav-icon">▤</span> {t('Environment classes')} <span className="nav-count">{classes.length}</span></button>
-      </nav>
-      <div className="sidebar-bottom"><div className="local-indicator"><span className="pulse"/> {t('LOCAL MODE')}</div><p>Kind · LocalStack</p><small>{t('Stage 1 engine · frozen')}</small></div>
-    </aside>
-
-    <main className="main-area">
-      <header className="topbar"><div><div className="eyebrow">{t('PLATFORM ENGINEERING / LOCAL')}</div><h1>{screen === 'classes' ? t('Environment classes') : screen === 'builder' ? t('Platform builder') : screen === 'detail' ? selected?.name || t('Environment') : t('Environments')}</h1></div><div className="top-actions"><div className="language-switch" role="group" aria-label={t('Language')}><button type="button" aria-label={t('Switch language to English')} aria-pressed={language === 'en'} className={language === 'en' ? 'selected' : ''} onClick={() => setLanguage('en')}>EN</button><button type="button" aria-label={t('Switch language to Chinese')} aria-pressed={language === 'zh'} className={language === 'zh' ? 'selected' : ''} onClick={() => setLanguage('zh')}>中文</button></div><span className="connected"><i/> {t('API connected')}</span><button className="icon-button" title={t('Refresh')} aria-label={t('Refresh')} onClick={() => void refresh()}>↻</button><button className="button button-primary" onClick={() => navigate('builder')}>＋ {t('New environment')}</button></div></header>
-      {error && <div className="alert alert-error"><span>!</span><div><strong>{t('Request could not be completed')}</strong><p>{error}</p></div><button aria-label={t('Close')} onClick={() => setError('')}>×</button></div>}
-      {notice && <div className="alert alert-success"><span>✓</span><div><strong>{t('Workflow updated')}</strong><p>{notice}</p></div><button aria-label={t('Close')} onClick={() => setNotice('')}>×</button></div>}
-
-      {screen === 'dashboard' && <Dashboard environments={environments} readyCount={readyCount} loading={loading} onOpen={openEnvironment} onBuild={() => navigate('builder')} />}
-      {screen === 'builder' && <Builder classes={classes} initialClass={builderClass} onManageClasses={() => navigate('classes')} onCancel={() => navigate('dashboard')} onCreated={created} />}
-      {screen === 'classes' && <ClassManager classes={classes} loading={loading} onChanged={refresh} onUse={name => { setBuilderClass(name); navigate('builder') }} />}
-      {screen === 'detail' && detail && <Detail detail={detail} plan={plan} tab={tab} busy={busy} onTab={setTab} onApprove={approve} onUpdate={updateCapacity} onDelete={removeEnvironment} onOpenRun={() => setTab('terraform')} />}
-      {screen === 'detail' && !detail && !error && <div className="loading-state"><div className="spinner"/> {t('Loading environment evidence…')}</div>}
-    </main>
-  </div>
+  const connectionLabel =
+    apiState === 'connected' ? t('API connected') : apiState === 'connecting' ? t('Connecting…') : t('API unavailable')
+  return (
+    <div className="app-shell">
+      <a href="#main-content" className="skip-link">
+        {t('Skip to content')}
+      </a>
+      <aside className="sidebar">
+        <div className="brand">
+          <div className="brand-mark">
+            <Layers size={21} aria-hidden="true" />
+          </div>
+          <div className="brand-copy">
+            <strong>KPCP</strong>
+            <small>{t('Platform Control Plane')}</small>
+          </div>
+        </div>
+        <div className="workspace-label">{t('WORKSPACE')}</div>
+        <nav className="primary-nav" aria-label={t('Workspace navigation')}>
+          <div className="nav-section-label">{t('Operate')}</div>
+          <button
+            aria-label={t('Environments')}
+            aria-current={screen === 'dashboard' || screen === 'detail' ? 'page' : undefined}
+            title={t('Environments')}
+            className={screen === 'dashboard' || screen === 'detail' ? 'active' : ''}
+            onClick={() => navigate('dashboard')}
+          >
+            <LayoutDashboard size={18} aria-hidden="true" />
+            <span className="nav-label">{t('Environments')}</span>
+            <span className="nav-count">{environments.length}</span>
+          </button>
+          <div className="nav-section-label">{t('Build')}</div>
+          <button
+            aria-label={t('Platform builder')}
+            aria-current={screen === 'builder' ? 'page' : undefined}
+            title={t('Platform builder')}
+            className={screen === 'builder' ? 'active' : ''}
+            onClick={() => navigate('builder')}
+          >
+            <Boxes size={18} aria-hidden="true" />
+            <span className="nav-label">{t('Platform builder')}</span>
+          </button>
+          <button
+            aria-label={t('Environment classes')}
+            aria-current={screen === 'classes' ? 'page' : undefined}
+            title={t('Environment classes')}
+            className={screen === 'classes' ? 'active' : ''}
+            onClick={() => navigate('classes')}
+          >
+            <Layers size={18} aria-hidden="true" />
+            <span className="nav-label">{t('Environment classes')}</span>
+            <span className="nav-count">{classes.length}</span>
+          </button>
+        </nav>
+        <div className="sidebar-bottom">
+          <div
+            className="local-indicator"
+            role="status"
+            aria-label={t('LOCAL MODE') + ' · Kind + LocalStack'}
+            title={t('LOCAL MODE') + ' · Kind + LocalStack'}
+          >
+            <span className="dot good" />
+            <span>{t('LOCAL MODE')}</span>
+            <small className="rail-mode">{t('LOCAL')}</small>
+          </div>
+          <p>Kind + LocalStack</p>
+          <small>{t('Local workspace')}</small>
+        </div>
+      </aside>
+      <main className="main-area" id="main-content" tabIndex={-1}>
+        <header className="topbar">
+          <div className="topbar-context">
+            <span className="context-label">{t('Local workspace')}</span>
+            <ChevronRight size={14} aria-hidden="true" />
+            <h1>
+              {screen === 'classes'
+                ? t('Environment classes')
+                : screen === 'builder'
+                  ? t('Platform builder')
+                  : screen === 'detail'
+                    ? selected?.name || t('Environment')
+                    : t('Environments')}
+            </h1>
+          </div>
+          <div className="top-actions">
+            <div className="language-switch" role="group" aria-label={t('Language')}>
+              <button
+                type="button"
+                aria-label={t('Switch language to English')}
+                aria-pressed={language === 'en'}
+                className={language === 'en' ? 'selected' : ''}
+                onClick={() => setLanguage('en')}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                aria-label={t('Switch language to Chinese')}
+                aria-pressed={language === 'zh'}
+                className={language === 'zh' ? 'selected' : ''}
+                onClick={() => setLanguage('zh')}
+              >
+                中文
+              </button>
+            </div>
+            <span className={`connected ${apiState}`} role="status" title={connectionLabel}>
+              <i />
+              <span>{connectionLabel}</span>
+            </span>
+            <button
+              className="icon-button"
+              title={t('Refresh')}
+              aria-label={t('Refresh')}
+              onClick={() => void refresh()}
+            >
+              <RefreshCw size={17} aria-hidden="true" />
+            </button>
+            <button className="button button-primary" onClick={() => navigate('builder')}>
+              <Plus size={16} aria-hidden="true" />
+              {t('New environment')}
+            </button>
+          </div>
+        </header>
+        <div className="global-feedback">
+          {error && (
+            <Alert tone="error" title={t('Request could not be completed')} onClose={() => setError('')}>
+              {error}
+            </Alert>
+          )}
+          {notice && (
+            <Alert tone="success" title={t('Workflow updated')} onClose={() => setNotice(null)}>
+              {t(notice.key, notice.values)}
+            </Alert>
+          )}
+        </div>
+        {screen === 'dashboard' && (
+          <Dashboard
+            environments={environments}
+            readyCount={readyCount}
+            loading={loading}
+            apiState={apiState}
+            onOpen={openEnvironment}
+            onBuild={() => navigate('builder')}
+          />
+        )}
+        {screen === 'builder' && (
+          <Builder
+            classes={classes}
+            initialClass={builderClass}
+            onManageClasses={() => navigate('classes')}
+            onCancel={() => navigate('dashboard')}
+            onCreated={created}
+          />
+        )}
+        {screen === 'classes' && (
+          <ClassManager
+            classes={classes}
+            loading={loading}
+            onChanged={refresh}
+            onUse={(name) => {
+              setBuilderClass(name)
+              navigate('builder')
+            }}
+          />
+        )}
+        {screen === 'detail' && detail && (
+          <Detail
+            key={detail.uid}
+            detail={detail}
+            plan={plan}
+            tab={tab}
+            busy={busy}
+            onBack={() => navigate('dashboard')}
+            onTab={setTab}
+            onApprove={approve}
+            onUpdate={updateCapacity}
+            onDelete={removeEnvironment}
+            onOpenRun={() => setTab('terraform')}
+          />
+        )}
+        {screen === 'detail' && !detail && !error && <LoadingState label={t('Loading environment evidence…')} />}
+      </main>
+    </div>
+  )
 }
-
-function Dashboard({ environments, readyCount, loading, onOpen, onBuild }: { environments: Environment[]; readyCount: number; loading: boolean; onOpen: (item: Environment) => void; onBuild: () => void }) {
-  const { t } = useI18n()
-  const pending = environments.filter(item => item.latestApproval === 'Required' || item.latestApproval === 'Pending').length
-  return <div className="content">
-    <section className="welcome-row"><div><div className="section-kicker">{t('CONTROL PLANE OVERVIEW')}</div><h2>{t('Understand every environment,')}<br/><em>{t('from intent to runtime.')}</em></h2><p>{t('Live read model from the Kubernetes-native control plane.')}</p></div><div className="welcome-art"><div className="orb orb-one"/><div className="orb orb-two"/><div className="orbit"/><div className="welcome-art-label">K8s <span>↗</span> IaC</div></div></section>
-    <section className="stat-grid"><Stat label={t('TOTAL ENVIRONMENTS')} value={environments.length} icon="◫" tone="blue"/><Stat label={t('READY')} value={readyCount} icon="✓" tone="green"/><Stat label={t('AWAITING APPROVAL')} value={pending} icon="◇" tone="amber"/><Stat label={t('CONTROL PLANE')} value={t('ONLINE')} icon="⌁" tone="green" small/></section>
-    <section className="panel environment-panel"><div className="panel-heading"><div><div className="section-kicker">{t('YOUR FLEET')}</div><h3>{t('Platform environments')} <span className="count-chip">{environments.length}</span></h3></div><button className="button button-secondary" onClick={onBuild}>＋ {t('Create environment')}</button></div>
-      {loading ? <div className="empty-state"><div className="spinner"/> {t('Loading Kubernetes resources…')}</div> : environments.length === 0 ? <div className="empty-state"><div className="empty-icon">⌘</div><strong>{t('No environments yet')}</strong><p>{t('Start with a typed EnvironmentClass and a reviewed draft.')}</p><button className="button button-primary" onClick={onBuild}>{t('Open platform builder')}</button></div> : <div className="table-wrap"><table><thead><tr><th>{t('ENVIRONMENT')}</th><th>{t('CLASS')}</th><th>{t('STATE')}</th><th>{t('INFRA / RUNTIME')}</th><th>{t('TARGET')}</th><th>{t('LATEST RUN')}</th><th/></tr></thead><tbody>{environments.map(item => <tr key={`${item.namespace}/${item.name}`} onClick={() => onOpen(item)}><td><div className="env-name"><span className="env-avatar">{item.name.slice(0,1).toUpperCase()}</span><div><strong>{item.name}</strong><small>{item.namespace} · gen {item.generation}</small></div></div></td><td><span className="class-pill">{item.class || t('legacy')}</span></td><td><StatePill value={item.phase}/></td><td><div className="mini-states"><span><i className={item.infrastructure.toLowerCase() === 'ready' ? 'dot good' : 'dot'}/>{t(item.infrastructure)}</span><span><i className={item.runtime.toLowerCase() === 'ready' ? 'dot good' : 'dot'}/>{t(item.runtime)}</span></div></td><td><div className="target-cell"><strong>{item.target.clusterName || '—'}</strong><small>{[item.target.provider,item.target.region].filter(Boolean).join(' · ')}</small></div></td><td>{item.latestTerraformRun ? <div className="run-cell"><strong>{item.latestTerraformRun.operation}</strong><small>{item.latestTerraformRun.reason || item.latestTerraformRun.outcome || t('Reconciling')}</small></div> : <span className="muted">{t('No run')}</span>}</td><td><span className="row-arrow">↗</span></td></tr>)}</tbody></table></div>}
-      <div className="panel-foot"><span><i className="pulse"/> {t('Live status')}</span><span>{t('Refreshes every 8 seconds')}</span></div>
-    </section>
-    <div className="footer-note"><span>◈</span> {t('Kubernetes is the source of truth. AI proposes · API validates · controllers reconcile · Terraform executes.')}</div>
-  </div>
-}
-
-function Stat({ label, value, icon, tone, small = false }: { label: string; value: string | number; icon: string; tone: string; small?: boolean }) { return <div className="stat-card"><div className={`stat-icon ${tone}`}>{icon}</div><div><span>{label}</span><strong className={small ? 'small-value' : ''}>{value}</strong></div><div className="stat-decoration">{icon}</div></div> }
-
-function Builder({ classes, initialClass, onManageClasses, onCancel, onCreated }: { classes: ClassInfo[]; initialClass: string; onManageClasses: () => void; onCancel: () => void; onCreated: (value: Pick<Environment,'namespace'|'name'>) => Promise<void> }) {
-  const { t, language } = useI18n()
-  const [description,setDescription]=useState(()=>t('Create a small development platform with Valkey cache'))
-  const [name,setName]=useState('')
-  const [namespace,setNamespace]=useState('default')
-  const [classRef,setClassRef]=useState(initialClass)
-  const [region,setRegion]=useState('')
-  const [nodeCount,setNodeCount]=useState(1)
-  const [draft,setDraft]=useState<DraftResponse|null>(null)
-  const [pending,setPending]=useState(false)
-  const [error,setError]=useState('')
-  const selectedClass=classes.find(item=>item.name===classRef)
-  useEffect(()=>{setDescription(current=>current==='Create a small development platform with Valkey cache'||current==='创建一个带有 Valkey 缓存的小型开发平台'?t('Create a small development platform with Valkey cache'):current)},[language,t])
-  useEffect(()=>{if(!classes.some(item=>item.name===classRef&&item.ready)){setClassRef(classes.find(item=>item.ready)?.name||'');setRegion('')}},[classes,classRef])
-
-  const generate=async()=>{setPending(true);setError('');setDraft(null);try{const value=await request<DraftResponse>('/api/drafts',{method:'POST',body:JSON.stringify({description,name,namespace,classRef,region,nodeCount})});setDraft(value);if(!value.valid)setError(value.errors?.join('; ')||t('Draft validation failed'))}catch(value){setError((value as Error).message)}finally{setPending(false)}}
-  const submit=async()=>{if(!draft?.valid)return;setPending(true);setError('');try{await request('/api/environments',{method:'POST',body:JSON.stringify(draft.intent)});await onCreated({namespace:draft.intent.namespace,name:draft.intent.name})}catch(value){setError((value as Error).message)}finally{setPending(false)}}
-  return <div className="content builder-content"><div className="breadcrumb"><button onClick={onCancel}>{t('Environments')}</button><span>/</span><strong>{t('New environment')}</strong></div><div className="builder-intro"><div className="section-kicker">{t('INTENT → REVIEW → SUBMIT')}</div><h2>{t('Describe the platform')}<br/><em>{t('you need.')}</em></h2><p>{t('The assistant drafts a typed PlatformEnvironment. Existing controllers remain responsible for planning, approval, execution and runtime reconciliation.')}</p></div>
-    <div className="builder-grid"><section className="panel builder-form"><div className="panel-title"><span className="step-number">01</span><div><h3>{t('Describe desired state')}</h3><p>{t('AI output stays a proposal until you explicitly submit it.')}</p></div></div><label className="field-label">{t('Natural-language request')}</label><textarea className="text-area" rows={4} value={description} onChange={event=>setDescription(event.target.value)} placeholder={t('Describe a development or test environment…')}/><div className="form-grid"><label><span className="field-label">{t('Environment name')} <small>{t('optional')}</small></span><input className="text-input" value={name} onChange={event=>setName(event.target.value)} placeholder={t('generated from description')}/></label><label><span className="field-label">{t('Namespace')}</span><input className="text-input" value={namespace} onChange={event=>setNamespace(event.target.value)}/></label><label><span className="field-label">{t('Environment class')}</span><select className="text-input" value={classRef} onChange={event=>{setClassRef(event.target.value);setRegion('')}}><option value="">{t('Select a ready class')}</option>{classes.map(item=><option key={item.name} value={item.name} disabled={!item.ready}>{item.name}{item.ready?'':t(' · not ready')}</option>)}</select></label><label><span className="field-label">{t('Region')} <small>{t('class default')}</small></span><select className="text-input" value={region} onChange={event=>setRegion(event.target.value)}><option value="">{t('Use class default') + (selectedClass?.defaultRegion ? ' (' + selectedClass.defaultRegion + ')' : '')}</option>{(selectedClass?.allowedRegions||[]).map(value=><option key={value} value={value}>{value}</option>)}</select></label><label><span className="field-label">{t('Node count')}</span><input className="text-input" type="number" min={selectedClass?.capacityBounds.minNodeCount||0} max={selectedClass?.capacityBounds.maxNodeCount||1000} value={nodeCount} onChange={event=>setNodeCount(Number(event.target.value))}/></label></div>
-      {selectedClass&&<div className="class-summary"><span className="class-summary-icon">⌘</span><div><strong>{selectedClass.name}</strong><p>{selectedClass.provider} · {t('target ')}{selectedClass.targetCluster} · {selectedClass.defaultRegion||t('region not fixed')}</p></div><span className="ready-label"><i/> {selectedClass.ready?t('READY'):t('NOT READY')}</span></div>}
-      <div className="form-actions"><button className="button button-secondary" onClick={onCancel}>{t('Cancel')}</button><button className="button button-primary" onClick={()=>void generate()} disabled={pending||!classRef||!selectedClass?.ready}><span>✦</span> {pending?t('Generating…'):t('Generate draft')}</button></div>
-      {!classes.some(item => item.ready) && <div className="class-empty-note"><p>{t('Create a ready environment class before generating a draft.')}</p><button type="button" className="button button-secondary" onClick={onManageClasses}>{t('Manage environment classes')}</button></div>}
-      {error&&<p className="inline-error">{error}</p>}
-    </section>
-    <section className="draft-panel"><div className="draft-panel-head"><div><div className="section-kicker">{t('02 · REVIEW BEFORE SUBMIT')}</div><h3>{t('Draft preview')}</h3></div><span className="provider-chip">{draft?.provider||t('LOCAL DRAFT')}</span></div>{draft?.valid?<><div className="draft-summary"><div className="draft-check">✓</div><div><strong>{draft.intent.namespace}/{draft.intent.name}</strong><p>{draft.intent.classRef} · {draft.intent.nodeCount} {t('nodes')} · {draft.intent.region||t('class region')}</p></div></div>{draft.warnings?.map(item=><div className="warning-note" key={item}>ⓘ {item}</div>)}<pre className="yaml-preview">{draft.yaml}</pre><button className="button button-primary submit-draft" disabled={pending} onClick={()=>void submit()}>{pending?t('Submitting…'):t('Submit PlatformEnvironment')} <span>→</span></button><p className="approval-note">{t('Submitting creates only the top-level Kubernetes resource. No Plan is approved and no infrastructure is applied by this button.')}</p></>:<div className="draft-placeholder"><div className="placeholder-grid"/><div className="sparkle">✦</div><strong>{t('Your typed manifest preview appears here')}</strong><p>{t('Generate a draft, review its validation result and YAML, then submit explicitly.')}</p></div>}</section></div>
-    <div className="boundary-strip"><span>{t('✦ AI PROPOSES')}</span><i>→</i><span>{t('⌕ API VALIDATES')}</span><i>→</i><span>{t('◉ HUMAN SUBMITS')}</span><i>→</i><span>{t('⟳ CONTROL PLANE RECONCILES')}</span></div>
-  </div>
-}
-
-function Detail({ detail, plan, tab, busy, onTab, onApprove, onUpdate, onDelete, onOpenRun }: { detail: EnvironmentDetail; plan: PlanView|null; tab: DetailTab; busy: boolean; onTab: (tab:DetailTab)=>void; onApprove: (run:TerraformRun)=>Promise<void>; onUpdate: (nodeCount:number)=>Promise<void>; onDelete:()=>Promise<void>; onOpenRun:(run:TerraformRun)=>void }) {
-  const { t } = useI18n()
-  const [nodeCount,setNodeCount]=useState<number|null>(null)
-  const [deleteConfirming,setDeleteConfirming]=useState(false)
-  const [deleteName,setDeleteName]=useState('')
-  const latestPlan=detail.terraformRuns.filter(run=>run.operation==='Plan').slice(-1)[0]
-  const approvalReady=!!latestPlan&&latestPlan.state==='Ready'&&latestPlan.outcome==='ChangesPresent'&&latestPlan.hasChanges&&latestPlan.artifactsReady&&latestPlan.evidenceCaptured&&!latestPlan.approval
-  return <div className="content detail-content">
-    <div className="breadcrumb"><button onClick={()=>onTab('overview')}>{t('Environments')}</button><span>/</span><strong>{detail.namespace}/{detail.name}</strong></div>
-    <section className="detail-hero"><div className="detail-title"><span className="env-avatar large">{detail.name.slice(0,1).toUpperCase()}</span><div><div className="detail-subtitle">{detail.namespace} · {detail.class||t('legacy environment')} · {t('generation')} {detail.generation}</div><h2>{detail.name}</h2><div className="detail-tags"><StatePill value={detail.phase}/><span className="tag">{t('target ')}{detail.target.clusterName||t('pending')}</span><span className="tag">{detail.target.provider||'Kubernetes'}{detail.target.region?` · ${detail.target.region}`:''}</span></div></div></div><button className="button button-danger-outline" disabled={busy||detail.deleting} onClick={()=>{setDeleteName('');setDeleteConfirming(true)}}>{detail.deleting?t('Deleting…'):t('Delete environment')}</button></section>
-    {deleteConfirming&&!detail.deleting&&<section className="panel delete-confirm-panel"><div><div className="section-kicker">{t('DELETE ENVIRONMENT')}</div><h3>{t('Confirm deletion of {{environment}}',{environment:`${detail.namespace}/${detail.name}`})}</h3><p>{t('Existing finalizers will prune runtime resources and require a separate approval for the Terraform Destroy Plan.')}</p></div><label className="field-label">{t('Type {{name}} to request deletion',{name:detail.name})}<input className="text-input" aria-label={t('Confirm environment name')} value={deleteName} onChange={event=>setDeleteName(event.target.value)}/></label><div className="delete-confirm-actions"><button className="button button-secondary" onClick={()=>setDeleteConfirming(false)}>{t('Cancel')}</button><button className="button button-danger-outline" disabled={busy||deleteName!==detail.name} onClick={()=>{setDeleteConfirming(false);void onDelete()}}>{t('Request deletion')}</button></div></section>}
-    <div className="detail-metrics"><Metric label={t('INFRASTRUCTURE')} value={detail.infrastructure} icon="⌂"/><Metric label={t('RUNTIME')} value={detail.runtime} icon="◈"/><Metric label={t('RESOURCE INVENTORY')} value={detail.runtimeDetail?.inventoryItems??0} icon="▤"/><Metric label={t('LATEST APPROVAL')} value={detail.latestApproval||t('Not submitted')} icon="◇"/></div>
-    <div className="tab-bar">{(['overview','architecture','terraform','timeline'] as DetailTab[]).map(value=><button key={value} className={tab===value?'selected':''} onClick={()=>onTab(value)}>{value==='overview'?t('Overview'):value==='architecture'?t('Architecture preview'):value==='terraform'?t('Terraform runs'):t('Lifecycle timeline')}{value==='terraform'&&<span>{detail.terraformRuns.length}</span>}</button>)}</div>
-    {tab==='overview'&&<div className="overview-grid"><div className="panel conditions-panel"><div className="panel-heading"><div><div className="section-kicker">{t('RECONCILIATION')}</div><h3>{t('Current conditions')}</h3></div><span className="generation-chip">{t('observed gen')} {detail.generation}</span></div>{detail.conditions.length===0?<p className="muted pad">{t('No conditions have been recorded yet.')}</p>:detail.conditions.map(condition=><div className="condition-row" key={condition.type}><StateDot status={condition.status}/><div><strong>{condition.type}<small>{t(condition.reason||condition.status)}</small></strong><p>{condition.message||t('No condition message provided.')}</p></div><time>{formatTime(condition.lastTransitionTime)}</time></div>)}</div><div className="side-stack"><div className="panel target-panel"><div className="section-kicker">{t('TRUSTED TARGET')}</div><h3>{detail.target.clusterName||t('Discovery pending')}</h3><dl><dt>{t('Provider')}</dt><dd>{detail.target.provider||'—'}</dd><dt>{t('Account')}</dt><dd>{detail.target.accountID||'—'}</dd><dt>{t('Region')}</dt><dd>{detail.target.region||'—'}</dd><dt>{t('Incarnation')}</dt><dd>{detail.target.incarnationID||'—'}</dd></dl><p className="safe-note">{t('Connection credentials and certificate data are intentionally not exposed.')}</p></div>{detail.runtimeDetail&&<div className="panel runtime-panel"><div className="section-kicker">{t('RUNTIME RECONCILIATION')}</div><h3>{detail.runtimeDetail.name}</h3><div className="runtime-info"><StatePill value={detail.runtimeDetail.state}/><span>{t('{{count}} inventoried resources',{count:detail.runtimeDetail.inventoryItems})}</span></div>{detail.runtimeDetail.mutationBlocked&&<p className="inline-error">{t('Runtime mutation is currently fenced.')}</p>}{detail.valkey&&<div className="valkey-row"><span className="valkey-icon">V</span><div><strong>Valkey</strong><small>{detail.valkey.state} · {t('{{ready}}/{{total}} replicas ready',{ready:detail.valkey.readyReplicas||0,total:detail.valkey.replicas||0})}</small></div><StatePill value={detail.valkey.state}/></div>}</div>}</div><div className="panel update-panel"><div><div className="section-kicker">{t('SAFE DESIRED-STATE UPDATE')}</div><h3>{t('Capacity')}</h3><p>{t('Change node count only; the existing control plane plans and reconciles the new generation.')}</p></div><div className="update-control"><input type="number" min="0" value={nodeCount??detail.nodeCount} onChange={event=>setNodeCount(Number(event.target.value))}/><button className="button button-secondary" disabled={busy||detail.class===''||nodeCount===null} onClick={()=>void onUpdate(nodeCount??detail.nodeCount)}>{t('Update capacity')}</button></div></div><div className="panel evidence-panel"><div className="panel-heading"><div><div className="section-kicker">{t('DURABLE EVIDENCE')}</div><h3>{t('Latest Terraform evidence')}</h3></div><button className="text-button" onClick={()=>onTab('terraform')}>{t('View runs →')}</button></div><Evidence detail={detail}/></div></div>}
-    {tab==='architecture'&&<Architecture plan={plan} run={latestPlan} approvalReady={approvalReady} busy={busy} onApprove={onApprove}/>}
-    {tab==='terraform'&&<div className="panel runs-panel"><div className="panel-heading"><div><div className="section-kicker">{t('IMMUTABLE ATTEMPTS')}</div><h3>{t('Terraform runs')}</h3></div><span className="count-chip">{detail.terraformRuns.length}</span></div>{detail.terraformRuns.length===0?<div className="empty-state"><strong>{t('No Terraform runs yet')}</strong><p>{t('The controller will create one after the environment is reconciled.')}</p></div>:<div className="run-list">{[...detail.terraformRuns].reverse().map(run=><RunRow key={run.uid} run={run} onClick={()=>onOpenRun(run)}/>)}</div>}</div>}
-    {tab==='timeline'&&<Timeline events={detail.timeline} note={detail.timelineNote}/>}
-  </div>
-}
-
-function Metric({label,value,icon}:{label:string;value:string|number;icon:string}){return <div className="metric-card"><span className="metric-icon">{icon}</span><span>{label}</span><strong>{value}</strong></div>}
-function Evidence({detail}:{detail:EnvironmentDetail}){const {t}=useI18n();const entries=[['Plan digest',detail.evidence.planDigest],['Plan report',detail.evidence.planReportRef],['Report digest',detail.evidence.planReportDigest],['Terminal result',detail.evidence.terminalResultRef],['Source bundle digest',detail.evidence.sourceBundleDigest],['Target discovery digest',detail.evidence.targetDiscoveryDigest]];return <div className="evidence-grid">{entries.map(([label,value])=><div key={label}><span>{t(String(label))}</span><code>{value?short(String(value)):t('Not recorded')}</code></div>)}</div>}
-function RunRow({run,onClick}:{run:TerraformRun;onClick:()=>void}){const {t}=useI18n();return <div className="run-row" onClick={onClick}><div className={`operation-icon ${run.operation.toLowerCase()}`}>{run.operation==='Plan'?'⌕':run.operation==='Apply'?'↗':'⌫'}</div><div className="run-primary"><strong>{run.operation} <small>{run.name}</small></strong><p>{run.reason||run.outcome||t('Reconciliation pending')}{run.hasChanges?t(' · changes present'):''}</p></div><StatePill value={run.state}/><div className="run-digest"><span>{t('PLAN IDENTITY')}</span><code>{short(run.planDigest||run.uid)}</code></div><div className="run-evidence"><span>{t(run.artifactsReady?'Evidence ready':'Evidence pending')}</span><small>{formatTime(run.createdAt)}</small></div><span className="row-arrow">↗</span></div>}
-
-function Architecture({plan,run,approvalReady,busy,onApprove}:{plan:PlanView|null;run?:TerraformRun;approvalReady:boolean;busy:boolean;onApprove:(run:TerraformRun)=>Promise<void>}){const {t}=useI18n();const graph=plan?.graph;const nodes=graph?.nodes||[];const positions=nodes.map((node,index)=>({node,x:2+(index%2)*49,y:30+Math.floor(index/2)*152}));const coords=new Map(positions.map(item=>[item.node.address,item]));const height=Math.max(250,Math.ceil(nodes.length/2)*152+28);return <div className="architecture-layout"><div className="panel architecture-panel"><div className="panel-heading"><div><div className="section-kicker">{t('DETERMINISTIC PLAN PROJECTION')}</div><h3>{t('Architecture change preview')}</h3></div>{graph&&<div className="change-summary"><span className="create">+ {graph.summary.create}</span><span className="update">~ {graph.summary.update}</span><span className="delete">− {graph.summary.delete}</span><span className="replace">± {graph.summary.replace}</span></div>}</div><div className="architecture-note">{plan?.message||t('Plan evidence has not been loaded.')} {t('Architecture nodes are derived from the immutable Terraform plan; values are allowlisted and sensitive fields are omitted.')}</div>{!plan?.available||!graph?<div className="empty-state"><div className="empty-icon">⌁</div><strong>{t('Plan preview unavailable')}</strong><p>{plan?.message||t('Run a Terraform Plan to see proposed resource changes here.')}</p></div>:nodes.length===0?<div className="empty-state"><div className="empty-icon">✓</div><strong>{t('No resource changes')}</strong><p>{t('This plan has no create, update, delete or replace actions.')}</p></div>:<><div className="graph-legend"><span><i className="legend current"/>{t('CURRENT')}</span><span><i className="legend planned"/>{t('PLANNED')}</span><span><i className="legend create"/>{t('CREATE')}</span><span><i className="legend update"/>{t('UPDATE')}</span><span><i className="legend delete"/>{t('DELETE / REPLACE')}</span></div><div className="graph-canvas" style={{height}}><svg className="graph-edges" viewBox={`0 0 1000 ${height}`} preserveAspectRatio="none" aria-hidden="true">{graph.edges.map(edge=>{const from=coords.get(edge.from),to=coords.get(edge.to);if(!from||!to)return null;const x1=(from.x+24)*10,y1=from.y+52,x2=(to.x+24)*10,y2=to.y+52;return <path key={`${edge.from}:${edge.to}`} d={`M ${x1} ${y1} C ${x1+90} ${y1}, ${x2-90} ${y2}, ${x2} ${y2}`} />})}</svg>{positions.map(({node,x,y})=><div key={node.address} className={`graph-node action-${node.action}`} style={{left:`${x}%`,top:y}}><div className="graph-node-head"><span className={`action-sign ${node.action}`}>{node.action==='create'?'+':node.action==='update'?'~':node.action==='delete'?'−':node.action==='replace'?'±':'='}</span><span className="resource-type">{node.type}</span><span className={`action-label ${node.action}`} title={node.action}>{t(node.action)}</span></div><strong>{node.address}</strong><div className="node-columns"><div><small>{t('CURRENT')}</small><Metadata values={node.before}/></div><div><small>{t('PLANNED')}</small><Metadata values={node.after}/></div></div></div>)}</div></>}</div>{run&&<div className="panel approval-panel"><div className="approval-panel-copy"><div className="section-kicker">{t('HUMAN REVIEW GATE')}</div><h3>{(run.approval?.state==='Recorded'||run.approval?.state==='Approved')?t('Approval recorded'):approvalReady?t('Review this exact plan'):t('No approval action available')}</h3><p>{t('Plan {{digest}} · expires {{time}}',{digest:short(run.planDigest||t('not ready')),time:formatTime(run.planExpiresAt)})}</p><p>{t('The platform API creates only the existing immutable ChangeApproval binding. The existing controller decides when the matching saved plan can proceed.')}</p></div><div className="approval-panel-action">{run.approval?<StatePill value={run.approval.state}/>:approvalReady?<button className="button button-primary" disabled={busy} onClick={()=>void onApprove(run)}>✓ {t('Approve exact plan')}</button>:<button className="button button-secondary" disabled>{t('Waiting for Plan evidence')}</button>}<span>{t('No Apply endpoint exists in this console.')}</span></div></div>}</div>}
-
-function Metadata({values}:{values?:Record<string,unknown>}){if(!values||Object.keys(values).length===0)return <span className="metadata-empty">—</span>;return <ul className="metadata-list">{Object.entries(values).map(([key,value])=><li key={key}><span>{key}</span><b>{typeof value==='object'?JSON.stringify(value):String(value)}</b></li>)}</ul>}
-
-function Timeline({events,note}:{events:TimelineEvent[];note:string}){const {t}=useI18n();return <div className="panel timeline-panel"><div className="panel-heading"><div><div className="section-kicker">{t('RESOURCE-BACKED EVENTS')}</div><h3>{t('Lifecycle timeline')}</h3></div><span className="count-chip">{t('{{count}} entries',{count:events.length})}</span></div><div className="timeline-note">ⓘ {note}</div>{events.length===0?<div className="empty-state"><strong>{t('No lifecycle evidence yet')}</strong></div>:<div className="timeline-list">{[...events].reverse().map((event,index)=><div className="timeline-event" key={`${event.kind}:${event.resource}:${event.at}:${index}`}><div className="timeline-marker"><span/></div><div className="timeline-event-body"><div className="timeline-event-head"><div><span className="event-kind">{event.kind}</span><strong>{event.title}</strong></div><time>{formatTime(event.at)}</time></div><p>{event.message||event.reason||event.state||event.resource}</p><small>{event.resource}</small></div></div>)}</div>}</div>}
-
-function StatePill({value}:{value:string}){const {t}=useI18n();const lower=value.toLowerCase();const tone=lower==='ready'||lower==='recorded'||lower==='approved'||lower==='succeeded'||lower==='online'?'good':lower.includes('fail')||lower.includes('reject')||lower==='unknown'?'bad':lower.includes('waiting')||lower==='pending'||lower==='reconciling'||lower==='running'?'warn':'neutral';return <span className={`state-pill ${tone}`}><i/>{value?t(value):t('Unknown')}</span>}
-function StateDot({status}:{status:string}){return <span className={`condition-dot ${status.toLowerCase()==='true'?'good':status.toLowerCase()==='false'?'warn':'neutral'}`}/>}
-function formatTime(value?:string){if(!value)return '—';const date=new Date(value);const locale=document.documentElement.lang.startsWith('zh')?'zh-CN':'en-NZ';return Number.isNaN(date.getTime())?'—':date.toLocaleString(locale,{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
-function short(value:string){return value.length>34?`${value.slice(0,13)}…${value.slice(-12)}`:value}
 
 export default App
