@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "environmentAbsent": true,
+  "targetRuntimeServiceAbsent": true,
+  "ownedInfrastructureBucketsAbsent": [
+    "pcp-stage2-202610040155364ac247eb",
+    "pcp-stage2-202610040155364ac247eb-original",
+    "pcp-stage2-202610040155364ac247eb-next"
+  ],
+  "destroyApplyName": "phi-topology-4ac247eb-infra-destroy-plan-3-apply-ea09eee052",
+  "destroyApplyUID": "71106537-16aa-4370-842e-4f81e6f0f7cf",
+  "terminal": {
+    "terraformRunUID": "71106537-16aa-4370-842e-4f81e6f0f7cf",
+    "jobUID": "4e270b6d-282b-43e6-8650-1ef0e92002b0",
+    "startedAt": "2026-10-04T02:17:59.075922686Z",
+    "finishedAt": "2026-10-04T02:18:40.083893266Z",
+    "operation": "Apply",
+    "terraformExitCode": 0,
+    "executionOutcome": "Succeeded",
+    "mutationClassification": "SucceededPostMutation",
+    "mutationMayHaveOccurred": false,
+    "artifactsReady": true,
+    "hasChanges": false,
+    "planRef": "runs/57cf198c-8f96-4036-9039-604e3106cb7f/plan.binary",
+    "planDigest": "sha256:324226539a65825bbc266a2c6e878649e5072960bd4b8564247bcecbc9632dc0",
+    "sourceBundleRef": "runs/57cf198c-8f96-4036-9039-604e3106cb7f/source-bundle.tar.zst",
+    "sourceBundleDigest": "sha256:78c77449e08a656f7503db003f2566a83c73b713911dc80a0f7bba849b394550",
+    "backendConfigRef": "runs/57cf198c-8f96-4036-9039-604e3106cb7f/backend-config.hcl",
+    "backendConfigDigest": "sha256:b5cbd04f0ceb6d17a42b10ad1f2b9cc0c8970d643a15a0e3ecd38b1f01dbeb18",
+    "terminalResultRef": "runs/71106537-16aa-4370-842e-4f81e6f0f7cf/terminal-result.json",
+    "effectivePlanInputDigest": "sha256:8b79802eb7a4b6db45137123882b8ea9ab74a8448ad36f18db975d22f0168b5a",
+    "targetDiscoveryRef": "runs/dcfb3393-da69-4183-a009-39cdad56bc14/target-discovery.json",
+    "targetDiscoveryDigest": "sha256:f7219474670089f310ff8e4aef34971ee4972249b00352e7c6a1f9ff53119a8f"
+  },
+  "targetRuntimeNamespace": "default",
+  "targetRuntimeAbsenceEvidence": "Existing harness all-namespace target-a snapshot captured before session cluster deletion. Initial platform-system-only probe did not cover the runtime namespace and was superseded."
+}

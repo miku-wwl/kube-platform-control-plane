@@ -1,0 +1,17 @@
+[
+  {
+    "command": "npm --prefix web run build",
+    "exitCode": 0,
+    "status": "PASS"
+  },
+  {
+    "command": "npm --prefix web run typecheck",
+    "exitCode": 0,
+    "status": "PASS"
+  },
+  {
+    "command": "npm --prefix web run lint",
+    "exitCode": 0,
+    "status": "PASS"
+  }
+]

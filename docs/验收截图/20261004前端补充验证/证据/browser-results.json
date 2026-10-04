@@ -1,0 +1,861 @@
+[
+  {
+    "name": "foundry-phi4mini-generate-draft",
+    "status": "PASS",
+    "evidence": {
+      "environment": "phi-topology-4ac247eb",
+      "className": "stage2-202610040155364a-class-topology",
+      "region": "local",
+      "nodes": 1,
+      "cache": "disabled"
+    }
+  },
+  {
+    "name": "foundry-draft-explicit-submit",
+    "status": "PASS",
+    "evidence": {
+      "provider": "Foundry Local",
+      "environment": "phi-topology-4ac247eb",
+      "phase": "PlanRunning",
+      "approval": "Not submitted"
+    }
+  },
+  {
+    "name": "real-create-update-replace-render-en-1440",
+    "status": "PASS",
+    "evidence": {
+      "canvas": {
+        "height": 956,
+        "width": 725
+      },
+      "endpoints": [
+        {
+          "actual": [
+            179.5,
+            542,
+            179.5,
+            586
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.lifecycle",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            179.5,
+            542,
+            179.5,
+            586
+          ],
+          "maxError": 0,
+          "valid": true
+        },
+        {
+          "actual": [
+            391,
+            242.5,
+            335,
+            759
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.replacement",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            391,
+            242.5,
+            335,
+            759
+          ],
+          "maxError": 0,
+          "valid": true
+        }
+      ],
+      "nodes": [
+        {
+          "action": "update",
+          "address": "aws_s3_bucket.lifecycle",
+          "height": 518,
+          "width": 311,
+          "x": 24,
+          "y": 24
+        },
+        {
+          "action": "replace",
+          "address": "aws_s3_bucket.replacement",
+          "height": 437,
+          "width": 311,
+          "x": 391,
+          "y": 24
+        },
+        {
+          "action": "create",
+          "address": "aws_s3_object.report",
+          "height": 346,
+          "width": 311,
+          "x": 24,
+          "y": 586
+        }
+      ],
+      "overlaps": [],
+      "pageWidth": 1425,
+      "paths": [
+        "M 179.5 542 C 179.5 566, 179.5 562, 179.5 586",
+        "M 391 242.5 C 363 242.5, 363 759, 335 759"
+      ],
+      "viewBox": "0 0 725 956",
+      "width": 1440
+    }
+  },
+  {
+    "name": "multi-resource-topology-en-1440",
+    "status": "PASS",
+    "evidence": {
+      "canvas": {
+        "height": 886,
+        "width": 740
+      },
+      "endpoints": [
+        {
+          "actual": [
+            183,
+            489,
+            183,
+            533
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.lifecycle",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            183,
+            489,
+            183,
+            533
+          ],
+          "maxError": 0,
+          "valid": true
+        },
+        {
+          "actual": [
+            398,
+            242.5,
+            342,
+            697
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.replacement",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            398,
+            242.5,
+            342,
+            697
+          ],
+          "maxError": 0,
+          "valid": true
+        }
+      ],
+      "nodes": [
+        {
+          "action": "update",
+          "address": "aws_s3_bucket.lifecycle",
+          "height": 465,
+          "width": 318,
+          "x": 24,
+          "y": 24
+        },
+        {
+          "action": "replace",
+          "address": "aws_s3_bucket.replacement",
+          "height": 437,
+          "width": 318,
+          "x": 398,
+          "y": 24
+        },
+        {
+          "action": "create",
+          "address": "aws_s3_object.report",
+          "height": 328,
+          "width": 318,
+          "x": 24,
+          "y": 533
+        }
+      ],
+      "overlaps": [],
+      "pageWidth": 1440,
+      "paths": [
+        "M 183 489 C 183 513, 183 509, 183 533",
+        "M 398 242.5 C 370 242.5, 370 697, 342 697"
+      ],
+      "viewBox": "0 0 740 886",
+      "width": 1440
+    }
+  },
+  {
+    "name": "multi-resource-topology-en-1280",
+    "status": "PASS",
+    "evidence": {
+      "canvas": {
+        "height": 974,
+        "width": 648
+      },
+      "endpoints": [
+        {
+          "actual": [
+            160,
+            542,
+            160,
+            586
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.lifecycle",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            160,
+            542,
+            160,
+            586
+          ],
+          "maxError": 0,
+          "valid": true
+        },
+        {
+          "actual": [
+            352,
+            242.5,
+            296,
+            768
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.replacement",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            352,
+            242.5,
+            296,
+            768
+          ],
+          "maxError": 0,
+          "valid": true
+        }
+      ],
+      "nodes": [
+        {
+          "action": "update",
+          "address": "aws_s3_bucket.lifecycle",
+          "height": 518,
+          "width": 272,
+          "x": 24,
+          "y": 24
+        },
+        {
+          "action": "replace",
+          "address": "aws_s3_bucket.replacement",
+          "height": 437,
+          "width": 272,
+          "x": 352,
+          "y": 24
+        },
+        {
+          "action": "create",
+          "address": "aws_s3_object.report",
+          "height": 364,
+          "width": 272,
+          "x": 24,
+          "y": 586
+        }
+      ],
+      "overlaps": [],
+      "pageWidth": 1265,
+      "paths": [
+        "M 160 542 C 160 566, 160 562, 160 586",
+        "M 352 242.5 C 324 242.5, 324 768, 296 768"
+      ],
+      "viewBox": "0 0 648 974",
+      "width": 1280
+    }
+  },
+  {
+    "name": "multi-resource-topology-en-1024",
+    "status": "PASS",
+    "evidence": {
+      "canvas": {
+        "height": 850,
+        "width": 849
+      },
+      "endpoints": [
+        {
+          "actual": [
+            210.5,
+            472,
+            210.5,
+            516
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.lifecycle",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            210.5,
+            472,
+            210.5,
+            516
+          ],
+          "maxError": 0,
+          "valid": true
+        },
+        {
+          "actual": [
+            453,
+            234,
+            397,
+            671.5
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.replacement",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            453,
+            234,
+            397,
+            671.5
+          ],
+          "maxError": 0,
+          "valid": true
+        }
+      ],
+      "nodes": [
+        {
+          "action": "update",
+          "address": "aws_s3_bucket.lifecycle",
+          "height": 448,
+          "width": 373,
+          "x": 24,
+          "y": 24
+        },
+        {
+          "action": "replace",
+          "address": "aws_s3_bucket.replacement",
+          "height": 420,
+          "width": 373,
+          "x": 453,
+          "y": 24
+        },
+        {
+          "action": "create",
+          "address": "aws_s3_object.report",
+          "height": 311,
+          "width": 373,
+          "x": 24,
+          "y": 516
+        }
+      ],
+      "overlaps": [],
+      "pageWidth": 1009,
+      "paths": [
+        "M 210.5 472 C 210.5 496, 210.5 492, 210.5 516",
+        "M 453 234 C 425 234, 425 671.5, 397 671.5"
+      ],
+      "viewBox": "0 0 849 850",
+      "width": 1024
+    }
+  },
+  {
+    "name": "multi-resource-topology-en-768",
+    "status": "PASS",
+    "evidence": {
+      "canvas": {
+        "height": 974,
+        "width": 648
+      },
+      "endpoints": [
+        {
+          "actual": [
+            160,
+            542,
+            160,
+            586
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.lifecycle",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            160,
+            542,
+            160,
+            586
+          ],
+          "maxError": 0,
+          "valid": true
+        },
+        {
+          "actual": [
+            352,
+            242.5,
+            296,
+            768
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.replacement",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            352,
+            242.5,
+            296,
+            768
+          ],
+          "maxError": 0,
+          "valid": true
+        }
+      ],
+      "nodes": [
+        {
+          "action": "update",
+          "address": "aws_s3_bucket.lifecycle",
+          "height": 518,
+          "width": 272,
+          "x": 24,
+          "y": 24
+        },
+        {
+          "action": "replace",
+          "address": "aws_s3_bucket.replacement",
+          "height": 437,
+          "width": 272,
+          "x": 352,
+          "y": 24
+        },
+        {
+          "action": "create",
+          "address": "aws_s3_object.report",
+          "height": 364,
+          "width": 272,
+          "x": 24,
+          "y": 586
+        }
+      ],
+      "overlaps": [],
+      "pageWidth": 753,
+      "paths": [
+        "M 160 542 C 160 566, 160 562, 160 586",
+        "M 352 242.5 C 324 242.5, 324 768, 296 768"
+      ],
+      "viewBox": "0 0 648 974",
+      "width": 768
+    }
+  },
+  {
+    "name": "multi-resource-topology-zh-1440",
+    "status": "PASS",
+    "evidence": {
+      "canvas": {
+        "height": 956,
+        "width": 725
+      },
+      "endpoints": [
+        {
+          "actual": [
+            179.5,
+            542,
+            179.5,
+            586
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.lifecycle",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            179.5,
+            542,
+            179.5,
+            586
+          ],
+          "maxError": 0,
+          "valid": true
+        },
+        {
+          "actual": [
+            391,
+            242.5,
+            335,
+            759
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.replacement",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            391,
+            242.5,
+            335,
+            759
+          ],
+          "maxError": 0,
+          "valid": true
+        }
+      ],
+      "nodes": [
+        {
+          "action": "update",
+          "address": "aws_s3_bucket.lifecycle",
+          "height": 518,
+          "width": 311,
+          "x": 24,
+          "y": 24
+        },
+        {
+          "action": "replace",
+          "address": "aws_s3_bucket.replacement",
+          "height": 437,
+          "width": 311,
+          "x": 391,
+          "y": 24
+        },
+        {
+          "action": "create",
+          "address": "aws_s3_object.report",
+          "height": 346,
+          "width": 311,
+          "x": 24,
+          "y": 586
+        }
+      ],
+      "overlaps": [],
+      "pageWidth": 1425,
+      "paths": [
+        "M 179.5 542 C 179.5 566, 179.5 562, 179.5 586",
+        "M 391 242.5 C 363 242.5, 363 759, 335 759"
+      ],
+      "viewBox": "0 0 725 956",
+      "width": 1440
+    }
+  },
+  {
+    "name": "multi-resource-topology-zh-1280",
+    "status": "PASS",
+    "evidence": {
+      "canvas": {
+        "height": 974,
+        "width": 648
+      },
+      "endpoints": [
+        {
+          "actual": [
+            160,
+            542,
+            160,
+            586
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.lifecycle",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            160,
+            542,
+            160,
+            586
+          ],
+          "maxError": 0,
+          "valid": true
+        },
+        {
+          "actual": [
+            352,
+            242.5,
+            296,
+            768
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.replacement",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            352,
+            242.5,
+            296,
+            768
+          ],
+          "maxError": 0,
+          "valid": true
+        }
+      ],
+      "nodes": [
+        {
+          "action": "update",
+          "address": "aws_s3_bucket.lifecycle",
+          "height": 518,
+          "width": 272,
+          "x": 24,
+          "y": 24
+        },
+        {
+          "action": "replace",
+          "address": "aws_s3_bucket.replacement",
+          "height": 437,
+          "width": 272,
+          "x": 352,
+          "y": 24
+        },
+        {
+          "action": "create",
+          "address": "aws_s3_object.report",
+          "height": 364,
+          "width": 272,
+          "x": 24,
+          "y": 586
+        }
+      ],
+      "overlaps": [],
+      "pageWidth": 1265,
+      "paths": [
+        "M 160 542 C 160 566, 160 562, 160 586",
+        "M 352 242.5 C 324 242.5, 324 768, 296 768"
+      ],
+      "viewBox": "0 0 648 974",
+      "width": 1280
+    }
+  },
+  {
+    "name": "multi-resource-topology-zh-1024",
+    "status": "PASS",
+    "evidence": {
+      "canvas": {
+        "height": 850,
+        "width": 849
+      },
+      "endpoints": [
+        {
+          "actual": [
+            210.5,
+            472,
+            210.5,
+            516
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.lifecycle",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            210.5,
+            472,
+            210.5,
+            516
+          ],
+          "maxError": 0,
+          "valid": true
+        },
+        {
+          "actual": [
+            453,
+            234,
+            397,
+            671.5
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.replacement",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            453,
+            234,
+            397,
+            671.5
+          ],
+          "maxError": 0,
+          "valid": true
+        }
+      ],
+      "nodes": [
+        {
+          "action": "update",
+          "address": "aws_s3_bucket.lifecycle",
+          "height": 448,
+          "width": 373,
+          "x": 24,
+          "y": 24
+        },
+        {
+          "action": "replace",
+          "address": "aws_s3_bucket.replacement",
+          "height": 420,
+          "width": 373,
+          "x": 453,
+          "y": 24
+        },
+        {
+          "action": "create",
+          "address": "aws_s3_object.report",
+          "height": 311,
+          "width": 373,
+          "x": 24,
+          "y": 516
+        }
+      ],
+      "overlaps": [],
+      "pageWidth": 1009,
+      "paths": [
+        "M 210.5 472 C 210.5 496, 210.5 492, 210.5 516",
+        "M 453 234 C 425 234, 425 671.5, 397 671.5"
+      ],
+      "viewBox": "0 0 849 850",
+      "width": 1024
+    }
+  },
+  {
+    "name": "multi-resource-topology-zh-768",
+    "status": "PASS",
+    "evidence": {
+      "canvas": {
+        "height": 974,
+        "width": 648
+      },
+      "endpoints": [
+        {
+          "actual": [
+            160,
+            542,
+            160,
+            586
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.lifecycle",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            160,
+            542,
+            160,
+            586
+          ],
+          "maxError": 0,
+          "valid": true
+        },
+        {
+          "actual": [
+            352,
+            242.5,
+            296,
+            768
+          ],
+          "edge": {
+            "from": "aws_s3_bucket.replacement",
+            "to": "aws_s3_object.report"
+          },
+          "expected": [
+            352,
+            242.5,
+            296,
+            768
+          ],
+          "maxError": 0,
+          "valid": true
+        }
+      ],
+      "nodes": [
+        {
+          "action": "update",
+          "address": "aws_s3_bucket.lifecycle",
+          "height": 518,
+          "width": 272,
+          "x": 24,
+          "y": 24
+        },
+        {
+          "action": "replace",
+          "address": "aws_s3_bucket.replacement",
+          "height": 437,
+          "width": 272,
+          "x": 352,
+          "y": 24
+        },
+        {
+          "action": "create",
+          "address": "aws_s3_object.report",
+          "height": 364,
+          "width": 272,
+          "x": 24,
+          "y": 586
+        }
+      ],
+      "overlaps": [],
+      "pageWidth": 753,
+      "paths": [
+        "M 160 542 C 160 566, 160 562, 160 586",
+        "M 352 242.5 C 324 242.5, 324 768, 296 768"
+      ],
+      "viewBox": "0 0 648 974",
+      "width": 768
+    }
+  },
+  {
+    "name": "current-planned-values-and-change-summary",
+    "status": "FAIL",
+    "evidence": {
+      "summary": {
+        "create": 1,
+        "update": 1,
+        "replace": 1
+      },
+      "tagChange": "Stage before → after",
+      "bucketReplacement": "original → next",
+      "nodes": 3,
+      "edges": 2
+    }
+  },
+  {
+    "name": "browser-apply-ready",
+    "status": "PASS",
+    "evidence": {
+      "environment": "phi-topology-4ac247eb",
+      "infrastructure": "Ready",
+      "runtime": "Ready",
+      "inventory": 1
+    }
+  },
+  {
+    "name": "current-planned-values-recheck",
+    "status": "PASS",
+    "evidence": {
+      "cards": [
+        "aws_s3_bucket更新aws_s3_bucket.lifecycle当前arnarn:aws:s3:::pcp-stage2-202610040155364ac247ebbucketpcp-stage2-202610040155364ac247ebidpcp-stage2-202610040155364ac247ebregionus-east-1tags{\"Stage\":\"before\",\"Validation\":\"phi-topology-review\"}计划arnarn:aws:s3:::pcp-stage2-202610040155364ac247ebbucketpcp-stage2-202610040155364ac247ebidpcp-stage2-202610040155364ac247ebregionus-east-1tags{\"Stage\":\"after\",\"Validation\":\"phi-topology-review\"}",
+        "aws_s3_bucket替换aws_s3_bucket.replacement当前arnarn:aws:s3:::pcp-stage2-202610040155364ac247eb-originalbucketpcp-stage2-202610040155364ac247eb-originalidpcp-stage2-202610040155364ac247eb-originalregionus-east-1计划bucketpcp-stage2-202610040155364ac247eb-nexttags{\"Validation\":\"phi-topology-review\"}",
+        "aws_s3_object创建aws_s3_object.report当前—计划bucketpcp-stage2-202610040155364ac247ebtags{\"RelatedBucket\":\"pcp-stage2-202610040155364ac247eb-next\",\"Validation\":\"phi-topology-review\"}"
+      ],
+      "resolves": "current-planned-values-and-change-summary",
+      "cause": "Snapshot escaping in the validation assertion; visible DOM values are correct"
+    }
+  },
+  {
+    "name": "destroy-separate-approval-gate",
+    "status": "PASS",
+    "evidence": {
+      "delete": 3,
+      "creationApprovalReused": false,
+      "destroyPlan": "phi-topology-4ac247eb-infra-destroy-plan-3"
+    }
+  },
+  {
+    "name": "destroy-finalizer-auto-return",
+    "status": "PASS",
+    "evidence": {
+      "environmentCount": 0,
+      "feedback": "finalizer 清理完成，环境已移除。"
+    }
+  },
+  {
+    "name": "restored-dev-dashboard",
+    "status": "PASS",
+    "evidence": {
+      "environmentCount": 0,
+      "classCount": 0,
+      "cluster": "pcp-dev"
+    }
+  }
+]

@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "approval": {
+    "namespace": "platform-system",
+    "name": "approve-98b07de9f13afcc3f00f059e",
+    "planRun": "phi-topology-4ac247eb-infra-plan-1",
+    "planRunUID": "4f089a78-b336-4ae8-93dd-f82366a1dcbb",
+    "state": "Recorded",
+    "planDigest": "sha256:bc8fc20709a7a0e0b7b2879580b6192a19f0c954bee1e5a2b76bf3f1f05c135c",
+    "createdAt": "2026-10-04T02:12:07Z"
+  },
+  "apply": {
+    "namespace": "platform-system",
+    "name": "phi-topology-4ac247eb-infra-plan-1-apply-39936ca6a0",
+    "uid": "dcfb3393-da69-4183-a009-39cdad56bc14",
+    "operation": "Apply",
+    "planMode": "Reconcile",
+    "state": "Ready",
+    "reason": "TerraformSucceeded",
+    "message": "Terraform runner terminal result captured.",
+    "outcome": "Succeeded",
+    "hasChanges": false,
+    "planDigest": "sha256:bc8fc20709a7a0e0b7b2879580b6192a19f0c954bee1e5a2b76bf3f1f05c135c",
+    "planRef": "runs/4f089a78-b336-4ae8-93dd-f82366a1dcbb/plan.binary",
+    "effectivePlanInputDigest": "sha256:f8a04deff95991448d6dd3b3e9489e17aa1564f55b5c05ae6b4d91accab2f28c",
+    "executionContextDigest": "sha256:95e33de67227bd4b7af8a209523285e962b05912023bfae3f3771d34438e4e71",
+    "artifactsReady": true,
+    "evidenceCaptured": true,
+    "terminalStartedAt": "2026-10-04T02:12:09Z",
+    "terminalFinishedAt": "2026-10-04T02:12:51Z",
+    "createdAt": "2026-10-04T02:12:08Z"
+  },
+  "updateTags": {
+    "TagSet": [
+      {
+        "Key": "Stage",
+        "Value": "after"
+      },
+      {
+        "Key": "Validation",
+        "Value": "phi-topology-review"
+      }
+    ]
+  },
+  "createObject": {
+    "AcceptRanges": "bytes",
+    "LastModified": "Sun, 04 Oct 2026 02:12:51 GMT",
+    "ContentLength": 37,
+    "ETag": "\"4e66a1a7539ffb9dc45038d1093ef437\"",
+    "ContentType": "application/octet-stream",
+    "ServerSideEncryption": "AES256",
+    "Metadata": {},
+    "TagCount": 2
+  },
+  "replacementNewBucketPresent": true,
+  "replacementOriginalBucketAbsent": true
+}

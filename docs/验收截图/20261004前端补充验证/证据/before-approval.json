@@ -1,0 +1,185 @@
+{
+  "namespace": "platform-system",
+  "name": "phi-topology-4ac247eb",
+  "uid": "edf40c14-f399-4dfd-84af-4ca0f44a02c4",
+  "class": "stage2-202610040155364a-class-topology",
+  "generation": 1,
+  "nodeCount": 1,
+  "phase": "InfrastructureNotReady",
+  "ready": false,
+  "readyStatus": "False",
+  "infrastructure": "WaitingApproval",
+  "runtime": "RuntimeMutationBlocked",
+  "target": {
+    "provider": "kind",
+    "accountID": "local",
+    "region": "local",
+    "clusterName": "kind-pcp-e2e-202610040155364ac247eb-target-a",
+    "incarnationID": "kind-pcp-e2e-202610040155364ac247eb-target-a"
+  },
+  "latestTerraformRun": {
+    "name": "phi-topology-4ac247eb-infra-plan-1",
+    "operation": "Plan",
+    "outcome": "ChangesPresent",
+    "hasChanges": true,
+    "reason": "TerraformSucceeded"
+  },
+  "latestApproval": "Required",
+  "lastTransitionTime": "2026-10-04T02:06:10Z",
+  "createdAt": "2026-10-04T02:05:09Z",
+  "conditions": [
+    {
+      "type": "Ready",
+      "status": "False",
+      "reason": "InfrastructureNotReady",
+      "message": "InfraStack generation 1 is WaitingApproval: Terraform plan contains changes and is waiting for a valid ChangeApproval.",
+      "lastTransitionTime": "2026-10-04T02:06:10Z"
+    }
+  ],
+  "infrastructureDetail": {
+    "name": "phi-topology-4ac247eb-infra",
+    "desiredState": "Present",
+    "state": "WaitingApproval",
+    "condition": {
+      "type": "Ready",
+      "status": "False",
+      "reason": "WaitingApproval",
+      "message": "Terraform plan contains changes and is waiting for a valid ChangeApproval.",
+      "lastTransitionTime": "2026-10-04T02:06:10Z"
+    },
+    "latestPlanRun": "phi-topology-4ac247eb-infra-plan-1",
+    "convergenceEvidence": false
+  },
+  "runtimeDetail": {
+    "name": "phi-topology-4ac247eb-resources",
+    "state": "RuntimeMutationBlocked",
+    "condition": {
+      "type": "Ready",
+      "status": "False",
+      "reason": "RuntimeMutationBlocked",
+      "message": "runtime mutation is gated until current infrastructure is ready and the durable mutation fence is clear",
+      "lastTransitionTime": "2026-10-04T02:05:10Z"
+    },
+    "inventoryItems": 0,
+    "inventoryLimitExceeded": false,
+    "mutationBlocked": true,
+    "cleanupEvidence": false
+  },
+  "terraformRuns": [
+    {
+      "namespace": "platform-system",
+      "name": "phi-topology-4ac247eb-infra-plan-1",
+      "uid": "4f089a78-b336-4ae8-93dd-f82366a1dcbb",
+      "operation": "Plan",
+      "planMode": "Reconcile",
+      "state": "Ready",
+      "reason": "TerraformSucceeded",
+      "message": "Terraform runner terminal result captured.",
+      "outcome": "ChangesPresent",
+      "hasChanges": true,
+      "planDigest": "sha256:bc8fc20709a7a0e0b7b2879580b6192a19f0c954bee1e5a2b76bf3f1f05c135c",
+      "planRef": "runs/4f089a78-b336-4ae8-93dd-f82366a1dcbb/plan.binary",
+      "planReportRef": "runs/4f089a78-b336-4ae8-93dd-f82366a1dcbb/plan-report.json",
+      "planReportDigest": "sha256:a3fae2e415062e98ff7fe05b1c9a82ba5145b5dd1d6fed409cc2830e7db2109f",
+      "effectivePlanInputDigest": "sha256:f8a04deff95991448d6dd3b3e9489e17aa1564f55b5c05ae6b4d91accab2f28c",
+      "executionContextDigest": "sha256:95e33de67227bd4b7af8a209523285e962b05912023bfae3f3771d34438e4e71",
+      "planExpiresAt": "2026-10-04T03:06:00Z",
+      "planCreatedAt": "2026-10-04T02:06:00Z",
+      "artifactsReady": true,
+      "evidenceCaptured": true,
+      "terminalStartedAt": "2026-10-04T02:05:13Z",
+      "terminalFinishedAt": "2026-10-04T02:06:00Z",
+      "createdAt": "2026-10-04T02:05:09Z"
+    }
+  ],
+  "approvals": [],
+  "evidence": {
+    "planDigest": "sha256:bc8fc20709a7a0e0b7b2879580b6192a19f0c954bee1e5a2b76bf3f1f05c135c",
+    "planReportRef": "runs/4f089a78-b336-4ae8-93dd-f82366a1dcbb/plan-report.json",
+    "planReportDigest": "sha256:a3fae2e415062e98ff7fe05b1c9a82ba5145b5dd1d6fed409cc2830e7db2109f",
+    "terminalResultRef": "runs/4f089a78-b336-4ae8-93dd-f82366a1dcbb/terminal-result.json",
+    "terminalResultDigest": "sha256:7fb39f57768a88feb50a8131c0a79ab0417ee134bb1c144dcbe49e0f2e990a57",
+    "sourceBundleDigest": "sha256:78c77449e08a656f7503db003f2566a83c73b713911dc80a0f7bba849b394550"
+  },
+  "timeline": [
+    {
+      "at": "2026-10-04T02:05:09Z",
+      "kind": "InfraStack",
+      "resource": "platform-system/phi-topology-4ac247eb-infra",
+      "title": "InfraStack created",
+      "state": "Created"
+    },
+    {
+      "at": "2026-10-04T02:05:09Z",
+      "kind": "PlatformEnvironment",
+      "resource": "platform-system/phi-topology-4ac247eb",
+      "title": "PlatformEnvironment created",
+      "state": "Created"
+    },
+    {
+      "at": "2026-10-04T02:05:09Z",
+      "kind": "ResourceSet",
+      "resource": "platform-system/phi-topology-4ac247eb-resources",
+      "title": "ResourceSet created",
+      "state": "Created"
+    },
+    {
+      "at": "2026-10-04T02:05:09Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1",
+      "title": "Plan run created",
+      "state": "Created"
+    },
+    {
+      "at": "2026-10-04T02:05:10Z",
+      "kind": "ResourceSet",
+      "resource": "platform-system/phi-topology-4ac247eb-resources",
+      "title": "Ready",
+      "state": "False",
+      "reason": "RuntimeMutationBlocked",
+      "message": "runtime mutation is gated until current infrastructure is ready and the durable mutation fence is clear"
+    },
+    {
+      "at": "2026-10-04T02:05:13Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1",
+      "title": "Plan execution started",
+      "state": "Running"
+    },
+    {
+      "at": "2026-10-04T02:06:00Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1",
+      "title": "Plan execution finished",
+      "state": "ChangesPresent"
+    },
+    {
+      "at": "2026-10-04T02:06:10Z",
+      "kind": "InfraStack",
+      "resource": "platform-system/phi-topology-4ac247eb-infra",
+      "title": "Ready",
+      "state": "False",
+      "reason": "WaitingApproval",
+      "message": "Terraform plan contains changes and is waiting for a valid ChangeApproval."
+    },
+    {
+      "at": "2026-10-04T02:06:10Z",
+      "kind": "PlatformEnvironment",
+      "resource": "platform-system/phi-topology-4ac247eb",
+      "title": "Ready",
+      "state": "False",
+      "reason": "InfrastructureNotReady",
+      "message": "InfraStack generation 1 is WaitingApproval: Terraform plan contains changes and is waiting for a valid ChangeApproval."
+    },
+    {
+      "at": "2026-10-04T02:06:10Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1",
+      "title": "Ready",
+      "state": "True",
+      "reason": "TerraformSucceeded",
+      "message": "Terraform runner terminal result captured."
+    }
+  ],
+  "timelineNote": "Timeline entries are reconstructed from current Kubernetes conditions and immutable run/approval timestamps; the CRDs do not retain every historical condition transition."
+}

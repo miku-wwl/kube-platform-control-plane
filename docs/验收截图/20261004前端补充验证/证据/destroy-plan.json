@@ -1,0 +1,99 @@
+{
+  "terraformRun": {
+    "namespace": "platform-system",
+    "name": "phi-topology-4ac247eb-infra-destroy-plan-3",
+    "uid": "57cf198c-8f96-4036-9039-604e3106cb7f",
+    "operation": "Plan",
+    "planMode": "Destroy",
+    "state": "Ready",
+    "reason": "TerraformSucceeded",
+    "message": "Terraform runner terminal result captured.",
+    "outcome": "ChangesPresent",
+    "hasChanges": true,
+    "planDigest": "sha256:324226539a65825bbc266a2c6e878649e5072960bd4b8564247bcecbc9632dc0",
+    "planRef": "runs/57cf198c-8f96-4036-9039-604e3106cb7f/plan.binary",
+    "planReportRef": "runs/57cf198c-8f96-4036-9039-604e3106cb7f/plan-report.json",
+    "planReportDigest": "sha256:ff62827ada125a79b51f761ec4a59a0f847eeae404772a4bcc8e42235c97f6b4",
+    "effectivePlanInputDigest": "sha256:8b79802eb7a4b6db45137123882b8ea9ab74a8448ad36f18db975d22f0168b5a",
+    "executionContextDigest": "sha256:95e33de67227bd4b7af8a209523285e962b05912023bfae3f3771d34438e4e71",
+    "planExpiresAt": "2026-10-04T03:17:20Z",
+    "planCreatedAt": "2026-10-04T02:17:20Z",
+    "artifactsReady": true,
+    "evidenceCaptured": true,
+    "terminalStartedAt": "2026-10-04T02:16:24Z",
+    "terminalFinishedAt": "2026-10-04T02:17:20Z",
+    "createdAt": "2026-10-04T02:16:23Z"
+  },
+  "available": true,
+  "message": "Derived from the immutable Terraform plan; informational only.",
+  "graph": {
+    "version": 1,
+    "terraformRunUID": "57cf198c-8f96-4036-9039-604e3106cb7f",
+    "planDigest": "sha256:324226539a65825bbc266a2c6e878649e5072960bd4b8564247bcecbc9632dc0",
+    "nodes": [
+      {
+        "address": "aws_s3_bucket.lifecycle",
+        "type": "aws_s3_bucket",
+        "provider": "registry.terraform.io/hashicorp/aws",
+        "action": "delete",
+        "before": {
+          "arn": "arn:aws:s3:::pcp-stage2-202610040155364ac247eb",
+          "bucket": "pcp-stage2-202610040155364ac247eb",
+          "id": "pcp-stage2-202610040155364ac247eb",
+          "region": "us-east-1",
+          "tags": {
+            "Stage": "after",
+            "Validation": "phi-topology-review"
+          }
+        }
+      },
+      {
+        "address": "aws_s3_bucket.replacement",
+        "type": "aws_s3_bucket",
+        "provider": "registry.terraform.io/hashicorp/aws",
+        "action": "delete",
+        "before": {
+          "arn": "arn:aws:s3:::pcp-stage2-202610040155364ac247eb-next",
+          "bucket": "pcp-stage2-202610040155364ac247eb-next",
+          "id": "pcp-stage2-202610040155364ac247eb-next",
+          "region": "us-east-1",
+          "tags": {
+            "Validation": "phi-topology-review"
+          }
+        }
+      },
+      {
+        "address": "aws_s3_object.report",
+        "type": "aws_s3_object",
+        "provider": "registry.terraform.io/hashicorp/aws",
+        "action": "delete",
+        "before": {
+          "arn": "arn:aws:s3:::pcp-stage2-202610040155364ac247eb/plan-topology-validation.txt",
+          "bucket": "pcp-stage2-202610040155364ac247eb",
+          "id": "plan-topology-validation.txt",
+          "tags": {
+            "RelatedBucket": "pcp-stage2-202610040155364ac247eb-next",
+            "Validation": "phi-topology-review"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "from": "aws_s3_bucket.lifecycle",
+        "to": "aws_s3_object.report"
+      },
+      {
+        "from": "aws_s3_bucket.replacement",
+        "to": "aws_s3_object.report"
+      }
+    ],
+    "summary": {
+      "create": 0,
+      "update": 0,
+      "delete": 3,
+      "replace": 0,
+      "noOp": 0
+    }
+  }
+}

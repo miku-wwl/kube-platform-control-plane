@@ -1,0 +1,288 @@
+{
+  "namespace": "platform-system",
+  "name": "phi-topology-4ac247eb",
+  "uid": "edf40c14-f399-4dfd-84af-4ca0f44a02c4",
+  "class": "stage2-202610040155364a-class-topology",
+  "generation": 2,
+  "nodeCount": 1,
+  "phase": "Deleting",
+  "ready": false,
+  "readyStatus": "False",
+  "infrastructure": "WaitingApproval",
+  "runtime": "NotCreated",
+  "target": {
+    "provider": "kind",
+    "accountID": "local",
+    "region": "local",
+    "clusterName": "kind-pcp-e2e-202610040155364ac247eb-target-a",
+    "incarnationID": "kind-pcp-e2e-202610040155364ac247eb-target-a"
+  },
+  "latestTerraformRun": {
+    "name": "phi-topology-4ac247eb-infra-destroy-plan-3",
+    "operation": "Plan",
+    "outcome": "ChangesPresent",
+    "hasChanges": true,
+    "reason": "TerraformSucceeded"
+  },
+  "latestApproval": "Recorded",
+  "lastTransitionTime": "2026-10-04T02:16:23Z",
+  "createdAt": "2026-10-04T02:05:09Z",
+  "deleting": true,
+  "conditions": [
+    {
+      "type": "Ready",
+      "status": "False",
+      "reason": "Deleting",
+      "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal.",
+      "lastTransitionTime": "2026-10-04T02:16:23Z"
+    }
+  ],
+  "infrastructureDetail": {
+    "name": "phi-topology-4ac247eb-infra",
+    "desiredState": "Destroy",
+    "state": "WaitingApproval",
+    "condition": {
+      "type": "Ready",
+      "status": "False",
+      "reason": "WaitingApproval",
+      "message": "Terraform plan contains changes and is waiting for a valid ChangeApproval.",
+      "lastTransitionTime": "2026-10-04T02:17:28Z"
+    },
+    "latestPlanRun": "phi-topology-4ac247eb-infra-destroy-plan-3",
+    "lastAppliedRun": "phi-topology-4ac247eb-infra-plan-1-apply-39936ca6a0",
+    "convergenceEvidence": true
+  },
+  "terraformRuns": [
+    {
+      "namespace": "platform-system",
+      "name": "phi-topology-4ac247eb-infra-plan-1",
+      "uid": "4f089a78-b336-4ae8-93dd-f82366a1dcbb",
+      "operation": "Plan",
+      "planMode": "Reconcile",
+      "state": "Ready",
+      "reason": "TerraformSucceeded",
+      "message": "Terraform runner terminal result captured.",
+      "outcome": "ChangesPresent",
+      "hasChanges": true,
+      "planDigest": "sha256:bc8fc20709a7a0e0b7b2879580b6192a19f0c954bee1e5a2b76bf3f1f05c135c",
+      "planRef": "runs/4f089a78-b336-4ae8-93dd-f82366a1dcbb/plan.binary",
+      "planReportRef": "runs/4f089a78-b336-4ae8-93dd-f82366a1dcbb/plan-report.json",
+      "planReportDigest": "sha256:a3fae2e415062e98ff7fe05b1c9a82ba5145b5dd1d6fed409cc2830e7db2109f",
+      "effectivePlanInputDigest": "sha256:f8a04deff95991448d6dd3b3e9489e17aa1564f55b5c05ae6b4d91accab2f28c",
+      "executionContextDigest": "sha256:95e33de67227bd4b7af8a209523285e962b05912023bfae3f3771d34438e4e71",
+      "planExpiresAt": "2026-10-04T03:06:00Z",
+      "planCreatedAt": "2026-10-04T02:06:00Z",
+      "artifactsReady": true,
+      "evidenceCaptured": true,
+      "terminalStartedAt": "2026-10-04T02:05:13Z",
+      "terminalFinishedAt": "2026-10-04T02:06:00Z",
+      "approval": {
+        "namespace": "platform-system",
+        "name": "approve-98b07de9f13afcc3f00f059e",
+        "planRun": "phi-topology-4ac247eb-infra-plan-1",
+        "planRunUID": "4f089a78-b336-4ae8-93dd-f82366a1dcbb",
+        "state": "Recorded",
+        "planDigest": "sha256:bc8fc20709a7a0e0b7b2879580b6192a19f0c954bee1e5a2b76bf3f1f05c135c",
+        "createdAt": "2026-10-04T02:12:07Z"
+      },
+      "createdAt": "2026-10-04T02:05:09Z"
+    },
+    {
+      "namespace": "platform-system",
+      "name": "phi-topology-4ac247eb-infra-plan-1-apply-39936ca6a0",
+      "uid": "dcfb3393-da69-4183-a009-39cdad56bc14",
+      "operation": "Apply",
+      "planMode": "Reconcile",
+      "state": "Ready",
+      "reason": "TerraformSucceeded",
+      "message": "Terraform runner terminal result captured.",
+      "outcome": "Succeeded",
+      "hasChanges": false,
+      "planDigest": "sha256:bc8fc20709a7a0e0b7b2879580b6192a19f0c954bee1e5a2b76bf3f1f05c135c",
+      "planRef": "runs/4f089a78-b336-4ae8-93dd-f82366a1dcbb/plan.binary",
+      "effectivePlanInputDigest": "sha256:f8a04deff95991448d6dd3b3e9489e17aa1564f55b5c05ae6b4d91accab2f28c",
+      "executionContextDigest": "sha256:95e33de67227bd4b7af8a209523285e962b05912023bfae3f3771d34438e4e71",
+      "artifactsReady": true,
+      "evidenceCaptured": true,
+      "terminalStartedAt": "2026-10-04T02:12:09Z",
+      "terminalFinishedAt": "2026-10-04T02:12:51Z",
+      "createdAt": "2026-10-04T02:12:08Z"
+    },
+    {
+      "namespace": "platform-system",
+      "name": "phi-topology-4ac247eb-infra-destroy-plan-3",
+      "uid": "57cf198c-8f96-4036-9039-604e3106cb7f",
+      "operation": "Plan",
+      "planMode": "Destroy",
+      "state": "Ready",
+      "reason": "TerraformSucceeded",
+      "message": "Terraform runner terminal result captured.",
+      "outcome": "ChangesPresent",
+      "hasChanges": true,
+      "planDigest": "sha256:324226539a65825bbc266a2c6e878649e5072960bd4b8564247bcecbc9632dc0",
+      "planRef": "runs/57cf198c-8f96-4036-9039-604e3106cb7f/plan.binary",
+      "planReportRef": "runs/57cf198c-8f96-4036-9039-604e3106cb7f/plan-report.json",
+      "planReportDigest": "sha256:ff62827ada125a79b51f761ec4a59a0f847eeae404772a4bcc8e42235c97f6b4",
+      "effectivePlanInputDigest": "sha256:8b79802eb7a4b6db45137123882b8ea9ab74a8448ad36f18db975d22f0168b5a",
+      "executionContextDigest": "sha256:95e33de67227bd4b7af8a209523285e962b05912023bfae3f3771d34438e4e71",
+      "planExpiresAt": "2026-10-04T03:17:20Z",
+      "planCreatedAt": "2026-10-04T02:17:20Z",
+      "artifactsReady": true,
+      "evidenceCaptured": true,
+      "terminalStartedAt": "2026-10-04T02:16:24Z",
+      "terminalFinishedAt": "2026-10-04T02:17:20Z",
+      "createdAt": "2026-10-04T02:16:23Z"
+    }
+  ],
+  "approvals": [
+    {
+      "namespace": "platform-system",
+      "name": "approve-98b07de9f13afcc3f00f059e",
+      "planRun": "phi-topology-4ac247eb-infra-plan-1",
+      "planRunUID": "4f089a78-b336-4ae8-93dd-f82366a1dcbb",
+      "state": "Recorded",
+      "planDigest": "sha256:bc8fc20709a7a0e0b7b2879580b6192a19f0c954bee1e5a2b76bf3f1f05c135c",
+      "createdAt": "2026-10-04T02:12:07Z"
+    }
+  ],
+  "evidence": {
+    "planDigest": "sha256:324226539a65825bbc266a2c6e878649e5072960bd4b8564247bcecbc9632dc0",
+    "planReportRef": "runs/57cf198c-8f96-4036-9039-604e3106cb7f/plan-report.json",
+    "planReportDigest": "sha256:ff62827ada125a79b51f761ec4a59a0f847eeae404772a4bcc8e42235c97f6b4",
+    "terminalResultRef": "runs/57cf198c-8f96-4036-9039-604e3106cb7f/terminal-result.json",
+    "terminalResultDigest": "sha256:d2cedb8d434981b645cc08d44aa4b9e0014f63217aeff3d7750626076dea2088",
+    "sourceBundleDigest": "sha256:78c77449e08a656f7503db003f2566a83c73b713911dc80a0f7bba849b394550"
+  },
+  "timeline": [
+    {
+      "at": "2026-10-04T02:05:09Z",
+      "kind": "InfraStack",
+      "resource": "platform-system/phi-topology-4ac247eb-infra",
+      "title": "InfraStack created",
+      "state": "Created"
+    },
+    {
+      "at": "2026-10-04T02:05:09Z",
+      "kind": "PlatformEnvironment",
+      "resource": "platform-system/phi-topology-4ac247eb",
+      "title": "PlatformEnvironment created",
+      "state": "Created"
+    },
+    {
+      "at": "2026-10-04T02:05:09Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1",
+      "title": "Plan run created",
+      "state": "Created"
+    },
+    {
+      "at": "2026-10-04T02:05:13Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1",
+      "title": "Plan execution started",
+      "state": "Running"
+    },
+    {
+      "at": "2026-10-04T02:06:00Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1",
+      "title": "Plan execution finished",
+      "state": "ChangesPresent"
+    },
+    {
+      "at": "2026-10-04T02:06:10Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1",
+      "title": "Ready",
+      "state": "True",
+      "reason": "TerraformSucceeded",
+      "message": "Terraform runner terminal result captured."
+    },
+    {
+      "at": "2026-10-04T02:12:07Z",
+      "kind": "ChangeApproval",
+      "resource": "platform-system/approve-98b07de9f13afcc3f00f059e",
+      "title": "ChangeApproval created",
+      "state": "Recorded"
+    },
+    {
+      "at": "2026-10-04T02:12:08Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1-apply-39936ca6a0",
+      "title": "Apply run created",
+      "state": "Created"
+    },
+    {
+      "at": "2026-10-04T02:12:09Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1-apply-39936ca6a0",
+      "title": "Apply execution started",
+      "state": "Running"
+    },
+    {
+      "at": "2026-10-04T02:12:51Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1-apply-39936ca6a0",
+      "title": "Apply execution finished",
+      "state": "Succeeded"
+    },
+    {
+      "at": "2026-10-04T02:12:56Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-plan-1-apply-39936ca6a0",
+      "title": "Ready",
+      "state": "True",
+      "reason": "TerraformSucceeded",
+      "message": "Terraform runner terminal result captured."
+    },
+    {
+      "at": "2026-10-04T02:16:23Z",
+      "kind": "PlatformEnvironment",
+      "resource": "platform-system/phi-topology-4ac247eb",
+      "title": "Ready",
+      "state": "False",
+      "reason": "Deleting",
+      "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal."
+    },
+    {
+      "at": "2026-10-04T02:16:23Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-destroy-plan-3",
+      "title": "Plan run created",
+      "state": "Created"
+    },
+    {
+      "at": "2026-10-04T02:16:24Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-destroy-plan-3",
+      "title": "Plan execution started",
+      "state": "Running"
+    },
+    {
+      "at": "2026-10-04T02:17:20Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-destroy-plan-3",
+      "title": "Plan execution finished",
+      "state": "ChangesPresent"
+    },
+    {
+      "at": "2026-10-04T02:17:28Z",
+      "kind": "InfraStack",
+      "resource": "platform-system/phi-topology-4ac247eb-infra",
+      "title": "Ready",
+      "state": "False",
+      "reason": "WaitingApproval",
+      "message": "Terraform plan contains changes and is waiting for a valid ChangeApproval."
+    },
+    {
+      "at": "2026-10-04T02:17:28Z",
+      "kind": "TerraformRun",
+      "resource": "platform-system/phi-topology-4ac247eb-infra-destroy-plan-3",
+      "title": "Ready",
+      "state": "True",
+      "reason": "TerraformSucceeded",
+      "message": "Terraform runner terminal result captured."
+    }
+  ],
+  "timelineNote": "Timeline entries are reconstructed from current Kubernetes conditions and immutable run/approval timestamps; the CRDs do not retain every historical condition transition."
+}

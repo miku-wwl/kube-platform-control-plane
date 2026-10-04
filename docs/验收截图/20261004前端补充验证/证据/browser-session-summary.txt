@@ -1,0 +1,6 @@
+run_id=20261004015536-4ac247eb
+suite=all
+localstack_endpoint=http://localhost:4566
+real_aws_used=false
+results=
+BROWSER_SESSION_CLEANUP=PASS
