@@ -490,7 +490,7 @@ export function Builder({
               <dl className="draft-facts">
                 <Fact
                   label={t('Provider')}
-                  value={draft.provider === 'foundry-local' ? 'Foundry Local' : t(draft.provider)}
+                  value={draft.provider === 'ollama' ? 'Ollama' : t(draft.provider)}
                 />
                 <Fact label={t('Environment')} value={`${draft.intent.namespace}/${draft.intent.name}`} />
                 <Fact label={t('Environment class')} value={draft.intent.classRef} />

@@ -1,6 +1,6 @@
 # Architecture
 
-Updated: 2026-10-04. Source baseline: `e1a2d1c`.
+Updated: 2026-10-06. Reviewed against the current working-tree implementation.
 
 This document describes the current components, persisted state, configuration
 flow and execution contracts.
@@ -188,7 +188,7 @@ Developer / Operator
 React Console / AI Platform Builder
         ↓
 platform-api (draft request)
-  └── Foundry Local
+  └── Ollama / Phi-4-mini (native POST /api/chat)
         ↓ structured JSON
 platform-api (strict parse + deterministic validation)
         ↓ typed preview
@@ -242,11 +242,22 @@ controllers determine when the matching saved plan may execute.
 The optional `plan-visualization.json` is derived from `terraform show -json`
 for the exact saved Plan and contains only allowlisted resource metadata.
 Failure to store it does not fail the Plan. It is read-only UI evidence and is
-not part of approval or Apply admission. Foundry Local emits a constrained
+not part of approval or Apply admission. Ollama emits a constrained
 JSON intent only; the API strictly parses it and validates class, namespace,
 registered target, region, Valkey settings, and capacity before showing typed
 YAML. A separate human action submits the resource. The unauthenticated API
 and web UI are local operator tools, not production endpoints.
+
+The default local provider is `AI_PROVIDER=ollama`, with
+`OLLAMA_ENDPOINT=http://127.0.0.1:11434` and
+`OLLAMA_MODEL=phi4-mini:latest`. Only loopback HTTP server roots with an explicit
+port are accepted. The native chat request specifies the six-field JSON schema,
+`stream:false`, temperature 0, a 256-token output budget and a 4096-token context.
+The API requires a completed text response, rejects tool calls, strictly checks
+the JSON and preserves explicitly entered name, region and node count. Inference
+errors do not cause an automatic provider fallback. Namespace and class identity
+come from the form, never from model output. The retired Foundry provider and its
+environment variables are not used by current runtime code.
 
 Timeline views reconstruct available conditions and immutable run timestamps;
 they are not a complete event audit log.
@@ -263,6 +274,33 @@ they are not a complete event audit log.
 | `PCP_ENABLE_TERRAFORM_EXECUTION=false` | Class/template management works; Runner execution is disabled |
 | `PCP_ENABLE_AWS_EKS=false` | Real AWS EKS target execution is not enabled |
 
+## Local regression architecture
+
+The permanent backend/control-plane harness is
+[`e2e/Run-LocalE2E.ps1`](../e2e/Run-LocalE2E.ps1). Its disposable topology is one
+management Kind cluster and two target Kind clusters. The controller runs as a
+two-replica Kubernetes Deployment, Terraform runs in real runner Jobs, and the
+platform API follows the existing local Go-process pattern on an isolated port.
+
+Stable deployment uses `config/crd`, `config/rbac` and `config/manager`. There is
+no local Kustomize overlay in the current repository. Run-specific images,
+target contexts/kubeconfig Secret, execution enablement and LocalStack
+endpoint/bucket remain generated patches. An existing LocalStack Ultimate
+container is reused and preserved; cleanup uses exact ownership records.
+
+An optional `-TerraformDnsServer` setting scopes dependency-domain DNS forwarding
+to the owned management cluster. A real Pod checks the Terraform registry/release
+domains, the Docker host name and Kubernetes service DNS. It does not change the
+developer cluster or host DNS configuration.
+
+The lifecycle begins with an actual Ready EnvironmentClass and a top-level
+PlatformEnvironment. Controllers materialize InfraStack and ResourceSet. The
+dedicated platform suite also checks real API read models, templates, sanitized
+PlanGraph and exact ChangeApproval creation. `-BrowserSession` prepares backend
+state and waits for explicit release; the harness contains no browser automation.
+Suite commands and execution results are in the
+[README validation section](../README.md#kpcp-local-e2e-regression-suite).
+
 ## Validation boundary
 
 Stage 1 is validated locally with the real Terraform CLI, LocalStack Ultimate,
@@ -273,8 +311,11 @@ have not been validated.
 
 | Scope | Evidence date / boundary |
 | --- | --- |
-| Environment lifecycle, recovery, isolation and Destroy | Historical 2026-10-02/03 Kind + LocalStack + Foundry Local acceptance; not rerun by a documentation edit |
+| Environment lifecycle, recovery, isolation and Destroy | Historical 2026-10-02/03 acceptance; independently rerun on 2026-10-06, including final `all` with real Kind manager/runner Jobs and external LocalStack Ultimate: PASS |
+| Stage 2 backend contracts | 2026-10-06: class/template APIs, advisory draft and explicit create, automatic InfraStack, read model, sanitized PlanGraph, exact approval, saved-plan Apply/output/runtime, update and Destroy APIs: PASS. [Commands, run IDs and durations](../README.md#local-validation--2026-10-06) |
+| BrowserSession preparation | 2026-10-06: startup, API/Ready class, metadata compatibility, active-run cleanup protection and timeout cleanup: PASS. Normal hold-file release NOT VERIFIED because policy blocked deletion; NON-PRODUCT BLOCKER. Backend harness contains no browser automation |
 | Class/template browser workflow | 2026-10-03/04: 40 browser assertions; actual persistence, controller Ready, API restart, copying, selection and cleanup |
+| Ollama advisory draft integration | 2026-10-06: real Phi-4-mini inference, missing-model rejection, three Vite-proxied drafts validated against Kind; browser clicks and Submit/lifecycle not rerun. [Migration report](Ollama接入验证报告.md) |
 | Manual procedure and screenshots | [网页手动测试及验收报告](环境类别与模板网页手动测试及验收报告.md) |
 | Real AWS / production | Not validated |
 

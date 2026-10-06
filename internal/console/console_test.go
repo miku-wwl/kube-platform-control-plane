@@ -222,31 +222,46 @@ func TestDraftRequiresSeparateExplicitEnvironmentSubmit(t *testing.T) {
 	}
 }
 
-func TestFoundryLocalDraftGeneratorContract(t *testing.T) {
+func TestOllamaDraftGeneratorContract(t *testing.T) {
 	const intentJSON = `{"name":"demo-dev","region":"us-east-1","nodeCount":2,"valkeyEnabled":true,"valkeyShards":1,"valkeyReplicas":1}`
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost || r.URL.Path != "/v1/chat/completions" {
-			t.Errorf("unexpected Foundry request: %s %s", r.Method, r.URL.Path)
+		if r.Method != http.MethodPost || r.URL.Path != "/api/chat" {
+			t.Errorf("unexpected Ollama request: %s %s", r.Method, r.URL.Path)
 		}
 		var request struct {
-			Model          string            `json:"model"`
-			ResponseFormat map[string]string `json:"response_format"`
+			Model   string         `json:"model"`
+			Stream  bool           `json:"stream"`
+			Format  map[string]any `json:"format"`
+			Options map[string]any `json:"options"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			t.Errorf("decode chat request: %v", err)
 		}
-		if request.Model != "phi-4-mini" || request.ResponseFormat["type"] != "json_object" {
+		if request.Model != "phi4-mini:latest" || request.Stream || request.Format["type"] != "object" || request.Format["additionalProperties"] != false || request.Options["temperature"] != float64(0) || request.Options["num_predict"] != float64(256) || request.Options["num_ctx"] != float64(4096) {
 			t.Errorf("unexpected model or response format: %+v", request)
 		}
-		_, _ = io.WriteString(w, `{"choices":[{"message":{"role":"assistant","content":`+mustJSONString(t, intentJSON)+`,"tool_calls":[]},"finish_reason":"stop"}]}`)
+		if required, ok := request.Format["required"].([]any); !ok || len(required) != 6 {
+			t.Errorf("schema must require all six intent fields: %+v", request.Format)
+		}
+		properties, ok := request.Format["properties"].(map[string]any)
+		if !ok {
+			t.Fatal("intent properties missing from schema")
+		}
+		for key, expected := range map[string]any{"name": "demo-dev", "region": "us-east-1", "nodeCount": float64(2)} {
+			property, ok := properties[key].(map[string]any)
+			if !ok || property["const"] != expected {
+				t.Errorf("explicit %s is not constrained in schema: %+v", key, property)
+			}
+		}
+		_, _ = io.WriteString(w, `{"message":{"role":"assistant","content":`+mustJSONString(t, intentJSON)+`,"tool_calls":[]},"done":true,"done_reason":"stop"}`)
 	}))
 	defer server.Close()
 
-	generator, err := newFoundryLocalDraftGenerator(server.URL, "phi-4-mini", server.Client())
+	generator, err := newOllamaDraftGenerator(server.URL, "phi4-mini:latest", server.Client())
 	if err != nil {
 		t.Fatal(err)
 	}
-	intent, err := generator.Generate(context.Background(), DraftRequest{Description: "Create an environment with cache and 2 nodes", Namespace: "default", ClassRef: "dev-small"})
+	intent, err := generator.Generate(context.Background(), DraftRequest{Description: "Create an environment with cache and 2 nodes", Name: "demo-dev", Region: "us-east-1", NodeCount: 2, Namespace: "default", ClassRef: "dev-small"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -255,7 +270,7 @@ func TestFoundryLocalDraftGeneratorContract(t *testing.T) {
 	}
 }
 
-func TestFoundryLocalStructuredOutputFailsClosed(t *testing.T) {
+func TestOllamaStructuredOutputFailsClosed(t *testing.T) {
 	valid := `{"name":"demo-dev","region":"us-east-1","nodeCount":1,"valkeyEnabled":false,"valkeyShards":0,"valkeyReplicas":0}`
 	cases := map[string]string{
 		"prose":            "Here is the JSON: " + valid,
@@ -263,22 +278,26 @@ func TestFoundryLocalStructuredOutputFailsClosed(t *testing.T) {
 		"unknown field":    strings.TrimSuffix(valid, "}") + `,"apiVersion":"v1"}`,
 		"missing field":    `{"name":"demo-dev","region":"us-east-1","nodeCount":1,"valkeyEnabled":false,"valkeyShards":0}`,
 		"null field":       `{"name":null,"region":"us-east-1","nodeCount":1,"valkeyEnabled":false,"valkeyShards":0,"valkeyReplicas":0}`,
+		"wrong type":       `{"name":"demo-dev","region":"us-east-1","nodeCount":"1","valkeyEnabled":false,"valkeyShards":0,"valkeyReplicas":0}`,
+		"invalid name":     `{"name":"Invalid Name","region":"us-east-1","nodeCount":1,"valkeyEnabled":false,"valkeyShards":0,"valkeyReplicas":0}`,
 		"invalid capacity": `{"name":"demo-dev","region":"us-east-1","nodeCount":0,"valkeyEnabled":false,"valkeyShards":0,"valkeyReplicas":0}`,
 		"unexpected cache": `{"name":"demo-dev","region":"us-east-1","nodeCount":1,"valkeyEnabled":false,"valkeyShards":1,"valkeyReplicas":0}`,
 	}
 	for name, content := range cases {
 		t.Run(name, func(t *testing.T) {
-			if _, err := decodeFoundryIntent(content); err == nil {
+			if _, err := decodeOllamaIntent(content); err == nil {
 				t.Fatal("invalid structured output was accepted")
 			}
 		})
 	}
-	if _, err := newFoundryLocalDraftGenerator("https://example.com:443", "phi-4-mini", nil); err == nil {
-		t.Fatal("remote inference endpoint was accepted")
+	for _, endpoint := range []string{"https://example.com:443", "http://example.com:11434", "http://127.0.0.1", "http://127.0.0.1:11434/api", "http://user:password@127.0.0.1:11434", "http://127.0.0.1:11434?key=value"} {
+		if _, err := newOllamaDraftGenerator(endpoint, defaultOllamaModel, nil); err == nil {
+			t.Errorf("unsafe inference endpoint was accepted: %s", endpoint)
+		}
 	}
 }
 
-func TestFoundryDraftAppliesExplicitCacheIntentDeterministically(t *testing.T) {
+func TestOllamaDraftAppliesExplicitCacheIntentDeterministically(t *testing.T) {
 	cases := []struct {
 		name        string
 		description string
@@ -304,12 +323,12 @@ func TestFoundryDraftAppliesExplicitCacheIntentDeterministically(t *testing.T) {
 	}
 }
 
-func TestMalformedFoundryDraftDoesNotCreateResources(t *testing.T) {
+func TestMalformedOllamaDraftDoesNotCreateResources(t *testing.T) {
 	model := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = io.WriteString(w, `{"choices":[{"message":{"content":"not JSON"}}]}`)
+		_, _ = io.WriteString(w, `{"message":{"content":"not JSON"},"done":true,"done_reason":"stop"}`)
 	}))
 	defer model.Close()
-	generator, err := newFoundryLocalDraftGenerator(model.URL, "phi-4-mini", model.Client())
+	generator, err := newOllamaDraftGenerator(model.URL, "phi4-mini:latest", model.Client())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -319,7 +338,7 @@ func TestMalformedFoundryDraftDoesNotCreateResources(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	api, err := NewServer(kubeClient, nil, foundryLocalProvider, generator, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	api, err := NewServer(kubeClient, nil, ollamaProvider, generator, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -342,17 +361,97 @@ func TestMalformedFoundryDraftDoesNotCreateResources(t *testing.T) {
 	}
 }
 
-func TestFoundryLocalLiveDraftScenarios(t *testing.T) {
-	if os.Getenv("PCP_RUN_FOUNDRY_LOCAL_INTEGRATION") != "1" {
-		t.Skip("set PCP_RUN_FOUNDRY_LOCAL_INTEGRATION=1 to run live local inference scenarios")
+func TestOllamaProviderConfiguration(t *testing.T) {
+	t.Setenv("AI_PROVIDER", "")
+	t.Setenv("OLLAMA_ENDPOINT", "")
+	t.Setenv("OLLAMA_MODEL", "")
+	provider, generator, err := NewDraftGeneratorFromEnvironment()
+	if err != nil {
+		t.Fatal(err)
+	}
+	local, ok := generator.(*OllamaDraftGenerator)
+	if !ok || provider != "ollama" || local.endpoint != defaultOllamaEndpoint || local.model != defaultOllamaModel {
+		t.Fatalf("unexpected default provider: %s, %+v", provider, generator)
+	}
+	t.Setenv("AI_PROVIDER", "foundry-local")
+	if _, _, err := NewDraftGeneratorFromEnvironment(); err == nil {
+		t.Fatal("retired inference provider was silently accepted")
+	}
+	t.Setenv("AI_PROVIDER", "deterministic")
+	if provider, _, err := NewDraftGeneratorFromEnvironment(); err != nil || provider != "deterministic" {
+		t.Fatalf("explicit offline provider failed: %s, %v", provider, err)
+	}
+}
+
+func TestOllamaResponseFailsClosed(t *testing.T) {
+	const valid = `{"name":"demo-dev","region":"us-east-1","nodeCount":1,"valkeyEnabled":false,"valkeyShards":0,"valkeyReplicas":0}`
+	cases := []struct {
+		name   string
+		body   string
+		status int
+	}{
+		{"unfinished", `{"message":{"content":` + mustJSONString(t, valid) + `},"done":false}`, 200},
+		{"truncated", `{"message":{"content":` + mustJSONString(t, valid) + `},"done":true,"done_reason":"length"}`, 200},
+		{"tool call", `{"message":{"content":` + mustJSONString(t, valid) + `,"tool_calls":[{}]},"done":true,"done_reason":"stop"}`, 200},
+		{"empty", `{"message":{"content":""},"done":true,"done_reason":"stop"}`, 200},
+		{"malformed envelope", `not JSON`, 200},
+		{"missing model", `{"error":"private server details"}`, 404},
+		{"oversized", strings.Repeat("x", maxOllamaResponse+1), 200},
+		{"explicit name changed", `{"message":{"content":` + mustJSONString(t, valid) + `},"done":true,"done_reason":"stop"}`, 200},
+	}
+	for _, scenario := range cases {
+		t.Run(scenario.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.WriteHeader(scenario.status)
+				_, _ = io.WriteString(w, scenario.body)
+			}))
+			defer server.Close()
+			generator, err := newOllamaDraftGenerator(server.URL, defaultOllamaModel, server.Client())
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = generator.Generate(context.Background(), DraftRequest{Name: "requested-name"})
+			if err == nil || strings.Contains(err.Error(), "private server details") {
+				t.Fatalf("unsafe response accepted or server details leaked: %v", err)
+			}
+		})
+	}
+}
+
+func TestOllamaUnavailableDoesNotFallBack(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	endpoint := server.URL
+	server.Close()
+	generator, err := newOllamaDraftGenerator(endpoint, defaultOllamaModel, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if intent, err := generator.Generate(context.Background(), DraftRequest{Description: "Create a small environment", ClassRef: "dev-small"}); err == nil || intent.Name != "" {
+		t.Fatalf("unavailable inference must not generate a fallback draft: %+v, %v", intent, err)
+	}
+}
+
+func TestOllamaLiveDraftScenarios(t *testing.T) {
+	if os.Getenv("PCP_RUN_OLLAMA_INTEGRATION") != "1" {
+		t.Skip("set PCP_RUN_OLLAMA_INTEGRATION=1 to run live local inference scenarios")
 	}
 	provider, generator, err := NewDraftGeneratorFromEnvironment()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if provider != foundryLocalProvider {
-		t.Fatalf("live local inference expected provider %q, got %q", foundryLocalProvider, provider)
+	if provider != ollamaProvider {
+		t.Fatalf("live local inference expected provider %q, got %q", ollamaProvider, provider)
 	}
+	t.Run("missing local model", func(t *testing.T) {
+		local := generator.(*OllamaDraftGenerator)
+		missing, err := newOllamaDraftGenerator(local.endpoint, "pcp-ollama-integration-missing-model", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := missing.Generate(context.Background(), DraftRequest{Description: "Create a small environment"}); err == nil || !strings.Contains(err.Error(), "HTTP 404") {
+			t.Fatalf("missing model must fail closed with HTTP 404: %v", err)
+		}
+	})
 	class := readyDraftClass()
 	namespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "default"}}
 	server, kubeClient, err := testServer(t, class, namespace)
@@ -367,6 +466,8 @@ func TestFoundryLocalLiveDraftScenarios(t *testing.T) {
 	}{
 		{name: "small development", description: "Create a small development environment", wantNodes: 1},
 		{name: "cache and two nodes", description: "Create a development environment with cache enabled and 2 nodes", wantNodes: 2, wantValkey: true},
+		{name: "Chinese cache request", description: "创建一个启用缓存、有 2 个节点的开发环境", wantNodes: 2, wantValkey: true},
+		{name: "Chinese cache disabled", description: "创建一个有 1 个节点的开发环境，不要缓存", wantNodes: 1},
 	}
 	for _, scenario := range cases {
 		t.Run(scenario.name, func(t *testing.T) {
@@ -390,6 +491,15 @@ func TestFoundryLocalLiveDraftScenarios(t *testing.T) {
 			}
 		})
 	}
+	t.Run("explicit fields", func(t *testing.T) {
+		intent, err := generator.Generate(context.Background(), DraftRequest{Description: "Create a small development environment without cache", Name: "ollama-explicit", Namespace: "default", ClassRef: "dev-small", Region: "us-east-1", NodeCount: 2})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if intent.Name != "ollama-explicit" || intent.Region != "us-east-1" || intent.NodeCount != 2 || intent.ValkeyEnabled {
+			t.Fatalf("explicit form fields were not preserved: %+v", intent)
+		}
+	})
 	t.Run("ambiguous request", func(t *testing.T) {
 		intent, err := generator.Generate(context.Background(), DraftRequest{Description: "Set up something useful for me", Namespace: "default", ClassRef: "dev-small"})
 		if err != nil {

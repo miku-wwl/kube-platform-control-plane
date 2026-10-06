@@ -1,6 +1,6 @@
-.PHONY: api web web-build stage2-check e2e e2e-lifecycle e2e-recovery e2e-multitarget e2e-failclosed e2e-clean
+.PHONY: api web web-build stage2-check e2e e2e-lifecycle e2e-recovery e2e-multitarget e2e-failclosed e2e-platform e2e-clean
 
-E2E_RUNNER ?= powershell -NoProfile -ExecutionPolicy Bypass -File e2e/Run-Stage1E2E.ps1
+E2E_RUNNER ?= powershell -NoProfile -ExecutionPolicy Bypass -File e2e/Run-LocalE2E.ps1
 
 api:
 	go run ./cmd/platform-api
@@ -30,6 +30,9 @@ e2e-multitarget:
 
 e2e-failclosed:
 	$(E2E_RUNNER) -Suite failclosed
+
+e2e-platform:
+	$(E2E_RUNNER) -Suite platform
 
 e2e-clean:
 	$(E2E_RUNNER) -Suite clean
