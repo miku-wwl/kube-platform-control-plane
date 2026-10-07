@@ -48,7 +48,7 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 | TC02 | 草稿不自动创建资源 | NOT VERIFIED | 历史网页及 Ollama API 通过 | 图 1（历史） |
 | TC03 | 提交环境 | NOT VERIFIED | 历史网页、后端验收通过 | 图 2（历史） |
 | TC04 | Plan 生成并等待审批 | NOT VERIFIED | 历史网页、后端验收通过 | 图 3（历史） |
-| TC05 | 未审批不得执行 | PASS | 采用同产品源码的后端验收 | 10 月 6 日未审批/错误审批未执行 |
+| TC05 | 未审批不得执行 | NOT VERIFIED（当前手动 UI） | 历史自动回归 PASS：全套验证未审批及错误审批围栏 | 当前网页截图待补；见下方 `INVALID_APPROVAL_FENCE` 和 `PLATFORM_APPROVAL_API` |
 | TC06 | PlanTopology 展示（父项） | NOT VERIFIED | 拆为两个独立子项，父项不重复计数 | 见 TC06-A / TC06-B |
 | TC06-A | PlanTopology 基础展示 | NOT VERIFIED | 历史多资源展示可追溯；当前普通流程待执行 | 新图待补 |
 | TC06-B | 多资源三动作展示 | NOT VERIFIED | 历史三动作、多资源 UI 通过；当前 PREPARATION REQUIRED | 图 4（历史） |
@@ -56,7 +56,7 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 | TC08 | 环境 Ready | NOT VERIFIED | 历史网页、后端验收通过 | 图 5（历史） |
 | TC09 | 服务重启恢复 | PASS | 采用同产品源码的后端验收 | 三个阶段重启恢复，无重复执行 |
 | TC10 | 多环境/目标隔离 | PASS | 采用同产品源码的后端验收 | 两个目标无交叉资源 |
-| TC11 | 异常场景安全保护 | PASS | 采用同产品源码的后端验收 | 错误请求安全拒绝 |
+| TC11 | 异常场景安全保护 | PASS | 历史自动化回归覆盖 fail-closed 场景 | 错误目标、缺失发现及运行时变更围栏 |
 | TC12 | 删除环境 | NOT VERIFIED | 历史网页、后端验收通过 | 图 6（历史） |
 | TC13 | Destroy 独立审批 | NOT VERIFIED | 历史网页、后端验收通过 | 图 6（历史） |
 | TC14 | Destroy 完成 | NOT VERIFIED | 历史网页、后端验收通过 | 图 7（历史） |
@@ -64,7 +64,7 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 动态参数见[测试设计 3.1.1](STAGE2_TEST_DESIGN.md#311-启动与动态会话参数)，网页步骤与截图见[3.1.2](STAGE2_TEST_DESIGN.md#312-主网页生命周期与截图检查点)，安全释放见[3.3](STAGE2_TEST_DESIGN.md#33-释放当前会话与清理tc15)。不得复用上述已过期会话名或 hold 路径。
 
-16 个独立执行项：4 项采用已验收且源码未变的后端证据；12 项待新 UI、专项夹具或同次会话结束验证，TC06 父项不重复计数。历史网页通过不能代替当前 Ollama 网页通过。
+16 个独立执行项：TC09–TC11 有历史自动化回归 PASS；TC05 当前手动 UI 仍未验证，但错误/不匹配审批有既有自动化 PASS 证据。12 项待当前网页、TC06-B 夹具或同次会话清理验证；TC06 父项不重复计数。历史网页通过不能代替当前 Ollama 网页通过。
 
 ## TC01 AI 生成环境草稿
 
@@ -160,18 +160,20 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 **前置条件**：方案等待审批。
 
-**测试步骤**
+**手动 UI 测试步骤**
 
-1. 保持未审批，并尝试错误审批。
-2. 检查执行记录与目标资源。
+1. 在有效 Reconcile Plan 等待审批时，不点击审批。
+2. 按[测试设计 TC05 只读检查](STAGE2_TEST_DESIGN.md#312-主网页生命周期与截图检查点)，确认 Terraform runs 中 Apply 数为 0，目标管理桶尚不存在；保存 `TC04-awaiting-approval.png` 及查询输出。
 
 **预期结果**：不产生 Apply，不修改目标资源。
 
-**实际结果**：未审批及错误审批均未触发执行；历史网页审批前 Apply 数为 0。
+**当前手动 UI 结果**：本轮未执行，状态为 `NOT VERIFIED`。新验收须单独按上述步骤记录；既有自动回归 PASS 不代替当前网页 PASS。
 
-**测试结果**：`PASS`（后端）。
+**既有自动回归证据**：历史全套 `20261006100028-5e17bd55` 的 `summary.txt` 记录 `INVALID_APPROVAL_FENCE=PASS`，错误 Plan UID 未解锁 Apply 或运行资源变更；`PLATFORM_APPROVAL_API=PASS` 记录过期 Plan report digest 被拒绝、精确审批绑定后方执行。明细分别在同一 run 的 `platform-ready-runtime.json`（`staleApprovalRejected`）和 `platform-plan-visualization.json`。没有要求 QA 手工发送无效或不匹配 API 请求。
 
-**证据**：2026-10-06 全套验收通过；图 3 显示等待审批且运行资源数为 0，历史检查确认审批前没有 Apply。
+**当前测试结果**：`NOT VERIFIED`（手动 UI）。**历史自动回归结果**：`PASS`；自动化汇总不是本次网页验收结果。
+
+**证据**：历史验收图 3 显示等待审批且运行资源数为 0；上述全套 summary 与 proof 文件记录错误 UID / 过期摘要均不能越过审批围栏。
 
 ## TC06 PlanTopology 展示
 
@@ -321,11 +323,11 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 **预期结果**：拒绝或安全停止，无错误执行。
 
-**实际结果**：错误审批、过期审批依据、未注册目标及不完整目标信息均受保护；没有运行资源变更。
+**实际结果**：既有 failclosed 自动回归验证未注册目标、不完整可信发现及运行时变更围栏；错误/不匹配审批证据见 TC05，属于既有 lifecycle/platform 回归。
 
 **测试结果**：`PASS`（2026-10-06 后端回归；产品源码一致）。
 
-**证据**：2026-10-06 全套验收中，错误审批、过期审批依据、未注册目标及不完整目标信息均被拒绝或安全停止。
+**证据**：2026-10-06 全套验收 `FAIL_CLOSED=PASS` / `SUITE_FAILCLOSED=PASS` 覆盖错误目标、发现和变更围栏；该套不覆盖审批拒绝。审批拒绝由 TC05 引用的 `INVALID_APPROVAL_FENCE` 与 `PLATFORM_APPROVAL_API` 历史证据覆盖。
 
 ## TC12 删除环境
 

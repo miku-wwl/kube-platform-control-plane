@@ -111,6 +111,19 @@ New-Item -ItemType Directory -Path $qaEvidenceDir -Force | Out-Null
 $qaRecordPath = Join-Path $qaEvidenceDir 'STAGE2_MANUAL_TEST_RECORD.md'
 if (-not (Test-Path -LiteralPath $qaRecordPath)) {
   Copy-Item -LiteralPath 'docs/STAGE2_MANUAL_TEST_RECORD.md' -Destination $qaRecordPath -ErrorAction Stop
+  $qaRecordText = [IO.File]::ReadAllText($qaRecordPath)
+  $qaRecordText = $qaRecordText.Replace('](STAGE2_TEST_DESIGN.md)', '](../../../docs/STAGE2_TEST_DESIGN.md)')
+  $qaRecordText = $qaRecordText.Replace('](STAGE2_VALIDATION_REPORT.md)', '](../../../docs/STAGE2_VALIDATION_REPORT.md)')
+  $qaRecordText = $qaRecordText.Replace('](STAGE2_FREEZE_EVIDENCE.md)', '](../../../docs/STAGE2_FREEZE_EVIDENCE.md)')
+  [IO.File]::WriteAllText($qaRecordPath, $qaRecordText, [Text.UTF8Encoding]::new($false))
+}
+$qaRecordLinks = @('STAGE2_TEST_DESIGN.md', 'STAGE2_VALIDATION_REPORT.md', 'STAGE2_FREEZE_EVIDENCE.md')
+$qaCopiedRecordText = [IO.File]::ReadAllText($qaRecordPath)
+foreach ($qaReferenceName in $qaRecordLinks) {
+  if (-not $qaCopiedRecordText.Contains('](../../../docs/' + $qaReferenceName + ')')) { throw "Copied record link was not rewritten: $qaReferenceName" }
+  $qaReferencePath = [IO.Path]::GetFullPath((Join-Path $qaEvidenceDir "../../../docs/$qaReferenceName"))
+  if (-not (Test-Path -LiteralPath $qaReferencePath -PathType Leaf)) { throw "Copied record reference is missing: $qaReferencePath" }
+  "Record link target: $qaReferencePath"
 }
 ```
 
@@ -349,9 +362,36 @@ Get-ChildItem -LiteralPath (Join-Path $qaRegressionDir 'logs') -File | Select-Ob
 | 删除停滞 | 新 Destroy Plan 是否单独审批；Destroy 执行及 Deleting 状态 | 未审批先走 TC13；已审批超时保存错误，勿直接删内部资源或 finalizer |
 | 会话过期 / 清理失败 | `expiresAt`、summary、ownership；启动终端是否结束 | 新测试重新准备；失败清理升级给环境负责人，只处理归属明确的资源 |
 
-### 3.6 提交测试记录
+### 3.6 QA 证据保存与交付
 
-填写记录 A–E：本次版本和环境、每例实际结果/状态/证据、缺陷复现步骤、必需截图和回归日志、清理结果、测试/审核结论。交付执行记录副本及本次截图/必要日志；逐一确认文件存在，去除凭据。证据目录未提交到 Git 不代表没有证据，应随测试记录一起交付。纸面审查仅核对步骤可执行性，不能填写运行 PASS。
+填写记录 A–E：本次版本和环境、每例实际结果/状态/证据、缺陷复现步骤、截图和回归日志、清理结果、测试/审核结论。过程文件放在已忽略的 `artifacts/qa/<run-id>/`。完成审核后，要保留并交付的截图、记录和日志复制到未忽略的 `artifacts/qa-deliveries/<run-id>/`；两个目录深度相同，执行记录中的 `../../../docs/...` 链接仍指向仓库文档。
+
+在仓库根目录运行；只复制本次最终文件，交付前检查日志和结果文件，移除凭据、证书及本机敏感信息：
+
+```powershell
+$qaDeliveryDir = Join-Path $qaRepoRoot "artifacts/qa-deliveries/$($qaSession.runId)"
+New-Item -ItemType Directory -Path $qaDeliveryDir -Force | Out-Null
+Copy-Item -LiteralPath $qaRecordPath -Destination $qaDeliveryDir
+$qaFinalScreenshots = @(Get-ChildItem -LiteralPath $qaEvidenceDir -Filter 'TC*.png' -File)
+if ($qaFinalScreenshots.Count -eq 0) { throw 'No final QA screenshots found' }
+Copy-Item -LiteralPath $qaFinalScreenshots.FullName -Destination $qaDeliveryDir
+if (Test-Path -LiteralPath (Join-Path $qaEvidenceDir 'manual-checks.txt')) {
+  Copy-Item -LiteralPath (Join-Path $qaEvidenceDir 'manual-checks.txt') -Destination $qaDeliveryDir
+}
+Get-ChildItem -LiteralPath $qaDeliveryDir -File | Select-Object Name, Length
+git check-ignore -v (Join-Path $qaDeliveryDir 'STAGE2_MANUAL_TEST_RECORD.md')
+```
+
+`git check-ignore` 对交付目录预期无匹配并返回 1；忽略中的过程目录不要提交。检查副本及选定日志后，明确暂存本次交付目录里的文件，再审核列表和差异：
+
+```powershell
+$qaDeliveryFiles = @(Get-ChildItem -LiteralPath $qaDeliveryDir -File | Select-Object -ExpandProperty FullName)
+git add -- $qaDeliveryFiles
+git diff --cached --name-only
+git diff --cached --check
+```
+
+审查暂存列表，只保留本次已验收的记录、截图与必要日志，再按项目交付流程提交。不要递归暂存 `artifacts/`，也不要复制临时状态、kubeconfig、证书或未经检查的原始日志。未交付的过程文件留在被忽略的 `artifacts/qa/`。纸面审查不填写运行 PASS。
 
 ## 4. 测试用例设计
 
@@ -361,7 +401,7 @@ Get-ChildItem -LiteralPath (Join-Path $qaRegressionDir 'logs') -File | Select-Ob
 | TC02 | P0 | 草稿不自动创建资源 | 记录本次环境/执行数量 | 3.1.2：生成草稿 → 不提交 → 查看列表与只读执行记录 | 环境数量不变；没有基础设施执行 |
 | TC03 | P0 | 提交环境 | 有效草稿；唯一环境名 | 审核草稿 → 点击 Submit → 打开环境 | 提交成功；环境出现；状态开始推进 |
 | TC04 | P0 | Plan 生成并等待审批 | 环境已提交；人工审批模式 | 等待 Plan → 不审批 → 查看状态 | Plan 完成；显示等待审批；Apply 未开始 |
-| TC05 | P0 | 未审批不得执行 | 变更正在等待审批 | 3.1.2：保持未审批 → 只读核对 Apply 数和本次管理桶 | 无 Apply；无提前创建基础设施；错误审批专项使用历史后端证据，不在 UI 构造错误请求 |
+| TC05 | P0 | 未审批不得执行 | 变更正在等待审批 | 手动 UI：保持未审批 → 只读核对 Apply 数和本次管理桶；错误/不匹配审批看既有自动回归证据 | 当前网页不得出现 Apply、不得提前创建基础设施；错误/不匹配审批不要求手工构造请求 |
 | TC06 | P1 | PlanTopology 展示 | 场景拆分为 TC06-A / TC06-B | 见两个子项，不单独重复执行 | 分别记录基础与高级结果，保留原 TC06 追溯 |
 | TC06-A | P1 | PlanTopology 基础展示 | 普通 BrowserSession 已完成 Plan | 3.2：开架构预览 → 核对当前资源/动作/已有关系 → 切换语言/宽度 | 当前真实 Plan 正确显示，无阻塞错误；基础夹具 1 CREATE/0 边可通过 |
 | TC06-B | P1 | 多资源三动作展示 | PREPARATION REQUIRED；开发交付真实多资源夹具 | 3.2：核对 CREATE / UPDATE / REPLACE、属性和连线 | 三种动作各 1，3 节点/2 连线；单资源证据不能代替 |

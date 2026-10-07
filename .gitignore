@@ -1,4 +1,5 @@
 artifacts/e2e/
+/artifacts/qa/
 tmp/
 *.log
 **/.terraform/

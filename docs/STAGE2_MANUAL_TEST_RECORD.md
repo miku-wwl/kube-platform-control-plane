@@ -2,7 +2,7 @@
 
 文档审查基线：`main` / `acd00679f05bc1c5de465ec775d2a02513253c06`，2026-10-08。**此基线不是本次执行版本；执行版本在 A 填写。**
 
-使用方式：按[测试设计](STAGE2_TEST_DESIGN.md)复制到本次 `artifacts/qa/<run-id>/STAGE2_MANUAL_TEST_RECORD.md` 后填写；空白模板不保存执行结果。历史结果在[验证报告](STAGE2_VALIDATION_REPORT.md)，不能继承到本表。冻结状态见[Freeze 证据](STAGE2_FREEZE_EVIDENCE.md)，当前 `STAGE2_FREEZE = BLOCKED`。
+使用方式：按[测试设计](STAGE2_TEST_DESIGN.md)复制到本次 `artifacts/qa/<run-id>/STAGE2_MANUAL_TEST_RECORD.md` 后填写；按指南把副本的 3 个文档链接改为指向仓库 `docs/`，否则副本中的链接不成立。历史结果在[验证报告](STAGE2_VALIDATION_REPORT.md)，不能继承到本表。冻结状态见[Freeze 证据](STAGE2_FREEZE_EVIDENCE.md)，当前 `STAGE2_FREEZE = BLOCKED`。
 
 ## A — 执行信息
 
