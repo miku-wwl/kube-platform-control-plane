@@ -1,8 +1,0 @@
-{
-  "environmentCount": 0,
-  "matchingEnvironmentCount": 0,
-  "aiProvider": "foundry-local",
-  "model": "Phi-4-mini-instruct-generic-cpu",
-  "shellOuterCollectionCount": 1,
-  "countEvidence": "Before-submit DOM and screenshot show 0 environments; original PowerShell @(Invoke-RestMethod) count measured the outer collection wrapper."
-}

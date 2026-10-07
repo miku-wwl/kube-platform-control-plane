@@ -27,9 +27,7 @@ STAGE2_ADVANCED_EXPERIENCE = PASS_LOCAL
 
 Stage 1 is frozen and was validated with LocalStack Ultimate, Kind, Terraform CLI, and local Kubernetes controllers. Stage 2 adds a local operator console above the existing engine. Its draft, create, exact Plan approval, Apply, Ready, update, and delete/Destroy lifecycle passed locally in the 2026-10-02/03 runs. Class/template management passed browser validation on 2026-10-03/04. These are dated acceptance results; Stage 3 and real AWS validation have not started.
 
-The 2026-10-02 closure run passed all 13 acceptance gates: a fresh full Stage 1 regression exited zero, initial and final quality checks passed, and owned test resources were cleaned. Source and running artifact identity were checked during that run. The documentation retains Chinese results and browser screenshots.
-
-- [网页手动测试步骤与截图](docs/环境类别与模板网页手动测试及验收报告.md): class/template tests and environment lifecycle steps, with each screenshot's validation period identified.
+The 2026-10-02 closure run passed all 13 acceptance gates: a fresh full Stage 1 regression exited zero, initial and final quality checks passed, and owned test resources were cleaned. Source and running artifact identity were checked during that run.
 
 Validated locally:
 
@@ -51,10 +49,6 @@ Stage 2 experience capabilities:
 - Environment class management, Kind starter presets, persisted project templates and independent configuration copies
 - Persistent English/Chinese console language selection
 - Optional plan visualization artifact derived from `terraform show -json`; it is not used by approval or Apply
-
-Architecture overview:
-
-- [Current architecture and invariants](docs/architecture.md)
 
 ## Core resources
 
@@ -122,9 +116,7 @@ $env:PCP_RUN_OLLAMA_INTEGRATION = "1"
 go test ./internal/console -run TestOllamaLiveDraftScenarios -count=1 -v
 ```
 
-This check uses the actual model with a test Kubernetes client; browser draft validation against Kind is a separate check. The Foundry report dated 2026-10-04 preserves historical evidence and is not the current startup procedure.
-
-Migration checks and manual draft review steps: [Ollama 接入验证报告](docs/Ollama接入验证报告.md).
+This check uses the actual model with a test Kubernetes client; browser draft validation against Kind is a separate check.
 
 In another terminal:
 
@@ -136,9 +128,6 @@ npm --prefix web run dev
 Open `http://127.0.0.1:5173`. Vite proxies `/api` to the local API. This unauthenticated console is for a local operator only; do not expose it beyond the developer workstation. With GNU Make installed, `make api`, `make web`, `make web-build`, and `make stage2-check` are available.
 
 ### Environment class management
-
-Chinese manual browser test steps, parameter examples, and the latest scoped local
-acceptance results: [环境类别与模板网页手动测试及验收报告](docs/环境类别与模板网页手动测试及验收报告.md).
 
 Open **Environment classes / 环境类别管理** in the sidebar, then **Create class**.
 Choose a small/team Kind starter preset, a saved project template, or an existing
@@ -413,7 +402,6 @@ cmd/controller/              management controller entrypoint
 cmd/platform-api/             local console API entrypoint
 cmd/terraform-runner/        Terraform runner entrypoint
 config/                      CRDs, RBAC, manager security manifests
-docs/architecture.md         current lifecycle and safety invariants
 internal/console/             read model, exact approval, and draft API
 internal/controller/         lifecycle and runtime controllers
 internal/runtime/            SSA, readiness, inventory, runtime bootstrap
