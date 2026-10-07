@@ -369,22 +369,24 @@ Ollama configured after validation.
 ### Browser acceptance session
 
 ```powershell
-# For the unchanged Vite proxy, first free API port 8090 yourself.
-powershell -NoProfile -ExecutionPolicy Bypass -File e2e/Run-LocalE2E.ps1 -Suite all -BrowserSession -ApiPort 8090
+# Focused BrowserSession for the unchanged Vite proxy; free API port 8090 first.
+powershell -NoProfile -ExecutionPolicy Bypass -File e2e/Run-LocalE2E.ps1 -Suite browser -BrowserSession -ApiPort 8090 -AIProvider ollama -OllamaEndpoint http://127.0.0.1:11434 -OllamaModel phi4-mini:latest
 ```
 
 Without `-ApiPort`, API checks and session preparation use an available isolated
 loopback port and leave an existing development API running. The existing Vite
 proxy expects 8090; a browser session intended for that console should explicitly
 use `-ApiPort 8090` after freeing that port. A busy requested port fails clearly;
-the harness does not stop user processes.
+the harness does not stop unrelated processes. `-AIProvider` accepts
+`deterministic` (the default) or `ollama`; Ollama endpoint/model values are
+validated before setup and passed to the existing platform-api environment.
+`-Suite browser` runs the BrowserSession bootstrap without rerunning regression
+lanes; use `-Suite all -BrowserSession` when a full regression is specifically
+needed.
 
-After regression, `BROWSER_SESSION_READY` identifies `browser-session.json`, the
-fresh Ready class, backend/artifact bucket, target kubeconfig, owned API URL/PID
-and `browser-hold.flag`. The backend regression API uses the deterministic draft
-provider so it does not depend on an LLM. Ollama browser acceptance remains a
-separate test with its actual endpoint/model and the session kubeconfig/bucket.
-The harness itself contains no browser automation.
+`BROWSER_SESSION_READY` identifies `browser-session.json`, the fresh Ready class,
+backend/artifact bucket, target kubeconfig, owned API URL/PID, provider/model, and
+`browser-hold.flag`. The harness itself contains no browser automation.
 
 Complete the manual lifecycle and independent Destroy approval, stop any manual
 console processes you started, then remove **only the metadata's `holdFile`** to

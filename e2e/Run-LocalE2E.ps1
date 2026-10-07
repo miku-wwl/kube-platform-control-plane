@@ -1,10 +1,13 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('all', 'lifecycle', 'recovery', 'multitarget', 'failclosed', 'platform', 'clean')]
+    [ValidateSet('all', 'lifecycle', 'recovery', 'multitarget', 'failclosed', 'platform', 'browser', 'clean')]
     [string]$Suite = 'all',
     [string]$LocalStackEndpoint = $(if ($env:PCP_LOCALSTACK_ENDPOINT) { $env:PCP_LOCALSTACK_ENDPOINT } else { 'http://localhost:4566' }),
     [switch]$KeepArtifacts,
     [Alias('Stage2Session')][switch]$BrowserSession,
+    [ValidateSet('deterministic', 'ollama')][string]$AIProvider = 'deterministic',
+    [string]$OllamaEndpoint = 'http://127.0.0.1:11434',
+    [string]$OllamaModel = 'phi4-mini:latest',
     [ValidateRange(1, 60)][int]$PollSeconds = 2,
     [ValidateRange(30, 3600)][int]$WaitTimeoutSeconds = 900,
     [ValidateRange(30, 86400)][int]$BrowserSessionTimeoutSeconds = 3600,
@@ -17,6 +20,27 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+if ($AIProvider -eq 'ollama') {
+    if ([string]::IsNullOrWhiteSpace($OllamaEndpoint)) { throw '-OllamaEndpoint is required when -AIProvider ollama is selected' }
+    $parsedOllamaEndpoint = $null
+    if (-not [Uri]::TryCreate($OllamaEndpoint.Trim(), [UriKind]::Absolute, [ref]$parsedOllamaEndpoint)) {
+        throw "Invalid -OllamaEndpoint '$OllamaEndpoint'; expected a loopback HTTP URL with an explicit port"
+    }
+    $explicitPort = if ($parsedOllamaEndpoint.HostNameType -eq [UriHostNameType]::IPv6) {
+        $parsedOllamaEndpoint.Authority -match '^\[[^\]]+\]:\d+$'
+    } else {
+        $parsedOllamaEndpoint.Authority -match '^[^:]+:\d+$'
+    }
+    if ($parsedOllamaEndpoint.Scheme -ne 'http' -or -not $parsedOllamaEndpoint.IsLoopback -or -not $explicitPort -or
+        $parsedOllamaEndpoint.UserInfo -or $parsedOllamaEndpoint.Query -or $parsedOllamaEndpoint.Fragment -or
+        $parsedOllamaEndpoint.AbsolutePath -notin @('', '/')) {
+        throw "Invalid -OllamaEndpoint '$OllamaEndpoint'; expected a loopback HTTP URL with an explicit port and no path, credentials, query, or fragment"
+    }
+    if ([string]::IsNullOrWhiteSpace($OllamaModel)) { throw '-OllamaModel is required when -AIProvider ollama is selected' }
+    $OllamaEndpoint = $parsedOllamaEndpoint.GetLeftPart([UriPartial]::Authority)
+    $OllamaModel = $OllamaModel.Trim()
+}
 
 $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $script:RunId = ('{0}-{1}' -f (Get-Date).ToUniversalTime().ToString('yyyyMMddHHmmss'), ([guid]::NewGuid().ToString('N').Substring(0, 8)))
@@ -56,6 +80,9 @@ $script:SuiteDurations = [ordered]@{}
 $script:OwnedLocalStack = $false
 $script:ApiProcess = $null
 $script:ApiBase = ''
+$script:AIProvider = $AIProvider
+$script:OllamaEndpoint = if ($AIProvider -eq 'ollama') { $OllamaEndpoint } else { $null }
+$script:OllamaModel = if ($AIProvider -eq 'ollama') { $OllamaModel } else { $null }
 $script:LastObservedState = ''
 $script:DiagnosticResource = $null
 $script:OwnershipPath = Join-Path $script:ArtifactRoot 'ownership.json'
@@ -198,11 +225,12 @@ function Get-ContainerEndpoint {
 }
 
 function Save-Ownership {
+    $harness = Get-Process -Id $PID
     $processes = @($script:StartedProcesses | ForEach-Object {
         try { @{ id = $_.Id; startedAt = $_.StartTime.ToUniversalTime().ToString('o'); path = $_.Path } } catch {}
     })
     $record = [ordered]@{ owner = 'kpcp-local-e2e'; runId = $script:RunId;
-        harnessPid = $PID; harnessStartedAt = (Get-Process -Id $PID).StartTime.ToUniversalTime().ToString('o');
+        harnessPid = $PID; harnessStartedAt = $harness.StartTime.ToUniversalTime().ToString('o'); harnessPath = $harness.Path;
         stateRoot = $script:StateRoot; clusters = @($script:OwnedClusters.ToArray());
         buckets = @($script:OwnedBuckets.ToArray()); processes = $processes;
         localStackContainer = $script:LocalStackContainer; ownsLocalStack = $script:OwnedLocalStack;
@@ -214,6 +242,54 @@ function Save-Ownership {
     Move-Item -LiteralPath $pending -Destination $script:OwnershipPath -Force
 }
 
+function ConvertTo-ProcessStartMilliseconds {
+    param([Parameter(Mandatory)]$Value)
+    if ($Value -is [DateTimeOffset]) {
+        $timestamp = $Value.ToUniversalTime()
+    } elseif ($Value -is [DateTime]) {
+        $timestamp = ([DateTimeOffset]$Value).ToUniversalTime()
+    } else {
+        $timestamp = [DateTimeOffset]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
+    }
+    return $timestamp.ToUnixTimeMilliseconds()
+}
+
+function Get-RecordedProcessIdentity {
+    param(
+        [Parameter(Mandatory)][int]$ProcessId,
+        [Parameter(Mandatory)]$StartedAt,
+        [string]$Path = '',
+        [switch]$AllowLegacyPowerShellPath
+    )
+    $process = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
+    if (-not $process) { return [pscustomobject]@{ Status = 'Exited'; Process = $null; Reason = '' } }
+    if ($Path) {
+        try {
+            if ([IO.Path]::GetFullPath($process.Path) -ine [IO.Path]::GetFullPath($Path)) {
+                return [pscustomobject]@{ Status = 'DifferentProcess'; Process = $process; Reason = "executable path '$($process.Path)' does not match '$Path'" }
+            }
+        } catch {
+            return [pscustomobject]@{ Status = 'DifferentProcess'; Process = $process; Reason = "could not verify executable path for PID ${ProcessId}: $($_.Exception.Message)" }
+        }
+    } elseif ($AllowLegacyPowerShellPath -and $process.Name -notin @('pwsh', 'powershell')) {
+        return [pscustomobject]@{ Status = 'DifferentProcess'; Process = $process; Reason = "legacy harness PID now belongs to '$($process.Name)'" }
+    } elseif (-not $AllowLegacyPowerShellPath) {
+        return [pscustomobject]@{ Status = 'DifferentProcess'; Process = $process; Reason = 'ownership record has no executable path' }
+    }
+    try {
+        $liveStart = ConvertTo-ProcessStartMilliseconds -Value $process.StartTime
+        $recordedStart = ConvertTo-ProcessStartMilliseconds -Value $StartedAt
+    } catch {
+        return [pscustomobject]@{ Status = 'DifferentProcess'; Process = $process; Reason = "could not normalize creation time: $($_.Exception.Message)" }
+    }
+    # Compare at millisecond precision with a small allowance for platform serialization rounding.
+    # PID and executable identity remain mandatory, so this does not turn PID reuse into ownership.
+    if ([Math]::Abs([double]$liveStart - [double]$recordedStart) -gt 10) {
+        return [pscustomobject]@{ Status = 'DifferentProcess'; Process = $process; Reason = 'creation time does not match the ownership record' }
+    }
+    return [pscustomobject]@{ Status = 'Match'; Process = $process; Reason = '' }
+}
+
 function Start-PlatformApi {
     if ($script:ApiProcess -and -not $script:ApiProcess.HasExited) { return }
     Write-Stage 'Building and starting the real local platform-api on an isolated loopback port'
@@ -222,9 +298,13 @@ function Start-PlatformApi {
     $port = if ($ApiPort) { $ApiPort } else { Get-FreeLocalPort }
     $script:ApiBase = "http://127.0.0.1:$port"
     $values = @{ KUBECONFIG = $script:ManagementKubeconfig; PCP_KUBECONFIG = $script:ManagementKubeconfig;
-        PCP_PLATFORM_API_ADDR = "127.0.0.1:$port"; PCP_ENABLE_AWS_EKS = 'false'; AI_PROVIDER = 'deterministic';
+        PCP_PLATFORM_API_ADDR = "127.0.0.1:$port"; PCP_ENABLE_AWS_EKS = 'false'; AI_PROVIDER = $script:AIProvider;
         PCP_ARTIFACT_ENDPOINT = $LocalStackEndpoint; PCP_ARTIFACT_REGION = 'us-east-1'; PCP_ARTIFACT_BUCKET = $script:ArtifactBucket;
         PCP_ARTIFACT_KMS_KEY_ID = ''; AWS_ACCESS_KEY_ID = 'test'; AWS_SECRET_ACCESS_KEY = 'test'; AWS_SESSION_TOKEN = '' }
+    if ($script:AIProvider -eq 'ollama') {
+        $values.OLLAMA_ENDPOINT = $script:OllamaEndpoint
+        $values.OLLAMA_MODEL = $script:OllamaModel
+    }
     $previous = @{}
     try {
         foreach ($key in $values.Keys) { $previous[$key] = [Environment]::GetEnvironmentVariable($key, 'Process'); [Environment]::SetEnvironmentVariable($key, $values[$key], 'Process') }
@@ -238,10 +318,10 @@ function Start-PlatformApi {
     Wait-Until -Name 'platform-api health' -TimeoutSeconds 120 -Condition {
         if ($script:ApiProcess.HasExited) { Stop-Regression 'platform-api exited during startup; inspect its stderr/stdout logs' }
         $health = Invoke-Api -Path '/api/health'
-        if ($health.status -eq 'ok' -and $health.artifactPreview) { return $health }
+        if ($health.status -eq 'ok' -and $health.artifactPreview -and $health.aiProvider -eq $script:AIProvider) { return $health }
         return $null
     } | Out-Null
-    Save-Proof -Name 'platform-api-runtime' -Value @{ apiBase = $script:ApiBase; pid = $script:ApiProcess.Id; binary = $binary; kubeconfig = $script:ManagementKubeconfig; aiProvider = 'deterministic' }
+    Save-Proof -Name 'platform-api-runtime' -Value @{ apiBase = $script:ApiBase; pid = $script:ApiProcess.Id; binary = $binary; kubeconfig = $script:ManagementKubeconfig; aiProvider = $script:AIProvider; ollamaEndpoint = $script:OllamaEndpoint; ollamaModel = $script:OllamaModel }
 }
 
 function Invoke-Api {
@@ -749,6 +829,7 @@ function Wait-BrowserSession {
         managedBucket = $bucket; className = "$name-class"; serviceName = "$name-svc";
         runtimeNamespace = 'default'; environmentName = $name; stateRoot = $script:StateRoot;
         holdFile = $hold; apiBase = $script:ApiBase; apiPid = $script:ApiProcess.Id;
+        aiProvider = $script:AIProvider; ollamaEndpoint = $script:OllamaEndpoint; ollamaModel = $script:OllamaModel;
         expiresAt = (Get-Date).ToUniversalTime().AddSeconds($BrowserSessionTimeoutSeconds).ToString('o') }
     $metadata | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $script:ArtifactRoot 'browser-session.json') -Encoding UTF8
     # Legacy parameter and metadata readers remain usable during migration.
@@ -1416,9 +1497,20 @@ function Remove-RecordedRun {
     $errors = New-Object System.Collections.Generic.List[string]
     foreach ($entry in $Record.processes) {
         try {
-            $process = Get-Process -Id $entry.id -ErrorAction SilentlyContinue
-            if ($process -and $process.StartTime.ToUniversalTime().ToString('o') -eq $entry.startedAt -and $process.Path -eq $entry.path) { Stop-Process -Id $process.Id -Force -ErrorAction Stop }
-        } catch { $errors.Add($_.Exception.Message) }
+            $identity = Get-RecordedProcessIdentity -ProcessId $entry.id -StartedAt $entry.startedAt -Path $entry.path
+            if ($identity.Status -eq 'Exited') { continue }
+            if ($identity.Status -ne 'Match') {
+                Write-Stage "Preserving PID $($entry.id); ownership identity no longer matches: $($identity.Reason)"
+                continue
+            }
+            Stop-Process -Id $identity.Process.Id -ErrorAction Stop
+            $deadline = [DateTime]::UtcNow.AddSeconds(10)
+            do {
+                Start-Sleep -Milliseconds 100
+                $identity = Get-RecordedProcessIdentity -ProcessId $entry.id -StartedAt $entry.startedAt -Path $entry.path
+            } while ($identity.Status -eq 'Match' -and [DateTime]::UtcNow -lt $deadline)
+            if ($identity.Status -eq 'Match') { throw "Run-owned process PID $($entry.id) is still running at '$($entry.path)' after stop" }
+        } catch { $errors.Add("process PID $($entry.id) ('$($entry.path)'): $($_.Exception.Message)") }
     }
     foreach ($bucket in $Record.buckets) {
         try { Invoke-Tool -File docker -Arguments @('exec', $Record.localStackContainer, 'awslocal', 's3', 'rb', "s3://$bucket", '--force') -AllowedExitCodes @(0, 1, 2, 255) | Out-Null } catch { $errors.Add($_.Exception.Message) }
@@ -1459,7 +1551,10 @@ function Remove-RecordedRun {
 }
 
 function Verify-Cleanup {
-    foreach ($process in $script:StartedProcesses) { $process.Refresh(); if (-not $process.HasExited) { throw "Temporary process remains: $($process.Id)" } }
+    foreach ($process in $script:StartedProcesses) {
+        $process.Refresh()
+        if (-not $process.HasExited) { throw "Temporary process remains: PID $($process.Id), executable '$($process.Path)'" }
+    }
     $clusters = if ($script:OwnedClusters.Count) { Invoke-Tool -File kind -Arguments @('get', 'clusters') } else { '' }
     if (@($script:OwnedClusters | Where-Object { $clusters -split "`r?`n" -contains $_ }).Count) { throw 'Run-owned Kind clusters remain' }
     if ($script:OwnedBuckets.Count -and -not $script:OwnedLocalStack) {
@@ -1494,16 +1589,16 @@ function Invoke-Clean {
         Assert-OwnershipRecord $record
         if ($file.Directory.Name -ne $record.runId) { throw 'Ownership file directory does not match run ID' }
         if ($record.cleanupCompleted -and -not (Test-Path -LiteralPath $record.stateRoot)) { continue }
-        $ownerProcess = Get-Process -Id $record.harnessPid -ErrorAction SilentlyContinue
-        if ($ownerProcess -and $ownerProcess.StartTime.ToUniversalTime().ToString('o') -eq $record.harnessStartedAt) {
+        $ownerIdentity = Get-RecordedProcessIdentity -ProcessId $record.harnessPid -StartedAt $record.harnessStartedAt -Path (Get-Field $record 'harnessPath') -AllowLegacyPowerShellPath
+        if ($ownerIdentity.Status -eq 'Match') {
             Write-Host "[WARN] Skipping active E2E run $($record.runId); release its browser hold file instead."
             continue
         }
         Write-Stage "Cleaning recorded inactive run $($record.runId)"
         Remove-RecordedRun -Record $record
         foreach ($entry in $record.processes) {
-            $process = Get-Process -Id $entry.id -ErrorAction SilentlyContinue
-            if ($process -and $process.StartTime.ToUniversalTime().ToString('o') -eq $entry.startedAt -and $process.Path -eq $entry.path) { throw "Recorded process remains: $($entry.id)" }
+            $identity = Get-RecordedProcessIdentity -ProcessId $entry.id -StartedAt $entry.startedAt -Path $entry.path
+            if ($identity.Status -eq 'Match') { throw "Recorded process remains: PID $($entry.id), executable '$($entry.path)'" }
         }
         if ($record.ownsLocalStack) {
             $containers = Invoke-Tool -File docker -Arguments @('ps', '-a', '--format', '{{.Names}}')
@@ -1526,6 +1621,7 @@ Save-Ownership
 Push-Location $script:RepoRoot
 try {
     if ($BrowserSession -and $Suite -eq 'clean') { throw 'BrowserSession cannot be combined with clean' }
+    if ($Suite -eq 'browser' -and -not $BrowserSession) { throw 'Suite browser requires -BrowserSession' }
     if ($Suite -eq 'clean') {
         Invoke-Lane -Name clean -Action { Invoke-Clean }
     } else {
