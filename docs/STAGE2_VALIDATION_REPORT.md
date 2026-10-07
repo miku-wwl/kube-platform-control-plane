@@ -4,33 +4,36 @@
 
 | 项目 | 结果 | 验证范围 |
 |---|---|---|
-| 当前 Ollama 网页生命周期 | NOT VERIFIED | 本次 Ollama BrowserSession 已就绪；当前页面操作及截图待补 |
+| 当前 Ollama 网页生命周期 | NOT VERIFIED | 待新建有效 Ollama BrowserSession，实际页面操作及截图待补 |
 | 当前截图覆盖 | NOT VERIFIED | 0/9，0%；要求至少 80% |
 | 后端本地 E2E、恢复、隔离、安全保护 | PASS | 复用 2026-10-06 全套验收；产品源码未变，本次不重跑 |
 | Ollama 模型/API 集成 | PASS | 复用已有真实模型 7 场景及 Kind 草稿验证；不等同网页验收 |
 | 历史网页生命周期 | PASS | 2026-10-04 实际页面验收；本次不计入当前覆盖 |
 | 历史正常 BrowserSession 清理 | PASS | 2026-10-07 正常释放的准备会话；非 Ollama 网页生命周期 |
 | 历史超时会话残留复核 | PASS | 2026-10-07 只读复核无残留；原自动清理失败不改记 PASS |
-| 本次资源清理 / 非本次资源保护 | NOT VERIFIED | 本次会话尚未结束；启动前外部 LocalStack 和开发集群均存在 |
-| 本次 Ollama BrowserSession 正常释放 | NOT VERIFIED | 等待实际网页验收及显式释放 |
+| 最近历史 Ollama 会话自动清理 | PASS | `20261007115435-c1d6cfbe` 超时结束，summary 的 CLEANUP=PASS；正常释放未验证 |
+| 新网页验收资源清理 / 非本次资源保护 | NOT VERIFIED | 本轮文档工作未启动新会话，须记录同次正常结束与清理 |
+| 当前 Ollama BrowserSession 正常释放 | NOT VERIFIED | 等待新会话实际网页验收及显式释放 |
 | QA 验证包最终完成 | NOT VERIFIED | `QA_REPORT_FINALIZATION = PARTIAL` |
 | Stage 2 Freeze | BLOCKED | 当前网页生命周期及会话结束证据未齐 |
 
 用户流程是“描述需求 → 检查草稿 → 明确提交 → 审批变更 → Ready”；删除需要另一次审批。现有证据支持本地功能，当前 Ollama 网页全链路仍未验收。所有验证均在 Kind + LocalStack 范围内。
 
+本轮为文档交接，未重新执行任何运行测试。按[测试设计](STAGE2_TEST_DESIGN.md)执行并填写[独立空白记录](STAGE2_MANUAL_TEST_RECORD.md)；新记录所有用例初始为 NOT RUN，不继承本报告的复用 PASS。主网页/只读检查、TC09–TC11 自动化、TC06-B 专项夹具分别记结果。报告中的 NOT VERIFIED 表示缺少当前验收证据，新执行记录使用 PASS / FAIL / BLOCKED / NOT RUN / NOT APPLICABLE。
+
 ## 2. 测试环境与证据适用范围
 
 | 项目 | 配置 |
 |---|---|
-| Branch / HEAD | `main` / `c018978fb3e702e00f7f1f3e78239ea062c31359` |
+| 文档审查 Branch / HEAD | `main` / `acd00679f05bc1c5de465ec775d2a02513253c06` |
 | 整理日期 | 2026-10-08（Pacific/Auckland） |
-| LLM | Ollama `0.35.1` + `phi4-mini:latest`；已有真实模型检查通过 |
-| Kubernetes / AWS 模拟 | Kind；外部 LocalStack Ultimate，复核时 healthy |
-| API / UI | platform-api；Stage 2 Web。前端 5173、API 8090 正常；本次会话已就绪 |
+| LLM | 历史环境 Ollama `0.35.1` + `phi4-mini:latest`；已有真实模型检查通过，新会话重新核对版本/模型 |
+| Kubernetes / AWS 模拟 | Kind；外部 LocalStack Ultimate，历史复核时 healthy；本轮未检查在线状态 |
+| API / UI | platform-api；Stage 2 Web。新会话 API 8090、前端 5173；本轮不声明服务正在运行 |
 | E2E | `e2e/Run-LocalE2E.ps1`；复用通过的 `20261006100028-5e17bd55` 全套记录 |
-| 当前浏览器工具 | 插件当前无连接页面；Windows Computer Use 上次因 URL 识别限制停止，本次检查不计入通过证据 |
-| 当前 Ollama 会话 | `20261007115435-c1d6cfbe`；01:00:00 NZDT 就绪，期限 2026-10-08 02:00:00 NZDT |
-| 提供器核对 | 当前 `/api/health` 返回 `aiProvider=ollama`；元数据模型 `phi4-mini:latest`，Ollama 已加载；环境数 0 |
+| 历史浏览器工具限制 | 上次插件无连接页面，Windows Computer Use 因 URL 识别限制停止；本轮未调用浏览器 |
+| 已过期历史 Ollama 会话 | `20261007115435-c1d6cfbe`；2026-10-08 01:00:00 NZDT 就绪，02:00:00 NZDT 到期；超时结束，不能作为新测试数据 |
+| 历史提供器核对 | 上述会话 `/api/health` 为 `aiProvider=ollama`；元数据模型 `phi4-mini:latest`，当时模型已加载、环境数 0；不代表当前在线状态 |
 | 网页操作参数 | 见[测试设计 3.1](STAGE2_TEST_DESIGN.md#31-准备网页验收环境)，无需沿用旧截图中的类别/环境名 |
 
 **当前和历史证据分别计数。历史验收截图，当前版本行为已由后端/E2E回归验证。** 图像拍摄于 2026-10-04，相关详情、审批、拓扑页面源码未变；2026-10-06 回归记录的 79 个产品文件与当前文件一致。会话准备脚本随后有修复，旧 E2E 记录不表示本轮重新执行了全套。
@@ -42,24 +45,26 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 | 用例 ID | 测试点 | 当前版本结果 | 历史 / 复用验证 | 截图 / 自动化证据 |
 |---|---|---|---|---|
 | TC01 | AI 生成环境草稿 | NOT VERIFIED | 模型/API 通过，当前网页待验收 | 缺当前图 |
-| TC02 | Submit 前不创建资源 | NOT VERIFIED | 历史网页及 Ollama API 通过 | 图 1（历史） |
+| TC02 | 草稿不自动创建资源 | NOT VERIFIED | 历史网页及 Ollama API 通过 | 图 1（历史） |
 | TC03 | 提交环境 | NOT VERIFIED | 历史网页、后端验收通过 | 图 2（历史） |
-| TC04 | Plan 完成并等待审批 | NOT VERIFIED | 历史网页、后端验收通过 | 图 3（历史） |
+| TC04 | Plan 生成并等待审批 | NOT VERIFIED | 历史网页、后端验收通过 | 图 3（历史） |
 | TC05 | 未审批不得执行 | PASS | 采用同产品源码的后端验收 | 10 月 6 日未审批/错误审批未执行 |
-| TC06 | PlanTopology 展示 | NOT VERIFIED | 历史三动作、多资源 UI 通过 | 图 4（历史） |
+| TC06 | PlanTopology 展示（父项） | NOT VERIFIED | 拆为两个独立子项，父项不重复计数 | 见 TC06-A / TC06-B |
+| TC06-A | PlanTopology 基础展示 | NOT VERIFIED | 历史多资源展示可追溯；当前普通流程待执行 | 新图待补 |
+| TC06-B | 多资源三动作展示 | NOT VERIFIED | 历史三动作、多资源 UI 通过；当前 PREPARATION REQUIRED | 图 4（历史） |
 | TC07 | 审批后执行 | NOT VERIFIED | 历史网页、后端验收通过 | 图 5（历史） |
 | TC08 | 环境 Ready | NOT VERIFIED | 历史网页、后端验收通过 | 图 5（历史） |
-| TC09 | 后台重启恢复 | PASS | 采用同产品源码的后端验收 | 三个阶段重启恢复，无重复执行 |
-| TC10 | 多目标隔离 | PASS | 采用同产品源码的后端验收 | 两个目标无交叉资源 |
+| TC09 | 服务重启恢复 | PASS | 采用同产品源码的后端验收 | 三个阶段重启恢复，无重复执行 |
+| TC10 | 多环境/目标隔离 | PASS | 采用同产品源码的后端验收 | 两个目标无交叉资源 |
 | TC11 | 异常场景安全保护 | PASS | 采用同产品源码的后端验收 | 错误请求安全拒绝 |
-| TC12 | 请求删除环境 | NOT VERIFIED | 历史网页、后端验收通过 | 图 6（历史） |
+| TC12 | 删除环境 | NOT VERIFIED | 历史网页、后端验收通过 | 图 6（历史） |
 | TC13 | Destroy 独立审批 | NOT VERIFIED | 历史网页、后端验收通过 | 图 6（历史） |
-| TC14 | Destroy 完成、环境消失 | NOT VERIFIED | 历史网页、后端验收通过 | 图 7（历史） |
-| TC15 | Cleanup 无残留 | NOT VERIFIED | 历史正常清理及旧会话残留复核通过 | 本次正常释放/清理待验证 |
+| TC14 | Destroy 完成 | NOT VERIFIED | 历史网页、后端验收通过 | 图 7（历史） |
+| TC15 | Cleanup 无残留 | NOT VERIFIED | 历史正常清理、旧会话残留复核、最近超时会话自动清理通过 | 新网页同次正常释放/清理待验证 |
 
-本次手动操作的准确参数、截图文件名和结束命令见[测试设计 3.1.1](STAGE2_TEST_DESIGN.md#311-本次已就绪会话2026-10-08)。
+动态参数见[测试设计 3.1.1](STAGE2_TEST_DESIGN.md#311-启动与动态会话参数)，网页步骤与截图见[3.1.2](STAGE2_TEST_DESIGN.md#312-主网页生命周期与截图检查点)，安全释放见[3.3](STAGE2_TEST_DESIGN.md#33-释放当前会话与清理tc15)。不得复用上述已过期会话名或 hold 路径。
 
-当前结果：4 项采用已验收且源码未变的后端证据；11 项待本次 UI 或会话结束验证。历史网页通过不能代替当前 Ollama 网页通过。
+16 个独立执行项：4 项采用已验收且源码未变的后端证据；12 项待新 UI、专项夹具或同次会话结束验证，TC06 父项不重复计数。历史网页通过不能代替当前 Ollama 网页通过。
 
 ## TC01 AI 生成环境草稿
 
@@ -80,7 +85,7 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 **历史 / 自动化补充证据**：已有真实模型检查 7 场景通过，详见实际结果；当前网页截图缺失。不得使用图 1 的 Foundry 字段证明当前 Ollama。
 
-## TC02 草稿生成不自动创建资源
+## TC02 草稿不自动创建资源
 
 **测试目的**：确认 AI 生成草稿后仍需用户明确提交。
 
@@ -170,9 +175,29 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 ## TC06 PlanTopology 展示
 
+保留原 TC06 追溯，拆为基础展示与高级夹具两个独立执行项；分别填写新记录，父项不重复统计。
+
+### TC06-A PlanTopology 基础展示
+
+**执行类型**：手动网页测试；READY。
+
+**前置条件**：普通有效 BrowserSession，真实 Reconcile Plan 已完成、尚未审批。
+
+**测试步骤**：按[测试设计 3.2](STAGE2_TEST_DESIGN.md#32-tc06-两个独立场景)，打开 Architecture preview / 架构预览；核对真实资源及变更汇总、已有关系，无阻塞错误；切换中英文及窄屏，保存 `TC06-plan-topology.png` 和补图。
+
+**预期结果**：普通基础夹具 1 个 CREATE、0 条边可通过，不要求三种动作或三个节点。
+
+**实际结果**：本轮未执行网页；历史多资源图保留用于追溯，不作为新普通流程 PASS。
+
+**测试结果**：`NOT VERIFIED`。
+
+### TC06-B 多资源三动作展示
+
+**执行类型**：专项夹具测试；`PREPARATION REQUIRED`。本机历史准备脚本依赖旧会话目录且未纳入版本控制，不能直接用于当前 BrowserSession。开发/环境负责人交付可复现夹具与归属/清理步骤后 QA 再执行，详见测试设计 3.2。
+
 **测试目的**：确认用户能看清资源变更及关系。
 
-**前置条件**：使用测试设计 3.2 的真实多资源计划。
+**前置条件**：已收到测试设计 3.2 的完整真实多资源夹具交付。
 
 **测试步骤**
 
@@ -187,9 +212,9 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 **历史 / 自动化补充证据**
 
-![TC06 真实多资源与三动作拓扑](验收截图/TC06-plan-topology.jpg)
+![TC06-B 真实多资源与三动作拓扑（原 TC06 历史证据）](验收截图/TC06-plan-topology.jpg)
 
-图 4：TC06 重点查看 UPDATE 主桶、REPLACE 替换桶、CREATE 对象及两条关系线。历史验收截图，当前版本行为已由后端/E2E回归验证。
+图 4：原 TC06，现归 TC06-B；重点查看 UPDATE 主桶、REPLACE 替换桶、CREATE 对象及两条关系线。历史验收截图，当前版本行为已由后端/E2E回归验证；不代表新夹具已准备或新网页通过。
 
 ## TC07 审批后执行
 
@@ -241,12 +266,14 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 **测试目的**：确认后台重启后任务不重复执行。
 
-**前置条件**：隔离的 recovery 验证环境。
+**执行类型**：自动化回归。
+
+**前置条件**：测试设计 3.4 的工具、Docker、Kind、外部 LocalStack 可用；网页会话已结束。
 
 **测试步骤**
 
-1. 在处理中、计划完成后及 Ready 后分别重启后台。
-2. 核对执行数量与最终状态。
+1. 执行[测试设计 3.4](STAGE2_TEST_DESIGN.md#34-tc09tc11-自动化回归执行)的 TC09 `-Suite recovery` 完整命令；重启由脚本执行。
+2. 按同节收集本次目录、退出码、RESTART_RECOVERY / RECOVERY_AFTER_PLAN / SUITE_RECOVERY、总结果和清理信号；保存 summary、logs、恢复证据，填写新记录。
 
 **预期结果**：任务恢复，最终正确，不重复执行。
 
@@ -260,12 +287,14 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 **测试目的**：确认 A 的操作不会影响 B。
 
-**前置条件**：两个环境使用不同 Kind 目标。
+**执行类型**：自动化回归。
+
+**前置条件**：测试设计 3.4 的自动化前置条件；两个测试目标由脚本准备。
 
 **测试步骤**
 
-1. 分别创建和操作 A、B。
-2. 检查资源位于各自目标，另一个目标无交叉资源。
+1. 执行[测试设计 3.4](STAGE2_TEST_DESIGN.md#34-tc09tc11-自动化回归执行)的 TC10 `-Suite multitarget` 完整命令，不手工操作集群。
+2. 保存本次 MULTI_TARGET / SUITE_MULTITARGET、总结果及清理信号、退出码、summary、logs，填写新记录。
 
 **预期结果**：资源位置正确，两个环境相互隔离。
 
@@ -279,12 +308,16 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 **测试目的**：确认错误请求或错误目标不会继续变更。
 
-**前置条件**：准备错误审批和不匹配目标。
+**执行类型**：自动化回归。
+
+**前置条件**：测试设计 3.4 的自动化前置条件；错误目标/发现/围栏由脚本准备。
 
 **测试步骤**
 
-1. 提交错误审批或未注册目标。
-2. 查看拒绝结果及目标资源。
+1. 执行[测试设计 3.4](STAGE2_TEST_DESIGN.md#34-tc09tc11-自动化回归执行)的 TC11 `-Suite failclosed` 完整命令。
+2. 保存本次 FAIL_CLOSED / SUITE_FAILCLOSED、总结果及清理信号、退出码、`failclosed-runtime.json`、summary、logs；核对无运行资源变更。
+
+本套直接覆盖未注册目标、不完整可信发现及持久变更围栏；下面历史全套结果中的错误/旧审批来自其他套件，不把它们算作 failclosed 单套覆盖。
 
 **预期结果**：拒绝或安全停止，无错误执行。
 
@@ -376,11 +409,11 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 **预期结果**：测试资源不存在，开发环境和外部服务保留。
 
-**实际结果**：本次会话尚未结束，当前正常释放及清理未验证；以下为此前结果：10 月 6 日全套清理 PASS；10 月 7 日正常释放准备会话也 PASS。最近 Ollama 会话超时且自动清理记录 FAIL；前次复核其两个桶均 404、集群/进程/目录均不存在，`pcp-dev` 保留、外部 LocalStack healthy。此前无残留不证明那次失败脚本完成了清理。
+**实际结果**：本轮未启动新网页会话，同次正常释放/清理未验证。历史结果分开保留：10 月 6 日全套清理 PASS；10 月 7 日正常释放准备会话 PASS；更早超时会话曾因外部 LocalStack 缺失记录清理 FAIL，随后只读复核两个桶 404、集群/进程/目录不存在，`pcp-dev` 保留，外部 LocalStack healthy。最新历史会话 `20261007115435-c1d6cfbe` 的现存 summary 显示等待显式释放超时、SUITE_BROWSER / LOCAL_E2E=FAIL，但 CLEANUP=PASS，ownership.cleanupCompleted=true。最新自动清理通过不证明网页或正常显式释放通过，也不改写更早 FAIL。
 
 **测试结果**：`NOT VERIFIED`。
 
-**历史 / 自动化补充证据**：10 月 6 日全套及 10 月 7 日正常释放准备会话均清理通过；前次只读复核未发现旧超时会话的残留。准备会话没有浏览器点击，不能用于证明 Ollama 网页验收。
+**历史 / 自动化补充证据**：全套及正常释放准备会话清理通过；更早失败会话残留复核通过；最新历史会话文件中自动清理通过。本轮只读取已有文件，没有新执行。新网页验收按[测试设计 3.3](STAGE2_TEST_DESIGN.md#33-释放当前会话与清理tc15)保存正常释放、清理及非本次资源保护证据。
 
 ## 4. 遗留问题
 
@@ -388,8 +421,8 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 
 | ID | 级别 | 问题 | 是否阻塞 |
 |---|---|---|---|
-| TOOL-01 | 工具限制 | 浏览器插件无连接页面；Windows Computer Use 上次有 URL 识别限制；当前网页生命周期及截图尚未验收 | 阻塞最终 Freeze；不判产品 FAIL |
-| ENV-01 | 历史环境问题 | 此前 Ollama 会话等待释放超时，清理时外部 LocalStack 容器缺失；此前残留复核通过，本次另记录释放/清理 | 仍需完整网页会话正常结束证据；不改写原 FAIL |
+| TOOL-01 | 历史工具限制 | 上次插件无连接页面；Windows Computer Use 有 URL 识别限制；当前网页生命周期及截图尚未验收 | 阻塞最终 Freeze；不判产品 FAIL |
+| ENV-01 | 历史环境问题 | 更早超时会话清理时外部 LocalStack 缺失，原清理 FAIL 保留，残留复核通过；最新历史超时会话自动清理 PASS | 仍需完整网页会话正常结束证据；不混用两次结果 |
 
 ## 5. 证据索引
 
@@ -398,13 +431,13 @@ Builder 的 Provider 从 Foundry Local 改为 Ollama，因此旧草稿图仅用�
 | 图 1 | TC02 | [TC02-no-resource-before-submit.jpg](验收截图/TC02-no-resource-before-submit.jpg) | 历史 | 草稿已生成但环境数 0；Provider 为旧 Foundry |
 | 图 2 | TC03 | [TC03-environment-created.jpg](验收截图/TC03-environment-created.jpg) | 历史 | Submit 后环境出现 |
 | 图 3 | TC04 | [TC04-awaiting-approval.jpg](验收截图/TC04-awaiting-approval.jpg) | 历史 | 等待审批且运行资源数 0 |
-| 图 4 | TC06 | [TC06-plan-topology.jpg](验收截图/TC06-plan-topology.jpg) | 历史 | 三种动作、多资源、两条连线 |
+| 图 4 | 原 TC06；现 TC06-B，兼具基础展示追溯 | [TC06-plan-topology.jpg](验收截图/TC06-plan-topology.jpg) | 历史 | 三种动作、多资源、两条连线；不代表新夹具准备完成 |
 | 图 5 | TC07、TC08 | [TC08-apply-ready.jpg](验收截图/TC08-apply-ready.jpg) | 历史 | 审批已记录、环境及资源 Ready |
 | 图 6 | TC12、TC13 | [TC13-destroy-approval.jpg](验收截图/TC13-destroy-approval.jpg) | 历史 | 删除已请求；新销毁方案仍需审批 |
 | 图 7 | TC14 | [TC14-environment-removed.jpg](验收截图/TC14-environment-removed.jpg) | 历史 | 删除后返回列表、环境数 0 |
 
 `UI_CRITICAL_TESTS = 9`　｜　`CURRENT_UI_SCREENSHOT_CASES = 0`　｜　`CURRENT_UI_SCREENSHOT_COVERAGE = 0%`
 
-`TOTAL_SCREENSHOT_COVERAGE_INCLUDING_HISTORICAL = 88.9%`（8/9）。历史覆盖不计入当前 80% 门槛；当前缺 TC01、TC03、TC04、TC06、TC07、TC08、TC12、TC13、TC14。
+`TOTAL_SCREENSHOT_COVERAGE_INCLUDING_HISTORICAL = 88.9%`（8/9，原 TC06 的基础展示历史追溯计入 TC06-A）。历史覆盖不计入当前 80% 门槛；当前缺 TC01、TC03、TC04、TC06-A、TC07、TC08、TC12、TC13、TC14。TC06-B 专项另计，不增加关键 UI 分母。
 
 本次保持原报告结构，未恢复旧开发报告，也未重建机器证据目录。新截图确认有效前，7 张历史截图保留原文件和标签。
