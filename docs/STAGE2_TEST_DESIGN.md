@@ -1,6 +1,6 @@
 # KPCP Stage 2 测试设计
 
-基线：`main` / `408163fae9f8b80192ff3a94cc584692d010f426`　｜　整理日期：2026-10-08
+基线：`main` / `c018978fb3e702e00f7f1f3e78239ea062c31359`　｜　整理日期：2026-10-08
 
 KPCP 让用户通过网页描述环境、审核草稿、提交环境并批准变更。创建和删除均需人工审批；后台执行完成后更新环境状态。
 
@@ -28,17 +28,17 @@ KPCP 让用户通过网页描述环境、审核草稿、提交环境并批准变
 
 ## 3. 测试策略
 
-功能和流程通过网页检查；负向场景检查拒绝提示及零执行；恢复、隔离和清理由现有本地 E2E 验证。AI 检查中英文、缓存开关和明确参数。UI 关键状态必须有真实截图。
+本次只运行 Ollama BrowserSession 网页生命周期，不重跑 all、recovery、multitarget、failclosed。功能和流程通过网页检查；负向场景检查拒绝提示及零执行；恢复、隔离和清理由现有本地 E2E 验证。AI 检查中英文、缓存开关和明确参数。UI 关键状态必须有真实截图。
 
 ### 3.1 准备网页验收环境
 
 确认 Docker、Kind、Ollama、已安装的 `phi4-mini:latest` 和外部 LocalStack Ultimate 可用；API 端口 8090 未被占用。仓库根目录运行：
 
 ```powershell
-pwsh -NoProfile -File e2e/Run-LocalE2E.ps1 -Suite browser -BrowserSession -AIProvider ollama -OllamaModel phi4-mini:latest -ApiPort 8090 -LocalStackEndpoint http://127.0.0.1:4566 -RequireExistingLocalStack
+pwsh -NoProfile -File e2e/Run-LocalE2E.ps1 -Suite browser -BrowserSession -AIProvider ollama -OllamaEndpoint http://127.0.0.1:11434 -OllamaModel phi4-mini:latest -ApiPort 8090 -LocalStackEndpoint http://127.0.0.1:4566 -BuildParallelism 1 -RequireExistingLocalStack -TerraformDnsServer 1.1.1.1
 ```
 
-等待输出 `BROWSER_SESSION_READY`。读取该次输出目录的 `browser-session.json`；保持该终端运行。前端未启动时，在另一终端运行 `npm --prefix web run dev`，打开 `http://127.0.0.1:5173`。
+本次使用仓库现有 DNS 参数 `1.1.1.1`，仅作用于测试管理集群。等待输出 `BROWSER_SESSION_READY`。读取该次输出目录的 `browser-session.json`；保持该终端运行。前端未启动时，在另一终端运行 `npm --prefix web run dev`，打开 `http://127.0.0.1:5173`。
 
 | 网页参数 / 检查项 | 填写方式 |
 |---|---|
@@ -54,6 +54,46 @@ pwsh -NoProfile -File e2e/Run-LocalE2E.ps1 -Suite browser -BrowserSession -AIPro
 
 类别由会话提供可执行的来源、后端、运行器和目标配置，测试人员无需猜测这些引用。模板仅保存配置；**选择模板不等于已经创建 Ready 类别**。
 
+### 3.1.1 本次已就绪会话（2026-10-08）
+
+会话已于 01:00:00 NZDT 就绪；API 实测返回 `aiProvider=ollama`，类别 Ready，环境列表为空。元数据配置模型为 `phi4-mini:latest`，Ollama 已加载该模型。
+
+| 项目 | 本次准确值 |
+|---|---|
+| Run ID | `20261007115435-c1d6cfbe` |
+| 网页 | `http://127.0.0.1:5173` |
+| API | `http://127.0.0.1:8090` |
+| Environment name | `browser-20261007115435c1` |
+| Namespace | `platform-system`（覆盖表单默认的 `default`） |
+| Environment class | `browser-20261007115435c1-class` |
+| Region / Node count | `local` / `1` |
+| 会话期限 | `2026-10-08 02:00:00 NZDT`；到期前完成或显式释放 |
+
+如果自动浏览器控制受限，可由测试人员在实际网页执行下面流程并保存截图到 `docs/验收截图/`。这些文件只有实际捕获后才计入当前覆盖：
+
+| 操作及检查 | 截图文件 |
+|---|---|
+| 左侧平台构建器 → 按上表填参数 → 生成草稿；检查校验通过、Provider 为 Ollama | `TC01-ai-draft-ollama.png` |
+| 不点击提交；确认左侧环境数仍为 0，草稿仍显示 | `TC02-before-submit.png` |
+| 点击提交 → 环境详情出现并开始处理 | `TC03-environment-created.png` |
+| 等待“等待审批”；先不批准，确认未启动 Apply 执行 | `TC04-awaiting-approval.png` |
+| 打开详情的架构预览，等待真实资源节点显示完整 | `TC06-plan-topology.png` |
+| 批准当前方案；捕获审批接受与执行状态，状态短暂时捕获最强可见后续状态 | `TC07-approved-applying.png` |
+| 等待环境、基础设施及运行时 Ready | `TC08-ready.png` |
+| 删除环境 → 输入完整名称 → 请求删除；等待新的销毁方案，确认需要独立审批 | `TC13-destroy-approval.png`（同时覆盖 TC12） |
+| 单独批准销毁方案 → 等待返回环境列表，确认环境数 0 | `TC14-environment-removed.png` |
+
+本次普通会话通常显示单个 CREATE 资源；多资源、UPDATE / REPLACE 专项保留 3.2 的历史验收范围，不能把单资源新图当成三动作新验收。
+
+结束时在仓库根目录另一终端执行：
+
+```powershell
+$qaCurrentSession = Get-Content -LiteralPath 'artifacts/e2e/20261007115435-c1d6cfbe/browser-session.json' -Raw | ConvertFrom-Json
+Remove-Item -LiteralPath $qaCurrentSession.holdFile
+```
+
+然后确认该次启动终端输出正常释放及清理 PASS。会话保持运行不是清理通过；当前正常释放和清理结果必须另行记录。
+
 ### 3.2 数据与结束条件
 
 普通 BrowserSession 足以验证创建/审批/删除，但通常只产生 CREATE。TC06 的三动作专项须由开发人员另外提供已准备的多资源类别和初始资源：
@@ -66,7 +106,7 @@ pwsh -NoProfile -File e2e/Run-LocalE2E.ps1 -Suite browser -BrowserSession -AIPro
 
 预期拓扑为 3 节点、2 条关系线；检查中英文及常用窄屏宽度。准备工作须使用真实资源与测试状态，不能注入伪造页面或计划数据。
 
-TC09–TC11 复测可分别使用现有 `-Suite recovery`、`-Suite multitarget`、`-Suite failclosed`；`-Suite all` 覆盖全部后端测试。均使用本地 LocalStack，并加 `-RequireExistingLocalStack`。本机依赖域名解析有问题时，由开发人员确认后使用现有 `-TerraformDnsServer` 参数。
+本次 TC09–TC11 复用已验收证据，以下命令仅供后续需要复测时使用。TC09–TC11 复测可分别使用现有 `-Suite recovery`、`-Suite multitarget`、`-Suite failclosed`；`-Suite all` 覆盖全部后端测试。均使用本地 LocalStack，并加 `-RequireExistingLocalStack`。本机依赖域名解析有问题时，由开发人员确认后使用现有 `-TerraformDnsServer` 参数。
 
 TC14 完成后，在另一 PowerShell 终端执行以下命令。把 `<本次输出目录>` 替换为 `BROWSER_SESSION_READY` 后打印的完整目录；不要使用历史会话目录。
 
@@ -100,5 +140,7 @@ Remove-Item -LiteralPath $qaSession.holdFile
 | TC15 | P0 | Cleanup 无残留 | 本次测试已结束；记录既有 `pcp-dev` 与外部服务 | 释放会话 → 查看清理结果 → 核对本次资源 | 本次桶、集群、进程、临时目录不存在；既有开发环境与外部服务保留 |
 
 共 15 项：功能 5、流程 2、负向 4、UI 专项 1、恢复 1、隔离 1、清理 1。UI 关键测试为交叉标签，共 9 项：TC01、TC03、TC04、TC06、TC07、TC08、TC12、TC13、TC14。
+
+当前截图单独计数；关键 UI 用例 9 项，当前覆盖须达到 80%，历史图不能计入该门槛。
 
 执行结果与图片见 [Stage 2 验证报告](STAGE2_VALIDATION_REPORT.md)。
