@@ -272,14 +272,14 @@ function App() {
           <div
             className="local-indicator"
             role="status"
-            aria-label={t('LOCAL MODE') + ' · Kind + LocalStack'}
-            title={t('LOCAL MODE') + ' · Kind + LocalStack'}
+            aria-label={t('LOCAL MODE') + ' · Kubernetes'}
+            title={t('LOCAL MODE') + ' · Kubernetes'}
           >
             <span className="dot good" />
             <span>{t('LOCAL MODE')}</span>
             <small className="rail-mode">{t('LOCAL')}</small>
           </div>
-          <p>Kind + LocalStack</p>
+          <p>Kubernetes</p>
           <small>{t('Local workspace')}</small>
         </div>
       </aside>

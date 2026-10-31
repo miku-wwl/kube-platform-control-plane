@@ -1,6 +1,6 @@
 # Architecture
 
-Updated: 2026-10-08. Architecture retained from 2026-10-06; validation boundaries and QA links refreshed against the current working tree.
+Updated: 2026-11-01 (Pacific/Auckland). Phase 2.5A cleanup checkpoint. The [Phase 2.5 architecture contract](phase2.5/ARCHITECTURE_CONTRACT.md) is authoritative; integration migration remains pending.
 
 This document describes the current components, persisted state, configuration
 flow and execution contracts.
@@ -9,7 +9,7 @@ flow and execution contracts.
 
 ```mermaid
 flowchart TD
-    Preset[Small / team Kind preset] --> Draft[Independent form draft]
+    Preset[Small / team Kubernetes preset] --> Draft[Independent form draft]
     Template[Saved project template] -->|Copy spec| Draft
     Existing[Existing EnvironmentClass] -->|Copy with new name and version| Draft
     Blank[Blank form with common defaults] --> Draft
@@ -24,8 +24,8 @@ flowchart TD
 
 ### Presets and saved templates
 
-- Starter presets are frontend defaults. Small Kind uses node bounds 1–3,
-  three environments, one concurrent Plan and one concurrent Apply. Team Kind
+- Starter presets are frontend defaults. Small Kubernetes uses node bounds 1–3,
+  three environments, one concurrent Plan and one concurrent Apply. Team Kubernetes
   uses 1–10, ten environments, two Plans and one Apply. Both select Manual.
 - Presets leave project-specific source, target, backend and Runner connections
   for the operator to fill. Startup does not create example classes.
@@ -38,7 +38,7 @@ flowchart TD
   update the template, source class or existing environments.
 - Names are unique. There is no template update endpoint: save a revised snapshot
   under a new name. Refresh discards unsaved drafts; saved templates survive API
-  restart. Deleting the Kind cluster deletes its templates.
+  restart. Deleting the management cluster deletes its templates.
 - Template deletion requires the exact machine name and UID, with Kubernetes
   UID/resourceVersion preconditions. Existing classes remain independent.
 
@@ -210,7 +210,8 @@ changes retain a form draft.
 
 Kubernetes stores desired state, conditions, execution records, approvals and
 template ConfigMaps. Artifact storage holds source bundles, saved plans, backend
-snapshots and reports; local validation uses LocalStack for this object storage.
+snapshots and reports in an explicitly configured S3-compatible store. MiniStack
+compatibility is pending actual integration; no endpoint hostname selects credentials.
 The API projects resources and evidence into UI-safe views and does not run a
 second workflow engine or application database.
 
@@ -274,50 +275,24 @@ they are not a complete event audit log.
 | `PCP_ENABLE_TERRAFORM_EXECUTION=false` | Class/template management works; Runner execution is disabled |
 | `PCP_ENABLE_AWS_EKS=false` | Real AWS EKS target execution is not enabled |
 
-## Local regression architecture
+## Supplied-environment verification boundary
 
-The permanent backend/control-plane harness is
-[`e2e/Run-LocalE2E.ps1`](../e2e/Run-LocalE2E.ps1). Its disposable topology is one
-management Kind cluster and two target Kind clusters. The controller runs as a
-two-replica Kubernetes Deployment, Terraform runs in real runner Jobs, and the
-platform API follows the existing local Go-process pattern on an isolated port.
+The previous PowerShell/Docker/Kind/LocalStack orchestration is removed.
+The Go successor remains Phase 2.5B work and must consume explicitly supplied
+kubeconfig/contexts. [The coverage matrix](phase2.5/ACCEPTANCE_COVERAGE_MATRIX.md)
+preserves the old behavior and identifies each missing replacement.
 
-Stable deployment uses `config/crd`, `config/rbac` and `config/manager`. There is
-no local Kustomize overlay in the current repository. Run-specific images,
-target contexts/kubeconfig Secret, execution enablement and LocalStack
-endpoint/bucket remain generated patches. An existing LocalStack Ultimate
-container is reused and preserved; cleanup uses exact ownership records.
+Stable deployment uses `config/crd`, `config/rbac` and `config/manager`. Images,
+target kubeconfig, workload credentials, endpoint routes and any custom-port
+NetworkPolicy egress are administrator-supplied prerequisites. The source tree
+contains no script control plane. Kubeconfig targets accept the distribution-neutral
+`kubernetes` provider; legacy serialized Kind identity values remain compatible.
 
-An optional `-TerraformDnsServer` setting scopes dependency-domain DNS forwarding
-to the owned management cluster. A real Pod checks the Terraform registry/release
-domains, the Docker host name and Kubernetes service DNS. It does not change the
-developer cluster or host DNS configuration.
-
-The lifecycle begins with an actual Ready EnvironmentClass and a top-level
-PlatformEnvironment. Controllers materialize InfraStack and ResourceSet. The
-dedicated platform suite also checks real API read models, templates, sanitized
-PlanGraph and exact ChangeApproval creation. `-BrowserSession` prepares backend
-state and waits for explicit release; the harness contains no browser automation.
-Suite commands and execution results are in the
-[README validation section](../README.md#kpcp-local-e2e-regression-suite).
-
-## Validation boundary
-
-Stage 1 is validated locally with the real Terraform CLI, LocalStack Ultimate,
-Kind management and target clusters, and real Kubernetes controllers. This
-validates local lifecycle, recovery, target isolation, and fail-closed
-behavior. Real AWS IAM, STS, EKS, KMS, networking, quotas, and service semantics
-have not been validated.
-
-| Scope | Evidence date / boundary |
-| --- | --- |
-| Environment lifecycle, recovery, isolation and Destroy | Historical 2026-10-02/03 acceptance; independently rerun on 2026-10-06, including final `all` with real Kind manager/runner Jobs and external LocalStack Ultimate: PASS |
-| Stage 2 backend contracts | 2026-10-06: class/template APIs, advisory draft and explicit create, automatic InfraStack, read model, sanitized PlanGraph, exact approval, saved-plan Apply/output/runtime, update and Destroy APIs: PASS. [Commands, run IDs and durations](../README.md#local-validation--2026-10-06) |
-| BrowserSession preparation | 2026-10-07: normal release/cleanup passed in a deterministic preparation session; the later Ollama session timed out and cleanup failed while external LocalStack was absent. Neither session proves browser clicks. Current acceptance boundaries: [Freeze evidence](STAGE2_FREEZE_EVIDENCE.md) |
-| Class/template browser workflow | 2026-10-03/04: 40 browser assertions; actual persistence, controller Ready, API restart, copying, selection and cleanup |
-| Ollama advisory draft integration | 2026-10-06: real Phi-4-mini inference, missing-model rejection, three Vite-proxied drafts validated against Kind; current browser clicks and Submit/lifecycle remain unverified. [Validation report](STAGE2_VALIDATION_REPORT.md) |
-| Manual procedure and screenshots | [QA test design](STAGE2_TEST_DESIGN.md), [validation report with screenshots](STAGE2_VALIDATION_REPORT.md) |
-| Real AWS / production | Not validated |
+Current 2.5A Go/static/build evidence is in [CLEANUP_REPORT](phase2.5/CLEANUP_REPORT.md).
+No real AWS, MiniStack or live Kubernetes acceptance is claimed. Dated local results
+remain in [the historical record](phase2.5/LEGACY_VALIDATION_RECORD.md) and unchanged
+[Stage 2 reports](STAGE2_VALIDATION_REPORT.md). Current browser acceptance was already
+incomplete at the baseline; historical screenshots do not close it.
 
 ## Source map
 

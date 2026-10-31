@@ -471,8 +471,8 @@ func (r *InfraStackReconciler) verifyTargetDiscovery(ctx context.Context, stack 
 	}
 	input := targetresolver.DiscoveryInput{SourceClosureDigest: run.Status.SourceBundleDigest, BackendSnapshotDigest: run.Status.ResolvedBackendConfigDigest, EffectivePlanInputDigest: run.Status.EffectivePlanInputDigest, ExpectedTarget: expectedIdentity, ExpectedConnection: expectedProfile}
 	verifier := r.TargetVerifier
-	if expectedIdentity.Provider == targetresolver.ProviderKind {
-		verifier = targetresolver.VerifyLocalKindTarget(expectedProfile.KubeContext)
+	if expectedIdentity.Provider == targetresolver.ProviderKubernetes || expectedIdentity.Provider == targetresolver.ProviderKind {
+		verifier = targetresolver.VerifyKubeconfigTarget(expectedIdentity, expectedProfile)
 	}
 	if verifier == nil {
 		return targetresolver.DiscoveryResult{}, fmt.Errorf("trusted target verifier is not configured for provider %q", expectedIdentity.Provider)

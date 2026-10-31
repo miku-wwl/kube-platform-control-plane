@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 // TargetClientFactory resolves a client only for a previously registered
@@ -23,20 +22,20 @@ type ClientResolver interface {
 }
 
 // ProviderClientResolver keeps runtime reconciliation provider-neutral. The
-// ResourceSet only asks for a client; Kind and EKS authentication stay behind
+// ResourceSet only asks for a client; kubeconfig and EKS authentication stay behind
 // this adapter boundary.
 type ProviderClientResolver struct {
-	Kind ClientResolver
-	AWS  ClientResolver
+	Kubeconfig ClientResolver
+	AWS        ClientResolver
 }
 
 func (r ProviderClientResolver) Client(ctx context.Context, identity RuntimeTargetIdentity, profile TargetConnectionProfile) (dynamic.Interface, error) {
 	switch profile.AuthMode {
-	case AuthKindContext:
-		if r.Kind == nil {
-			return nil, fmt.Errorf("kind target resolver is not configured")
+	case AuthKubeconfigContext, AuthKindContext:
+		if r.Kubeconfig == nil {
+			return nil, fmt.Errorf("kubeconfig target resolver is not configured")
 		}
-		return r.Kind.Client(ctx, identity, profile)
+		return r.Kubeconfig.Client(ctx, identity, profile)
 	case AuthAWSEKS:
 		if r.AWS == nil {
 			return nil, fmt.Errorf("AWS EKS target resolver is not configured")
@@ -90,30 +89,4 @@ func (f *TargetClientFactory) Client(_ context.Context, identity RuntimeTargetId
 		return nil, fmt.Errorf("target connection profile mismatch for identity %s", digest)
 	}
 	return f.clients[digest], nil
-}
-
-// KubeconfigClientFactory is the local Kind adapter. The context is part of
-// the frozen connection profile, so a caller cannot silently use the current
-// kubectl context for another target.
-type KubeconfigClientFactory struct {
-	Path string
-}
-
-func (f KubeconfigClientFactory) Client(_ context.Context, identity RuntimeTargetIdentity, profile TargetConnectionProfile) (dynamic.Interface, error) {
-	if err := ValidateBinding(identity, profile); err != nil {
-		return nil, err
-	}
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	if f.Path != "" {
-		loadingRules.ExplicitPath = f.Path
-	}
-	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, &clientcmd.ConfigOverrides{CurrentContext: profile.KubeContext}).ClientConfig()
-	if err != nil {
-		return nil, fmt.Errorf("load target context %q: %w", profile.KubeContext, err)
-	}
-	client, err := dynamic.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
 }

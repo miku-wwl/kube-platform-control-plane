@@ -13,8 +13,6 @@ terraform {
 
 provider "aws" {
   region                      = var.region
-  access_key                  = "test"
-  secret_key                  = "test"
   skip_credentials_validation = true
   skip_region_validation      = true
   skip_requesting_account_id  = true
@@ -22,7 +20,8 @@ provider "aws" {
   s3_use_path_style           = true
 
   endpoints {
-    s3 = var.s3_endpoint
+    s3  = var.s3_endpoint
+    sts = var.sts_endpoint
   }
 }
 
@@ -39,11 +38,11 @@ output "target_discovery" {
   value = {
     provider      = var.target_provider
     accountId     = var.target_account_id
-    region        = var.region
+    region        = var.target_region
     clusterName   = var.target_cluster_name
     incarnationId = var.target_cluster_name
     endpoint      = var.target_endpoint
-    authMode      = "kind-context"
+    authMode      = var.target_auth_mode
     kubeContext   = var.target_cluster_name
   }
 }

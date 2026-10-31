@@ -3,9 +3,7 @@ package terraform
 import (
 	"fmt"
 	"math"
-	"net/url"
 	"path"
-	"strings"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -216,16 +214,6 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			}},
 		})
 	}
-	if isLocalStackEndpoint(request.ArtifactEndpoint) {
-		// LocalStack deliberately uses non-secret test credentials. Keep this
-		// branch constrained to local endpoints so production Jobs never receive
-		// synthetic AWS credentials.
-		runner.Env = append(runner.Env,
-			corev1.EnvVar{Name: "AWS_ACCESS_KEY_ID", Value: "test"},
-			corev1.EnvVar{Name: "AWS_SECRET_ACCESS_KEY", Value: "test"},
-			corev1.EnvVar{Name: "AWS_DEFAULT_REGION", Value: request.ArtifactRegion},
-		)
-	}
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{Name: request.Name, Namespace: request.Namespace, Labels: labels},
 		Spec: batchv1.JobSpec{
@@ -256,23 +244,6 @@ func sourceRootForJob(request JobRequest) string {
 		return request.SourceRoot
 	}
 	return "/workspace/terraform"
-}
-
-func isLocalStackEndpoint(endpoint string) bool {
-	if endpoint == "" {
-		return false
-	}
-	parsed, err := url.Parse(endpoint)
-	if err != nil {
-		return false
-	}
-	host := strings.ToLower(parsed.Hostname())
-	switch host {
-	case "localhost", "127.0.0.1", "host.docker.internal", "localstack":
-		return true
-	default:
-		return false
-	}
 }
 
 func (r JobRequest) validate() error {

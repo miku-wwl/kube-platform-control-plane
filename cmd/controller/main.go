@@ -137,7 +137,7 @@ func buildTargetClient() (dynamic.Interface, targetresolver.ClientResolver, targ
 		contextNames = splitNonEmpty(os.Getenv("PCP_TARGET_CONTEXT"))
 	}
 	var factory *targetresolver.TargetClientFactory
-	var kindResolver targetresolver.ClientResolver
+	var kubeconfigResolver targetresolver.ClientResolver
 	var first dynamic.Interface
 	if len(contextNames) > 0 {
 		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
@@ -157,16 +157,22 @@ func buildTargetClient() (dynamic.Interface, targetresolver.ClientResolver, targ
 			if err != nil {
 				return nil, nil, nil, err
 			}
-			identity := targetresolver.RuntimeTargetIdentity{Provider: targetresolver.ProviderKind, AccountID: "local", Region: "local", ClusterName: contextName, IncarnationID: contextName}
-			profile := targetresolver.TargetConnectionProfile{Endpoint: "kubeconfig:" + contextName, AuthMode: targetresolver.AuthKindContext, KubeContext: contextName, NetworkRouteProfile: "local-kind"}
-			if err := factory.Register(identity, profile, client); err != nil {
-				return nil, nil, nil, err
+			// Register exact profiles for new distribution-neutral targets and
+			// legacy serialized targets. Never infer the Kubernetes distribution.
+			for _, provider := range []string{targetresolver.ProviderKubernetes, targetresolver.ProviderKind} {
+				materialized, err := targetresolver.MaterializeTarget(targetresolver.TargetExpectation{Provider: provider, ClusterName: contextName})
+				if err != nil {
+					return nil, nil, nil, err
+				}
+				if err := factory.Register(materialized.RuntimeTargetIdentity, materialized.TargetConnectionProfile, client); err != nil {
+					return nil, nil, nil, err
+				}
 			}
 			if first == nil {
 				first = client
 			}
 		}
-		kindResolver = factory
+		kubeconfigResolver = factory
 	}
 	var awsResolver targetresolver.ClientResolver
 	var targetVerifier targetresolver.TargetVerifier
@@ -174,10 +180,10 @@ func buildTargetClient() (dynamic.Interface, targetresolver.ClientResolver, targ
 		awsResolver = targetresolver.EKSTargetResolver{TokenProvider: targetresolver.NewAWSSTSTokenProvider()}
 		targetVerifier = targetresolver.NewAWSEKSVerifier()
 	}
-	if kindResolver == nil && awsResolver == nil {
+	if kubeconfigResolver == nil && awsResolver == nil {
 		return nil, nil, nil, nil
 	}
-	return first, targetresolver.ProviderClientResolver{Kind: kindResolver, AWS: awsResolver}, targetVerifier, nil
+	return first, targetresolver.ProviderClientResolver{Kubeconfig: kubeconfigResolver, AWS: awsResolver}, targetVerifier, nil
 }
 
 func splitNonEmpty(value string) []string {

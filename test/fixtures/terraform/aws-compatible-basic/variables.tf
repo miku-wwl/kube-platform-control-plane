@@ -4,18 +4,20 @@ variable "region" {
 }
 
 variable "s3_endpoint" {
-  type    = string
-  default = "http://host.docker.internal:4566"
+  type = string
+}
+
+variable "sts_endpoint" {
+  type = string
 }
 
 variable "bucket_name" {
-  type    = string
-  default = "pcp-e2e-lifecycle-bucket"
+  type = string
 }
 
 variable "target_provider" {
   type    = string
-  default = "kind"
+  default = "kubernetes"
 }
 
 variable "target_account_id" {
@@ -24,11 +26,19 @@ variable "target_account_id" {
 }
 
 variable "target_cluster_name" {
-  type    = string
-  default = "kind-pcp-target-local"
+  type = string
 }
 
 variable "target_endpoint" {
+  type = string
+}
+
+variable "target_region" {
   type    = string
-  default = "kubeconfig:kind-pcp-target-local"
+  default = "local"
+}
+
+variable "target_auth_mode" {
+  type    = string
+  default = "kubeconfig-context"
 }

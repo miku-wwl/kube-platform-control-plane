@@ -33,8 +33,8 @@ type DiscoveryResult struct {
 }
 
 // DiscoverFromTerraformOutputContext consumes only an allowlisted, non-sensitive
-// output object. The verifier represents trusted local Kind discovery or the
-// future AWS DescribeCluster boundary.
+// output object. The verifier represents a configured kubeconfig target or
+// the AWS DescribeCluster boundary.
 func DiscoverFromTerraformOutputContext(ctx context.Context, output []byte, input DiscoveryInput, verifier TargetVerifier) (DiscoveryResult, error) {
 	if input.SourceClosureDigest == "" || input.BackendSnapshotDigest == "" || input.EffectivePlanInputDigest == "" {
 		return DiscoveryResult{}, fmt.Errorf("discovery requires convergence evidence digests")
@@ -69,10 +69,8 @@ func DiscoverFromTerraformOutputContext(ctx context.Context, output []byte, inpu
 	if values.AccountID != "" {
 		identity.AccountID = values.AccountID
 	}
-	// Kind's runtime identity uses the provider-local "local" region while
-	// Terraform may legitimately use an AWS-compatible emulation region such
-	// as us-east-1 for LocalStack. AWS discovery remains strictly bound to the
-	// discovered region below.
+	// Preserve the legacy identity's provider-local region. New generic
+	// Kubernetes and AWS discovery must match the explicit expected region.
 	if values.Region != "" && identity.Provider != ProviderKind {
 		identity.Region = values.Region
 	}
@@ -118,13 +116,10 @@ func DiscoverFromTerraformOutputContext(ctx context.Context, output []byte, inpu
 	return DiscoveryResult{RuntimeTargetIdentity: identity, TargetConnection: profile, SourceClosureDigest: input.SourceClosureDigest, BackendSnapshotDigest: input.BackendSnapshotDigest, EffectivePlanInputDigest: input.EffectivePlanInputDigest}, nil
 }
 
-func VerifyLocalKindTarget(expectedContext string) TargetVerifierFunc {
+func VerifyKubeconfigTarget(expectedIdentity RuntimeTargetIdentity, expectedProfile TargetConnectionProfile) TargetVerifierFunc {
 	return func(_ context.Context, identity RuntimeTargetIdentity, profile TargetConnectionProfile) error {
-		if identity.Provider != ProviderKind || profile.AuthMode != AuthKindContext || profile.KubeContext != expectedContext {
-			return fmt.Errorf("local target mismatch: provider=%q auth=%q context=%q", identity.Provider, profile.AuthMode, profile.KubeContext)
-		}
-		if identity.ClusterName != expectedContext && identity.ClusterName != "" {
-			return fmt.Errorf("local target cluster mismatch: got %q want %q", identity.ClusterName, expectedContext)
+		if identity != expectedIdentity || profile != expectedProfile {
+			return fmt.Errorf("discovered kubeconfig target does not match the frozen identity and connection profile")
 		}
 		return ValidateBinding(identity, profile)
 	}

@@ -8,12 +8,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
 	"path"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/smithy-go/transport/http"
 )
@@ -33,27 +33,29 @@ type Store struct {
 	kmsKeyID string
 }
 
-// NewS3StoreWithKMS keeps the local profile unchanged while allowing an AWS
-// deployment to opt into SSE-KMS through configuration rather than code.
+// NewS3StoreWithKMS accepts an explicit AWS-compatible S3 endpoint. Credentials
+// always come from the SDK credential chain, never from endpoint hostnames.
 func NewS3StoreWithKMS(endpoint, region, bucket, kmsKeyID string) (*Store, error) {
 	if region == "" || bucket == "" {
 		return nil, fmt.Errorf("region and bucket are required")
 	}
-	loadOptions := []func(*awsconfig.LoadOptions) error{awsconfig.WithRegion(region)}
-	customEndpoint := endpoint != ""
-	if isLocalEndpoint(endpoint) {
-		loadOptions = append(loadOptions, awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("test", "test", "")))
+	if endpoint != "" {
+		parsed, err := url.Parse(endpoint)
+		if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" {
+			return nil, fmt.Errorf("artifact endpoint must be an HTTP(S) URL without credentials, query or fragment")
+		}
 	}
-	cfg, err := awsconfig.LoadDefaultConfig(context.Background(), loadOptions...)
+	customEndpoint := endpoint != ""
+	cfg, err := awsconfig.LoadDefaultConfig(context.Background(), awsconfig.WithRegion(region))
 	if err != nil {
 		return nil, err
 	}
 	client := s3.NewFromConfig(cfg, func(options *s3.Options) {
 		if customEndpoint {
 			options.BaseEndpoint = aws.String(endpoint)
-			// LocalStack's gateway requires path-style addressing. Native AWS
-			// uses the SDK's standard endpoint and addressing resolution.
-			options.UsePathStyle = isLocalEndpoint(endpoint)
+			// Compatible gateways use path-style addressing. Native AWS keeps
+			// the SDK's standard endpoint and addressing resolution.
+			options.UsePathStyle = true
 		}
 	})
 	return &Store{client: client, bucket: bucket, kmsKeyID: kmsKeyID}, nil
@@ -167,8 +169,4 @@ func isPreconditionFailed(err error) bool {
 	}
 	message := strings.ToLower(err.Error())
 	return strings.Contains(message, "preconditionfailed") || strings.Contains(message, "precondition failed")
-}
-
-func isLocalEndpoint(endpoint string) bool {
-	return strings.Contains(endpoint, "localhost") || strings.Contains(endpoint, "127.0.0.1") || strings.Contains(endpoint, "host.docker.internal") || strings.Contains(endpoint, "localstack")
 }

@@ -11,14 +11,16 @@ import (
 )
 
 const (
-	ProviderKind = "kind"
-	ProviderAWS  = "aws"
+	ProviderKubernetes = "kubernetes"
+	ProviderKind       = "kind" // Legacy serialized identity; do not rewrite existing digests.
+	ProviderAWS        = "aws"
 
 	ModeLocal     = "local"
 	ModeAWSNative = "aws-native"
 
-	AuthKindContext = "kind-context"
-	AuthAWSEKS      = "aws-eks"
+	AuthKubeconfigContext = "kubeconfig-context"
+	AuthKindContext       = "kind-context" // Legacy compatibility only.
+	AuthAWSEKS            = "aws-eks"
 )
 
 // InfrastructureExecutionIdentity is the identity allowed to mutate the
@@ -77,7 +79,7 @@ type MaterializedTarget struct {
 }
 
 // MaterializeTarget is the single provider-aware normalization boundary for
-// Class Mode. AWS must never inherit Kind defaults or a synthetic local
+// Class Mode. AWS must never inherit kubeconfig defaults or a synthetic local
 // account/region.
 func MaterializeTarget(input TargetExpectation) (MaterializedTarget, error) {
 	provider := strings.ToLower(strings.TrimSpace(input.Provider))
@@ -85,9 +87,9 @@ func MaterializeTarget(input TargetExpectation) (MaterializedTarget, error) {
 		return MaterializedTarget{}, fmt.Errorf("target provider is required")
 	}
 	switch provider {
-	case ProviderKind:
+	case ProviderKubernetes, ProviderKind:
 		if input.ClusterName == "" {
-			return MaterializedTarget{}, fmt.Errorf("kind target cluster name is required")
+			return MaterializedTarget{}, fmt.Errorf("kubeconfig target cluster name is required")
 		}
 		account := input.AccountID
 		if account == "" {
@@ -108,10 +110,14 @@ func MaterializeTarget(input TargetExpectation) (MaterializedTarget, error) {
 		if endpoint == "" {
 			endpoint = "kubeconfig:" + input.ClusterName
 		}
+		authMode, route := AuthKubeconfigContext, "kubeconfig"
+		if provider == ProviderKind {
+			authMode, route = AuthKindContext, "local-kind"
+		}
 		materialized := MaterializedTarget{
-			InfrastructureExecutionIdentity: InfrastructureExecutionIdentity{Provider: ProviderKind, Mode: ModeLocal, AccountID: account, Region: region},
-			RuntimeTargetIdentity:           RuntimeTargetIdentity{Provider: ProviderKind, AccountID: account, Region: region, ClusterARN: input.ClusterARN, ClusterName: input.ClusterName, IncarnationID: incarnation},
-			TargetConnectionProfile:         TargetConnectionProfile{Endpoint: endpoint, AuthMode: AuthKindContext, KubeContext: input.ClusterName, NetworkRouteProfile: "local-kind"},
+			InfrastructureExecutionIdentity: InfrastructureExecutionIdentity{Provider: provider, Mode: ModeLocal, AccountID: account, Region: region},
+			RuntimeTargetIdentity:           RuntimeTargetIdentity{Provider: provider, AccountID: account, Region: region, ClusterARN: input.ClusterARN, ClusterName: input.ClusterName, IncarnationID: incarnation},
+			TargetConnectionProfile:         TargetConnectionProfile{Endpoint: endpoint, AuthMode: authMode, KubeContext: input.ClusterName, NetworkRouteProfile: route},
 		}
 		if err := materialized.InfrastructureExecutionIdentity.Validate(); err != nil {
 			return MaterializedTarget{}, err
@@ -159,9 +165,9 @@ func (i InfrastructureExecutionIdentity) Validate() error {
 		return fmt.Errorf("infrastructure execution identity requires provider, mode, account ID, and region")
 	}
 	switch i.Provider {
-	case ProviderKind:
+	case ProviderKubernetes, ProviderKind:
 		if i.Mode != ModeLocal {
-			return fmt.Errorf("Kind infrastructure identity must use mode %q", ModeLocal)
+			return fmt.Errorf("kubeconfig infrastructure identity must use mode %q", ModeLocal)
 		}
 	case ProviderAWS:
 		if i.Mode != ModeAWSNative {
@@ -197,9 +203,9 @@ func (p TargetConnectionProfile) Validate() error {
 		return fmt.Errorf("target connection profile requires auth mode")
 	}
 	switch p.AuthMode {
-	case AuthKindContext:
+	case AuthKubeconfigContext, AuthKindContext:
 		if p.Endpoint == "" || p.KubeContext == "" {
-			return fmt.Errorf("kind-context target connection requires endpoint and kube context")
+			return fmt.Errorf("kubeconfig target connection requires endpoint and kube context")
 		}
 	case AuthAWSEKS:
 		if p.Endpoint == "" || p.CACertificateData == "" {
@@ -227,8 +233,8 @@ func ValidateBinding(identity RuntimeTargetIdentity, profile TargetConnectionPro
 	if profile.AuthMode == AuthKindContext && identity.Provider != ProviderKind {
 		return fmt.Errorf("kind-context authentication cannot be used for provider %q", identity.Provider)
 	}
-	if profile.AuthMode == AuthKindContext && profile.KubeContext == "" {
-		return fmt.Errorf("kind-context authentication requires kube context")
+	if profile.AuthMode == AuthKubeconfigContext && identity.Provider != ProviderKubernetes {
+		return fmt.Errorf("kubeconfig-context authentication cannot be used for provider %q", identity.Provider)
 	}
 	return nil
 }
@@ -256,13 +262,4 @@ type AssumedSession struct {
 // a deterministic implementation and never calls AWS.
 type AssumeRole interface {
 	AssumeRole(AssumeRoleRequest) (AssumedSession, error)
-}
-
-type LocalAssumeRole struct{}
-
-func (LocalAssumeRole) AssumeRole(request AssumeRoleRequest) (AssumedSession, error) {
-	if request.ExpectedAccount == "" || request.Region == "" {
-		return AssumedSession{}, fmt.Errorf("local AssumeRole requires expected account and region")
-	}
-	return AssumedSession{AccountID: request.ExpectedAccount, RoleARN: request.RoleARN, Region: request.Region, TokenID: "localstack-session"}, nil
 }

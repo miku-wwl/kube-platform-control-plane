@@ -1009,7 +1009,8 @@ function ClassForm({
                 value={spec.target.provider.toLowerCase()}
                 onChange={(event) => target({ provider: event.target.value })}
               >
-                <option value="kind">Kind</option>
+                <option value="kubernetes">Kubernetes</option>
+                <option value="kind">Kind (legacy)</option>
                 <option value="aws">AWS EKS</option>
               </select>
             </label>
@@ -1018,7 +1019,7 @@ function ClassForm({
               value={spec.target.clusterName}
               onChange={(value) => target({ clusterName: value })}
               required
-              hint={t('For Kind, use a context configured in the controller, such as kind-pcp-dev.')}
+              hint={t('Use an explicit kubeconfig context registered in the controller.')}
             />
             <Field
               label={t('Account')}
