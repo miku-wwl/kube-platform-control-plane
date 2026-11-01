@@ -278,6 +278,8 @@ const chinese: Record<string, string> = {
   'Leave [] for no static runtime resources. Use credential references; inline Secret resources are not accepted.': '没有静态运行时资源时保持 []。使用凭据引用；内嵌 Secret 资源不会被接收。',
   'Configuration validation passed': '配置校验通过',
   'Technical details': '技术详情',
+  'The AI provider could not generate a valid draft. Nothing was submitted.': 'AI 服务未能生成有效草稿，未提交任何资源。',
+  'AI output is advisory. Review the fields; creation requires a separate explicit action.': 'AI 输出仅供建议。请审核字段；创建资源需要另外明确提交。',
   '{{field}} is required.': '{{field}} 为必填项。',
   '{{field}} must be a valid Kubernetes name.': '{{field}} 必须是有效的 Kubernetes 名称。',
   'source.revision must be a pinned 40-64 character hexadecimal commit.': 'source.revision 必须固定为完整的 40–64 位十六进制提交哈希。',

@@ -506,6 +506,18 @@ func TestOllamaTimeoutDoesNotSubmitOrFallBack(t *testing.T) {
 	}
 }
 
+func TestDraftAdvisoryWarningHasStableCodeAndOriginalMessage(t *testing.T) {
+	server, _, err := testServer(t, readyDraftClass(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "default"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	response := classHTTP(t, server, "POST", "/api/drafts", DraftRequest{Description: "Create a small environment", ClassRef: "dev-small", Namespace: "default"})
+	var draft DraftResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &draft); err != nil || response.Code != http.StatusOK || !draft.Valid || len(draft.WarningCodes) != 1 || draft.WarningCodes[0] != "AdvisoryOnly" || len(draft.Warnings) != 1 || draft.Warnings[0] == "" {
+		t.Fatalf("lost advisory warning code or original diagnostic: %d %+v %v", response.Code, draft, err)
+	}
+}
+
 func TestOllamaLiveDraftScenarios(t *testing.T) {
 	if os.Getenv("PCP_RUN_OLLAMA_INTEGRATION") != "1" {
 		t.Skip("set PCP_RUN_OLLAMA_INTEGRATION=1 to run live local inference scenarios")

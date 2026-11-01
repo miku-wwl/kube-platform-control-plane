@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import {
   request,
+  APIError,
   type ClassInfo,
   type DraftResponse,
   type Environment,
@@ -270,6 +271,7 @@ export function Builder({
   const [draft, setDraft] = useState<DraftResponse | null>(null)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
+  const [errorCode, setErrorCode] = useState('')
   const selectedClass = classes.find((item) => item.name === classRef)
   useEffect(() => {
     setDescription((current) =>
@@ -289,6 +291,7 @@ export function Builder({
   const generate = async () => {
     setPending(true)
     setError('')
+    setErrorCode('')
     setDraft(null)
     try {
       const value = await request<DraftResponse>('/api/drafts', {
@@ -299,6 +302,7 @@ export function Builder({
       if (!value.valid) setError(value.errors?.join('; ') || t('Draft validation failed'))
     } catch (value) {
       setError((value as Error).message)
+      setErrorCode(value instanceof APIError ? value.code : '')
     } finally {
       setPending(false)
     }
@@ -307,6 +311,7 @@ export function Builder({
     if (!draft?.valid) return
     setPending(true)
     setError('')
+    setErrorCode('')
     try {
       await request('/api/environments', { method: 'POST', body: JSON.stringify(draft.intent) })
       await onCreated({ namespace: draft.intent.namespace, name: draft.intent.name })
@@ -448,7 +453,20 @@ export function Builder({
                 </button>
               </Alert>
             )}
-            {error && <Alert tone="error">{error}</Alert>}
+            {error && (
+              <Alert tone="error">
+                {errorCode === 'DraftGenerationFailed' ? (
+                  <>
+                    <p>{t('The AI provider could not generate a valid draft. Nothing was submitted.')}</p>
+                    <details>
+                      <summary>{t('Technical details')}</summary>
+                      <code>{errorCode}</code>
+                      <p>{error}</p>
+                    </details>
+                  </>
+                ) : error}
+              </Alert>
+            )}
             <div className="form-actions">
               <button type="button" className="button button-secondary" onClick={onCancel}>
                 {t('Cancel')}
@@ -512,7 +530,9 @@ export function Builder({
               </dl>
               {draft.warnings?.map((item, index) => (
                 <Alert key={index} tone="warning" title={t('Warning')}>
-                  {item}
+                  {draft.warningCodes?.[index] === 'AdvisoryOnly'
+                    ? t('AI output is advisory. Review the fields; creation requires a separate explicit action.')
+                    : item}
                 </Alert>
               ))}
               {draft.errors?.map((item, index) => (

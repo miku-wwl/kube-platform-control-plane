@@ -39,12 +39,13 @@ type DraftIntent struct {
 }
 
 type DraftResponse struct {
-	Provider string      `json:"provider"`
-	Intent   DraftIntent `json:"intent"`
-	Valid    bool        `json:"valid"`
-	Errors   []string    `json:"errors,omitempty"`
-	Warnings []string    `json:"warnings,omitempty"`
-	YAML     string      `json:"yaml,omitempty"`
+	Provider     string      `json:"provider"`
+	Intent       DraftIntent `json:"intent"`
+	Valid        bool        `json:"valid"`
+	Errors       []string    `json:"errors,omitempty"`
+	Warnings     []string    `json:"warnings,omitempty"`
+	WarningCodes []string    `json:"warningCodes,omitempty"`
+	YAML         string      `json:"yaml,omitempty"`
 }
 
 type DraftGenerator interface {

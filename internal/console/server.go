@@ -491,7 +491,7 @@ func (s *Server) generateDraft(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "DraftRenderFailed", err.Error())
 		return
 	}
-	writeJSON(w, http.StatusOK, DraftResponse{Provider: s.provider, Intent: intent, Valid: true, Warnings: []string{"AI output is advisory. Review the fields; creation requires a separate explicit action."}, YAML: yaml})
+	writeJSON(w, http.StatusOK, DraftResponse{Provider: s.provider, Intent: intent, Valid: true, Warnings: []string{"AI output is advisory. Review the fields; creation requires a separate explicit action."}, WarningCodes: []string{"AdvisoryOnly"}, YAML: yaml})
 }
 
 func (s *Server) validateEnvironmentRequest(ctx context.Context, request CreateEnvironmentRequest) (*platformv1alpha1.PlatformEnvironment, *platformv1alpha1.EnvironmentClass, error) {
