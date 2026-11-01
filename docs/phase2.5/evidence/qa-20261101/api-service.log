@@ -1106,3 +1106,11 @@
 {"time":"2026-11-01T22:30:27.6355124+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/classes","duration":8000000}
 {"time":"2026-11-01T22:30:27.6361336+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/environments","duration":29000000}
 {"time":"2026-11-01T22:30:27.6675841+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/environments","duration":27000000}
+{"time":"2026-11-01T22:31:27.6217628+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/classes","duration":8000000}
+{"time":"2026-11-01T22:31:27.7415972+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/classes","duration":13000000}
+{"time":"2026-11-01T22:31:27.7552943+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/environments","duration":141000000}
+{"time":"2026-11-01T22:31:27.7953087+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/environments","duration":28000000}
+{"time":"2026-11-01T22:32:27.616807+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/classes","duration":10000000}
+{"time":"2026-11-01T22:32:27.6347938+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/classes","duration":11000000}
+{"time":"2026-11-01T22:32:27.6410118+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/environments","duration":34000000}
+{"time":"2026-11-01T22:32:27.6807441+13:00","level":"INFO","msg":"platform API request","method":"GET","path":"/api/environments","duration":32000000}
