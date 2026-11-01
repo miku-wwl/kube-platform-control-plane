@@ -36,6 +36,7 @@ import (
 )
 
 type configuration struct {
+	TransportScopeFile                                   string // optional new test-owned path restricting an external transport to this run
 	Kubeconfig, Context, ControllerBinary, RunnerImage   string
 	HostEndpoint, PodEndpoint, SourceURL, SourceRevision string
 	FaultFile                                            string // optional test-owned transport fault switch
@@ -108,6 +109,23 @@ func TestLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("owned namespace=%s uid=%s source=%s image=%s", ns.Name, ns.UID, cfg.SourceRevision, cfg.RunnerImage)
+	if cfg.TransportScopeFile != "" {
+		if !filepath.IsAbs(cfg.TransportScopeFile) {
+			t.Fatal("TransportScopeFile must be a new absolute test-owned path")
+		}
+		file, err := os.OpenFile(cfg.TransportScopeFile, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := file.WriteString(prefix); err != nil {
+			_ = file.Close()
+			t.Fatal(err)
+		}
+		if err := file.Close(); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = os.Remove(cfg.TransportScopeFile) })
+	}
 	var target corev1.Namespace
 	if err := kube.Get(ctx, client.ObjectKey{Name: "kube-system"}, &target); err != nil {
 		t.Fatal(err)
