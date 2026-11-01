@@ -1,0 +1,60 @@
+- link "跳转到内容":
+  - /url: "#main-content"
+- complementary:
+  - strong: KPCP
+  - generic: 平台控制平面
+  - generic: 工作区
+  - navigation "工作区导航":
+    - generic: 运维
+    - button "环境":
+      - generic: 环境
+      - generic: "0"
+    - generic: 构建
+    - button "平台构建器":
+      - generic: 平台构建器
+    - button "环境类别管理":
+      - generic: 环境类别管理
+      - generic: "0"
+  - status "本地模式 · Kubernetes":
+    - generic: 本地模式
+  - paragraph: Kubernetes
+  - text: 本地工作区
+- main:
+  - generic: 本地工作区
+  - heading "环境" [level=1]
+  - group "语言":
+    - button "切换到英文": EN
+    - button "切换到中文" [pressed]: 中文
+  - status "API 已连接":
+    - generic: API 已连接
+  - button "刷新" [active]:
+  - button "新建环境":
+    - text: 新建环境
+  - generic: 控制平面概览
+  - heading "环境" [level=2]
+  - paragraph: 来自 Kubernetes 原生控制平面的实时视图。
+  - button "新建环境":
+    - text: 新建环境
+  - region "环境摘要":
+    - generic: 环境总数
+    - strong: "0"
+    - generic: 就绪
+    - strong: "0"
+    - generic: 等待审批
+    - strong: "0"
+    - generic: 控制平面
+    - strong:
+      - generic: API 已连接
+    - generic: API 连接状态
+  - heading "平台环境 0" [level=3]:
+    - text: 平台环境
+    - generic: "0"
+  - textbox "搜索环境":
+    - /placeholder: 搜索环境…
+  - strong: 还没有环境
+  - paragraph: 先选择类型化的 EnvironmentClass，并检查生成的草稿。
+  - button "打开平台构建器":
+    - text: 打开平台构建器
+  - generic: 实时状态
+  - text: 每 8 秒刷新
+  - text: Kubernetes 是事实来源。AI 提议 · API 校验 · 控制器协调 · Terraform 执行。

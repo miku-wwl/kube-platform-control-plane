@@ -19,9 +19,9 @@
 | 基础设施边界 | 先只读核对运行环境；前置条件不足后，生命周期变更场景记为 BLOCKED |
 | 代码与共享环境 | 产品源码未修改；未启动/重启 Controller 或共享容器；未调用旧 PowerShell Harness；未调用 Codex CLI；未执行新的 Go E2E |
 
-浏览器截图和审查收据见本报告链接的公开证据文件。原始 DOM、Kubernetes 快照、私有路由配置、浏览器 JPEG 和含本机地址的原始 PNG 保存在本地，未加入公开分支。Go E2E、API 收据和工程产物只作工程证据，不计作本轮 UI 操作或截图。旧版 `docs/验收截图/` 图片未被使用。
+本轮 QA 的摘要与原始收据、23 张 PNG/JPEG、配置和日志均随本次提交推送。为便于阅读，报告同时链接脱敏摘要和遮盖图片副本；原始证据保持未修改。原始收据包含本机私有网络地址、集群标识和本地路径。Go E2E、API 收据和工程产物只作工程证据，不计作本轮 UI 操作或截图。旧版 `docs/验收截图/` 图片未被使用。
 
-内置浏览器返回 JPEG 编码的真实页面截图。本轮将其解码后保存为 23 张原始 PNG，均通过解码验证，并与对应 JPEG 的解码像素逐一相等。原始 PNG 与 JPEG 在本地保持未修改。公开分支发布 20 张原始 PNG，并为 3 张含私有 LAN 地址的图片另附遮盖副本；公开清单记录原图与发布文件的 SHA-256。前三张时间取文件写入时间，其余 20 张另有截图捕获记录时间。
+内置浏览器返回 JPEG 编码的真实页面截图。本轮将其解码后保存为 23 张原始 PNG，均通过解码验证，并与对应 JPEG 的解码像素逐一相等。23 张原始 PNG 与 JPEG 均保持未修改并随本次提交推送；另为 3 张含私有 LAN 地址的图片提供遮盖副本。公开清单记录原图与遮盖副本的 SHA-256。前三张时间取文件写入时间，其余 20 张另有截图捕获记录时间。
 
 ## 2. 15 项验收总表
 
@@ -47,7 +47,7 @@
 
 ## 3. 基础设施变更前的只读检查
 
-详细收据：[环境预检摘要](evidence/public/preflight-summary.json)、[固定来源与 Pod 路由检查摘要](evidence/public/fixture-connectivity-summary.json)。原始收据含私有网络地址和本机进程路径，留在本地。
+详细收据：[环境预检摘要](evidence/public/preflight-summary.json)、[固定来源与 Pod 路由检查摘要](evidence/public/fixture-connectivity-summary.json)；完整原始收据见 [preflight-final.json](evidence/qa-desktop-work-20261101/preflight-final.json)、[fixture-route-readchecks.json](evidence/qa-desktop-work-20261101/fixture-route-readchecks.json) 和 [s3-list-read.json](evidence/qa-desktop-work-20261101/s3-list-read.json)。原始文件保留了本机网络地址和环境细节。
 
 | 检查项 | 实际观察 | 对本轮执行的影响 |
 |---|---|---|
@@ -414,7 +414,7 @@ QA-01 的定位依据是服务端返回的完整英文警告与 UI 实际显示�
 | `main-plan-report.json`（原始产物留存本地） | `sha256:8ccae9b6ab4ae71eda0e01cb825c28e307f80ff20f3c52f6be814720d37132d2` | PASS |
 | `main-terminal-result.json`（原始产物留存本地） | `sha256:9c91b9f0f066607532d3797ef204679f48ab4ac65d4060c89d49155d2b9e2b1e` | PASS |
 
-源码、模块、锁文件和不可变产物的公开追溯入口：[source-baseline.json](evidence/qa-20261101/source-baseline.json)、[module-blob-comparison.json](evidence/qa-20261101/module-blob-comparison.json)、[产物摘要收据](evidence/qa-20261101/artifact-digest-checks-public.json)、[E2E 原始日志](evidence/qa-20261101/e2e-current.log)。含私有路由的原始五类产物与 Controller 日志保留本地。
+源码、模块、锁文件和不可变产物的追溯入口：[source-baseline.json](evidence/qa-20261101/source-baseline.json)、[module-blob-comparison.json](evidence/qa-20261101/module-blob-comparison.json)、[产物摘要收据](evidence/qa-20261101/artifact-digest-checks-public.json)、[五类原始产物目录](evidence/qa-20261101/artifacts/) 和 [Controller 原始日志](evidence/qa-20261101/kpcp-1793519898365278200-controller.log)。原始后端配置包含私有路由地址。
 
 ### 6.4 已有验证报告的适用范围
 
@@ -437,7 +437,7 @@ QA-01 的定位依据是服务端返回的完整英文警告与 UI 实际显示�
 
 后续复测应先由环境提供方明确提供活动 Controller、可访问的固定 Git 来源、Pod 可访问 MiniStack 路由、已绑定所有权的测试 namespace/backend/凭据引用及可用 Runner，然后从 TC03 连续补拍到 TC14。独立双集群隔离需两个不同实际 cluster UID；环境准备不属于本轮 QA 修改范围。
 
-QA 执行期间没有提交产品代码、push、发布或修复。原始证据保留在本地；本报告、公开截图与脱敏审查收据通过当前文档 PR 发布。
+QA 执行期间没有提交产品代码或修复。本报告、原始截图、原始日志和脱敏摘要已按用户要求直接推送到 `main`；产品源码未修改。
 
 ## 附录 A：截图文件、时间与校验
 
@@ -452,15 +452,15 @@ QA 执行期间没有提交产品代码、push、发布或修复。原始证据�
 | 05 | [qa-20261101-05-class-required-validation.png](screenshots/qa-20261101-05-class-required-validation.png) | 1825×875 | 21:58:28 | 203,845 |
 | 06 | [qa-20261101-06-class-pinned-revision-error.png](screenshots/qa-20261101-06-class-pinned-revision-error.png) | 1825×875 | 21:59:23 | 230,123 |
 | 07 | [qa-20261101-07-class-validation-error-detail.png](screenshots/qa-20261101-07-class-validation-error-detail.png) | 1825×875 | 21:59:46 | 219,963 |
-| 08 | [qa-20261101-08-class-source-fields（本机地址已遮盖）](screenshots/redacted/qa-20261101-08-class-source-fields-public-redacted.png) | 1825×875 | 21:59:57 | 197,638 |
+| 08 | [遮盖副本](screenshots/redacted/qa-20261101-08-class-source-fields-public-redacted.png) / [原图](screenshots/qa-20261101-08-class-source-fields.png) | 1825×875 | 21:59:57 | 197,638 / 207,894 |
 | 09 | [qa-20261101-09-class-validation-passed.png](screenshots/qa-20261101-09-class-validation-passed.png) | 1825×875 | 22:00:15 | 224,581 |
 | 10 | [qa-20261101-10-change-requires-revalidation.png](screenshots/qa-20261101-10-change-requires-revalidation.png) | 1825×875 | 22:00:15 | 255,157 |
 | 11 | [qa-20261101-11-advanced-json-fields.png](screenshots/qa-20261101-11-advanced-json-fields.png) | 1825×875 | 22:00:36 | 142,900 |
 | 12 | [qa-20261101-12-advanced-json-rejected.png](screenshots/qa-20261101-12-advanced-json-rejected.png) | 1825×875 | 22:00:56 | 150,153 |
 | 13 | [qa-20261101-13-runtime-json-rejected.png](screenshots/qa-20261101-13-runtime-json-rejected.png) | 1825×875 | 22:01:09 | 145,319 |
-| 14 | [qa-20261101-14-emulator-validation-yaml（私有端点已遮盖）](screenshots/redacted/qa-20261101-14-emulator-validation-yaml-public-redacted.png) | 1825×875 | 22:01:34 | 234,018 |
+| 14 | [遮盖副本](screenshots/redacted/qa-20261101-14-emulator-validation-yaml-public-redacted.png) / [原图](screenshots/qa-20261101-14-emulator-validation-yaml.png) | 1825×875 | 22:01:34 | 234,018 / 252,958 |
 | 15 | [qa-20261101-15-yaml-preview.png](screenshots/qa-20261101-15-yaml-preview.png) | 1825×875 | 22:01:52 | 260,486 |
-| 16 | [qa-20261101-16-yaml-execution-profile（本机地址已遮盖）](screenshots/redacted/qa-20261101-16-yaml-execution-profile-public-redacted.png) | 1825×875 | 22:02:02 | 328,742 |
+| 16 | [遮盖副本](screenshots/redacted/qa-20261101-16-yaml-execution-profile-public-redacted.png) / [原图](screenshots/qa-20261101-16-yaml-execution-profile.png) | 1825×875 | 22:02:02 | 328,742 / 338,098 |
 | 17 | [qa-20261101-17-cancel-class-no-persistence.png](screenshots/qa-20261101-17-cancel-class-no-persistence.png) | 1841×883 | 22:02:03 | 150,128 |
 | 18 | [qa-20261101-18-builder-no-ready-class.png](screenshots/qa-20261101-18-builder-no-ready-class.png) | 1825×875 | 22:02:25 | 252,920 |
 | 19 | [qa-20261101-19-class-selector-empty.png](screenshots/qa-20261101-19-class-selector-empty.png) | 1825×875 | 22:02:26 | 248,683 |
@@ -487,8 +487,10 @@ QA 执行期间没有提交产品代码、push、发布或修复。原始证据�
 | [module-blob-comparison.json](evidence/qa-20261101/module-blob-comparison.json) | 四个模块文件与仓库 Git blob 的一致性 |
 | [build-identities.json](evidence/qa-20261101/build-identities.json) | API、Controller、Runner 与源码身份 |
 | [source-bundle-members.json](evidence/qa-20261101/source-bundle-members.json) | Source bundle 成员文件与 Git blob 摘要 |
-| [public-screenshot-manifest.json](evidence/qa-desktop-work-20261101/public-screenshot-manifest.json) | 23 张原始/公开截图文件的哈希与发布映射 |
+| [public-screenshot-manifest.json](evidence/qa-desktop-work-20261101/public-screenshot-manifest.json) | 23 张原始/遮盖截图文件的哈希与映射 |
+| [原始浏览器 JPEG 目录](evidence/qa-desktop-work-20261101/original-browser-jpeg/) | 内置浏览器返回的 23 张原始 JPEG |
+| [screenshot-manifest.json](evidence/qa-desktop-work-20261101/screenshot-manifest.json) | 原始 PNG/JPEG 截图哈希与时间清单 |
 
-原始 DOM、Kubernetes 快照、节点地址、私有路由配置、原始浏览器 JPEG 与含私网地址的 3 张 PNG 不放入公开 PR；它们仍在本地。
+原始 DOM、Kubernetes 快照、节点地址、私有路由配置、五类原始工件、浏览器 JPEG 和 3 张含私网地址的原始 PNG 均已纳入这次 `main` 推送；摘要及遮盖副本同时保留，方便快速审阅。
 
 资料完整性检查仅检查本轮 QA 交付物，不执行产品测试或基础设施变更。

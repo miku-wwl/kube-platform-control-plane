@@ -1,0 +1,6 @@
+{
+  "RecordedAt": "2026-11-01T20:53:53.5704343+13:00",
+  "Attempt": "cua.createBrowserTab(iab, http://127.0.0.1:5173, visible=true)",
+  "Error": "The browser access host is unavailable",
+  "Classification": "Browser tool bridge unavailable; no navigation or screenshot result; app fault not established"
+}

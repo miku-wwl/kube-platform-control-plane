@@ -1,0 +1,17 @@
+{
+  "RecordedAt": "2026-11-01T21:01:17.4568872+13:00",
+  "Issue": "OCI import initially registered only a tag, leaving CRI repoDigests empty; kubelet attempted localhost registry pull",
+  "Resolution": "Added the exact digest reference to the same already imported manifest; no Pod, Job, Run or image content changed",
+  "Image": {
+    "id": "sha256:633e9d0aaf28a9c20d977aaf59804c635a8eb39ff5ef6b2dd80e0215b8b3fe80",
+    "repoTags": [
+      "localhost/kpcp-runner:qa5445"
+    ],
+    "repoDigests": [
+      "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39"
+    ],
+    "size": "59952598",
+    "username": "",
+    "pinned": false
+  }
+}

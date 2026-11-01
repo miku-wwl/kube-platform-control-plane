@@ -1,0 +1,20 @@
+{
+  "checkedAtUTC": "2026-11-01T09:32:02.142+00:00",
+  "report": "docs/phase2.5/QA_VALIDATION_REPORT.md",
+  "imageReferenceCount": 23,
+  "uniqueImageReferenceCount": 23,
+  "localLinksChecked": 85,
+  "missingLocalLinks": [],
+  "pngCount": 23,
+  "allPNGDecoded": true,
+  "allPNGPixelIdentityChecked": "Source PNG to browser JPEG for the 23 original captures; redacted copies are separately identified and intentionally differ.",
+  "sourceBaselineMatches": true,
+  "existingArtifactDigestsMatch": true,
+  "binaryHashesMatch": true,
+  "newProductTestsExecuted": false,
+  "newInfrastructureMutation": false,
+  "publicPNGCount": 26,
+  "redactedPNGCount": 3,
+  "originalPNGAndJPEGFilesIncludedInMainCommit": true,
+  "scopeNote": "Documentation and evidence consistency only; existing Go E2E results are reported separately."
+}

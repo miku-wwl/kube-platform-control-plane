@@ -1,0 +1,11 @@
+{
+  "Tool": "cua.getTab",
+  "Browser": "iab",
+  "URL": "http://127.0.0.1:5173",
+  "StartedUTC": "2026-11-01 08:06:15 UTC",
+  "FinishedUTC": "2026-11-01 08:06:46 UTC",
+  "Error": "The browser access host is unavailable",
+  "UserReportedObservation": "KPCP 页面正常显示",
+  "UserObservationIsAgentScreenshot": false,
+  "Classification": "User can open KPCP; agent browser bridge cannot bind the existing tab. No browser screenshot or action was returned."
+}

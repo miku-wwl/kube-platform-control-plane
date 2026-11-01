@@ -1,0 +1,9 @@
+{
+  "Command": "go test ./e2e -run TestLifecycle -v -count=1 -timeout=20m",
+  "ExitCode": 0,
+  "StartedAt": "2026-11-01T20:58:15.2452449+13:00",
+  "FinishedAt": "2026-11-01T21:11:37.8270415+13:00",
+  "Commit": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+  "Config": "execution-config.json",
+  "Log": "e2e-current.log"
+}

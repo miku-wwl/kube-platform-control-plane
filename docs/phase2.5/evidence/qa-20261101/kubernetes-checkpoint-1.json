@@ -1,0 +1,1155 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "kind": "PlatformEnvironment",
+            "metadata": {
+                "creationTimestamp": "2026-11-01T07:58:19Z",
+                "finalizers": [
+                    "platform.example.io/platformenvironment-finalizer"
+                ],
+                "generation": 1,
+                "name": "environment",
+                "namespace": "kpcp-1793519898365278200",
+                "resourceVersion": "29565",
+                "uid": "5fe653fb-20f2-487e-b292-5566e842c959"
+            },
+            "spec": {
+                "capacity": {
+                    "nodeCount": 1
+                },
+                "classRef": {
+                    "name": "kpcp-1793519898365278200"
+                },
+                "desiredState": "Present",
+                "infraStackRef": {
+                    "name": ""
+                },
+                "region": "local",
+                "target": {
+                    "clusterName": "",
+                    "provider": ""
+                },
+                "valkey": {}
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-11-01T07:58:19Z",
+                        "message": "InfraStack generation 1 is PlanRunning: Terraform PlanRun is executing.",
+                        "observedGeneration": 1,
+                        "reason": "InfrastructureNotReady",
+                        "status": "False",
+                        "type": "Ready"
+                    }
+                ],
+                "infraStackRef": {
+                    "name": "environment-infra"
+                },
+                "observedGeneration": 1,
+                "resourceSetRef": {
+                    "name": "environment-resources"
+                },
+                "targetConnection": {
+                    "authMode": "kubeconfig-context",
+                    "endpoint": "kubeconfig:podman-minikube",
+                    "kubeContext": "podman-minikube",
+                    "networkRouteProfile": "kubeconfig"
+                },
+                "targetIdentity": {
+                    "accountID": "local",
+                    "clusterName": "podman-minikube",
+                    "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+                    "provider": "kubernetes",
+                    "region": "local"
+                }
+            }
+        },
+        {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "kind": "InfraStack",
+            "metadata": {
+                "creationTimestamp": "2026-11-01T07:58:19Z",
+                "finalizers": [
+                    "platform.example.io/infrastack-finalizer"
+                ],
+                "generation": 1,
+                "name": "environment-infra",
+                "namespace": "kpcp-1793519898365278200",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "platform.example.io/v1alpha1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "PlatformEnvironment",
+                        "name": "environment",
+                        "uid": "5fe653fb-20f2-487e-b292-5566e842c959"
+                    }
+                ],
+                "resourceVersion": "29563",
+                "uid": "d13735ea-8983-414f-bd29-9e01cdc78697"
+            },
+            "spec": {
+                "approvalPolicy": "Manual",
+                "backend": {
+                    "authRef": {
+                        "serviceAccountName": "runner"
+                    },
+                    "configRef": {
+                        "name": "backend"
+                    },
+                    "lockTimeout": "30s",
+                    "type": "s3"
+                },
+                "capacity": {
+                    "nodeCount": 1
+                },
+                "concurrencyGroup": "environmentclass:kpcp-1793519898365278200",
+                "desiredState": "Present",
+                "executionProfile": {
+                    "accountID": "000000000000",
+                    "artifactBucket": "kpcp-1793519898365278200",
+                    "credentialsSecretRef": {
+                        "name": "emulator"
+                    },
+                    "mode": "emulator",
+                    "region": "us-east-1",
+                    "s3Endpoint": "http://192.168.1.19:14566",
+                    "stsEndpoint": "http://192.168.1.19:14566"
+                },
+                "executor": {
+                    "executionTimeout": "8m0s",
+                    "image": "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39",
+                    "terraformVersion": "1.14.0",
+                    "workDir": "/workspace/terraform"
+                },
+                "infrastructureExecutionIdentity": {
+                    "accountID": "local",
+                    "mode": "local",
+                    "provider": "kubernetes",
+                    "region": "local"
+                },
+                "ownerEnvironmentUID": "5fe653fb-20f2-487e-b292-5566e842c959",
+                "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+                "runnerServiceAccountName": "runner",
+                "runtimeTargetIdentity": {
+                    "accountID": "local",
+                    "clusterName": "podman-minikube",
+                    "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+                    "provider": "kubernetes",
+                    "region": "local"
+                },
+                "source": {
+                    "path": ".",
+                    "revision": "547f45475c7186eafd35026fb994f22f26606d6c",
+                    "url": "http://192.168.1.19:18085/qa-5445a5f/.git"
+                },
+                "targetConnectionProfile": {
+                    "authMode": "kubeconfig-context",
+                    "endpoint": "kubeconfig:podman-minikube",
+                    "kubeContext": "podman-minikube",
+                    "networkRouteProfile": "kubeconfig"
+                },
+                "variables": {
+                    "values": {
+                        "bucket_name": "kpcp-1793519898365278200-cloud",
+                        "target_cluster_name": "podman-minikube",
+                        "target_endpoint": "kubeconfig:podman-minikube",
+                        "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+                    }
+                },
+                "workspace": "environment"
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-11-01T07:58:19Z",
+                        "message": "Terraform PlanRun is executing.",
+                        "observedGeneration": 1,
+                        "reason": "PlanRunning",
+                        "status": "False",
+                        "type": "Ready"
+                    }
+                ],
+                "latestPlanRunRef": {
+                    "name": "environment-infra-plan-1"
+                },
+                "observedGeneration": 1
+            }
+        },
+        {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "kind": "TerraformRun",
+            "metadata": {
+                "creationTimestamp": "2026-11-01T07:58:19Z",
+                "generation": 1,
+                "name": "environment-infra-plan-1",
+                "namespace": "kpcp-1793519898365278200",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "platform.example.io/v1alpha1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "InfraStack",
+                        "name": "environment-infra",
+                        "uid": "d13735ea-8983-414f-bd29-9e01cdc78697"
+                    }
+                ],
+                "resourceVersion": "29572",
+                "uid": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95"
+            },
+            "spec": {
+                "concurrencyGroup": "environmentclass:kpcp-1793519898365278200",
+                "effectivePlanInputDigest": "sha256:00348b761e6ce53c696ad5b2655c0a877483a8c5fd1a3713cbffe7edebe320e0",
+                "executionContextDigest": "sha256:00348b761e6ce53c696ad5b2655c0a877483a8c5fd1a3713cbffe7edebe320e0",
+                "executionProfile": {
+                    "accountID": "000000000000",
+                    "artifactBucket": "kpcp-1793519898365278200",
+                    "credentialsIdentity": "sha256:81a2109a46b65767b135585d3ca1f275aabe0fc8ace6c35c9342d565f60a304b",
+                    "credentialsSecretRef": {
+                        "name": "emulator"
+                    },
+                    "mode": "emulator",
+                    "region": "us-east-1",
+                    "s3Endpoint": "http://192.168.1.19:14566",
+                    "stsEndpoint": "http://192.168.1.19:14566"
+                },
+                "executor": {
+                    "executionTimeout": "8m0s",
+                    "image": "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39",
+                    "terraformVersion": "1.14.0",
+                    "workDir": "/workspace/terraform"
+                },
+                "expectedTerraformVersion": "1.14.0",
+                "infraStackGeneration": 1,
+                "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+                "inputs": {
+                    "bucket_name": "kpcp-1793519898365278200-cloud",
+                    "execution_role_arn": "",
+                    "region": "us-east-1",
+                    "s3_endpoint": "http://192.168.1.19:14566",
+                    "sts_endpoint": "http://192.168.1.19:14566",
+                    "target_cluster_name": "podman-minikube",
+                    "target_endpoint": "kubeconfig:podman-minikube",
+                    "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+                },
+                "lockTimeout": "30s",
+                "operation": "Plan",
+                "planMode": "Reconcile",
+                "resolvedBackendConfigRef": "backend",
+                "runnerImageDigest": "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39",
+                "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+                "runnerServiceAccountName": "runner",
+                "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+                "source": {
+                    "path": ".",
+                    "revision": "547f45475c7186eafd35026fb994f22f26606d6c",
+                    "type": "GitCommit",
+                    "url": "http://192.168.1.19:18085/qa-5445a5f/.git"
+                },
+                "stackRef": {
+                    "name": "environment-infra"
+                },
+                "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+                "workspace": "environment"
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-11-01T07:58:19Z",
+                        "message": "Terraform Job is running.",
+                        "observedGeneration": 1,
+                        "reason": "TerraformJobRunning",
+                        "status": "False",
+                        "type": "Ready"
+                    }
+                ],
+                "executionOutcome": "Running",
+                "jobRef": {
+                    "name": "environment-infra-plan-1"
+                },
+                "jobUID": "7cc3cc2c-2a99-4ba8-8959-ccebd493fdef",
+                "observedGeneration": 1
+            }
+        },
+        {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "kind": "ResourceSet",
+            "metadata": {
+                "creationTimestamp": "2026-11-01T07:58:19Z",
+                "finalizers": [
+                    "platform.example.io/resourceset-finalizer"
+                ],
+                "generation": 2,
+                "name": "environment-resources",
+                "namespace": "kpcp-1793519898365278200",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "platform.example.io/v1alpha1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "PlatformEnvironment",
+                        "name": "environment",
+                        "uid": "5fe653fb-20f2-487e-b292-5566e842c959"
+                    }
+                ],
+                "resourceVersion": "29559",
+                "uid": "d0cbeddd-49c9-44c1-8be1-1c7102c995cd"
+            },
+            "spec": {
+                "maxInventoryItems": 500,
+                "mutationFence": true,
+                "ownershipID": "5fe653fb-20f2-487e-b292-5566e842c959",
+                "resources": [
+                    {
+                        "object": {
+                            "apiVersion": "v1",
+                            "data": {
+                                "owner": "kpcp-1793519898365278200"
+                            },
+                            "kind": "ConfigMap",
+                            "metadata": {
+                                "name": "runtime",
+                                "namespace": "kpcp-1793519898365278200"
+                            }
+                        },
+                        "resource": "configmaps",
+                        "version": "v1"
+                    }
+                ],
+                "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+                "target": {
+                    "clusterName": "podman-minikube",
+                    "connectionProfileRef": "kubeconfig:podman-minikube",
+                    "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+                    "provider": "kubernetes",
+                    "region": "local"
+                }
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-11-01T07:58:19Z",
+                        "message": "runtime mutation is gated until current infrastructure is ready and the durable mutation fence is clear",
+                        "observedGeneration": 2,
+                        "reason": "RuntimeMutationBlocked",
+                        "status": "False",
+                        "type": "Ready"
+                    }
+                ],
+                "mutationBlocked": true,
+                "observedGeneration": 2
+            }
+        },
+        {
+            "apiVersion": "batch/v1",
+            "kind": "Job",
+            "metadata": {
+                "creationTimestamp": "2026-11-01T07:58:19Z",
+                "generation": 1,
+                "labels": {
+                    "platform.example.io/terraform-run": "environment-infra-plan-1",
+                    "platform.example.io/terraform-run-uid": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95"
+                },
+                "name": "environment-infra-plan-1",
+                "namespace": "kpcp-1793519898365278200",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "platform.example.io/v1alpha1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "TerraformRun",
+                        "name": "environment-infra-plan-1",
+                        "uid": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95"
+                    }
+                ],
+                "resourceVersion": "29570",
+                "uid": "7cc3cc2c-2a99-4ba8-8959-ccebd493fdef"
+            },
+            "spec": {
+                "activeDeadlineSeconds": 480,
+                "backoffLimit": 0,
+                "completionMode": "NonIndexed",
+                "completions": 1,
+                "manualSelector": false,
+                "parallelism": 1,
+                "podReplacementPolicy": "TerminatingOrFailed",
+                "selector": {
+                    "matchLabels": {
+                        "batch.kubernetes.io/controller-uid": "7cc3cc2c-2a99-4ba8-8959-ccebd493fdef"
+                    }
+                },
+                "suspend": false,
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "batch.kubernetes.io/controller-uid": "7cc3cc2c-2a99-4ba8-8959-ccebd493fdef",
+                            "batch.kubernetes.io/job-name": "environment-infra-plan-1",
+                            "controller-uid": "7cc3cc2c-2a99-4ba8-8959-ccebd493fdef",
+                            "job-name": "environment-infra-plan-1",
+                            "platform.example.io/terraform-run": "environment-infra-plan-1",
+                            "platform.example.io/terraform-run-uid": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95"
+                        }
+                    },
+                    "spec": {
+                        "automountServiceAccountToken": true,
+                        "containers": [
+                            {
+                                "args": [
+                                    "--operation=Plan",
+                                    "--run-uid=fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+                                    "--expected-terraform-version=1.14.0",
+                                    "--working-dir=/workspace/terraform",
+                                    "--workspace=environment",
+                                    "--plan=/workspace/terraform/plan.binary",
+                                    "--lock-timeout=30s",
+                                    "--backend-config=/workspace/backend/backend.hcl",
+                                    "--artifact-endpoint=http://192.168.1.19:14566",
+                                    "--artifact-region=us-east-1",
+                                    "--artifact-bucket=kpcp-1793519898365278200",
+                                    "--artifact-prefix=runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+                                    "--source-root=/workspace/terraform"
+                                ],
+                                "command": [
+                                    "terraform-runner"
+                                ],
+                                "env": [
+                                    {
+                                        "name": "HOME",
+                                        "value": "/workspace"
+                                    },
+                                    {
+                                        "name": "PCP_POD_NAME",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "metadata.name"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "PCP_POD_NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "AWS_ACCESS_KEY_ID",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "AWS_ACCESS_KEY_ID",
+                                                "name": "emulator"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "AWS_SECRET_ACCESS_KEY",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "AWS_SECRET_ACCESS_KEY",
+                                                "name": "emulator"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "AWS_EC2_METADATA_DISABLED",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "PCP_EXECUTION_PROFILE",
+                                        "value": "{\"mode\":\"emulator\",\"s3Endpoint\":\"http://192.168.1.19:14566\",\"stsEndpoint\":\"http://192.168.1.19:14566\",\"region\":\"us-east-1\",\"accountID\":\"000000000000\",\"artifactBucket\":\"kpcp-1793519898365278200\",\"credentialsSecretRef\":{\"name\":\"emulator\"},\"credentialsIdentity\":\"sha256:81a2109a46b65767b135585d3ca1f275aabe0fc8ace6c35c9342d565f60a304b\"}"
+                                    },
+                                    {
+                                        "name": "PCP_MODULE_INPUTS",
+                                        "value": "{\"bucket_name\":\"kpcp-1793519898365278200-cloud\",\"execution_role_arn\":\"\",\"region\":\"us-east-1\",\"s3_endpoint\":\"http://192.168.1.19:14566\",\"sts_endpoint\":\"http://192.168.1.19:14566\",\"target_cluster_name\":\"podman-minikube\",\"target_endpoint\":\"kubeconfig:podman-minikube\",\"target_incarnation_id\":\"2c62d6a8-08b6-460d-bb1b-ac59557dc281\"}"
+                                    }
+                                ],
+                                "image": "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "terraform-runner",
+                                "resources": {
+                                    "limits": {
+                                        "cpu": "1",
+                                        "memory": "1Gi"
+                                    },
+                                    "requests": {
+                                        "cpu": "100m",
+                                        "memory": "128Mi"
+                                    }
+                                },
+                                "securityContext": {
+                                    "allowPrivilegeEscalation": false,
+                                    "capabilities": {
+                                        "drop": [
+                                            "ALL"
+                                        ]
+                                    },
+                                    "readOnlyRootFilesystem": true,
+                                    "runAsGroup": 1000,
+                                    "runAsNonRoot": true,
+                                    "runAsUser": 1000
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/workspace",
+                                        "name": "workspace"
+                                    },
+                                    {
+                                        "mountPath": "/tmp",
+                                        "name": "tmp"
+                                    },
+                                    {
+                                        "mountPath": "/workspace/backend",
+                                        "name": "backend-config",
+                                        "readOnly": true
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "initContainers": [
+                            {
+                                "args": [
+                                    "clone",
+                                    "--no-checkout",
+                                    "http://192.168.1.19:18085/qa-5445a5f/.git",
+                                    "/workspace/terraform"
+                                ],
+                                "command": [
+                                    "git"
+                                ],
+                                "image": "alpine/git:2.45.2",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "source-clone",
+                                "resources": {},
+                                "securityContext": {
+                                    "allowPrivilegeEscalation": false,
+                                    "capabilities": {
+                                        "drop": [
+                                            "ALL"
+                                        ]
+                                    },
+                                    "runAsGroup": 1000,
+                                    "runAsNonRoot": true,
+                                    "runAsUser": 1000
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/workspace",
+                                        "name": "workspace"
+                                    }
+                                ]
+                            },
+                            {
+                                "args": [
+                                    "-C",
+                                    "/workspace/terraform",
+                                    "checkout",
+                                    "--detach",
+                                    "547f45475c7186eafd35026fb994f22f26606d6c"
+                                ],
+                                "command": [
+                                    "git"
+                                ],
+                                "image": "alpine/git:2.45.2",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "source-checkout",
+                                "resources": {},
+                                "securityContext": {
+                                    "allowPrivilegeEscalation": false,
+                                    "capabilities": {
+                                        "drop": [
+                                            "ALL"
+                                        ]
+                                    },
+                                    "runAsGroup": 1000,
+                                    "runAsNonRoot": true,
+                                    "runAsUser": 1000
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/workspace",
+                                        "name": "workspace"
+                                    }
+                                ]
+                            }
+                        ],
+                        "restartPolicy": "Never",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {
+                            "fsGroup": 1000,
+                            "runAsNonRoot": true,
+                            "seccompProfile": {
+                                "type": "RuntimeDefault"
+                            }
+                        },
+                        "serviceAccount": "runner",
+                        "serviceAccountName": "runner",
+                        "terminationGracePeriodSeconds": 30,
+                        "volumes": [
+                            {
+                                "emptyDir": {},
+                                "name": "workspace"
+                            },
+                            {
+                                "emptyDir": {},
+                                "name": "tmp"
+                            },
+                            {
+                                "configMap": {
+                                    "defaultMode": 420,
+                                    "name": "backend"
+                                },
+                                "name": "backend-config"
+                            }
+                        ]
+                    }
+                }
+            },
+            "status": {
+                "active": 1,
+                "ready": 0,
+                "startTime": "2026-11-01T07:58:19Z",
+                "terminating": 0,
+                "uncountedTerminatedPods": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "creationTimestamp": "2026-11-01T07:58:19Z",
+                "finalizers": [
+                    "batch.kubernetes.io/job-tracking"
+                ],
+                "generateName": "environment-infra-plan-1-",
+                "generation": 1,
+                "labels": {
+                    "batch.kubernetes.io/controller-uid": "7cc3cc2c-2a99-4ba8-8959-ccebd493fdef",
+                    "batch.kubernetes.io/job-name": "environment-infra-plan-1",
+                    "controller-uid": "7cc3cc2c-2a99-4ba8-8959-ccebd493fdef",
+                    "job-name": "environment-infra-plan-1",
+                    "platform.example.io/terraform-run": "environment-infra-plan-1",
+                    "platform.example.io/terraform-run-uid": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95"
+                },
+                "name": "environment-infra-plan-1-5l8hr",
+                "namespace": "kpcp-1793519898365278200",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "environment-infra-plan-1",
+                        "uid": "7cc3cc2c-2a99-4ba8-8959-ccebd493fdef"
+                    }
+                ],
+                "resourceVersion": "29669",
+                "uid": "bdce706a-c0f0-4378-8d0e-8f5d2530a45b"
+            },
+            "spec": {
+                "automountServiceAccountToken": true,
+                "containers": [
+                    {
+                        "args": [
+                            "--operation=Plan",
+                            "--run-uid=fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+                            "--expected-terraform-version=1.14.0",
+                            "--working-dir=/workspace/terraform",
+                            "--workspace=environment",
+                            "--plan=/workspace/terraform/plan.binary",
+                            "--lock-timeout=30s",
+                            "--backend-config=/workspace/backend/backend.hcl",
+                            "--artifact-endpoint=http://192.168.1.19:14566",
+                            "--artifact-region=us-east-1",
+                            "--artifact-bucket=kpcp-1793519898365278200",
+                            "--artifact-prefix=runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+                            "--source-root=/workspace/terraform"
+                        ],
+                        "command": [
+                            "terraform-runner"
+                        ],
+                        "env": [
+                            {
+                                "name": "HOME",
+                                "value": "/workspace"
+                            },
+                            {
+                                "name": "PCP_POD_NAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "PCP_POD_NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "AWS_ACCESS_KEY_ID",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "AWS_ACCESS_KEY_ID",
+                                        "name": "emulator"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "AWS_SECRET_ACCESS_KEY",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "AWS_SECRET_ACCESS_KEY",
+                                        "name": "emulator"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "AWS_EC2_METADATA_DISABLED",
+                                "value": "true"
+                            },
+                            {
+                                "name": "PCP_EXECUTION_PROFILE",
+                                "value": "{\"mode\":\"emulator\",\"s3Endpoint\":\"http://192.168.1.19:14566\",\"stsEndpoint\":\"http://192.168.1.19:14566\",\"region\":\"us-east-1\",\"accountID\":\"000000000000\",\"artifactBucket\":\"kpcp-1793519898365278200\",\"credentialsSecretRef\":{\"name\":\"emulator\"},\"credentialsIdentity\":\"sha256:81a2109a46b65767b135585d3ca1f275aabe0fc8ace6c35c9342d565f60a304b\"}"
+                            },
+                            {
+                                "name": "PCP_MODULE_INPUTS",
+                                "value": "{\"bucket_name\":\"kpcp-1793519898365278200-cloud\",\"execution_role_arn\":\"\",\"region\":\"us-east-1\",\"s3_endpoint\":\"http://192.168.1.19:14566\",\"sts_endpoint\":\"http://192.168.1.19:14566\",\"target_cluster_name\":\"podman-minikube\",\"target_endpoint\":\"kubeconfig:podman-minikube\",\"target_incarnation_id\":\"2c62d6a8-08b6-460d-bb1b-ac59557dc281\"}"
+                            }
+                        ],
+                        "image": "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "terraform-runner",
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "128Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "readOnlyRootFilesystem": true,
+                            "runAsGroup": 1000,
+                            "runAsNonRoot": true,
+                            "runAsUser": 1000
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/workspace",
+                                "name": "workspace"
+                            },
+                            {
+                                "mountPath": "/tmp",
+                                "name": "tmp"
+                            },
+                            {
+                                "mountPath": "/workspace/backend",
+                                "name": "backend-config",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-bb74c",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "initContainers": [
+                    {
+                        "args": [
+                            "clone",
+                            "--no-checkout",
+                            "http://192.168.1.19:18085/qa-5445a5f/.git",
+                            "/workspace/terraform"
+                        ],
+                        "command": [
+                            "git"
+                        ],
+                        "image": "alpine/git:2.45.2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "source-clone",
+                        "resources": {},
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "runAsGroup": 1000,
+                            "runAsNonRoot": true,
+                            "runAsUser": 1000
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/workspace",
+                                "name": "workspace"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-bb74c",
+                                "readOnly": true
+                            }
+                        ]
+                    },
+                    {
+                        "args": [
+                            "-C",
+                            "/workspace/terraform",
+                            "checkout",
+                            "--detach",
+                            "547f45475c7186eafd35026fb994f22f26606d6c"
+                        ],
+                        "command": [
+                            "git"
+                        ],
+                        "image": "alpine/git:2.45.2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "source-checkout",
+                        "resources": {},
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "runAsGroup": 1000,
+                            "runAsNonRoot": true,
+                            "runAsUser": 1000
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/workspace",
+                                "name": "workspace"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-bb74c",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "nodeName": "podman-minikube",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Never",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "fsGroup": 1000,
+                    "runAsNonRoot": true,
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "serviceAccount": "runner",
+                "serviceAccountName": "runner",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "emptyDir": {},
+                        "name": "workspace"
+                    },
+                    {
+                        "emptyDir": {},
+                        "name": "tmp"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "name": "backend"
+                        },
+                        "name": "backend-config"
+                    },
+                    {
+                        "name": "kube-api-access-bb74c",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "allocatedResources": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                },
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-11-01T07:58:21Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-11-01T07:58:23Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-11-01T07:58:19Z",
+                        "message": "containers with unready status: [terraform-runner]",
+                        "observedGeneration": 1,
+                        "reason": "ContainersNotReady",
+                        "status": "False",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-11-01T07:58:19Z",
+                        "message": "containers with unready status: [terraform-runner]",
+                        "observedGeneration": 1,
+                        "reason": "ContainersNotReady",
+                        "status": "False",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-11-01T07:58:19Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "image": "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39",
+                        "imageID": "",
+                        "lastState": {},
+                        "name": "terraform-runner",
+                        "ready": false,
+                        "restartCount": 0,
+                        "started": false,
+                        "state": {
+                            "waiting": {
+                                "message": "failed to pull and unpack image \"localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39\": failed to resolve reference \"localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39\": failed to do request: Head \"https://localhost/v2/kpcp-runner/manifests/sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39\": dial tcp 127.0.0.1:443: connect: connection refused",
+                                "reason": "ErrImagePull"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/workspace",
+                                "name": "workspace"
+                            },
+                            {
+                                "mountPath": "/tmp",
+                                "name": "tmp"
+                            },
+                            {
+                                "mountPath": "/workspace/backend",
+                                "name": "backend-config",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-bb74c",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.49.2",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.49.2"
+                    }
+                ],
+                "initContainerStatuses": [
+                    {
+                        "containerID": "containerd://9e638ef03b7f0938d04c5148335f02fa0f36b7abce4e3f2a32b23c79aefe685f",
+                        "image": "docker.io/alpine/git:2.45.2",
+                        "imageID": "docker.io/alpine/git@sha256:16ad8e788e1d3b0c30f18da8dde5c0ace3b187445a62d8af893b003ca1e70592",
+                        "lastState": {},
+                        "name": "source-clone",
+                        "ready": true,
+                        "resources": {},
+                        "restartCount": 0,
+                        "started": false,
+                        "state": {
+                            "terminated": {
+                                "containerID": "containerd://9e638ef03b7f0938d04c5148335f02fa0f36b7abce4e3f2a32b23c79aefe685f",
+                                "exitCode": 0,
+                                "finishedAt": "2026-11-01T07:58:21Z",
+                                "reason": "Completed",
+                                "startedAt": "2026-11-01T07:58:21Z"
+                            }
+                        },
+                        "user": {
+                            "linux": {
+                                "gid": 1000,
+                                "supplementalGroups": [
+                                    1000
+                                ],
+                                "uid": 1000
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/workspace",
+                                "name": "workspace"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-bb74c",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    },
+                    {
+                        "containerID": "containerd://b6bdad023d0b64c634449f532480cfbd65911e780087d66caa992f8a93b37e74",
+                        "image": "docker.io/alpine/git:2.45.2",
+                        "imageID": "docker.io/alpine/git@sha256:16ad8e788e1d3b0c30f18da8dde5c0ace3b187445a62d8af893b003ca1e70592",
+                        "lastState": {},
+                        "name": "source-checkout",
+                        "ready": true,
+                        "resources": {},
+                        "restartCount": 0,
+                        "started": false,
+                        "state": {
+                            "terminated": {
+                                "containerID": "containerd://b6bdad023d0b64c634449f532480cfbd65911e780087d66caa992f8a93b37e74",
+                                "exitCode": 0,
+                                "finishedAt": "2026-11-01T07:58:22Z",
+                                "reason": "Completed",
+                                "startedAt": "2026-11-01T07:58:22Z"
+                            }
+                        },
+                        "user": {
+                            "linux": {
+                                "gid": 1000,
+                                "supplementalGroups": [
+                                    1000
+                                ],
+                                "uid": 1000
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/workspace",
+                                "name": "workspace"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-bb74c",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "observedGeneration": 1,
+                "phase": "Pending",
+                "podIP": "10.244.0.54",
+                "podIPs": [
+                    {
+                        "ip": "10.244.0.54"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "resources": {
+                    "limits": {
+                        "cpu": "1",
+                        "memory": "1Gi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "128Mi"
+                    }
+                },
+                "startTime": "2026-11-01T07:58:19Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

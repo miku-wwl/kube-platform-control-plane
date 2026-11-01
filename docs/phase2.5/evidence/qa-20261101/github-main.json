@@ -1,0 +1,99 @@
+{
+  "name": "main",
+  "commit": {
+    "sha": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+    "node_id": "C_kwDOUfiEetoAKDU0NDVhNWZkZjE2OWE5ZjEyMjk2ZGM0NGRmMWJhMWIyZDI4MTkzNDI",
+    "commit": {
+      "author": {
+        "name": "Weilai Wang",
+        "email": "38804125+miku-wwl@users.noreply.github.com",
+        "date": "2026-11-01T07:28:19Z"
+      },
+      "committer": {
+        "name": "Weilai Wang",
+        "email": "38804125+miku-wwl@users.noreply.github.com",
+        "date": "2026-11-01T07:28:19Z"
+      },
+      "message": "feat: complete phase 2.5 execution refactor",
+      "tree": {
+        "sha": "d93036e8a337b286095c81da8eb60df15deae065",
+        "url": "https://api.github.com/repos/miku-wwl/kube-platform-control-plane/git/trees/d93036e8a337b286095c81da8eb60df15deae065"
+      },
+      "url": "https://api.github.com/repos/miku-wwl/kube-platform-control-plane/git/commits/5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/miku-wwl/kube-platform-control-plane/commits/5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+    "html_url": "https://github.com/miku-wwl/kube-platform-control-plane/commit/5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+    "comments_url": "https://api.github.com/repos/miku-wwl/kube-platform-control-plane/commits/5445a5fdf169a9f12296dc44df1ba1b2d2819342/comments",
+    "author": {
+      "login": "miku-wwl",
+      "id": 38804125,
+      "node_id": "MDQ6VXNlcjM4ODA0MTI1",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38804125?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/miku-wwl",
+      "html_url": "https://github.com/miku-wwl",
+      "followers_url": "https://api.github.com/users/miku-wwl/followers",
+      "following_url": "https://api.github.com/users/miku-wwl/following{/other_user}",
+      "gists_url": "https://api.github.com/users/miku-wwl/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/miku-wwl/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/miku-wwl/subscriptions",
+      "organizations_url": "https://api.github.com/users/miku-wwl/orgs",
+      "repos_url": "https://api.github.com/users/miku-wwl/repos",
+      "events_url": "https://api.github.com/users/miku-wwl/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/miku-wwl/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "miku-wwl",
+      "id": 38804125,
+      "node_id": "MDQ6VXNlcjM4ODA0MTI1",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38804125?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/miku-wwl",
+      "html_url": "https://github.com/miku-wwl",
+      "followers_url": "https://api.github.com/users/miku-wwl/followers",
+      "following_url": "https://api.github.com/users/miku-wwl/following{/other_user}",
+      "gists_url": "https://api.github.com/users/miku-wwl/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/miku-wwl/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/miku-wwl/subscriptions",
+      "organizations_url": "https://api.github.com/users/miku-wwl/orgs",
+      "repos_url": "https://api.github.com/users/miku-wwl/repos",
+      "events_url": "https://api.github.com/users/miku-wwl/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/miku-wwl/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "54e1b7e0c496f0af47d132ccc82421a22ccd6a94",
+        "url": "https://api.github.com/repos/miku-wwl/kube-platform-control-plane/commits/54e1b7e0c496f0af47d132ccc82421a22ccd6a94",
+        "html_url": "https://github.com/miku-wwl/kube-platform-control-plane/commit/54e1b7e0c496f0af47d132ccc82421a22ccd6a94"
+      }
+    ]
+  },
+  "_links": {
+    "self": "https://api.github.com/repos/miku-wwl/kube-platform-control-plane/branches/main",
+    "html": "https://github.com/miku-wwl/kube-platform-control-plane/tree/main"
+  },
+  "protected": false,
+  "protection": {
+    "enabled": false,
+    "required_status_checks": {
+      "enforcement_level": "off",
+      "contexts": [],
+      "checks": []
+    }
+  },
+  "protection_url": "https://api.github.com/repos/miku-wwl/kube-platform-control-plane/branches/main/protection"
+}

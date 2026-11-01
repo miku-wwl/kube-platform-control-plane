@@ -1,0 +1,129 @@
+{
+  "reviewedAtUTC": "2026-11-01T09:06:13.605879+00:00",
+  "newE2EExecuted": false,
+  "existingRun": {
+    "Command": "go test ./e2e -run TestLifecycle -v -count=1 -timeout=20m",
+    "ExitCode": 0,
+    "StartedAt": "2026-11-01T20:58:15.2452449+13:00",
+    "FinishedAt": "2026-11-01T21:11:37.8270415+13:00",
+    "Commit": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+    "Config": "execution-config.json",
+    "Log": "e2e-current.log"
+  },
+  "baselineCommit": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+  "baselineFilesChecked": 115,
+  "baselineMismatches": [],
+  "artifactChecks": [
+    {
+      "file": "../qa-20261101/artifacts/main-plan.binary",
+      "expected": "sha256:7616d262aabd45d029f9e97ac800191bf498249b849459efa43bcec36ebb0b5b",
+      "actual": "sha256:7616d262aabd45d029f9e97ac800191bf498249b849459efa43bcec36ebb0b5b",
+      "matches": true,
+      "length": 4487
+    },
+    {
+      "file": "../qa-20261101/artifacts/main-source-bundle.tar.zst",
+      "expected": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+      "actual": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+      "matches": true,
+      "length": 1816
+    },
+    {
+      "file": "../qa-20261101/artifacts/main-backend-config.hcl",
+      "expected": "sha256:a454511e5950d4672d8856f859a30f1c5594da69976a328562ec7ea095d282d6",
+      "actual": "sha256:a454511e5950d4672d8856f859a30f1c5594da69976a328562ec7ea095d282d6",
+      "matches": true,
+      "length": 360
+    },
+    {
+      "file": "../qa-20261101/artifacts/main-plan-report.json",
+      "expected": "sha256:8ccae9b6ab4ae71eda0e01cb825c28e307f80ff20f3c52f6be814720d37132d2",
+      "actual": "sha256:8ccae9b6ab4ae71eda0e01cb825c28e307f80ff20f3c52f6be814720d37132d2",
+      "matches": true,
+      "length": 211
+    },
+    {
+      "file": "../qa-20261101/artifacts/main-terminal-result.json",
+      "expected": "sha256:9c91b9f0f066607532d3797ef204679f48ab4ac65d4060c89d49155d2b9e2b1e",
+      "actual": "sha256:9c91b9f0f066607532d3797ef204679f48ab4ac65d4060c89d49155d2b9e2b1e",
+      "matches": true,
+      "length": 1250
+    }
+  ],
+  "existingSubtestReceipts": [
+    {
+      "line": 45,
+      "text": "--- PASS: TestLifecycle (799.07s)"
+    },
+    {
+      "line": 46,
+      "text": "--- PASS: TestLifecycle/PlatformAPI_DraftAndTemplate (0.10s)"
+    },
+    {
+      "line": 47,
+      "text": "--- PASS: TestLifecycle/A_ExactApproval (2.05s)"
+    },
+    {
+      "line": 48,
+      "text": "--- PASS: TestLifecycle/B_ImmutableEvidence (115.69s)"
+    },
+    {
+      "line": 49,
+      "text": "--- PASS: TestLifecycle/PlatformAPI_ExactApproval (0.03s)"
+    },
+    {
+      "line": 50,
+      "text": "--- PASS: TestLifecycle/C_RestartRecovery (0.01s)"
+    },
+    {
+      "line": 51,
+      "text": "--- PASS: TestLifecycle/NoChange (59.00s)"
+    },
+    {
+      "line": 52,
+      "text": "--- SKIP: TestLifecycle/D_MultiTarget (0.00s)"
+    },
+    {
+      "line": 53,
+      "text": "--- PASS: TestLifecycle/SingleClusterConcurrency (256.49s)"
+    },
+    {
+      "line": 54,
+      "text": "--- PASS: TestLifecycle/E_FailClosed (21.37s)"
+    },
+    {
+      "line": 55,
+      "text": "--- PASS: TestLifecycle/F_DestroyFinalizer (80.05s)"
+    }
+  ],
+  "existingControllerLeaseAcquisitions": [
+    {
+      "line": 3,
+      "text": "I1101 20:58:18.996596   20476 leaderelection.go:271] successfully acquired lease kpcp-1793519898365278200/platform-control-plane.platform.example.io"
+    },
+    {
+      "line": 31,
+      "text": "I1101 20:58:36.537277    8124 leaderelection.go:271] successfully acquired lease kpcp-1793519898365278200/platform-control-plane.platform.example.io"
+    },
+    {
+      "line": 54,
+      "text": "I1101 21:02:23.696850   10140 leaderelection.go:271] successfully acquired lease kpcp-1793519898365278200/platform-control-plane.platform.example.io"
+    },
+    {
+      "line": 89,
+      "text": "I1101 21:04:22.867949   14232 leaderelection.go:271] successfully acquired lease kpcp-1793519898365278200/platform-control-plane.platform.example.io"
+    },
+    {
+      "line": 112,
+      "text": "I1101 21:04:53.774485   10728 leaderelection.go:271] successfully acquired lease kpcp-1793519898365278200/platform-control-plane.platform.example.io"
+    }
+  ],
+  "crossClusterExecuted": false,
+  "transientFaultExecutedInThisExistingRun": false,
+  "limits": [
+    "No active KPCP Controller in current browser QA preflight",
+    "No live UI Plan, Apply or Destroy exercised in current QA",
+    "Existing E2E API uses deterministic generator; current Desktop API reports ollama",
+    "Cross-cluster lane skipped; single-cluster concurrency is not independent-cluster isolation"
+  ]
+}

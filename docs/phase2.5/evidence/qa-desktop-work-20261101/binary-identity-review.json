@@ -1,0 +1,28 @@
+[
+  {
+    "file": "tmp\\phase25qa\\platform-api.exe",
+    "expectedSHA256": "3daad833c1bab80c700eea84c77f49722ad73ceca3d265abcecb21532d63bf4c",
+    "actualSHA256": "3daad833c1bab80c700eea84c77f49722ad73ceca3d265abcecb21532d63bf4c",
+    "matches": true,
+    "embeddedMetadata": [
+      "path\tgithub.com/miku-wwl/kube-platform-control-plane/cmd/platform-api",
+      "mod\tgithub.com/miku-wwl/kube-platform-control-plane\tv0.0.0-20261101072819-5445a5fdf169+dirty",
+      "build\tvcs.revision=5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+      "build\tvcs.time=2026-11-01T07:28:19Z",
+      "build\tvcs.modified=true"
+    ]
+  },
+  {
+    "file": "tmp\\phase25qa\\controller.exe",
+    "expectedSHA256": "d54898dd785a82bf6931749c3bf540b3e7f32c6307a836ac28eece980db67345",
+    "actualSHA256": "d54898dd785a82bf6931749c3bf540b3e7f32c6307a836ac28eece980db67345",
+    "matches": true,
+    "embeddedMetadata": [
+      "path\tgithub.com/miku-wwl/kube-platform-control-plane/cmd/controller",
+      "mod\tgithub.com/miku-wwl/kube-platform-control-plane\tv0.0.0-20261101072819-5445a5fdf169+dirty",
+      "build\tvcs.revision=5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+      "build\tvcs.time=2026-11-01T07:28:19Z",
+      "build\tvcs.modified=true"
+    ]
+  }
+]

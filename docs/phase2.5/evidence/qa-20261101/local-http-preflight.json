@@ -1,0 +1,32 @@
+[
+  {
+    "URL": "http://127.0.0.1:5173",
+    "Status": 200,
+    "RecordedAt": "2026-11-01T20:54:28.1612379+13:00",
+    "Body": "<!doctype html>\r\n<html lang=\"en\">\r\n  <head>\n    <script type=\"module\">import { injectIntoGlobalHook } from \"/@react-refresh\";\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () => {};\nwindow.$RefreshSig$ = () => (type) => type;</script>\n\n    <script type=\"module\" src=\"/@vite/client\"></script>\n\r\n    <meta charset=\"UTF-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n    <meta name=\"theme-color\" content=\"#0d1320\" />\r\n    <meta name=\"description\" content=\"Local Kubernetes platform environment console\" />\r\n    <title>Platform Control Plane</title>\r\n  </head>\r\n  <body>\r\n    <div id=\"root\"></div>\r\n    <script type=\"module\" src=\"/src/main.tsx\"></script>\r\n  </body>\r\n</html>\r\n"
+  },
+  {
+    "URL": "http://127.0.0.1:8090/api/health",
+    "Status": 200,
+    "RecordedAt": "2026-11-01T20:54:28.1766944+13:00",
+    "Body": "{\"aiProvider\":\"ollama\",\"artifactPreview\":false,\"status\":\"ok\"}\n"
+  },
+  {
+    "URL": "http://127.0.0.1:5173/api/health",
+    "Status": 200,
+    "RecordedAt": "2026-11-01T20:54:28.2112013+13:00",
+    "Body": "{\"aiProvider\":\"ollama\",\"artifactPreview\":false,\"status\":\"ok\"}\n"
+  },
+  {
+    "URL": "http://127.0.0.1:5173/api/environments",
+    "Status": 200,
+    "RecordedAt": "2026-11-01T20:54:28.2760764+13:00",
+    "Body": "[]\n"
+  },
+  {
+    "URL": "http://127.0.0.1:5173/api/classes",
+    "Status": 200,
+    "RecordedAt": "2026-11-01T20:54:28.2937478+13:00",
+    "Body": "[]\n"
+  }
+]

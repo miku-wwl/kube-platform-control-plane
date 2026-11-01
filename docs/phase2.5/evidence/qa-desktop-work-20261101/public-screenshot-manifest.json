@@ -3,7 +3,7 @@
   "commit": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
   "screenshotCount": 23,
   "sourceOriginalsPreservedLocally": true,
-  "privacyNote": "Three published PNG copies mask private LAN host values. Original PNG and browser JPEG captures remain unmodified in the local workspace and are not included in the public PR.",
+  "privacyNote": "All original PNG and browser JPEG captures are included in the requested main-branch push. Three redacted copies are supplementary and keep private LAN values out of inline report previews.",
   "screenshots": [
     {
       "name": "qa-20261101-01-home",
@@ -449,5 +449,6 @@
       "width": 1841,
       "height": 883
     }
-  ]
+  ],
+  "sourceOriginalsIncludedInMainCommit": true
 }

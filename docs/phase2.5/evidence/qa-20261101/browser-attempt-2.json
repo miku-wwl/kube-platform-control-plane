@@ -1,0 +1,10 @@
+{
+  "RecordedAt": "2026-11-01T21:02:32.4999479+13:00",
+  "Attempt": "After local HTTP 200 and cua_repl reset: cua.createBrowserTab(iab, http://127.0.0.1:5173, visible=true)",
+  "Error": "The browser access host is unavailable",
+  "InventoryBrowsers": 0,
+  "InventoryError": "Browsers: Error: The browser access host is unavailable",
+  "HTTPReceipt": "local-http-preflight.json",
+  "Screenshots": 0,
+  "Classification": "tool bridge unavailable, not a proven KPCP fault"
+}

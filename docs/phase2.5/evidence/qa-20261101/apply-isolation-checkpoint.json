@@ -1,0 +1,35 @@
+[
+  {
+    "Name": "concurrent-infra-plan-1-apply-6a94a6d37d",
+    "UID": "35eca620-eb2e-433a-855a-8fa3e1c27640",
+    "Stack": "concurrent-infra",
+    "Mode": "Reconcile",
+    "Outcome": "Running",
+    "JobUID": "babb8c14-aed2-4b6f-82c5-ea2a86caf3cb",
+    "Workspace": "concurrent",
+    "Runner": "runner-concurrent",
+    "ContextDigest": "sha256:507f506bdacff42d89d78bd5128a09bf1f1f5830d23de9cbc37afd061ce49a59"
+  },
+  {
+    "Name": "environment-infra-plan-1-apply-5b05e0b839",
+    "UID": "d91fa255-f0c7-4a1c-a00e-eb6c328974eb",
+    "Stack": "environment-infra",
+    "Mode": "Reconcile",
+    "Outcome": "Succeeded",
+    "JobUID": "48180b7b-4d15-492f-b845-d2bb7d25bea8",
+    "Workspace": "environment",
+    "Runner": "runner",
+    "ContextDigest": "sha256:00348b761e6ce53c696ad5b2655c0a877483a8c5fd1a3713cbffe7edebe320e0"
+  },
+  {
+    "Name": "second-infra-plan-1-apply-cfc1e83148",
+    "UID": "4911d4b4-6c86-4a78-adce-c3cb382406b4",
+    "Stack": "second-infra",
+    "Mode": "Reconcile",
+    "Outcome": "Succeeded",
+    "JobUID": "c509f13d-fcba-4fc5-a93e-23c12cd146d8",
+    "Workspace": "second",
+    "Runner": "runner-second",
+    "ContextDigest": "sha256:f1fb166e78f34393419affdb03511452602fd48d712f2011acd07ffe7547d92c"
+  }
+]

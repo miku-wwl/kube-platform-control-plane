@@ -1,0 +1,76 @@
+- link "Skip to content":
+  - /url: "#main-content"
+- complementary:
+  - strong: KPCP
+  - generic: Platform Control Plane
+  - generic: WORKSPACE
+  - navigation "Workspace navigation":
+    - generic: Operate
+    - button "Environments":
+      - generic: Environments
+      - generic: "0"
+    - generic: Build
+    - button "Platform builder":
+      - generic: Platform builder
+    - button "Environment classes":
+      - generic: Environment classes
+      - generic: "0"
+  - status "LOCAL MODE · Kubernetes":
+    - generic: LOCAL MODE
+  - paragraph: Kubernetes
+  - text: Local workspace
+- main:
+  - generic: Local workspace
+  - heading "Platform builder" [level=1]
+  - group "Language":
+    - button "Switch language to English" [active] [pressed]: EN
+    - button "Switch language to Chinese": 中文
+  - status "API connected":
+    - generic: API connected
+  - button "Refresh":
+  - button "New environment":
+    - text: New environment
+  - button "Environments"
+  - generic: New environment
+  - generic: SELF-SERVICE
+  - heading "Platform builder" [level=2]
+  - paragraph: Describe your environment. Review the proposed configuration before you submit it.
+  - text: Human confirmation required
+  - generic: "01"
+  - heading "Describe desired state" [level=3]
+  - paragraph: AI output stays a proposal until you explicitly submit it.
+  - generic: Natural-language request
+  - textbox "Natural-language request":
+    - /placeholder: Describe a development or test environment…
+    - text: 创建一个 1 节点的小型开发环境，启用 Valkey 缓存；仅生成草稿，等待人工提交与审批。
+  - generic: Environment name optional
+  - textbox "Environment name optional":
+    - /placeholder: generated from description
+    - text: qa-work-20261101-ui
+  - generic: Namespace
+  - textbox "Namespace": qa-work-20261101
+  - generic: Environment class
+  - combobox "Environment class":
+    - option "Select a ready class" [selected]
+  - generic: Region class default
+  - combobox "Region class default":
+    - option "Use class default" [selected]
+  - generic: Node count
+  - spinbutton "Node count": "1"
+  - status:
+    - text: Create a ready environment class before generating a draft.
+    - button "Manage environment classes":
+      - text: Manage environment classes
+  - button "Cancel"
+  - button "Generate draft" [disabled]:
+    - text: Generate draft
+  - generic: REVIEW BEFORE SUBMIT
+  - heading "AI draft" [level=3]
+  - text: Proposal
+  - strong: Your typed manifest preview appears here
+  - paragraph: AI proposes a typed draft. Nothing is created until you submit it.
+  - text: AI proposes
+  - text: API validates
+  - text: Human confirms
+  - text: Controllers reconcile
+  - text: Terraform executes

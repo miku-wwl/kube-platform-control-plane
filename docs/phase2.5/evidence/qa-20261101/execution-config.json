@@ -1,0 +1,10 @@
+{
+  "Kubeconfig": "<ignored local kubeconfig>",
+  "Context": "podman-minikube",
+  "ControllerBinary": "<locally built controller; SHA256 in build-identities.json>",
+  "RunnerImage": "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39",
+  "HostEndpoint": "http://127.0.0.1:4566",
+  "PodEndpoint": "http://192.168.1.19:14566",
+  "SourceURL": "http://192.168.1.19:18085/qa-5445a5f/.git",
+  "SourceRevision": "547f45475c7186eafd35026fb994f22f26606d6c"
+}

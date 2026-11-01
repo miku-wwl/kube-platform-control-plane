@@ -1,0 +1,52 @@
+[
+  {
+    "RunUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+    "Reference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/plan.binary",
+    "ExpectedDigest": "sha256:7616d262aabd45d029f9e97ac800191bf498249b849459efa43bcec36ebb0b5b",
+    "ObservedDigest": "sha256:7616d262aabd45d029f9e97ac800191bf498249b849459efa43bcec36ebb0b5b",
+    "Matches": true,
+    "Length": 4487,
+    "File": "artifacts/main-plan.binary",
+    "RecordedAt": "2026-11-01T21:03:35.4841300+13:00"
+  },
+  {
+    "RunUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+    "Reference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/source-bundle.tar.zst",
+    "ExpectedDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+    "ObservedDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+    "Matches": true,
+    "Length": 1816,
+    "File": "artifacts/main-source-bundle.tar.zst",
+    "RecordedAt": "2026-11-01T21:03:42.4109951+13:00"
+  },
+  {
+    "RunUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+    "Reference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/backend-config.hcl",
+    "ExpectedDigest": "sha256:a454511e5950d4672d8856f859a30f1c5594da69976a328562ec7ea095d282d6",
+    "ObservedDigest": "sha256:a454511e5950d4672d8856f859a30f1c5594da69976a328562ec7ea095d282d6",
+    "Matches": true,
+    "Length": 360,
+    "File": "artifacts/main-backend-config.hcl",
+    "RecordedAt": "2026-11-01T21:03:49.5406721+13:00"
+  },
+  {
+    "RunUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+    "Reference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/plan-report.json",
+    "ExpectedDigest": "sha256:8ccae9b6ab4ae71eda0e01cb825c28e307f80ff20f3c52f6be814720d37132d2",
+    "ObservedDigest": "sha256:8ccae9b6ab4ae71eda0e01cb825c28e307f80ff20f3c52f6be814720d37132d2",
+    "Matches": true,
+    "Length": 211,
+    "File": "artifacts/main-plan-report.json",
+    "RecordedAt": "2026-11-01T21:03:56.4239316+13:00"
+  },
+  {
+    "RunUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+    "Reference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/terminal-result.json",
+    "ExpectedDigest": "sha256:9c91b9f0f066607532d3797ef204679f48ab4ac65d4060c89d49155d2b9e2b1e",
+    "ObservedDigest": "sha256:9c91b9f0f066607532d3797ef204679f48ab4ac65d4060c89d49155d2b9e2b1e",
+    "Matches": true,
+    "Length": 1250,
+    "File": "artifacts/main-terminal-result.json",
+    "RecordedAt": "2026-11-01T21:04:03.1879521+13:00"
+  }
+]

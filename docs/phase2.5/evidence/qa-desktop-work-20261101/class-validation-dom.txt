@@ -1,0 +1,182 @@
+- link "跳转到内容":
+  - /url: "#main-content"
+- complementary:
+  - strong: KPCP
+  - generic: 平台控制平面
+  - generic: 工作区
+  - navigation "工作区导航":
+    - generic: 运维
+    - button "环境":
+      - generic: 环境
+      - generic: "0"
+    - generic: 构建
+    - button "平台构建器":
+      - generic: 平台构建器
+    - button "环境类别管理":
+      - generic: 环境类别管理
+      - generic: "0"
+  - status "本地模式 · Kubernetes":
+    - generic: 本地模式
+  - paragraph: Kubernetes
+  - text: 本地工作区
+- main:
+  - generic: 本地工作区
+  - heading "环境类别管理" [level=1]
+  - group "语言":
+    - button "切换到英文": EN
+    - button "切换到中文" [pressed]: 中文
+  - status "API 已连接":
+    - generic: API 已连接
+  - button "刷新":
+  - button "新建环境":
+    - text: 新建环境
+  - button "环境类别管理"
+  - generic: 创建类别
+  - generic: 平台配置
+  - heading "环境类别管理" [level=2]
+  - paragraph: 配置可重复使用的环境模板，就绪后即可在平台构建器中选择。
+  - button "返回类别列表":
+    - text: 返回类别列表
+  - list "工作流步骤":
+    - generic: 选择模板
+    - generic: 调整配置
+    - generic: "03"
+    - generic: 校验并创建
+  - generic: 已选择的模板
+  - heading "Kubernetes · 小型开发" [level=3]
+  - paragraph: 首次填写项目连接后，可将配置保存为模板，供下次直接使用。
+  - button "重新选择模板（重置草稿）"
+  - paragraph: 填写以下模板，校验配置后保存类别。
+  - heading "基本信息" [level=3]:
+    - text: 基本信息
+  - generic: 类别名称 *
+  - textbox "类别名称 * 使用唯一的小写 Kubernetes 名称。":
+    - /placeholder: local-dev-v1
+    - text: qa-work-20261101-ui
+  - generic: 使用唯一的小写 Kubernetes 名称。
+  - generic: 版本 *
+  - textbox "版本 *": v2-qa
+  - heading "目标" [level=3]:
+    - text: 目标
+  - generic: 提供方
+  - combobox "提供方":
+    - option "Kubernetes" [selected]
+    - option "Kind (legacy)"
+    - option "AWS EKS"
+  - generic: 目标集群 / 上下文 *
+  - textbox "目标集群 / 上下文 * 使用在控制器中明确注册的 kubeconfig 上下文。": podman-minikube
+  - generic: 使用在控制器中明确注册的 kubeconfig 上下文。
+  - generic: 目标集群实例 UID *
+  - textbox "目标集群实例 UID *": 2c62d6a8-08b6-460d-bb1b-ac59557dc281
+  - generic: 账户 *
+  - textbox "账户 *": local
+  - generic: 默认区域 *
+  - textbox "默认区域 *": local
+  - generic: 可选区域
+  - textbox "可选区域 多个区域用逗号分隔，并包含默认区域；留空表示不限制区域。": local
+  - generic: 多个区域用逗号分隔，并包含默认区域；留空表示不限制区域。
+  - generic "基础设施来源":
+    - text: 基础设施来源
+  - generic: 基础设施仓库地址 *
+  - textbox "基础设施仓库地址 *":
+    - /placeholder: https://github.com/organization/infrastructure.git
+    - text: http://192.168.1.19:18085/qa-5445a5f/.git
+  - generic: 固定来源提交版本 *
+  - textbox "固定来源提交版本 * 填写完整的 40–64 位提交哈希。": 547f45475c7186eafd35026fb994f22f26606d6c
+  - generic: 填写完整的 40–64 位提交哈希。
+  - generic: Terraform 目录 *
+  - textbox "Terraform 目录 * 相对于仓库根目录；根目录填写 .。": .
+  - generic: 相对于仓库根目录；根目录填写 .。
+  - generic "后端与执行器":
+    - text: 后端与执行器
+  - heading "状态后端" [level=4]
+  - generic: 后端配置名称 *
+  - textbox "后端配置名称 * 环境命名空间内，包含 backend.hcl 的 ConfigMap 名称。": qa-work-backend
+  - generic: 环境命名空间内，包含 backend.hcl 的 ConfigMap 名称。
+  - generic: Runner 服务账户 *
+  - textbox "Runner 服务账户 *": terraform-runner
+  - heading "执行配置" [level=4]
+  - generic: Runner 镜像 *
+  - textbox "Runner 镜像 *": localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39
+  - generic: Runner 镜像摘要 / 本地标识 *
+  - textbox "Runner 镜像摘要 / 本地标识 * 发布镜像使用固定摘要；本地开发可使用本地镜像标识。": localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39
+  - generic: 发布镜像使用固定摘要；本地开发可使用本地镜像标识。
+  - generic: Terraform 版本 *
+  - textbox "Terraform 版本 *": 1.14.0
+  - generic: 执行超时 *
+  - textbox "执行超时 * 时间长度，例如 12m 或 1h。": 12m
+  - generic: 时间长度，例如 12m 或 1h。
+  - heading "容量与策略" [level=3]:
+    - text: 容量与策略
+  - generic: 最少节点数量
+  - spinbutton "最少节点数量": "1"
+  - generic: 最多节点数量
+  - spinbutton "最多节点数量": "3"
+  - generic: 环境数量上限
+  - spinbutton "环境数量上限": "3"
+  - generic: 同时 Plan 数量上限
+  - spinbutton "同时 Plan 数量上限": "1"
+  - generic: 同时 Apply 数量上限
+  - spinbutton "同时 Apply 数量上限": "1"
+  - generic: 审批策略
+  - combobox "审批策略 人工审批要求批准确切的 Terraform Plan。":
+    - option "人工审批" [selected]
+    - option "自动审批"
+  - generic: 人工审批要求批准确切的 Terraform Plan。
+  - paragraph: 上限为 0 表示类别不单独限制；仍受控制器总并发限制。
+  - generic "高级执行与运行时配置":
+    - text: 高级执行与运行时配置
+  - heading "执行配置" [level=4]
+  - generic: 锁等待超时
+  - textbox "锁等待超时": 2m
+  - generic: 执行器工作目录
+  - textbox "执行器工作目录": /workspace/terraform
+  - generic: Terraform 并行数量
+  - spinbutton "Terraform 并行数量"
+  - generic: 运行系统
+  - textbox "运行系统"
+  - generic: 运行架构
+  - textbox "运行架构"
+  - heading "目标" [level=4]
+  - generic: 集群标识
+  - textbox "集群标识"
+  - generic: 集群实例标识
+  - textbox "集群实例标识": 2c62d6a8-08b6-460d-bb1b-ac59557dc281
+  - generic: 连接配置引用
+  - textbox "连接配置引用": kubeconfig:podman-minikube
+  - generic: 管理角色 ARN
+  - textbox "管理角色 ARN"
+  - heading "运行时" [level=4]
+  - generic: Valkey 镜像
+  - textbox "Valkey 镜像"
+  - generic: Operator 镜像
+  - textbox "Operator 镜像"
+  - generic: Operator 镜像摘要
+  - textbox "Operator 镜像摘要"
+  - generic: Operator 清单引用
+  - textbox "Operator 清单引用"
+  - generic: 网络策略配置
+  - textbox "网络策略配置"
+  - generic: 数据保留策略
+  - textbox "数据保留策略"
+  - generic: 模拟器执行配置与模块输入（JSON）
+  - textbox "模拟器执行配置与模块输入（JSON）": "{ \"executionProfile\": { \"mode\": \"emulator\", \"s3Endpoint\": \"http://192.168.1.19:14566\", \"stsEndpoint\": \"http://192.168.1.19:14566\", \"region\": \"us-east-1\", \"accountId\": \"000000000000\", \"artifactBucket\": \"qa-work-20261101\", \"credentialsSecretRef\": { \"name\": \"qa-work-emulator\" } }, \"inputs\": { \"bucket_name\": \"qa-work-20261101-cloud\", \"target_cluster_name\": \"podman-minikube\", \"target_endpoint\": \"kubeconfig:podman-minikube\", \"target_incarnation_id\": \"2c62d6a8-08b6-460d-bb1b-ac59557dc281\" } }"
+  - generic: 运行时资源（JSON，可选）
+  - textbox "运行时资源（JSON，可选） 没有静态运行时资源时保持 []。使用凭据引用；内嵌 Secret 资源不会被接收。": "[]"
+  - generic: 没有静态运行时资源时保持 []。使用凭据引用；内嵌 Secret 资源不会被接收。
+  - status:
+    - strong: 配置校验通过
+    - paragraph: 每个环境命名空间需要预先配置引用的后端。来源是否可访问、Runner 镜像和基础设施执行能力会在创建环境时检查。
+  - status:
+    - generic: Backend configuration must exist in each environment namespace. Ready confirms class admission and controller reconciliation; source access, runner images and infrastructure execution are checked later.
+  - generic "查看配置清单" [active]:
+    - text: 查看配置清单
+  - generic: "apiVersion: platform.example.io/v1alpha1 kind: EnvironmentClass metadata: creationTimestamp: null labels: platform.example.io/managed-by: platform-api name: qa-work-20261101-ui spec: allowedRegions: - local approvalPolicy: Manual backend: authRef: serviceAccountName: terraform-runner configRef: name: qa-work-backend lockTimeout: 2m0s type: s3 capacityBounds: maxConcurrentApplies: 1 maxConcurrentPlans: 1 maxEnvironments: 3 maxNodeCount: 3 minNodeCount: 1 executionProfile: accountID: \"000000000000\" artifactBucket: qa-work-20261101 credentialsSecretRef: name: qa-work-emulator mode: emulator region: us-east-1 s3Endpoint: http://192.168.1.19:14566 stsEndpoint: http://192.168.1.19:14566 executor: executionTimeout: 12m0s image: localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39 terraformVersion: 1.14.0 workDir: /workspace/terraform inputs: bucket_name: qa-work-20261101-cloud target_cluster_name: podman-minikube target_endpoint: kubeconfig:podman-minikube target_incarnation_id: 2c62d6a8-08b6-460d-bb1b-ac59557dc281 runnerProfile: image: localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39 imageDigest: localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39 serviceAccountName: terraform-runner terraformVersion: 1.14.0 runtimeProfile: {} source: path: . revision: 547f45475c7186eafd35026fb994f22f26606d6c url: http://192.168.1.19:18085/qa-5445a5f/.git target: account: local clusterName: podman-minikube connectionProfileRef: kubeconfig:podman-minikube incarnationID: 2c62d6a8-08b6-460d-bb1b-ac59557dc281 provider: kubernetes region: local version: v2-qa status: {}"
+  - text: 配置已校验
+  - button "取消"
+  - button "保存为模板":
+    - text: 保存为模板
+  - button "校验配置":
+    - text: 校验配置
+  - button "创建类别":
+    - text: 创建类别

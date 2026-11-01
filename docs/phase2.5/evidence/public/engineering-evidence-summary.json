@@ -114,5 +114,5 @@
     "Existing E2E API uses deterministic generator; current Desktop API reports ollama",
     "Cross-cluster lane skipped; single-cluster concurrency is not independent-cluster isolation"
   ],
-  "privacyNote": "Raw Kubernetes snapshots, controller logs, private route configuration, and artifact payloads remain local. Digest receipts and test logs are published."
+  "privacyNote": "Raw Kubernetes snapshots, private route configuration, artifacts, browser JPEGs, and original screenshots are included in the requested main-branch push; redacted summary files are provided for quick review."
 }

@@ -1,0 +1,5 @@
+{
+  "RecordedAt": "2026-11-01T09:04:54.7093683Z",
+  "Status": 200,
+  "Content": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ListAllMyBucketsResult xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><Owner><ID>f7b11509f4d675c3c44f0dd37ca830bb02e8cfa58f04c46283c4bfcbdce1ff45</ID><DisplayName>ministack</DisplayName></Owner><Buckets /></ListAllMyBucketsResult>"
+}

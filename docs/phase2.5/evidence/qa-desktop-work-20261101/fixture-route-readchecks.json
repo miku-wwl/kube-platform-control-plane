@@ -1,0 +1,20 @@
+[
+  {
+    "URL": "http://192.168.1.19:14566/_localstack/health",
+    "StartedUTC": "2026-11-01T09:06:13.5226984Z",
+    "Status": null,
+    "Error": "The request was canceled due to the configured HttpClient.Timeout of 5 seconds elapsing."
+  },
+  {
+    "URL": "http://192.168.1.19:18085/qa-5445a5f/.git/info/refs",
+    "StartedUTC": "2026-11-01T09:06:18.5896248Z",
+    "Status": null,
+    "Error": "The request was canceled due to the configured HttpClient.Timeout of 5 seconds elapsing."
+  },
+  {
+    "URL": "http://127.0.0.1:14566/_localstack/health",
+    "StartedUTC": "2026-11-01T09:06:23.6015617Z",
+    "Status": null,
+    "Error": "由于目标计算机积极拒绝，无法连接。 (127.0.0.1:14566)"
+  }
+]
