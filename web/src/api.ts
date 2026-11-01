@@ -25,7 +25,8 @@ export type ClassSpec = {
   allowedRegions?: string[]; capacityBounds: ClassInfo['capacityBounds']; approvalPolicy: 'Manual' | 'Automatic'; dataRetentionPolicy?: string
 }
 export type ClassDetail = ClassInfo & { spec: ClassSpec; conditions: Condition[]; specDigest?: string; redacted: boolean; yaml: string }
-export type ClassValidation = { valid: boolean; errors: string[]; warnings: string[]; yaml?: string }
+export type ClassValidationDiagnostic = { code: string; field?: string; message: string }
+export type ClassValidation = { valid: boolean; errors: string[]; warnings: string[]; errorDetails?: ClassValidationDiagnostic[]; warningDetails?: ClassValidationDiagnostic[]; yaml?: string }
 export type ClassTemplate = { name: string; title: string; description: string; spec: ClassSpec; uid: string; createdAt: string; redacted: boolean }
 export type Approval = { namespace: string; name: string; planRun: string; planRunUID: string; state: string; planDigest: string; createdAt: string; approvedAt?: string }
 export type TerraformRun = {

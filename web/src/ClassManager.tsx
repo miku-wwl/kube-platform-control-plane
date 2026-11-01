@@ -23,9 +23,11 @@ import {
   type ClassSpec,
   type ClassTemplate,
   type ClassValidation,
+  type ClassValidationDiagnostic,
   type RuntimeObject,
 } from './api'
 import { useI18n } from './i18n'
+import { classDiagnosticMessage } from './classValidation'
 import {
   availableClassName,
   defaultClassSpec,
@@ -36,6 +38,23 @@ import {
 import { Alert, EmptyState, LoadingState, StatusBadge, Stepper, formatTime } from './components/ui'
 
 const classPath = (name: string) => `/api/classes/${encodeURIComponent(name)}`
+
+function ClassDiagnostic({ diagnostic, fallback }: { diagnostic?: ClassValidationDiagnostic; fallback: string }) {
+  const { t } = useI18n()
+  return (
+    <div>
+      <p>{classDiagnosticMessage(diagnostic, fallback, t)}</p>
+      {diagnostic && (
+        <details>
+          <summary>{t('Technical details')}</summary>
+          <code>{diagnostic.code}{diagnostic.field ? ` · ${diagnostic.field}` : ''}</code>
+          <p>{diagnostic.message}</p>
+        </details>
+      )}
+    </div>
+  )
+}
+
 const classFieldLabels: Record<string, string> = {
   runtimeOS: 'Runtime OS',
   runtimeArchitecture: 'Runtime architecture',
@@ -1322,7 +1341,7 @@ function ClassForm({
             title={validation.valid ? t('Configuration validation passed') : t('Fix these configuration errors')}
           >
             {validation.errors.map((value, index) => (
-              <p key={index}>{value}</p>
+              <ClassDiagnostic key={index} diagnostic={validation.errorDetails?.[index]} fallback={value} />
             ))}
             {validation.valid && (
               <p>
@@ -1334,7 +1353,7 @@ function ClassForm({
           </Alert>
           {validation.warnings.map((value, index) => (
             <Alert key={index} tone="warning">
-              {value}
+              <ClassDiagnostic diagnostic={validation.warningDetails?.[index]} fallback={value} />
             </Alert>
           ))}
           {validation.yaml && (
