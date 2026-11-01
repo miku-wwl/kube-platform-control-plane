@@ -52,11 +52,17 @@ func TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan(t *testing.T) {
 		})
 	}
 	for name, mutate := range map[string]func(*platform.TerraformRun, *platform.ChangeApproval){
-		"digest":   func(_ *platform.TerraformRun, a *platform.ChangeApproval) { a.Spec.PlanDigest = "wrong" },
-		"uid":      func(_ *platform.TerraformRun, a *platform.ChangeApproval) { a.Spec.PlanRunUID = "wrong" },
-		"expired":  func(p *platform.TerraformRun, _ *platform.ChangeApproval) { p.Status.PlanExpiresAt = &metav1.Time{} },
-		"NoChange": func(p *platform.TerraformRun, _ *platform.ChangeApproval) { p.Status.ExecutionOutcome = "NoChange" },
-		"evidence": func(p *platform.TerraformRun, _ *platform.ChangeApproval) { p.Status.EvidenceCaptured = false },
+		"digest":            func(_ *platform.TerraformRun, a *platform.ChangeApproval) { a.Spec.PlanDigest = "wrong" },
+		"uid":               func(_ *platform.TerraformRun, a *platform.ChangeApproval) { a.Spec.PlanRunUID = "wrong" },
+		"report reference":  func(_ *platform.TerraformRun, a *platform.ChangeApproval) { a.Spec.PlanReportRef = "wrong" },
+		"report digest":     func(_ *platform.TerraformRun, a *platform.ChangeApproval) { a.Spec.PlanReportDigest = "wrong" },
+		"execution context": func(_ *platform.TerraformRun, a *platform.ChangeApproval) { a.Spec.ExecutionContextDigest = "wrong" },
+		"effective inputs":  func(_ *platform.TerraformRun, a *platform.ChangeApproval) { a.Spec.EffectivePlanInputDigest = "wrong" },
+		"wrong operation":   func(p *platform.TerraformRun, _ *platform.ChangeApproval) { p.Spec.Operation = "Apply" },
+		"Superseded":        func(p *platform.TerraformRun, _ *platform.ChangeApproval) { p.Status.ExecutionOutcome = "Superseded" },
+		"expired":           func(p *platform.TerraformRun, _ *platform.ChangeApproval) { p.Status.PlanExpiresAt = &metav1.Time{} },
+		"NoChange":          func(p *platform.TerraformRun, _ *platform.ChangeApproval) { p.Status.ExecutionOutcome = "NoChange" },
+		"evidence":          func(p *platform.TerraformRun, _ *platform.ChangeApproval) { p.Status.EvidenceCaptured = false },
 	} {
 		t.Run(name, func(t *testing.T) {
 			p, a := plan.DeepCopy(), approval.DeepCopy()
@@ -83,6 +89,35 @@ func TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan(t *testing.T) {
 	_ = kube.List(context.Background(), &runs)
 	if first.Name != second.Name || len(runs.Items) != 1 {
 		t.Fatal("second approval duplicated Apply for the same Plan")
+	}
+}
+
+func TestTerminalIdentityRejectsEveryExecutionBinding(t *testing.T) {
+	_, run, _ := approvalFixture()
+	run.Status.JobUID = "job-uid"
+	job := &batchv1.Job{ObjectMeta: metav1.ObjectMeta{UID: "job-uid"}}
+	now := time.Now()
+	good := runnerTerminalResult{RunUID: string(run.UID), JobUID: "job-uid", Operation: "Plan", ExecutionOutcome: "ChangesPresent", TerraformExitCode: 2, HasChanges: true, StartedAt: now, FinishedAt: now.Add(time.Second)}
+	if err := validateTerminalIdentity(run, good, job); err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(*runnerTerminalResult){
+		"Run UID":              func(r *runnerTerminalResult) { r.RunUID = "foreign" },
+		"Job UID":              func(r *runnerTerminalResult) { r.JobUID = "foreign" },
+		"operation":            func(r *runnerTerminalResult) { r.Operation = "Apply" },
+		"missing start":        func(r *runnerTerminalResult) { r.StartedAt = time.Time{} },
+		"reversed timestamps":  func(r *runnerTerminalResult) { r.FinishedAt = now.Add(-time.Second) },
+		"inconsistent exit":    func(r *runnerTerminalResult) { r.TerraformExitCode = 0 },
+		"inconsistent changes": func(r *runnerTerminalResult) { r.HasChanges = false },
+		"unknown outcome":      func(r *runnerTerminalResult) { r.ExecutionOutcome = "invented" },
+	} {
+		t.Run(name, func(t *testing.T) {
+			bad := good
+			mutate(&bad)
+			if err := validateTerminalIdentity(run, bad, job); err == nil {
+				t.Fatal("invalid terminal identity accepted")
+			}
+		})
 	}
 }
 
