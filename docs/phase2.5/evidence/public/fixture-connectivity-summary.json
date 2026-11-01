@@ -1,0 +1,17 @@
+{
+  "recordedAt": "2026-11-01T09:04:50.9756919Z",
+  "privatePodEndpoint": {
+    "address": "[redacted]",
+    "result": "host-side health request timed out after 5 seconds"
+  },
+  "loopbackPodEndpoint": {
+    "address": "127.0.0.1:14566",
+    "result": "connection refused"
+  },
+  "privateGitFixture": {
+    "address": "[redacted]",
+    "result": "git info/refs request timed out after 5 seconds"
+  },
+  "impact": "No new pod probe or lifecycle UI operation was attempted; the browser cases requiring these prerequisites remain BLOCKED.",
+  "privacy": "Private LAN addresses and raw route diagnostics are intentionally omitted."
+}

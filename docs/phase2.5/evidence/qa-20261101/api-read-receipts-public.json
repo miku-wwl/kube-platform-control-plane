@@ -1,0 +1,32 @@
+[
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:8090/api/health",
+    "status": 200,
+    "timestamp": "2026-11-01T21:06:47.9328606+13:00"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:8090/api/environments/kpcp-1793519898365278200/environment",
+    "status": 200,
+    "timestamp": "2026-11-01T21:06:48.0210545+13:00"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:8090/api/terraform-runs/kpcp-1793519898365278200/environment-infra-plan-1/plan",
+    "status": 200,
+    "timestamp": "2026-11-01T21:06:48.0641769+13:00"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:8090/api/environments/kpcp-1793519898365278200/environment/architecture",
+    "status": 200,
+    "timestamp": "2026-11-01T21:06:48.1228852+13:00"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:8090/api/environments/kpcp-1793519898365278200/environment/timeline",
+    "status": 200,
+    "timestamp": "2026-11-01T21:06:48.1812719+13:00"
+  }
+]

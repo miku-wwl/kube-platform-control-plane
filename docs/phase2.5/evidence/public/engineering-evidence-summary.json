@@ -1,0 +1,118 @@
+{
+  "reviewedAtUTC": "2026-11-01T09:06:13.605879+00:00",
+  "newE2EExecutedDuringBrowserQA": false,
+  "existingRun": {
+    "Command": "go test ./e2e -run TestLifecycle -v -count=1 -timeout=20m",
+    "ExitCode": 0,
+    "StartedAt": "2026-11-01T20:58:15.2452449+13:00",
+    "FinishedAt": "2026-11-01T21:11:37.8270415+13:00",
+    "Commit": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+    "Config": "execution-config-public.json",
+    "Log": "../qa-20261101/e2e-current.log"
+  },
+  "baselineCommit": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+  "baselineFilesChecked": 115,
+  "baselineMismatches": [],
+  "artifactChecks": [
+    {
+      "runUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+      "artifact": "plan.binary",
+      "objectReference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/plan.binary",
+      "expectedSHA256": "sha256:7616d262aabd45d029f9e97ac800191bf498249b849459efa43bcec36ebb0b5b",
+      "observedSHA256": "sha256:7616d262aabd45d029f9e97ac800191bf498249b849459efa43bcec36ebb0b5b",
+      "matches": true,
+      "lengthBytes": 4487
+    },
+    {
+      "runUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+      "artifact": "source-bundle.tar.zst",
+      "objectReference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/source-bundle.tar.zst",
+      "expectedSHA256": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+      "observedSHA256": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+      "matches": true,
+      "lengthBytes": 1816
+    },
+    {
+      "runUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+      "artifact": "backend-config.hcl",
+      "objectReference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/backend-config.hcl",
+      "expectedSHA256": "sha256:a454511e5950d4672d8856f859a30f1c5594da69976a328562ec7ea095d282d6",
+      "observedSHA256": "sha256:a454511e5950d4672d8856f859a30f1c5594da69976a328562ec7ea095d282d6",
+      "matches": true,
+      "lengthBytes": 360
+    },
+    {
+      "runUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+      "artifact": "plan-report.json",
+      "objectReference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/plan-report.json",
+      "expectedSHA256": "sha256:8ccae9b6ab4ae71eda0e01cb825c28e307f80ff20f3c52f6be814720d37132d2",
+      "observedSHA256": "sha256:8ccae9b6ab4ae71eda0e01cb825c28e307f80ff20f3c52f6be814720d37132d2",
+      "matches": true,
+      "lengthBytes": 211
+    },
+    {
+      "runUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+      "artifact": "terminal-result.json",
+      "objectReference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/terminal-result.json",
+      "expectedSHA256": "sha256:9c91b9f0f066607532d3797ef204679f48ab4ac65d4060c89d49155d2b9e2b1e",
+      "observedSHA256": "sha256:9c91b9f0f066607532d3797ef204679f48ab4ac65d4060c89d49155d2b9e2b1e",
+      "matches": true,
+      "lengthBytes": 1250
+    }
+  ],
+  "subtestReceipts": [
+    {
+      "line": 45,
+      "text": "--- PASS: TestLifecycle (799.07s)"
+    },
+    {
+      "line": 46,
+      "text": "--- PASS: TestLifecycle/PlatformAPI_DraftAndTemplate (0.10s)"
+    },
+    {
+      "line": 47,
+      "text": "--- PASS: TestLifecycle/A_ExactApproval (2.05s)"
+    },
+    {
+      "line": 48,
+      "text": "--- PASS: TestLifecycle/B_ImmutableEvidence (115.69s)"
+    },
+    {
+      "line": 49,
+      "text": "--- PASS: TestLifecycle/PlatformAPI_ExactApproval (0.03s)"
+    },
+    {
+      "line": 50,
+      "text": "--- PASS: TestLifecycle/C_RestartRecovery (0.01s)"
+    },
+    {
+      "line": 51,
+      "text": "--- PASS: TestLifecycle/NoChange (59.00s)"
+    },
+    {
+      "line": 52,
+      "text": "--- SKIP: TestLifecycle/D_MultiTarget (0.00s)"
+    },
+    {
+      "line": 53,
+      "text": "--- PASS: TestLifecycle/SingleClusterConcurrency (256.49s)"
+    },
+    {
+      "line": 54,
+      "text": "--- PASS: TestLifecycle/E_FailClosed (21.37s)"
+    },
+    {
+      "line": 55,
+      "text": "--- PASS: TestLifecycle/F_DestroyFinalizer (80.05s)"
+    }
+  ],
+  "crossClusterExecuted": false,
+  "transientFaultExecutedInThisRun": false,
+  "limits": [
+    "No active KPCP Controller in current browser QA preflight",
+    "No live UI Plan, Apply or Destroy exercised in current QA",
+    "Existing E2E API uses deterministic generator; current Desktop API reports ollama",
+    "Cross-cluster lane skipped; single-cluster concurrency is not independent-cluster isolation"
+  ],
+  "privacyNote": "Raw Kubernetes snapshots, controller logs, private route configuration, and artifact payloads remain local. Digest receipts and test logs are published."
+}

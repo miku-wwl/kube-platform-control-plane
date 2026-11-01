@@ -1,0 +1,22 @@
+[
+  {
+    "Path": "main.tf",
+    "RepositoryBlob": "b17c4d2ce703f061b0d7c9fdc804151a95031ce5",
+    "FixtureBlob": "b17c4d2ce703f061b0d7c9fdc804151a95031ce5"
+  },
+  {
+    "Path": "variables.tf",
+    "RepositoryBlob": "26a5e8ecc93dc58451f5bf7dc4d1738748f3c85c",
+    "FixtureBlob": "26a5e8ecc93dc58451f5bf7dc4d1738748f3c85c"
+  },
+  {
+    "Path": ".terraform.lock.hcl",
+    "RepositoryBlob": "e098455f1e4abd4db78d08ce76adcf58c6d74cc9",
+    "FixtureBlob": "e098455f1e4abd4db78d08ce76adcf58c6d74cc9"
+  },
+  {
+    "Path": "kpcp-module.json",
+    "RepositoryBlob": "91527d1729dd3199dddddb33cd5714a71f93a4d6",
+    "FixtureBlob": "91527d1729dd3199dddddb33cd5714a71f93a4d6"
+  }
+]

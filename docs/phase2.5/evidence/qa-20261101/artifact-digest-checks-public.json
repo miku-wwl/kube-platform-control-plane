@@ -1,0 +1,52 @@
+[
+  {
+    "runUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+    "artifact": "plan.binary",
+    "objectReference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/plan.binary",
+    "expectedSHA256": "sha256:7616d262aabd45d029f9e97ac800191bf498249b849459efa43bcec36ebb0b5b",
+    "observedSHA256": "sha256:7616d262aabd45d029f9e97ac800191bf498249b849459efa43bcec36ebb0b5b",
+    "matches": true,
+    "lengthBytes": 4487,
+    "recordedAt": "2026-11-01T21:03:35.4841300+13:00"
+  },
+  {
+    "runUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+    "artifact": "source-bundle.tar.zst",
+    "objectReference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/source-bundle.tar.zst",
+    "expectedSHA256": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+    "observedSHA256": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+    "matches": true,
+    "lengthBytes": 1816,
+    "recordedAt": "2026-11-01T21:03:42.4109951+13:00"
+  },
+  {
+    "runUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+    "artifact": "backend-config.hcl",
+    "objectReference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/backend-config.hcl",
+    "expectedSHA256": "sha256:a454511e5950d4672d8856f859a30f1c5594da69976a328562ec7ea095d282d6",
+    "observedSHA256": "sha256:a454511e5950d4672d8856f859a30f1c5594da69976a328562ec7ea095d282d6",
+    "matches": true,
+    "lengthBytes": 360,
+    "recordedAt": "2026-11-01T21:03:49.5406721+13:00"
+  },
+  {
+    "runUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+    "artifact": "plan-report.json",
+    "objectReference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/plan-report.json",
+    "expectedSHA256": "sha256:8ccae9b6ab4ae71eda0e01cb825c28e307f80ff20f3c52f6be814720d37132d2",
+    "observedSHA256": "sha256:8ccae9b6ab4ae71eda0e01cb825c28e307f80ff20f3c52f6be814720d37132d2",
+    "matches": true,
+    "lengthBytes": 211,
+    "recordedAt": "2026-11-01T21:03:56.4239316+13:00"
+  },
+  {
+    "runUID": "fbaecc62-a2ac-4b76-a55a-0a384cb62d95",
+    "artifact": "terminal-result.json",
+    "objectReference": "runs/fbaecc62-a2ac-4b76-a55a-0a384cb62d95/terminal-result.json",
+    "expectedSHA256": "sha256:9c91b9f0f066607532d3797ef204679f48ab4ac65d4060c89d49155d2b9e2b1e",
+    "observedSHA256": "sha256:9c91b9f0f066607532d3797ef204679f48ab4ac65d4060c89d49155d2b9e2b1e",
+    "matches": true,
+    "lengthBytes": 1250,
+    "recordedAt": "2026-11-01T21:04:03.1879521+13:00"
+  }
+]

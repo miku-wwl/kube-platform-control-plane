@@ -1,0 +1,223 @@
+?   	github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1	[no test files]
+?   	github.com/miku-wwl/kube-platform-control-plane/cmd/controller	[no test files]
+?   	github.com/miku-wwl/kube-platform-control-plane/cmd/platform-api	[no test files]
+=== RUN   TestSanitizeTargetDiscoveryAllowlist
+--- PASS: TestSanitizeTargetDiscoveryAllowlist (0.00s)
+=== RUN   TestSanitizeTargetDiscoveryRejectsEmptyOutput
+--- PASS: TestSanitizeTargetDiscoveryRejectsEmptyOutput (0.00s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/cmd/terraform-runner	0.377s
+=== RUN   TestLifecycle
+    lifecycle_test.go:50: set KPCP_E2E_CONFIG to an explicit local integration configuration
+--- SKIP: TestLifecycle (0.00s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	0.360s
+=== RUN   TestMiniStackIntegration
+=== RUN   TestMiniStackIntegration/STSIdentity
+=== RUN   TestMiniStackIntegration/ImmutableArtifacts
+=== RUN   TestMiniStackIntegration/BackendLockContention
+--- PASS: TestMiniStackIntegration (0.12s)
+    --- PASS: TestMiniStackIntegration/STSIdentity (0.01s)
+    --- PASS: TestMiniStackIntegration/ImmutableArtifacts (0.05s)
+    --- PASS: TestMiniStackIntegration/BackendLockContention (0.01s)
+=== RUN   TestS3EndpointConfiguration
+--- PASS: TestS3EndpointConfiguration (0.00s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/artifacts	0.582s
+?   	github.com/miku-wwl/kube-platform-control-plane/internal/cloud	[no test files]
+=== RUN   TestClassValidationCreateAndCopy
+--- PASS: TestClassValidationCreateAndCopy (0.07s)
+=== RUN   TestClassCreationRejectsInvalidPoliciesAndForgedStatus
+=== RUN   TestClassCreationRejectsInvalidPoliciesAndForgedStatus/unpinned_source
+=== RUN   TestClassCreationRejectsInvalidPoliciesAndForgedStatus/source_traversal
+=== RUN   TestClassCreationRejectsInvalidPoliciesAndForgedStatus/inverted_capacity
+=== RUN   TestClassCreationRejectsInvalidPoliciesAndForgedStatus/default_outside_allowed_regions
+=== RUN   TestClassCreationRejectsInvalidPoliciesAndForgedStatus/mismatched_identity
+=== RUN   TestClassCreationRejectsInvalidPoliciesAndForgedStatus/missing_runner
+=== RUN   TestClassCreationRejectsInvalidPoliciesAndForgedStatus/unsupported_target
+=== RUN   TestClassCreationRejectsInvalidPoliciesAndForgedStatus/inline_password
+=== RUN   TestClassCreationRejectsInvalidPoliciesAndForgedStatus/inline_secret_resource
+--- PASS: TestClassCreationRejectsInvalidPoliciesAndForgedStatus (0.01s)
+    --- PASS: TestClassCreationRejectsInvalidPoliciesAndForgedStatus/unpinned_source (0.00s)
+    --- PASS: TestClassCreationRejectsInvalidPoliciesAndForgedStatus/source_traversal (0.00s)
+    --- PASS: TestClassCreationRejectsInvalidPoliciesAndForgedStatus/inverted_capacity (0.00s)
+    --- PASS: TestClassCreationRejectsInvalidPoliciesAndForgedStatus/default_outside_allowed_regions (0.00s)
+    --- PASS: TestClassCreationRejectsInvalidPoliciesAndForgedStatus/mismatched_identity (0.00s)
+    --- PASS: TestClassCreationRejectsInvalidPoliciesAndForgedStatus/missing_runner (0.00s)
+    --- PASS: TestClassCreationRejectsInvalidPoliciesAndForgedStatus/unsupported_target (0.00s)
+    --- PASS: TestClassCreationRejectsInvalidPoliciesAndForgedStatus/inline_password (0.00s)
+    --- PASS: TestClassCreationRejectsInvalidPoliciesAndForgedStatus/inline_secret_resource (0.00s)
+=== RUN   TestClassDeletionChecksFreshUsageAndUID
+--- PASS: TestClassDeletionChecksFreshUsageAndUID (0.00s)
+=== RUN   TestClassReadinessAndSensitiveDetail
+--- PASS: TestClassReadinessAndSensitiveDetail (0.00s)
+=== RUN   TestClassCredentialReferencesAllowedAndInlineValuesRejected
+--- PASS: TestClassCredentialReferencesAllowedAndInlineValuesRejected (0.00s)
+=== RUN   TestApprovePlanCreatesExactImmutableBinding
+--- PASS: TestApprovePlanCreatesExactImmutableBinding (0.00s)
+=== RUN   TestApprovePlanRejectsStaleBinding
+--- PASS: TestApprovePlanRejectsStaleBinding (0.00s)
+=== RUN   TestInvalidApprovalOnlyConflictsAtCanonicalName
+=== RUN   TestInvalidApprovalOnlyConflictsAtCanonicalName/false
+=== RUN   TestInvalidApprovalOnlyConflictsAtCanonicalName/true
+--- PASS: TestInvalidApprovalOnlyConflictsAtCanonicalName (0.00s)
+    --- PASS: TestInvalidApprovalOnlyConflictsAtCanonicalName/false (0.00s)
+    --- PASS: TestInvalidApprovalOnlyConflictsAtCanonicalName/true (0.00s)
+=== RUN   TestApproveDestroyPlanBehindMutationFence
+--- PASS: TestApproveDestroyPlanBehindMutationFence (0.00s)
+=== RUN   TestApproveReconcilePlanRejectedBehindMutationFence
+--- PASS: TestApproveReconcilePlanRejectedBehindMutationFence (0.00s)
+=== RUN   TestEnvironmentSummaryRequiresApprovalForChangesPresentPlan
+--- PASS: TestEnvironmentSummaryRequiresApprovalForChangesPresentPlan (0.00s)
+=== RUN   TestReadModelIgnoresMismatchedApprovalBinding
+--- PASS: TestReadModelIgnoresMismatchedApprovalBinding (0.00s)
+=== RUN   TestDraftValidationUsesReadyClassAndPolicyBounds
+--- PASS: TestDraftValidationUsesReadyClassAndPolicyBounds (0.00s)
+=== RUN   TestArtifactEndpointRejectsNonLocalHost
+--- PASS: TestArtifactEndpointRejectsNonLocalHost (0.00s)
+=== RUN   TestDraftRequiresSeparateExplicitEnvironmentSubmit
+--- PASS: TestDraftRequiresSeparateExplicitEnvironmentSubmit (0.00s)
+=== RUN   TestOllamaDraftGeneratorContract
+--- PASS: TestOllamaDraftGeneratorContract (0.02s)
+=== RUN   TestOllamaStructuredOutputFailsClosed
+=== RUN   TestOllamaStructuredOutputFailsClosed/missing_field
+=== RUN   TestOllamaStructuredOutputFailsClosed/invalid_capacity
+=== RUN   TestOllamaStructuredOutputFailsClosed/prose
+=== RUN   TestOllamaStructuredOutputFailsClosed/unknown_field
+=== RUN   TestOllamaStructuredOutputFailsClosed/malformed
+=== RUN   TestOllamaStructuredOutputFailsClosed/null_field
+=== RUN   TestOllamaStructuredOutputFailsClosed/wrong_type
+=== RUN   TestOllamaStructuredOutputFailsClosed/invalid_name
+=== RUN   TestOllamaStructuredOutputFailsClosed/unexpected_cache
+--- PASS: TestOllamaStructuredOutputFailsClosed (0.00s)
+    --- PASS: TestOllamaStructuredOutputFailsClosed/missing_field (0.00s)
+    --- PASS: TestOllamaStructuredOutputFailsClosed/invalid_capacity (0.00s)
+    --- PASS: TestOllamaStructuredOutputFailsClosed/prose (0.00s)
+    --- PASS: TestOllamaStructuredOutputFailsClosed/unknown_field (0.00s)
+    --- PASS: TestOllamaStructuredOutputFailsClosed/malformed (0.00s)
+    --- PASS: TestOllamaStructuredOutputFailsClosed/null_field (0.00s)
+    --- PASS: TestOllamaStructuredOutputFailsClosed/wrong_type (0.00s)
+    --- PASS: TestOllamaStructuredOutputFailsClosed/invalid_name (0.00s)
+    --- PASS: TestOllamaStructuredOutputFailsClosed/unexpected_cache (0.00s)
+=== RUN   TestOllamaDraftAppliesExplicitCacheIntentDeterministically
+=== RUN   TestOllamaDraftAppliesExplicitCacheIntentDeterministically/explicit_enable
+=== RUN   TestOllamaDraftAppliesExplicitCacheIntentDeterministically/explicit_disable
+=== RUN   TestOllamaDraftAppliesExplicitCacheIntentDeterministically/ambiguous_request
+--- PASS: TestOllamaDraftAppliesExplicitCacheIntentDeterministically (0.00s)
+    --- PASS: TestOllamaDraftAppliesExplicitCacheIntentDeterministically/explicit_enable (0.00s)
+    --- PASS: TestOllamaDraftAppliesExplicitCacheIntentDeterministically/explicit_disable (0.00s)
+    --- PASS: TestOllamaDraftAppliesExplicitCacheIntentDeterministically/ambiguous_request (0.00s)
+=== RUN   TestMalformedOllamaDraftDoesNotCreateResources
+--- PASS: TestMalformedOllamaDraftDoesNotCreateResources (0.00s)
+=== RUN   TestOllamaProviderConfiguration
+--- PASS: TestOllamaProviderConfiguration (0.00s)
+=== RUN   TestOllamaResponseFailsClosed
+=== RUN   TestOllamaResponseFailsClosed/unfinished
+=== RUN   TestOllamaResponseFailsClosed/truncated
+=== RUN   TestOllamaResponseFailsClosed/tool_call
+=== RUN   TestOllamaResponseFailsClosed/empty
+=== RUN   TestOllamaResponseFailsClosed/malformed_envelope
+=== RUN   TestOllamaResponseFailsClosed/missing_model
+=== RUN   TestOllamaResponseFailsClosed/oversized
+=== RUN   TestOllamaResponseFailsClosed/explicit_name_changed
+--- PASS: TestOllamaResponseFailsClosed (0.04s)
+    --- PASS: TestOllamaResponseFailsClosed/unfinished (0.00s)
+    --- PASS: TestOllamaResponseFailsClosed/truncated (0.00s)
+    --- PASS: TestOllamaResponseFailsClosed/tool_call (0.00s)
+    --- PASS: TestOllamaResponseFailsClosed/empty (0.00s)
+    --- PASS: TestOllamaResponseFailsClosed/malformed_envelope (0.00s)
+    --- PASS: TestOllamaResponseFailsClosed/missing_model (0.00s)
+    --- PASS: TestOllamaResponseFailsClosed/oversized (0.02s)
+    --- PASS: TestOllamaResponseFailsClosed/explicit_name_changed (0.00s)
+=== RUN   TestOllamaUnavailableDoesNotFallBack
+--- PASS: TestOllamaUnavailableDoesNotFallBack (0.00s)
+=== RUN   TestOllamaLiveDraftScenarios
+    console_test.go:472: set PCP_RUN_OLLAMA_INTEGRATION=1 to run live local inference scenarios
+--- SKIP: TestOllamaLiveDraftScenarios (0.00s)
+=== RUN   TestSlugIsDNSLabel
+--- PASS: TestSlugIsDNSLabel (0.00s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/console	0.701s
+=== RUN   TestClassFinalizerProtectsUsageAndReleasesAfterEnvironmentRemoval
+--- PASS: TestClassFinalizerProtectsUsageAndReleasesAfterEnvironmentRemoval (0.00s)
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/target
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/backend
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/runner
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/source
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/input
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/digest
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/uid
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/expired
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/NoChange
+=== RUN   TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/evidence
+--- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan (0.00s)
+    --- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/target (0.00s)
+    --- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/backend (0.00s)
+    --- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/runner (0.00s)
+    --- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/source (0.00s)
+    --- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/input (0.00s)
+    --- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/digest (0.00s)
+    --- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/uid (0.00s)
+    --- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/expired (0.00s)
+    --- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/NoChange (0.00s)
+    --- PASS: TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan/evidence (0.00s)
+=== RUN   TestDeepCopyIncludesInputsCredentialsAndRetainedExecution
+--- PASS: TestDeepCopyIncludesInputsCredentialsAndRetainedExecution (0.00s)
+=== RUN   TestRecoveryReconstructsConcurrencyAndRejectsForeignJobs
+--- PASS: TestRecoveryReconstructsConcurrencyAndRejectsForeignJobs (0.00s)
+=== RUN   TestTerminalIdentityAndRuntimeFailureRetainSafety
+--- PASS: TestTerminalIdentityAndRuntimeFailureRetainSafety (0.00s)
+=== RUN   TestApplyOnlyReadinessPreservesExplicitPolicy
+--- PASS: TestApplyOnlyReadinessPreservesExplicitPolicy (0.00s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/controller	0.350s
+?   	github.com/miku-wwl/kube-platform-control-plane/internal/observability	[no test files]
+=== RUN   TestParseActionsMetadataAndDependencyGraph
+--- PASS: TestParseActionsMetadataAndDependencyGraph (0.00s)
+=== RUN   TestParseAcceptsWholeValueSensitiveMasks
+--- PASS: TestParseAcceptsWholeValueSensitiveMasks (0.00s)
+=== RUN   TestParseRejectsUnsupportedMajorFormat
+--- PASS: TestParseRejectsUnsupportedMajorFormat (0.00s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/planview	0.164s
+?   	github.com/miku-wwl/kube-platform-control-plane/internal/reliability	[no test files]
+?   	github.com/miku-wwl/kube-platform-control-plane/internal/runtime	[no test files]
+=== RUN   TestKubeconfigDiscoveryRejectsChangedTarget
+--- PASS: TestKubeconfigDiscoveryRejectsChangedTarget (0.00s)
+=== RUN   TestKubeconfigClientRejectsReplacementAfterRegistration
+--- PASS: TestKubeconfigClientRejectsReplacementAfterRegistration (0.00s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/target	0.248s
+=== RUN   TestFixedModuleAndBackendFailClosed
+--- PASS: TestFixedModuleAndBackendFailClosed (0.00s)
+=== RUN   TestExecutionRoleUsesFixedInputWithoutGeneratingSource
+--- PASS: TestExecutionRoleUsesFixedInputWithoutGeneratingSource (0.00s)
+=== RUN   TestExecutionRoleRejectsUnsafeRoleARN
+--- PASS: TestExecutionRoleRejectsUnsafeRoleARN (0.00s)
+=== RUN   TestPlanUsesInitWorkspaceAndDetailedExitCode
+--- PASS: TestPlanUsesInitWorkspaceAndDetailedExitCode (0.00s)
+=== RUN   TestPlanNoChangeIsFastPath
+--- PASS: TestPlanNoChangeIsFastPath (0.00s)
+=== RUN   TestDestroyPlanUsesDestroyFlagBeforeExecution
+--- PASS: TestDestroyPlanUsesDestroyFlagBeforeExecution (0.00s)
+=== RUN   TestApplyNeverCreatesWorkspaceOrReplans
+--- PASS: TestApplyNeverCreatesWorkspaceOrReplans (0.00s)
+=== RUN   TestApplyIncludesTerraformDiagnosticsOnFailure
+--- PASS: TestApplyIncludesTerraformDiagnosticsOnFailure (0.00s)
+=== RUN   TestApplyCreatesMissingWorkspaceWithoutReplanning
+--- PASS: TestApplyCreatesMissingWorkspaceWithoutReplanning (0.00s)
+=== RUN   TestVerifyTerraformVersionUsesMachineReadableOutput
+--- PASS: TestVerifyTerraformVersionUsesMachineReadableOutput (0.00s)
+=== RUN   TestJobDoesNotInferCloudCredentialsFromEndpoint
+--- PASS: TestJobDoesNotInferCloudCredentialsFromEndpoint (0.00s)
+=== RUN   TestBuildSourceBundleExcludesRuntimeAndOverlayFiles
+--- PASS: TestBuildSourceBundleExcludesRuntimeAndOverlayFiles (0.03s)
+=== RUN   TestBuildSourceBundleDigestIsStable
+--- PASS: TestBuildSourceBundleDigestIsStable (0.01s)
+=== RUN   TestRestoreSourceBundleRejectsUnsafeEntries
+--- PASS: TestRestoreSourceBundleRejectsUnsafeEntries (0.00s)
+=== RUN   TestBuildSourceBundleRejectsImplicitTerraformVariables
+--- PASS: TestBuildSourceBundleRejectsImplicitTerraformVariables (0.00s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/terraform	0.265s

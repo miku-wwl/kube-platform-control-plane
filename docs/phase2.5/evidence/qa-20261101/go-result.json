@@ -1,0 +1,8 @@
+{
+  "Command": "KPCP_TEST_MINISTACK_ENDPOINT=http://127.0.0.1:4566 go test ./... -v -count=1",
+  "ExitCode": 0,
+  "StartedAt": "2026-11-01T21:00:05.0890208+13:00",
+  "FinishedAt": "2026-11-01T21:00:11.6116889+13:00",
+  "Commit": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+  "Note": "E2E and Ollama opt-ins unset; separate live E2E command retained"
+}

@@ -1,0 +1,57 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:109: owned namespace=kpcp-1793519898365278200 uid=39cb5351-57a9-4293-81d9-b814287761c5 source=547f45475c7186eafd35026fb994f22f26606d6c image=localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39
+2026/11/01 20:58:18 INFO platform API request method=POST path=/api/classes/validate duration=10ms
+2026/11/01 20:58:18 INFO platform API request method=GET path=/api/classes/kpcp-1793519898365278200 duration=5ms
+2026/11/01 20:58:18 INFO platform API request method=POST path=/api/classes duration=14ms
+2026/11/01 20:58:18 INFO platform API request method=POST path=/api/classes duration=12ms
+=== RUN   TestLifecycle/PlatformAPI_DraftAndTemplate
+2026/11/01 20:58:19 INFO platform API request method=POST path=/api/class-templates duration=17ms
+2026/11/01 20:58:19 INFO platform API request method=POST path=/api/class-templates duration=18ms
+2026/11/01 20:58:19 INFO platform API request method=GET path=/api/class-templates duration=5ms
+2026/11/01 20:58:19 INFO platform API request method=DELETE path=/api/class-templates/kpcp-1793519898365278200 duration=4ms
+2026/11/01 20:58:19 INFO platform API request method=DELETE path=/api/class-templates/kpcp-1793519898365278200 duration=17ms
+2026/11/01 20:58:19 INFO platform API request method=POST path=/api/drafts duration=19ms
+2026/11/01 20:58:19 INFO PlatformEnvironment submitted namespace=kpcp-1793519898365278200 name=environment class=kpcp-1793519898365278200 generation=1
+2026/11/01 20:58:19 INFO platform API request method=POST path=/api/environments duration=18ms
+2026/11/01 20:58:19 INFO platform API request method=DELETE path=/api/classes/kpcp-1793519898365278200 duration=62ms
+=== RUN   TestLifecycle/A_ExactApproval
+=== RUN   TestLifecycle/B_ImmutableEvidence
+=== RUN   TestLifecycle/PlatformAPI_ExactApproval
+2026/11/01 21:04:03 INFO platform API request method=GET path=/api/terraform-runs/kpcp-1793519898365278200/environment-infra-plan-1/plan duration=14ms
+2026/11/01 21:04:03 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793519898365278200/environment-infra-plan-1/approve duration=7ms
+2026/11/01 21:04:03 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793519898365278200/environment-infra-plan-1/approve duration=32ms
+2026/11/01 21:04:39 INFO platform API request method=GET path=/api/environments/kpcp-1793519898365278200/environment duration=44ms
+2026/11/01 21:04:39 INFO platform API request method=GET path=/api/environments/kpcp-1793519898365278200/environment/timeline duration=34ms
+2026/11/01 21:04:39 INFO platform API request method=GET path=/api/environments/kpcp-1793519898365278200/environment/terraform-runs duration=33ms
+2026/11/01 21:04:39 INFO platform API request method=GET path=/api/environments/kpcp-1793519898365278200/environment/architecture duration=41ms
+2026/11/01 21:04:39 INFO platform API request method=GET path=/api/environments duration=31ms
+=== RUN   TestLifecycle/C_RestartRecovery
+    lifecycle_test.go:574: Plan UID=fbaecc62-a2ac-4b76-a55a-0a384cb62d95 digest=sha256:7616d262aabd45d029f9e97ac800191bf498249b849459efa43bcec36ebb0b5b input=sha256:b8a13db5d91338bed0082884570f688ce98f4b3f78366d08297dbe347d0308eb source=sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80
+=== RUN   TestLifecycle/NoChange
+2026/11/01 21:04:39 INFO platform API request method=PUT path=/api/environments/kpcp-1793519898365278200/environment duration=5ms
+2026/11/01 21:04:39 INFO platform API request method=PUT path=/api/environments/kpcp-1793519898365278200/environment duration=24ms
+2026/11/01 21:05:38 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793519898365278200/environment-infra-plan-2/approve duration=7ms
+=== RUN   TestLifecycle/D_MultiTarget
+    lifecycle_test.go:810: one actual cluster supplied; cross-cluster isolation is NOT RUN
+=== RUN   TestLifecycle/SingleClusterConcurrency
+    lifecycle_test.go:625: owned isolation namespace=kpcp-1793519898365278200-secondary uid=10ac5ad1-f0c7-41cd-a515-29da47c373c6 clusterUID=2c62d6a8-08b6-460d-bb1b-ac59557dc281 multiCluster=false
+=== RUN   TestLifecycle/E_FailClosed
+=== RUN   TestLifecycle/F_DestroyFinalizer
+2026/11/01 21:10:16 INFO platform API request method=DELETE path=/api/environments/kpcp-1793519898365278200/environment duration=6ms
+2026/11/01 21:10:16 INFO platform API request method=DELETE path=/api/environments/kpcp-1793519898365278200/environment duration=17ms
+2026/11/01 21:11:04 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793519898365278200/environment-infra-destroy-plan-4/approve duration=23ms
+2026/11/01 21:11:36 INFO platform API request method=GET path=/api/environments/kpcp-1793519898365278200/environment duration=49ms
+2026/11/01 21:11:36 INFO platform API request method=DELETE path=/api/classes/kpcp-1793519898365278200 duration=90ms
+--- PASS: TestLifecycle (799.07s)
+    --- PASS: TestLifecycle/PlatformAPI_DraftAndTemplate (0.10s)
+    --- PASS: TestLifecycle/A_ExactApproval (2.05s)
+    --- PASS: TestLifecycle/B_ImmutableEvidence (115.69s)
+    --- PASS: TestLifecycle/PlatformAPI_ExactApproval (0.03s)
+    --- PASS: TestLifecycle/C_RestartRecovery (0.01s)
+    --- PASS: TestLifecycle/NoChange (59.00s)
+    --- SKIP: TestLifecycle/D_MultiTarget (0.00s)
+    --- PASS: TestLifecycle/SingleClusterConcurrency (256.49s)
+    --- PASS: TestLifecycle/E_FailClosed (21.37s)
+    --- PASS: TestLifecycle/F_DestroyFinalizer (80.05s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	799.465s

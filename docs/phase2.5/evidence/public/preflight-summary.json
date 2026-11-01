@@ -1,0 +1,36 @@
+{
+  "recordedAt": "2026-11-01T09:04:50.9756919Z",
+  "timezone": "Pacific/Auckland",
+  "commit": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+  "context": "podman-minikube",
+  "clusterIdentity": {
+    "kubeSystemUID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+  },
+  "node": {
+    "ready": true,
+    "kubernetesVersion": "v1.37.0"
+  },
+  "platformObjects": {
+    "count": 0
+  },
+  "classes": {
+    "count": 1
+  },
+  "environments": {
+    "count": 1
+  },
+  "miniStack": {
+    "version": "1.5.35",
+    "s3": "available",
+    "sts": "available"
+  },
+  "apiHealth": {
+    "status": "ok",
+    "aiProvider": "ollama",
+    "artifactPreview": true
+  },
+  "runnerImageDigest": "sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39",
+  "activeKPCPController": false,
+  "mutationPerformedByPreflight": false,
+  "note": "Addresses, node IPs, machine identifiers, and host process paths omitted."
+}

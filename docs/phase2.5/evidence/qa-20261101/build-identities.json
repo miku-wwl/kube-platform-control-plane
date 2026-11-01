@@ -1,0 +1,8 @@
+{
+  "Commit": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+  "RunnerImage": "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39",
+  "BuildTime": "2026-11-01T20:57:32.3625065+13:00",
+  "ControllerSHA256": "d54898dd785a82bf6931749c3bf540b3e7f32c6307a836ac28eece980db67345",
+  "APISHA256": "3daad833c1bab80c700eea84c77f49722ad73ceca3d265abcecb21532d63bf4c",
+  "SourceRevision": "547f45475c7186eafd35026fb994f22f26606d6c"
+}

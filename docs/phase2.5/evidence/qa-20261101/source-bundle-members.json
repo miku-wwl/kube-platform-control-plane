@@ -1,0 +1,30 @@
+[
+  {
+    "File": ".terraform.lock.hcl",
+    "GitBlob": "e098455f1e4abd4db78d08ce76adcf58c6d74cc9",
+    "ExpectedGitBlob": "e098455f1e4abd4db78d08ce76adcf58c6d74cc9",
+    "SHA256": "308e7eb06178be13639e24174f3ad443b17b5f74a93c2ccf97980d091422351b",
+    "Matches": true
+  },
+  {
+    "File": "kpcp-module.json",
+    "GitBlob": "91527d1729dd3199dddddb33cd5714a71f93a4d6",
+    "ExpectedGitBlob": "91527d1729dd3199dddddb33cd5714a71f93a4d6",
+    "SHA256": "91c8906aaf232c699626bbe0088a7275873d8a8421428cc9b1ba67bb4be120ba",
+    "Matches": true
+  },
+  {
+    "File": "main.tf",
+    "GitBlob": "b17c4d2ce703f061b0d7c9fdc804151a95031ce5",
+    "ExpectedGitBlob": "b17c4d2ce703f061b0d7c9fdc804151a95031ce5",
+    "SHA256": "cec8aaa75480e34d7e70f262bb6748ee26ff0976e2f5c15d6a190491fff16268",
+    "Matches": true
+  },
+  {
+    "File": "variables.tf",
+    "GitBlob": "26a5e8ecc93dc58451f5bf7dc4d1738748f3c85c",
+    "ExpectedGitBlob": "26a5e8ecc93dc58451f5bf7dc4d1738748f3c85c",
+    "SHA256": "a802bcbc9c7840271064d3b8957356e4f1ec3a0ddb0bd0abe662d422087dd72c",
+    "Matches": true
+  }
+]
