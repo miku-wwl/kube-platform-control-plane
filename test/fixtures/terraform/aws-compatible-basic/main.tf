@@ -19,6 +19,11 @@ provider "aws" {
   skip_metadata_api_check     = true
   s3_use_path_style           = true
 
+  dynamic "assume_role" {
+    for_each = var.execution_role_arn == "" ? [] : [var.execution_role_arn]
+    content { role_arn = assume_role.value }
+  }
+
   endpoints {
     s3  = var.s3_endpoint
     sts = var.sts_endpoint
@@ -40,7 +45,7 @@ output "target_discovery" {
     accountId     = var.target_account_id
     region        = var.target_region
     clusterName   = var.target_cluster_name
-    incarnationId = var.target_cluster_name
+    incarnationId = var.target_incarnation_id
     endpoint      = var.target_endpoint
     authMode      = var.target_auth_mode
     kubeContext   = var.target_cluster_name

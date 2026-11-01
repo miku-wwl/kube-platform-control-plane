@@ -862,6 +862,7 @@ function ClassForm({
   const [runtimeJSON, setRuntimeJSON] = useState(() =>
     JSON.stringify((source?.spec || template?.spec)?.runtimeProfile.runtimeObjects || [], null, 2)
   )
+  const [executionJSON, setExecutionJSON] = useState(() => JSON.stringify({ executionProfile: spec.executionProfile, inputs: spec.inputs }, null, 2))
   const [regionsText, setRegionsText] = useState(() =>
     (source ? source.spec.allowedRegions || [] : template ? template.spec.allowedRegions || [] : ['local']).join(', ')
   )
@@ -875,9 +876,13 @@ function ClassForm({
     setValidation(null)
     setValidatedBody('')
     setError('')
-  }, [name, spec, runtimeJSON, regionsText])
+  }, [name, spec, runtimeJSON, regionsText, executionJSON])
 
   const body = () => {
+    const execution: unknown = JSON.parse(executionJSON)
+    if (!execution || typeof execution !== 'object' || Array.isArray(execution) || Object.keys(execution).some((key) => !['executionProfile', 'inputs'].includes(key)))
+      throw new Error(t('Execution settings accept only executionProfile and inputs.'))
+    const settings = execution as Pick<ClassSpec, 'executionProfile' | 'inputs'>
     const objects: unknown = JSON.parse(runtimeJSON)
     if (!Array.isArray(objects) || objects.some((item) => !item || typeof item !== 'object' || Array.isArray(item)))
       throw new Error(t('Runtime resources must be a JSON array of resource definitions.'))
@@ -885,6 +890,8 @@ function ClassForm({
       name,
       spec: {
         ...spec,
+        executionProfile: settings.executionProfile,
+        inputs: settings.inputs,
         allowedRegions: regionsText
           .split(',')
           .map((value) => value.trim())
@@ -1021,6 +1028,7 @@ function ClassForm({
               required
               hint={t('Use an explicit kubeconfig context registered in the controller.')}
             />
+            {spec.target.provider.toLowerCase() === 'kubernetes' && <Field label={t('Target incarnation UID')} value={spec.target.incarnationID || ''} onChange={(value) => target({ incarnationID: value })} required />}
             <Field
               label={t('Account')}
               value={spec.target.account || ''}
@@ -1286,6 +1294,10 @@ function ClassForm({
               onChange={(value) => setSpec((current) => ({ ...current, dataRetentionPolicy: value }))}
             />
           </div>
+          <label className="class-runtime-json">
+            <span className="field-label">{t('Emulator execution profile and module inputs (JSON)')}</span>
+            <textarea className="text-area" rows={7} value={executionJSON} onChange={(event) => setExecutionJSON(event.target.value)} />
+          </label>
           <label className="class-runtime-json">
             <span className="field-label">{t('Runtime resources (JSON, optional)')}</span>
             <textarea

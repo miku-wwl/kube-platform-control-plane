@@ -399,6 +399,7 @@ func (s *Server) approvePlan(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusServiceUnavailable, "KubernetesReadFailed", err.Error())
 		return
 	}
+	name := approvalName(run.Name, string(run.UID))
 	for i := range existing.Items {
 		approval := &existing.Items[i]
 		if approval.Spec.PlanRunUID == string(run.UID) && approval.Spec.PlanRunRef.Name == run.Name {
@@ -406,11 +407,12 @@ func (s *Server) approvePlan(w http.ResponseWriter, r *http.Request) {
 				writeJSON(w, http.StatusOK, approvalView(approval))
 				return
 			}
-			writeError(w, http.StatusConflict, "ApprovalNameConflict", "an approval exists for this PlanRun but its immutable binding does not match")
-			return
+			if approval.Name == name {
+				writeError(w, http.StatusConflict, "ApprovalNameConflict", "the generated approval name has a different immutable binding")
+				return
+			}
 		}
 	}
-	name := approvalName(run.Name, string(run.UID))
 	approval := &platformv1alpha1.ChangeApproval{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: run.Namespace, Labels: map[string]string{"platform.example.io/managed-by": "platform-api"}},
 		Spec: platformv1alpha1.ChangeApprovalSpec{

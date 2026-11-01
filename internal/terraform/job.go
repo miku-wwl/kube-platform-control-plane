@@ -3,9 +3,13 @@ package terraform
 import (
 	"fmt"
 	"math"
+	"net/url"
 	"path"
+	"strings"
 	"time"
 
+	"encoding/json"
+	platform "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -19,6 +23,8 @@ const (
 )
 
 type JobRequest struct {
+	ExecutionProfile               *platform.ExecutionProfile
+	Inputs                         map[string]string
 	Name                           string
 	Namespace                      string
 	RunUID                         string
@@ -214,6 +220,27 @@ func BuildJob(request JobRequest) (*batchv1.Job, error) {
 			}},
 		})
 	}
+	if request.ExecutionProfile != nil {
+		p := request.ExecutionProfile
+		for _, key := range []string{"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"} {
+			runner.Env = append(runner.Env, corev1.EnvVar{Name: key, ValueFrom: &corev1.EnvVarSource{SecretKeyRef: &corev1.SecretKeySelector{LocalObjectReference: p.CredentialsSecretRef, Key: key}}})
+		}
+		runner.Env = append(runner.Env, corev1.EnvVar{Name: "AWS_EC2_METADATA_DISABLED", Value: "true"})
+		values, err := BindModuleInputs(request.Inputs, p, request.InfrastructureExecutionRoleARN)
+		if err != nil {
+			return nil, err
+		}
+		profileJSON, err := json.Marshal(p)
+		if err != nil {
+			return nil, err
+		}
+		runner.Env = append(runner.Env, corev1.EnvVar{Name: "PCP_EXECUTION_PROFILE", Value: string(profileJSON)})
+		content, err := json.Marshal(values)
+		if err != nil {
+			return nil, err
+		}
+		runner.Env = append(runner.Env, corev1.EnvVar{Name: "PCP_MODULE_INPUTS", Value: string(content)})
+	}
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{Name: request.Name, Namespace: request.Namespace, Labels: labels},
 		Spec: batchv1.JobSpec{
@@ -259,6 +286,13 @@ func (r JobRequest) validate() error {
 	if r.SourceType == SourceGitCommit {
 		if r.SourceURL == "" || r.SourceRevision == "" {
 			return fmt.Errorf("GitCommit source URL and revision are required")
+		}
+		if !immutableRevision.MatchString(r.SourceRevision) {
+			return fmt.Errorf("GitCommit source must pin a full immutable revision")
+		}
+		u, err := url.Parse(r.SourceURL)
+		if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" {
+			return fmt.Errorf("module source requires an explicit HTTP(S) URL without inline credentials")
 		}
 	} else if r.SourceType == SourceRetainedBundle {
 		if r.SourceBundleRef == "" || r.SourceBundleDigest == "" {
@@ -306,7 +340,7 @@ func (r JobRequest) validate() error {
 	if r.BackendConfigArtifactRef != "" && r.BackendConfigArtifactDigest == "" {
 		return fmt.Errorf("backend artifact digest is required with backend artifact ref")
 	}
-	if r.SourcePath != "" && path.IsAbs(r.SourcePath) {
+	if r.SourcePath != "" && (path.IsAbs(r.SourcePath) || strings.Contains(r.SourcePath, "\\") || path.Clean(r.SourcePath) != r.SourcePath || r.SourcePath == ".." || strings.HasPrefix(r.SourcePath, "../")) {
 		return fmt.Errorf("source path must be relative")
 	}
 	for _, reference := range r.VariableSecretVariables {

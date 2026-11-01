@@ -42,3 +42,12 @@ variable "target_auth_mode" {
   type    = string
   default = "kubeconfig-context"
 }
+
+variable "target_incarnation_id" {
+  type = string
+}
+
+variable "execution_role_arn" {
+  type    = string
+  default = ""
+}

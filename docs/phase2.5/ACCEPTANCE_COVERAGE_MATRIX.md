@@ -7,16 +7,32 @@ assertion and result expression is retained in
 [LEGACY_HARNESS_ASSERTIONS](LEGACY_HARNESS_ASSERTIONS.md): 108 failure statements,
 73 functions and 28 result expressions across 1,678 physical script lines.
 
-**Coverage status:** all 42 original Go test functions are retained byte-for-byte.
-Lifecycle/recovery/isolation/fail-closed/Destroy and live platform E2E execution
-coverage is temporarily lost from the active checkout. Assertions are preserved
-as requirements; their Go integration replacements are PENDING, not PASS.
-No replacement E2E harness is added in this phase. No supplied Kubernetes
-environment or MiniStack was used in this cleanup.
+**Phase 2.5B status: PARTIAL.** Original Go tests remain; the two provider-override
+tests now verify the equivalent fixed-input role contract and absence of source
+generation. New essential tests cover admission, snapshots, recovery and emulator
+integrity. `e2e/lifecycle_test.go` exercises a real supplied Kubernetes API,
+Operator process restarts and MiniStack-backed Runner Jobs. A skipped test is
+not acceptance. See [current results](VALIDATION_REPORT.md).
 
-## Safety-critical migration gates
+| Current executable coverage | Evidence / remaining gap |
+|---|---|
+| A: `TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan`, `TestLifecycle/A_ExactApproval` | Snapshot mutations/expiry/NoChange unit negatives; live five mismatched approvals, saved-plan Apply and separate Destroy approval. Full live source/target-change matrix remains open. |
+| B: `TestMiniStackIntegration`, `TestLifecycle/B_ImmutableEvidence` | PASS for live object integrity/conditional writes/locking and hashes of Plan/source/backend/report/terminal; corrupt Plan bytes and missing source both reject Apply before Job creation. |
+| C: `TestRecoveryReconstructsConcurrencyAndRejectsForeignJobs`, `TestLifecycle/C_RestartRecovery` | Four real Operator process restarts, retained Plan UID and exactly one Apply. Multi-replica Deployment failover is not claimed. |
+| D: target verifier tests, reconstruction concurrency test, optional `TestLifecycle/D_MultiTarget` | Two-target lane checks distinct cluster UIDs, cross-target runtime absence, independent states, overlapping approvals, observed Apply contention and cleanup. Live execution remains BLOCKED without SecondContext; this lane is NOT RUN here. |
+| E: `TestFixedModuleAndBackendFailClosed`, `TestLifecycle/E_FailClosed` | PASS for unit unsafe endpoint/backend/input guards and live missing/wrong approvals, invalid source and unreachable endpoint with no Apply. Full live discovery/account/fence matrix remains open. |
+| F: class-finalizer/runtime-failure tests, `TestLifecycle/F_DestroyFinalizer` | PASS for real independently approved Destroy, runtime-first cleanup and cloud absence; scoped transport 503 produces a failed Job while retaining finalizer/cloud resource, then recovers through a fresh Plan and exact approval. Full legacy deletion matrix remains open. |
+| NoChange: `TestLifecycle/NoChange` | Real generation update, NoChange convergence, no second Apply, retained closure used for Destroy. |
+| Single-cluster concurrency: `TestLifecycle/SingleClusterConcurrency` | PASS on podman-minikube: two overlapping approvals, observed waiting/active Apply contention with a global limit of one, separate durable workspace state keys and runner identities, intended namespace writes only, ordinary cleanup. Does not close D cross-cluster acceptance. |
+| Live HTTP platform API: `PlatformAPI_DraftAndTemplate`, `PlatformAPI_ExactApproval`, main lifecycle | PASS with real Kubernetes/MiniStack: class dry-run/create/duplicate/in-use protection, persisted template identity/delete, advisory draft without execution, explicit submission, actual graph UID/digest, stale/exact approval, read models, stale/current update, NoChange, UID-bound deletion and independent Destroy approval. |
+| Scoped transient cloud fault: `F_DestroyFinalizer` with `FaultFile` | PASS, separate 204.25-second lane on podman-minikube. The test-owned transport injects 503 only for its artifact bucket; MiniStack is never reset or stopped. |
 
-| Gate | Original test references | Required replacement (planned path) | Current proof / gap |
+The tables below retain the original migration inventory. Planned file names are
+requirements, not claims that separate test files or all legacy lanes exist.
+
+## Original Phase 2.5A migration requirements
+
+| Gate | Original test references | Required replacement (planned path) | Phase 2.5A proof / gap |
 |---|---|---|---|
 | Exact Plan Approval | `Assert-NoApply` L371; `Assert-ApprovalBinding` L421; wrong UID at `Invoke-FullLifecycle` L1275–1280; stale report at `Invoke-Platform` L555–577; `New-Approval` L1064 | `e2e/approval_test.go`: verify all seven approval identity fields, no early Job/runtime, wrong UID/digest/report/context/input, expired/superseded Plan; separate Destroy approval | Existing console exact/stale binding unit tests preserved. Live controller admission PENDING. |
 | Immutable Artifact Evidence | `Assert-Artifact` L395; `Assert-PlanEvidence` L405; `Assert-SavedPlanApply` L430; `Assert-Convergence` L449 | `e2e/artifacts_test.go`: hash actual plan/source/report/backend/terminal/discovery objects; cross-check run and Job UID/image/args; conditional writes/tamper/overwrite negatives | Existing source-bundle/runner tests preserved; endpoint/credential regression retained. Real MiniStack semantics PENDING. |
@@ -27,7 +43,9 @@ environment or MiniStack was used in this cleanup.
 
 ## All other legacy acceptance and support behavior
 
-Future test paths below are requirements for Phase 2.5B, not existing implemented suites.
+The paths/statuses below retain the Phase 2.5A inventory. Current implementation
+uses the consolidated lifecycle suite above; unlisted legacy scenarios remain
+unverified, including live platform API and browser acceptance.
 
 | Original gate/function | Reference | Required Go test or external prerequisite | Status |
 |---|---|---|---|

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -74,6 +75,41 @@ func TestApprovePlanRejectsStaleBinding(t *testing.T) {
 	}
 	if len(approvals.Items) != 0 {
 		t.Fatalf("stale plan created an approval: %+v", approvals.Items)
+	}
+}
+
+func TestInvalidApprovalOnlyConflictsAtCanonicalName(t *testing.T) {
+	for _, canonical := range []bool{false, true} {
+		t.Run(fmt.Sprint(canonical), func(t *testing.T) {
+			server, kube, run := approvalFixture(t)
+			name := "unrelated-invalid-approval"
+			if canonical {
+				name = approvalName(run.Name, string(run.UID))
+			}
+			invalid := &platformv1alpha1.ChangeApproval{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: run.Namespace}, Spec: platformv1alpha1.ChangeApprovalSpec{PlanRunRef: corev1.LocalObjectReference{Name: run.Name}, PlanRunUID: string(run.UID), PlanDigest: "sha256:invalid"}}
+			if err := kube.Create(context.Background(), invalid); err != nil {
+				t.Fatal(err)
+			}
+			body, _ := json.Marshal(ApprovalRequest{PlanRunUID: string(run.UID), PlanDigest: run.Status.PlanDigest, ExecutionContextDigest: run.Spec.ExecutionContextDigest, EffectivePlanInputDigest: run.Status.EffectivePlanInputDigest, PlanReportRef: run.Status.PlanReportRef, PlanReportDigest: run.Status.PlanReportDigest})
+			request := func() int {
+				response := httptest.NewRecorder()
+				server.Handler().ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/api/terraform-runs/"+run.Namespace+"/"+run.Name+"/approve", bytes.NewReader(body)))
+				return response.Code
+			}
+			want := http.StatusCreated
+			if canonical {
+				want = http.StatusConflict
+			}
+			if got := request(); got != want {
+				t.Fatalf("status=%d want=%d", got, want)
+			}
+			if !canonical && request() != http.StatusOK {
+				t.Fatal("exact approval retry is not idempotent")
+			}
+			if err := kube.Get(context.Background(), client.ObjectKeyFromObject(invalid), invalid); err != nil || invalid.Spec.PlanDigest != "sha256:invalid" {
+				t.Fatal("invalid immutable approval was modified")
+			}
+		})
 	}
 }
 

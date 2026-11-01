@@ -1,0 +1,10 @@
+{
+  "id": "aws-s3-lifecycle-v1",
+  "terraformVersion": "1.14.0",
+  "inputs": {
+    "region": true, "s3_endpoint": true, "sts_endpoint": true,
+    "bucket_name": true, "target_provider": false, "target_account_id": false,
+    "target_region": false, "target_cluster_name": true, "target_endpoint": true,
+    "target_auth_mode": false, "target_incarnation_id": true, "execution_role_arn": false
+  }
+}

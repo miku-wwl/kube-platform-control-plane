@@ -4,6 +4,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // +kubebuilder:object:root=true
@@ -51,7 +52,10 @@ type EnvironmentClass struct {
 	Status EnvironmentClassStatus `json:"status,omitempty"`
 }
 
+// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="EnvironmentClass spec is immutable"
 type EnvironmentClassSpec struct {
+	ExecutionProfile *ExecutionProfile `json:"executionProfile,omitempty"`
+	Inputs           map[string]string `json:"inputs,omitempty"`
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="EnvironmentClass spec is immutable"
 	Version        string             `json:"version"`
 	Source         SourceSpec         `json:"source"`
@@ -145,14 +149,15 @@ type InfraStack struct {
 }
 
 type InfraStackSpec struct {
-	Source         SourceSpec     `json:"source"`
-	Backend        BackendSpec    `json:"backend"`
-	Workspace      string         `json:"workspace"`
-	Capacity       CapacitySpec   `json:"capacity,omitempty"`
-	Variables      VariablesSpec  `json:"variables,omitempty"`
-	Executor       ExecutorSpec   `json:"executor"`
-	DesiredState   DesiredState   `json:"desiredState,omitempty"`
-	ApprovalPolicy ApprovalPolicy `json:"approvalPolicy,omitempty"`
+	ExecutionProfile *ExecutionProfile `json:"executionProfile,omitempty"`
+	Source           SourceSpec        `json:"source"`
+	Backend          BackendSpec       `json:"backend"`
+	Workspace        string            `json:"workspace"`
+	Capacity         CapacitySpec      `json:"capacity,omitempty"`
+	Variables        VariablesSpec     `json:"variables,omitempty"`
+	Executor         ExecutorSpec      `json:"executor"`
+	DesiredState     DesiredState      `json:"desiredState,omitempty"`
+	ApprovalPolicy   ApprovalPolicy    `json:"approvalPolicy,omitempty"`
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="InfraStack ownerEnvironmentUID is immutable"
 	OwnerEnvironmentUID                string                          `json:"ownerEnvironmentUID,omitempty"`
 	InfrastructureExecutionIdentity    InfrastructureExecutionIdentity `json:"infrastructureExecutionIdentity,omitempty"`
@@ -196,6 +201,7 @@ type ServiceAccountReference struct {
 }
 
 type VariablesSpec struct {
+	Values          map[string]string             `json:"values,omitempty"`
 	SecretRefs      []corev1.LocalObjectReference `json:"secretRefs,omitempty"`
 	SecretVariables []SecretVariableReference     `json:"secretVariables,omitempty"`
 }
@@ -315,18 +321,22 @@ type InfraStackStatus struct {
 // LastConvergedSourceClosure is the immutable evidence required to safely
 // reconstruct a later Destroy. It is written for both Apply and NoChange.
 type LastConvergedSourceClosure struct {
-	SourceClosureRef                      string `json:"sourceClosureRef"`
-	SourceClosureDigest                   string `json:"sourceClosureDigest"`
-	BackendSnapshotRef                    string `json:"backendSnapshotRef"`
-	BackendSnapshotDigest                 string `json:"backendSnapshotDigest"`
-	TargetDiscoveryRef                    string `json:"targetDiscoveryRef"`
-	TargetDiscoveryDigest                 string `json:"targetDiscoveryDigest"`
-	EffectivePlanInputDigest              string `json:"effectivePlanInputDigest"`
-	InfrastructureExecutionIdentityDigest string `json:"infrastructureExecutionIdentityDigest"`
-	ExecutionPlatformIdentityDigest       string `json:"executionPlatformIdentityDigest"`
-	RunnerServiceAccountIdentityDigest    string `json:"runnerServiceAccountIdentityDigest"`
-	TerraformRunUID                       string `json:"terraformRunUID"`
-	Generation                            int64  `json:"generation"`
+	// The Operator decodes this as TerraformRunSpec. A retained status snapshot
+	// must be replaceable at the next convergence, without inheriting spec CEL.
+	// +kubebuilder:pruning:PreserveUnknownFields
+	ExecutionSnapshot                     *runtime.RawExtension `json:"executionSnapshot,omitempty"`
+	SourceClosureRef                      string                `json:"sourceClosureRef"`
+	SourceClosureDigest                   string                `json:"sourceClosureDigest"`
+	BackendSnapshotRef                    string                `json:"backendSnapshotRef"`
+	BackendSnapshotDigest                 string                `json:"backendSnapshotDigest"`
+	TargetDiscoveryRef                    string                `json:"targetDiscoveryRef"`
+	TargetDiscoveryDigest                 string                `json:"targetDiscoveryDigest"`
+	EffectivePlanInputDigest              string                `json:"effectivePlanInputDigest"`
+	InfrastructureExecutionIdentityDigest string                `json:"infrastructureExecutionIdentityDigest"`
+	ExecutionPlatformIdentityDigest       string                `json:"executionPlatformIdentityDigest"`
+	RunnerServiceAccountIdentityDigest    string                `json:"runnerServiceAccountIdentityDigest"`
+	TerraformRunUID                       string                `json:"terraformRunUID"`
+	Generation                            int64                 `json:"generation"`
 }
 
 // +kubebuilder:object:root=true
@@ -345,6 +355,8 @@ type TerraformRun struct {
 
 // +kubebuilder:validation:XValidation:rule="self == oldSelf",message="TerraformRun spec is immutable"
 type TerraformRunSpec struct {
+	ExecutionProfile                *ExecutionProfile             `json:"executionProfile,omitempty"`
+	Inputs                          map[string]string             `json:"inputs,omitempty"`
 	StackRef                        corev1.LocalObjectReference   `json:"stackRef"`
 	InfraStackGeneration            int64                         `json:"infraStackGeneration"`
 	Operation                       string                        `json:"operation"`
@@ -391,6 +403,19 @@ type TerraformRunSpec struct {
 	ConcurrencyGroup                      string                       `json:"concurrencyGroup,omitempty"`
 	MaxConcurrentPlans                    int32                        `json:"maxConcurrentPlans,omitempty"`
 	MaxConcurrentApplies                  int32                        `json:"maxConcurrentApplies,omitempty"`
+}
+
+// ExecutionProfile explicitly authorizes an emulator and a namespace-local
+// credential Secret. CredentialsIdentity is resolved by the Operator, not a key.
+type ExecutionProfile struct {
+	Mode                 string                      `json:"mode"`
+	S3Endpoint           string                      `json:"s3Endpoint"`
+	STSEndpoint          string                      `json:"stsEndpoint"`
+	Region               string                      `json:"region"`
+	AccountID            string                      `json:"accountID"`
+	ArtifactBucket       string                      `json:"artifactBucket"`
+	CredentialsSecretRef corev1.LocalObjectReference `json:"credentialsSecretRef"`
+	CredentialsIdentity  string                      `json:"credentialsIdentity,omitempty"`
 }
 
 type PlanRunSourceSpec struct {

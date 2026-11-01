@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/cloud"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,6 +29,14 @@ func environmentClassSpecDigest(class *platformv1alpha1.EnvironmentClass) string
 func validateEnvironmentClass(environment *platformv1alpha1.PlatformEnvironment, class *platformv1alpha1.EnvironmentClass) error {
 	if environment == nil || class == nil {
 		return fmt.Errorf("environment and EnvironmentClass are required")
+	}
+	if class.Spec.ExecutionProfile != nil {
+		if err := cloud.ValidateExecutionProfile(class.Spec.ExecutionProfile); err != nil {
+			return err
+		}
+		if class.Spec.ExecutionProfile.CredentialsIdentity != "" {
+			return fmt.Errorf("class cannot supply a resolved credential identity")
+		}
 	}
 	if class.Status.SpecDigest != "" && class.Status.SpecDigest != environmentClassSpecDigest(class) {
 		return fmt.Errorf("EnvironmentClass %q spec digest changed; create a new versioned class", class.Name)
@@ -79,10 +88,10 @@ func classTarget(environment *platformv1alpha1.PlatformEnvironment, class *platf
 	if environment.Spec.Region != "" {
 		target.Region = environment.Spec.Region
 	}
-	if target.ClusterID == "" {
+	if target.ClusterID == "" && !strings.EqualFold(target.Provider, targetresolver.ProviderKubernetes) {
 		target.ClusterID = target.ClusterName
 	}
-	if target.IncarnationID == "" {
+	if target.IncarnationID == "" && !strings.EqualFold(target.Provider, targetresolver.ProviderKubernetes) {
 		target.IncarnationID = target.ClusterID
 	}
 	return target
@@ -124,7 +133,9 @@ func buildClassInfraStack(environment *platformv1alpha1.PlatformEnvironment, cla
 	return &platformv1alpha1.InfraStack{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: environment.Namespace},
 		Spec: platformv1alpha1.InfraStackSpec{
-			Source: class.Spec.Source, Backend: class.Spec.Backend, Workspace: environment.Name, Capacity: environment.Spec.Capacity,
+			ExecutionProfile: class.Spec.ExecutionProfile.DeepCopy(),
+			Variables:        platformv1alpha1.VariablesSpec{Values: class.Spec.Inputs},
+			Source:           class.Spec.Source, Backend: class.Spec.Backend, Workspace: environment.Name, Capacity: environment.Spec.Capacity,
 			Executor: runner, DesiredState: platformv1alpha1.DesiredStatePresent, ApprovalPolicy: approval,
 			OwnerEnvironmentUID:                string(environment.UID),
 			InfrastructureExecutionIdentity:    materialized.InfrastructureExecutionIdentity,

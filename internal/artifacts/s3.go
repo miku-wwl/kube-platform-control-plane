@@ -8,14 +8,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/url"
+	"os"
 	"path"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/smithy-go/transport/http"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/cloud"
 )
 
 var ErrArtifactExists = errors.New("artifact exists with a different digest")
@@ -34,29 +35,23 @@ type Store struct {
 }
 
 // NewS3StoreWithKMS accepts an explicit AWS-compatible S3 endpoint. Credentials
-// always come from the SDK credential chain, never from endpoint hostnames.
+// must be explicit dummy environment credentials; no ambient chain is used.
 func NewS3StoreWithKMS(endpoint, region, bucket, kmsKeyID string) (*Store, error) {
 	if region == "" || bucket == "" {
 		return nil, fmt.Errorf("region and bucket are required")
 	}
-	if endpoint != "" {
-		parsed, err := url.Parse(endpoint)
-		if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" {
-			return nil, fmt.Errorf("artifact endpoint must be an HTTP(S) URL without credentials, query or fragment")
-		}
-	}
-	customEndpoint := endpoint != ""
-	cfg, err := awsconfig.LoadDefaultConfig(context.Background(), awsconfig.WithRegion(region))
-	if err != nil {
+	if err := cloud.ValidateEmulatorEndpoint(endpoint); err != nil {
 		return nil, err
 	}
+	account, secret, token := os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), os.Getenv("AWS_SESSION_TOKEN")
+	if err := cloud.EmulatorCredentials(account, secret, token); err != nil {
+		return nil, err
+	}
+	cfg := aws.Config{Region: region, Credentials: credentials.NewStaticCredentialsProvider(account, secret, "")}
 	client := s3.NewFromConfig(cfg, func(options *s3.Options) {
-		if customEndpoint {
-			options.BaseEndpoint = aws.String(endpoint)
-			// Compatible gateways use path-style addressing. Native AWS keeps
-			// the SDK's standard endpoint and addressing resolution.
-			options.UsePathStyle = true
-		}
+		options.BaseEndpoint = aws.String(endpoint)
+		// The explicit emulator endpoint always uses path-style addressing.
+		options.UsePathStyle = true
 	})
 	return &Store{client: client, bucket: bucket, kmsKeyID: kmsKeyID}, nil
 }
@@ -95,6 +90,9 @@ func (s *Store) PutImmutable(ctx context.Context, key string, content []byte) (R
 		return Ref{}, headErr
 	}
 	if existing.Digest == digestValue {
+		if _, err := s.GetVerified(ctx, existing); err != nil {
+			return Ref{}, err
+		}
 		return existing, nil
 	}
 	return Ref{}, ErrArtifactExists
@@ -104,7 +102,11 @@ func (s *Store) GetVerified(ctx context.Context, ref Ref) ([]byte, error) {
 	if err := validateKey(ref.Key); err != nil {
 		return nil, err
 	}
-	result, err := s.client.GetObject(ctx, &s3.GetObjectInput{Bucket: aws.String(s.bucket), Key: aws.String(ref.Key)})
+	input := &s3.GetObjectInput{Bucket: aws.String(s.bucket), Key: aws.String(ref.Key)}
+	if ref.VersionID != "" {
+		input.VersionId = aws.String(ref.VersionID)
+	}
+	result, err := s.client.GetObject(ctx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -123,12 +125,20 @@ func (s *Store) GetVerified(ctx context.Context, ref Ref) ([]byte, error) {
 // GetVerifiedByKey is used for deterministic terminal evidence whose digest is
 // recorded by the object store metadata after the runner uploads it.
 func (s *Store) GetVerifiedByKey(ctx context.Context, key string) (Ref, []byte, error) {
+	if err := validateKey(key); err != nil {
+		return Ref{}, nil, err
+	}
 	ref, err := s.head(ctx, key)
 	if err != nil {
 		return Ref{}, nil, err
 	}
 	content, err := s.GetVerified(ctx, ref)
 	return ref, content, err
+}
+
+func IsNotFound(err error) bool {
+	var responseError *http.ResponseError
+	return errors.As(err, &responseError) && responseError.HTTPStatusCode() == 404
 }
 
 func (s *Store) head(ctx context.Context, key string) (Ref, error) {

@@ -2,6 +2,8 @@ package terraform
 
 import (
 	"context"
+	platform "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -15,34 +17,71 @@ type fakeRunner struct {
 	results  []CommandResult
 }
 
-func TestPrepareExecutionProviderOverrideIsEphemeralAndCredentialFree(t *testing.T) {
-	dir := t.TempDir()
-	roleARN := "arn:aws:iam::123456789012:role/platform/prod/terraform-runner"
-	cleanup, err := prepareExecutionProviderOverride(dir, roleARN)
+func TestFixedModuleAndBackendFailClosed(t *testing.T) {
+	dir := filepath.Join("..", "..", "test", "fixtures", "terraform", "aws-compatible-basic")
+	profile := &platform.ExecutionProfile{Mode: "emulator", S3Endpoint: "http://emulator.invalid:4566", STSEndpoint: "http://emulator.invalid:4566", Region: "us-east-1", AccountID: "000000000000", ArtifactBucket: "evidence", CredentialsSecretRef: corev1.LocalObjectReference{Name: "dummy"}}
+	inputs, err := BindModuleInputs(map[string]string{"bucket_name": "owned", "target_cluster_name": "target", "target_endpoint": "kubeconfig:target", "target_incarnation_id": "namespace-uid"}, profile, "")
 	if err != nil {
-		t.Fatalf("prepareExecutionProviderOverride() error = %v", err)
+		t.Fatal(err)
 	}
-	file := filepath.Join(dir, executionProviderOverrideFile)
-	content, err := os.ReadFile(file)
-	if err != nil {
-		t.Fatalf("read provider override = %v", err)
+	if err := ValidateModule(dir, "1.14.0", inputs); err != nil {
+		t.Fatal(err)
 	}
-	if !strings.Contains(string(content), "assume_role") || !strings.Contains(string(content), roleARN) || strings.Contains(string(content), "secret_access_key") {
-		t.Fatalf("provider override content = %q", content)
+	inputs["password"] = "inline"
+	if ValidateModule(dir, "1.14.0", inputs) == nil {
+		t.Fatal("undeclared credential input accepted")
 	}
-	cleanup()
-	if _, err := os.Stat(file); !os.IsNotExist(err) {
-		t.Fatalf("provider override was not removed: %v", err)
+	delete(inputs, "password")
+	if ValidateModule(dir, "1.15.5", inputs) == nil {
+		t.Fatal("unapproved Terraform version accepted")
 	}
-	noRoleCleanup, err := prepareExecutionProviderOverride(dir, "")
-	if err != nil {
-		t.Fatalf("empty role should use base identity: %v", err)
+	inputs["s3_endpoint"] = "https://s3.amazonaws.com"
+	if _, err := BindModuleInputs(inputs, profile, ""); err == nil {
+		t.Fatal("user input overrode endpoint authority")
 	}
-	noRoleCleanup()
+	backend := []byte(`bucket = "state"
+key = "owned/state"
+region = "us-east-1"
+use_lockfile = true
+use_path_style = true
+endpoints = { s3 = "http://emulator.invalid:4566", sts = "http://emulator.invalid:4566" }
+`)
+	if err := ValidateBackendProfile(backend, profile); err != nil {
+		t.Fatal(err)
+	}
+	for _, unsafe := range []string{strings.Replace(string(backend), "use_lockfile = true", "use_lockfile = false", 1), strings.Replace(string(backend), "http://emulator.invalid:4566", "https://s3.amazonaws.com", 1), string(backend) + "access_key = \"inline\"\n"} {
+		if ValidateBackendProfile([]byte(unsafe), profile) == nil {
+			t.Fatal("unsafe backend accepted")
+		}
+	}
 }
 
-func TestPrepareExecutionProviderOverrideRejectsUnsafeRoleARN(t *testing.T) {
-	if _, err := prepareExecutionProviderOverride(t.TempDir(), "not-an-arn"); err == nil {
+func TestExecutionRoleUsesFixedInputWithoutGeneratingSource(t *testing.T) {
+	dir := t.TempDir()
+	source := filepath.Join(dir, "main.tf")
+	original := []byte("# fixed versioned source\n")
+	if err := os.WriteFile(source, original, 0600); err != nil {
+		t.Fatal(err)
+	}
+	cleanup, err := prepareExecutionIdentity(dir, "arn:aws:iam::123456789012:role/platform/prod/terraform-runner")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cleanup()
+	entries, _ := os.ReadDir(dir)
+	content, _ := os.ReadFile(source)
+	if len(entries) != 1 || string(content) != string(original) {
+		t.Fatal("execution changed fixed HCL source")
+	}
+	cleanup, err = prepareExecutionIdentity(dir, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cleanup()
+}
+
+func TestExecutionRoleRejectsUnsafeRoleARN(t *testing.T) {
+	if _, err := prepareExecutionIdentity(t.TempDir(), "not-an-arn"); err == nil {
 		t.Fatal("invalid execution role ARN was accepted")
 	}
 }
@@ -83,7 +122,7 @@ func TestPlanUsesInitWorkspaceAndDetailedExitCode(t *testing.T) {
 		t.Fatalf("unexpected plan result: %+v", result)
 	}
 	want := []string{
-		"init -input=false -no-color -lock-timeout 30s",
+		"init -input=false -no-color -lockfile readonly -lock-timeout 30s",
 		"workspace select staging",
 		"workspace new staging",
 		"plan -input=false -no-color -detailed-exitcode -out /workspace/terraform/plan.binary -lock-timeout 30s -parallelism 4",

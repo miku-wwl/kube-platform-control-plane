@@ -1,11 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
+	"fmt"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -15,13 +20,13 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/controller"
-	"github.com/miku-wwl/kube-platform-control-plane/internal/observability"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/reliability"
 	targetresolver "github.com/miku-wwl/kube-platform-control-plane/internal/target"
 )
@@ -49,6 +54,7 @@ func main() {
 
 	clusterConfig := ctrl.GetConfigOrDie()
 	mgr, err := ctrl.NewManager(clusterConfig, ctrl.Options{
+		Client:                  client.Options{Cache: &client.CacheOptions{DisableFor: []client.Object{&corev1.Secret{}}}},
 		Scheme:                  scheme,
 		Metrics:                 metricsserver.Options{BindAddress: metricsAddr},
 		HealthProbeBindAddress:  probeAddr,
@@ -73,12 +79,10 @@ func main() {
 	planLimit := positiveEnvInt("PCP_MAX_CONCURRENT_PLANS", 8)
 	applyLimit := positiveEnvInt("PCP_MAX_CONCURRENT_APPLIES", 4)
 	executionGate := reliability.NewGate(planLimit, applyLimit)
-	if result, err := controller.ReconstructActiveTerraformRuns(context.Background(), mgr.GetAPIReader(), kubeClient, executionGate); err != nil {
-		setupLog.Error(err, "unable to reconstruct active Terraform executions")
+	executionGate.CloseAdmission()
+	if err := mgr.Add(controller.ExecutionReconstruction{Reader: mgr.GetAPIReader(), Kube: kubeClient, Gate: executionGate}); err != nil {
+		setupLog.Error(err, "configure leader execution reconstruction")
 		os.Exit(1)
-	} else {
-		setupLog.Info("reconstructed active Terraform executions", "active", len(result.Active), "overCapacity", result.OverCapacity, "safetyViolation", result.SafetyViolation, "duration", result.Duration)
-		observability.SetReconstructionState(result.OverCapacity, result.SafetyViolation)
 	}
 
 	if err := (&controller.PlatformEnvironmentReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).SetupWithManager(mgr); err != nil {
@@ -139,12 +143,70 @@ func buildTargetClient() (dynamic.Interface, targetresolver.ClientResolver, targ
 	var factory *targetresolver.TargetClientFactory
 	var kubeconfigResolver targetresolver.ClientResolver
 	var first dynamic.Interface
+	if file := os.Getenv("PCP_TARGETS_FILE"); file != "" {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		var targets []struct {
+			Identity   targetresolver.RuntimeTargetIdentity   `json:"identity"`
+			Connection targetresolver.TargetConnectionProfile `json:"connection"`
+		}
+		decoder := json.NewDecoder(bytes.NewReader(content))
+		decoder.DisallowUnknownFields()
+		if err := decoder.Decode(&targets); err != nil {
+			return nil, nil, nil, err
+		}
+		factory = targetresolver.NewTargetClientFactory()
+		for _, entry := range targets {
+			if err := targetresolver.ValidateBinding(entry.Identity, entry.Connection); err != nil {
+				return nil, nil, nil, err
+			}
+			if os.Getenv("PCP_KUBECONFIG") == "" || entry.Connection.Endpoint != "kubeconfig:"+entry.Connection.KubeContext {
+				return nil, nil, nil, fmt.Errorf("explicit target kubeconfig and matching context endpoint are required")
+			}
+			if entry.Identity.Provider != targetresolver.ProviderKubernetes || entry.Connection.AuthMode != targetresolver.AuthKubeconfigContext {
+				return nil, nil, nil, fmt.Errorf("configured targets require generic Kubernetes identity and auth")
+			}
+			rules := clientcmd.NewDefaultClientConfigLoadingRules()
+			rules.ExplicitPath = os.Getenv("PCP_KUBECONFIG")
+			cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, &clientcmd.ConfigOverrides{CurrentContext: entry.Connection.KubeContext}).ClientConfig()
+			if err != nil {
+				return nil, nil, nil, err
+			}
+			cfg.Timeout = 10 * time.Second
+			kube, err := kubernetes.NewForConfig(cfg)
+			if err != nil {
+				return nil, nil, nil, err
+			}
+			namespace, err := kube.CoreV1().Namespaces().Get(context.Background(), "kube-system", metav1.GetOptions{})
+			if err != nil {
+				return nil, nil, nil, err
+			}
+			if string(namespace.UID) != entry.Identity.IncarnationID {
+				return nil, nil, nil, fmt.Errorf("configured target incarnation does not match kube-system UID")
+			}
+			c, err := dynamic.NewForConfig(cfg)
+			if err != nil {
+				return nil, nil, nil, err
+			}
+			if err := factory.Register(entry.Identity, entry.Connection, c); err != nil {
+				return nil, nil, nil, err
+			}
+			if first == nil {
+				first = c
+			}
+		}
+		kubeconfigResolver = factory
+	}
 	if len(contextNames) > 0 {
 		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 		if kubeconfig := os.Getenv("PCP_KUBECONFIG"); kubeconfig != "" {
 			loadingRules.ExplicitPath = kubeconfig
 		}
-		factory = targetresolver.NewTargetClientFactory()
+		if factory == nil {
+			factory = targetresolver.NewTargetClientFactory()
+		}
 		for _, contextName := range contextNames {
 			targetConfig, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 				loadingRules,
@@ -159,7 +221,7 @@ func buildTargetClient() (dynamic.Interface, targetresolver.ClientResolver, targ
 			}
 			// Register exact profiles for new distribution-neutral targets and
 			// legacy serialized targets. Never infer the Kubernetes distribution.
-			for _, provider := range []string{targetresolver.ProviderKubernetes, targetresolver.ProviderKind} {
+			for _, provider := range []string{targetresolver.ProviderKind} {
 				materialized, err := targetresolver.MaterializeTarget(targetresolver.TargetExpectation{Provider: provider, ClusterName: contextName})
 				if err != nil {
 					return nil, nil, nil, err

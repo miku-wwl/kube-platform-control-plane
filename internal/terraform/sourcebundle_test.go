@@ -17,6 +17,7 @@ func TestBuildSourceBundleExcludesRuntimeAndOverlayFiles(t *testing.T) {
 	files := map[string]string{
 		"main.tf":                      "resource \"null_resource\" \"demo\" {}",
 		".terraform/terraform.tfstate": "state",
+		".git/config":                  "remote URL may contain credentials",
 		"terraform.tfstate":            "state",
 		"local_override.tf":            "override",
 		"secrets.tfvars":               "secret",

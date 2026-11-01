@@ -1,6 +1,6 @@
 # Architecture
 
-Updated: 2026-11-01 (Pacific/Auckland). Phase 2.5A cleanup checkpoint. The [Phase 2.5 architecture contract](phase2.5/ARCHITECTURE_CONTRACT.md) is authoritative; integration migration remains pending.
+Updated: 2026-11-01 (Pacific/Auckland). Phase 2.5B implementation checkpoint; [validation](phase2.5/VALIDATION_REPORT.md) records remaining acceptance gaps.
 
 This document describes the current components, persisted state, configuration
 flow and execution contracts.
@@ -278,9 +278,11 @@ they are not a complete event audit log.
 ## Supplied-environment verification boundary
 
 The previous PowerShell/Docker/Kind/LocalStack orchestration is removed.
-The Go successor remains Phase 2.5B work and must consume explicitly supplied
-kubeconfig/contexts. [The coverage matrix](phase2.5/ACCEPTANCE_COVERAGE_MATRIX.md)
-preserves the old behavior and identifies each missing replacement.
+The Go suite in `e2e/lifecycle_test.go` consumes supplied kubeconfig/context,
+immutable runner/module identities and explicit MiniStack routes. It restarts
+a dedicated Operator process and observes real Kubernetes Jobs, saved plans,
+approvals and finalization. [The coverage matrix](phase2.5/ACCEPTANCE_COVERAGE_MATRIX.md)
+distinguishes these checks from remaining legacy and two-target requirements.
 
 Stable deployment uses `config/crd`, `config/rbac` and `config/manager`. Images,
 target kubeconfig, workload credentials, endpoint routes and any custom-port
@@ -288,11 +290,27 @@ NetworkPolicy egress are administrator-supplied prerequisites. The source tree
 contains no script control plane. Kubeconfig targets accept the distribution-neutral
 `kubernetes` provider; legacy serialized Kind identity values remain compatible.
 
-Current 2.5A Go/static/build evidence is in [CLEANUP_REPORT](phase2.5/CLEANUP_REPORT.md).
-No real AWS, MiniStack or live Kubernetes acceptance is claimed. Dated local results
+Current changes and execution evidence are in [IMPLEMENTATION_REPORT](phase2.5/IMPLEMENTATION_REPORT.md)
+and [VALIDATION_REPORT](phase2.5/VALIDATION_REPORT.md). No real AWS was used. Dated local results
 remain in [the historical record](phase2.5/LEGACY_VALIDATION_RECORD.md) and unchanged
 [Stage 2 reports](STAGE2_VALIDATION_REPORT.md). Current browser acceptance was already
 incomplete at the baseline; historical screenshots do not close it.
+
+Execution profiles are emulator-only in this phase. Runner credentials come
+from an explicit namespace Secret; its identity is frozen with source, inputs,
+backend, target, runner and Terraform version. The fixed module contract accepts
+declared string inputs, requires Terraform 1.14.0/provider lockfile and writes
+only a tfvars JSON data file. AssumeRole configuration is predefined HCL.
+Apply restores the verified binary plan and source; it never plans again.
+
+One deterministic Apply name belongs to each Plan UID. Job creation intent is
+persisted before its create RPC, and completion is restored from verified
+durable terminal evidence. The leader reconstructs existing Job reservations
+before admitting new execution. Complete retained execution snapshots are
+Operator-owned status JSON decoded as TerraformRunSpec, allowing a subsequent
+convergence to replace the snapshot without weakening TerraformRun spec CEL.
+Prune deletes carry UID/resourceVersion preconditions; unavailable targets
+retain runtime finalizers when owned inventory remains.
 
 ## Source map
 

@@ -2,9 +2,11 @@ package controller
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"path"
+	"reflect"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -29,6 +31,7 @@ import (
 // +kubebuilder:rbac:groups=platform.example.io,resources=terraformruns/finalizers,verbs=update
 // +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get
 // +kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=pods/log,verbs=get
 type TerraformRunReconciler struct {
@@ -94,8 +97,50 @@ func (r *TerraformRunReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	if object.Spec.Operation == "Apply" && object.Spec.MutationFence && object.Spec.PlanMode != "Destroy" {
 		return r.updateExecutionStatus(ctx, &object, "Rejected", metav1.ConditionFalse, "MutationFence", "Apply admission is closed by the durable mutation fence.")
 	}
+	if object.Status.ExecutionOutcome == "Succeeded" || object.Status.ExecutionOutcome == "NoChange" || object.Status.ExecutionOutcome == "ChangesPresent" || object.Status.ExecutionOutcome == "Indeterminate" || object.Status.ExecutionOutcome == "Rejected" || object.Status.ExecutionOutcome == "Failed" || object.Status.ExecutionOutcome == "Expired" || object.Status.ExecutionOutcome == "Superseded" {
+		return ctrl.Result{}, nil
+	}
 
 	if object.Status.JobRef == nil {
+		profile, err := resolveExecutionProfile(ctx, r.Client, object.Namespace, object.Spec.ExecutionProfile)
+		if err != nil || profile.CredentialsIdentity == "" || !immutableImage.MatchString(object.Spec.Executor.Image) {
+			message := "frozen emulator credentials and immutable runner image are required"
+			if err != nil {
+				message = err.Error()
+			}
+			return r.updateExecutionStatus(ctx, &object, "Rejected", metav1.ConditionFalse, "ExecutionProfileRejected", message)
+		}
+		if object.Spec.ExecutionProfile.CredentialsIdentity == "" || profile.ArtifactBucket != r.ArtifactBucket || profile.Region != r.ArtifactRegion {
+			return r.updateExecutionStatus(ctx, &object, "Rejected", metav1.ConditionFalse, "ExecutionProfileRejected", "execution profile/store identity is not frozen or configured")
+		}
+		store, err := artifacts.NewS3StoreWithKMS(r.ArtifactEndpoint, r.ArtifactRegion, r.ArtifactBucket, r.ArtifactKMSKeyID)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		ref, content, err := store.GetVerifiedByKey(ctx, path.Join("runs", string(object.UID), "terminal-result.json"))
+		if err == nil {
+			var terminal runnerTerminalResult
+			if json.Unmarshal(content, &terminal) != nil {
+				return r.applyMissingTerminalResult(ctx, &object, fmt.Errorf("terminal execution identity mismatch"))
+			}
+			if err := verifyTerminalEvidence(ctx, store, &object, terminal, nil); err != nil {
+				return r.applyMissingTerminalResult(ctx, &object, err)
+			}
+			terminal.TerminalResultRef, terminal.TerminalResultDigest = ref.Key, ref.Digest
+			return r.applyTerminalResult(ctx, &object, terminal, nil)
+		}
+		if !artifacts.IsNotFound(err) {
+			return ctrl.Result{}, fmt.Errorf("cannot verify existing execution evidence: %w", err)
+		}
+		if object.Spec.Source.Type == terraformexec.SourceGitCommit {
+			var backend corev1.ConfigMap
+			if err := r.Get(ctx, client.ObjectKey{Namespace: object.Namespace, Name: object.Spec.ResolvedBackendConfigRef}, &backend); err != nil {
+				return ctrl.Result{}, err
+			}
+			if err := terraformexec.ValidateBackendProfile([]byte(backend.Data["backend.hcl"]), profile); err != nil {
+				return r.updateExecutionStatus(ctx, &object, "Rejected", metav1.ConditionFalse, "BackendRejected", err.Error())
+			}
+		}
 		if !r.ensureExecutionSlot(&object, false) {
 			result, err := r.updateExecutionStatus(ctx, &object, "Pending", metav1.ConditionFalse, "ExecutionSlotUnavailable", "Terraform execution is waiting for an available concurrency slot.")
 			result.RequeueAfter = time.Second
@@ -116,9 +161,19 @@ func (r *TerraformRunReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		getErr := r.Get(ctx, types.NamespacedName{Name: job.Name, Namespace: job.Namespace}, &existing)
 		if apierrors.IsNotFound(getErr) {
 			if err := ctrl.SetControllerReference(&object, job, r.Scheme); err != nil {
+				r.releaseExecutionSlot(&object)
+				return ctrl.Result{}, err
+			}
+			// Persist execution intent before the create RPC. If that RPC or the
+			// process is interrupted, recovery observes this identity and never
+			// blindly starts a replacement for a possibly executed Apply.
+			object.Status.JobRef = &corev1.LocalObjectReference{Name: job.Name}
+			if err := r.Status().Update(ctx, &object); err != nil {
+				r.releaseExecutionSlot(&object)
 				return ctrl.Result{}, err
 			}
 			if err := r.Create(ctx, job); err != nil {
+				r.releaseExecutionSlot(&object)
 				return ctrl.Result{}, err
 			}
 			existing = *job
@@ -189,7 +244,7 @@ func (r *TerraformRunReconciler) executionWorkItem(object *platformv1alpha1.Terr
 	if id == "" {
 		id = object.Namespace + "/" + object.Name
 	}
-	return reliability.WorkItem{ID: id, Kind: kind, Stack: object.Spec.StackRef.Name, ConcurrencyGroup: object.Spec.ConcurrencyGroup, MaxConcurrentPlans: int(object.Spec.MaxConcurrentPlans), MaxConcurrentApplies: int(object.Spec.MaxConcurrentApplies)}
+	return reliability.WorkItem{ID: id, Kind: kind, Stack: object.Namespace + "/" + object.Spec.StackRef.Name, ConcurrencyGroup: object.Spec.ConcurrencyGroup, MaxConcurrentPlans: int(object.Spec.MaxConcurrentPlans), MaxConcurrentApplies: int(object.Spec.MaxConcurrentApplies)}
 }
 
 func (r *TerraformRunReconciler) validateApplyApproval(ctx context.Context, apply *platformv1alpha1.TerraformRun) error {
@@ -213,7 +268,7 @@ func (r *TerraformRunReconciler) validateApplyApproval(ctx context.Context, appl
 	if string(plan.UID) != apply.Spec.PlanRunUID {
 		return fmt.Errorf("PlanRun UID mismatch")
 	}
-	if plan.Status.PlanDigest != "" && plan.Status.PlanDigest != apply.Spec.PlanDigest {
+	if plan.Status.PlanDigest == "" || plan.Status.PlanDigest != apply.Spec.PlanDigest || plan.Status.ExecutionOutcome != "ChangesPresent" || !planEvidenceReady(&plan) {
 		return fmt.Errorf("PlanRun digest mismatch")
 	}
 	if plan.Status.PlanReportRef == "" || plan.Status.PlanReportDigest == "" || apply.Spec.PlanReportRef != plan.Status.PlanReportRef || apply.Spec.PlanReportDigest != plan.Status.PlanReportDigest {
@@ -237,7 +292,34 @@ func (r *TerraformRunReconciler) validateApplyApproval(ctx context.Context, appl
 	if apply.Spec.InfrastructureExecutionIdentityDigest != "" && plan.Spec.InfrastructureExecutionIdentityDigest != apply.Spec.InfrastructureExecutionIdentityDigest {
 		return fmt.Errorf("infrastructure execution identity digest mismatch")
 	}
+	var stack platformv1alpha1.InfraStack
+	if err := r.Get(ctx, client.ObjectKey{Namespace: apply.Namespace, Name: apply.Spec.StackRef.Name}, &stack); err != nil {
+		return err
+	}
+	if apply.Name != applyRunName(plan.Name, string(plan.UID)) || !ownedBy(apply, &stack, "InfraStack") {
+		return fmt.Errorf("Apply must be the unique Plan-owned execution intent")
+	}
+	if err := validateApplyAdmission(&stack, &plan, &approval); err != nil {
+		return err
+	}
+	if !reflect.DeepEqual(buildApplyRun(&stack, &plan, &approval, apply.Name).Spec, apply.Spec) {
+		return fmt.Errorf("Apply execution snapshot differs from approved Plan")
+	}
+	store, err := artifacts.NewS3StoreWithKMS(r.ArtifactEndpoint, r.ArtifactRegion, r.ArtifactBucket, r.ArtifactKMSKeyID)
+	if err != nil {
+		return err
+	}
+	for _, ref := range []artifacts.Ref{{Key: plan.Status.PlanRef, Digest: plan.Status.PlanDigest}, {Key: plan.Status.SourceBundleRef, Digest: plan.Status.SourceBundleDigest}, {Key: plan.Status.ResolvedBackendConfigRef, Digest: plan.Status.ResolvedBackendConfigDigest}, {Key: plan.Status.PlanReportRef, Digest: plan.Status.PlanReportDigest}, {Key: plan.Status.TerminalResultRef, Digest: plan.Status.TerminalResultDigest}, moduleInputsRef(&plan)} {
+		if _, err := store.GetVerified(ctx, ref); err != nil {
+			return fmt.Errorf("approved artifact is missing or invalid: %w", err)
+		}
+	}
 	return nil
+}
+
+func moduleInputsRef(run *platformv1alpha1.TerraformRun) artifacts.Ref {
+	content, _ := json.Marshal(run.Spec.Inputs)
+	return artifacts.Ref{Key: path.Join("runs", string(run.UID), "module-inputs.json"), Digest: fmt.Sprintf("sha256:%x", sha256.Sum256(content))}
 }
 
 func validateTerraformJobIdentity(run *platformv1alpha1.TerraformRun, job *batchv1.Job) error {
@@ -294,6 +376,8 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 		gitImage = terraformexec.DefaultGitImage
 	}
 	request := terraformexec.JobRequest{
+		ExecutionProfile:               object.Spec.ExecutionProfile,
+		Inputs:                         object.Spec.Inputs,
 		Name:                           object.Name,
 		Namespace:                      object.Namespace,
 		RunUID:                         string(object.UID),
@@ -330,6 +414,9 @@ func (r *TerraformRunReconciler) buildJob(object *platformv1alpha1.TerraformRun)
 		PlanDigest:                     object.Spec.PlanDigest,
 		TargetDiscoveryRef:             object.Spec.TargetDiscoveryRef,
 		TargetDiscoveryDigest:          object.Spec.TargetDiscoveryDigest,
+	}
+	if object.Spec.ExecutionProfile != nil {
+		request.ArtifactEndpoint = object.Spec.ExecutionProfile.S3Endpoint
 	}
 	if object.Spec.Source.Type == terraformexec.SourceRetainedBundle {
 		request.SourceBundleRef = object.Spec.Source.Ref
@@ -379,18 +466,74 @@ func (r *TerraformRunReconciler) captureTerminalResult(ctx context.Context, obje
 	if err := json.Unmarshal(content, &result); err != nil {
 		return runnerTerminalResult{}, fmt.Errorf("decode durable terminal result: %w", err)
 	}
-	if result.Operation == "" || result.ExecutionOutcome == "" {
-		return runnerTerminalResult{}, fmt.Errorf("durable terminal result is incomplete")
-	}
-	if result.RunUID != "" && object.UID != "" && result.RunUID != string(object.UID) {
-		return runnerTerminalResult{}, fmt.Errorf("durable terminal result TerraformRun UID mismatch")
-	}
-	if result.JobUID != "" && job != nil && job.UID != "" && result.JobUID != string(job.UID) {
-		return runnerTerminalResult{}, fmt.Errorf("durable terminal result Job UID mismatch")
+	if err := verifyTerminalEvidence(ctx, store, object, result, job); err != nil {
+		return runnerTerminalResult{}, err
 	}
 	result.TerminalResultRef = ref.Key
 	result.TerminalResultDigest = ref.Digest
 	return result, nil
+}
+
+func validateTerminalIdentity(object *platformv1alpha1.TerraformRun, result runnerTerminalResult, job *batchv1.Job) error {
+	if result.RunUID != string(object.UID) || result.JobUID == "" || result.Operation != object.Spec.Operation || result.ExecutionOutcome == "" {
+		return fmt.Errorf("terminal execution identity mismatch")
+	}
+	if job != nil && result.JobUID != string(job.UID) || object.Status.JobUID != "" && result.JobUID != object.Status.JobUID {
+		return fmt.Errorf("terminal Job UID mismatch")
+	}
+	if result.StartedAt.IsZero() || result.FinishedAt.Before(result.StartedAt) {
+		return fmt.Errorf("terminal timestamps are incomplete or inconsistent")
+	}
+	switch result.ExecutionOutcome {
+	case "ChangesPresent":
+		if result.Operation != "Plan" || result.TerraformExitCode != 2 || !result.HasChanges {
+			return fmt.Errorf("inconsistent changes result")
+		}
+	case "NoChange":
+		if result.Operation != "Plan" || result.TerraformExitCode != 0 || result.HasChanges {
+			return fmt.Errorf("inconsistent NoChange result")
+		}
+	case "Succeeded":
+		if result.Operation != "Apply" || result.TerraformExitCode != 0 {
+			return fmt.Errorf("inconsistent Apply result")
+		}
+	case "Failed", "Indeterminate":
+	default:
+		return fmt.Errorf("unknown terminal outcome")
+	}
+	return nil
+}
+
+func verifyTerminalEvidence(ctx context.Context, store *artifacts.Store, object *platformv1alpha1.TerraformRun, result runnerTerminalResult, job *batchv1.Job) error {
+	if err := validateTerminalIdentity(object, result, job); err != nil {
+		return err
+	}
+	if !result.ArtifactsReady {
+		return nil
+	}
+	refs := []artifacts.Ref{{Key: result.PlanRef, Digest: result.PlanDigest}, {Key: result.SourceBundleRef, Digest: result.SourceBundleDigest}, {Key: result.BackendConfigRef, Digest: result.BackendConfigDigest}}
+	refs = append(refs, moduleInputsRef(object))
+	if result.EffectivePlanInputDigest == "" {
+		return fmt.Errorf("terminal input evidence is missing")
+	}
+	if object.Spec.Operation == "Plan" {
+		refs = append(refs, artifacts.Ref{Key: result.PlanReportRef, Digest: result.PlanReportDigest})
+	}
+	if result.ExecutionOutcome == "NoChange" || result.ExecutionOutcome == "Succeeded" {
+		refs = append(refs, artifacts.Ref{Key: result.TargetDiscoveryRef, Digest: result.TargetDiscoveryDigest})
+	}
+	if object.Spec.Operation == "Apply" && (result.PlanDigest != object.Spec.PlanDigest || result.SourceBundleDigest != object.Spec.Source.Digest || result.BackendConfigDigest != object.Spec.BackendConfigArtifactDigest) {
+		return fmt.Errorf("terminal saved-plan closure mismatch")
+	}
+	for _, ref := range refs {
+		if ref.Key == "" || ref.Digest == "" {
+			return fmt.Errorf("terminal artifact reference is incomplete")
+		}
+		if _, err := store.GetVerified(ctx, ref); err != nil {
+			return fmt.Errorf("terminal artifact verification: %w", err)
+		}
+	}
+	return nil
 }
 
 func (r *TerraformRunReconciler) applyTerminalResult(ctx context.Context, object *platformv1alpha1.TerraformRun, result runnerTerminalResult, job *batchv1.Job) (ctrl.Result, error) {
@@ -451,6 +594,12 @@ func (r *TerraformRunReconciler) applyTerminalResult(ctx context.Context, object
 		object.Status.PlanExpiresAt = &expires
 	}
 	outcome := result.ExecutionOutcome
+	if !result.ArtifactsReady {
+		outcome = "Failed"
+		if object.Spec.Operation == "Apply" {
+			outcome = "Indeterminate"
+		}
+	}
 	status := metav1.ConditionFalse
 	reason := "TerraformJobFailed"
 	message := result.Error
@@ -478,14 +627,20 @@ func (r *TerraformRunReconciler) applyMissingTerminalResult(ctx context.Context,
 }
 
 func (r *TerraformRunReconciler) updateExecutionStatus(ctx context.Context, object *platformv1alpha1.TerraformRun, outcome string, status metav1.ConditionStatus, reason, message string) (ctrl.Result, error) {
+	var previous platformv1alpha1.TerraformRun
+	if err := r.Get(ctx, client.ObjectKeyFromObject(object), &previous); err != nil {
+		return ctrl.Result{}, err
+	}
 	object.Status.ObservedGeneration = object.Generation
 	object.Status.ExecutionOutcome = outcome
-	condition := executionCondition(object.Generation, status, reason, message)
-	current := findCondition(object.Status.Conditions, ConditionReady)
-	if current != nil && current.Status == condition.Status && current.Reason == condition.Reason && current.Message == condition.Message && object.Status.ObservedGeneration == object.Generation && object.Status.ExecutionOutcome == outcome {
+	condition := stableCondition(findCondition(previous.Status.Conditions, ConditionReady), object.Generation, status, reason, message)
+	object.Status.Conditions = []metav1.Condition{condition}
+	if reflect.DeepEqual(previous.Status, object.Status) {
 		return ctrl.Result{}, nil
 	}
-	observability.TerraformExecutions.WithLabelValues(object.Spec.Operation, outcome).Inc()
+	if previous.Status.ExecutionOutcome != outcome {
+		observability.TerraformExecutions.WithLabelValues(object.Spec.Operation, outcome).Inc()
+	}
 	if outcome == "Indeterminate" {
 		observability.RecoveryEvents.WithLabelValues(reason).Inc()
 	}

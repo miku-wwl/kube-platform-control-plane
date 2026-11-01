@@ -140,9 +140,12 @@ func (r *ResourceSetReconciler) reconcileDelete(ctx context.Context, object *pla
 	if !containsString(object.Finalizers, resourceSetFinalizer) {
 		return ctrl.Result{}, nil
 	}
+	if len(object.Status.Inventory) == 0 {
+		return r.finishDelete(ctx, object, false, "no owned runtime inventory remains")
+	}
 	targetClient, err := r.targetClient(ctx, object)
 	if err != nil || targetClient == nil {
-		return r.finishDelete(ctx, object, true, "target Kubernetes client unavailable; runtime cleanup was skipped")
+		return ctrl.Result{RequeueAfter: time.Second}, fmt.Errorf("runtime cleanup requires the registered target client: %v", err)
 	}
 	cleanupCtx, cancel := context.WithTimeout(ctx, defaultCleanupTimeout)
 	defer cancel()
@@ -152,7 +155,7 @@ func (r *ResourceSetReconciler) reconcileDelete(ctx context.Context, object *pla
 			return ctrl.Result{RequeueAfter: 250 * time.Millisecond}, nil
 		}
 		if isTargetUnavailable(err) {
-			return r.finishDelete(ctx, object, true, fmt.Sprintf("runtime cleanup skipped after bounded attempt: %v", err))
+			return ctrl.Result{RequeueAfter: time.Second}, err
 		}
 		object.Status.Conditions = []metav1.Condition{stableCondition(findCondition(object.Status.Conditions, ConditionReady), object.Generation, metav1.ConditionFalse, "RuntimeCleanupBlocked", err.Error())}
 		if updateErr := r.Status().Update(ctx, object); updateErr != nil {
@@ -227,7 +230,9 @@ func (r *ResourceSetReconciler) pruneItem(ctx context.Context, item runtimer.Inv
 	if err := runtimer.ValidatePrune(item, target, object); err != nil {
 		return err
 	}
-	if err := resource.Delete(ctx, item.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+	uid := object.GetUID()
+	version := object.GetResourceVersion()
+	if err := resource.Delete(ctx, item.Name, metav1.DeleteOptions{Preconditions: &metav1.Preconditions{UID: &uid, ResourceVersion: &version}}); err != nil && !apierrors.IsNotFound(err) {
 		return err
 	}
 	if _, err := resource.Get(ctx, item.Name, metav1.GetOptions{}); err == nil {
@@ -252,6 +257,9 @@ func (r *ResourceSetReconciler) runtimeReadiness(ctx context.Context, inventory 
 		object, err := resource.Get(ctx, item.Name, metav1.GetOptions{})
 		if err != nil {
 			return fmt.Sprintf("runtime readiness read failed: %v", err), "RuntimeReadinessFailed", metav1.ConditionFalse
+		}
+		if item.ReadinessPolicy == "ApplyOnly" && object.GetDeletionTimestamp() == nil {
+			continue
 		}
 		ready, reason, err := runtimer.Ready(object)
 		if err != nil {

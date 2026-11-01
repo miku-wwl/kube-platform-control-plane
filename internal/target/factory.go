@@ -3,6 +3,8 @@ package target
 import (
 	"context"
 	"fmt"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sync"
 
 	"k8s.io/client-go/dynamic"
@@ -68,7 +70,7 @@ func (f *TargetClientFactory) Register(identity RuntimeTargetIdentity, profile T
 	return nil
 }
 
-func (f *TargetClientFactory) Client(_ context.Context, identity RuntimeTargetIdentity, profile TargetConnectionProfile) (dynamic.Interface, error) {
+func (f *TargetClientFactory) Client(ctx context.Context, identity RuntimeTargetIdentity, profile TargetConnectionProfile) (dynamic.Interface, error) {
 	if f == nil {
 		return nil, fmt.Errorf("target client factory is nil")
 	}
@@ -80,13 +82,23 @@ func (f *TargetClientFactory) Client(_ context.Context, identity RuntimeTargetId
 		return nil, err
 	}
 	f.mu.RLock()
-	defer f.mu.RUnlock()
 	registered, ok := f.profiles[digest]
+	resolved := f.clients[digest]
+	f.mu.RUnlock()
 	if !ok {
 		return nil, fmt.Errorf("target identity %s is not registered", digest)
 	}
 	if registered != profile {
 		return nil, fmt.Errorf("target connection profile mismatch for identity %s", digest)
 	}
-	return f.clients[digest], nil
+	if identity.Provider == ProviderKubernetes {
+		incarnation, err := resolved.Resource(schema.GroupVersionResource{Version: "v1", Resource: "namespaces"}).Get(ctx, "kube-system", metav1.GetOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("verify current target incarnation: %w", err)
+		}
+		if string(incarnation.GetUID()) != identity.IncarnationID {
+			return nil, fmt.Errorf("target cluster incarnation changed")
+		}
+	}
+	return resolved, nil
 }

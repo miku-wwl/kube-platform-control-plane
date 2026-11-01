@@ -6,8 +6,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	platform "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/cloud"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -136,6 +139,53 @@ func main() {
 		emit(terminal)
 		os.Exit(2)
 	}
+	var inputs map[string]string
+	var profile platform.ExecutionProfile
+	prepareErr := json.Unmarshal([]byte(os.Getenv("PCP_MODULE_INPUTS")), &inputs)
+	if prepareErr == nil {
+		prepareErr = json.Unmarshal([]byte(os.Getenv("PCP_EXECUTION_PROFILE")), &profile)
+	}
+	if prepareErr == nil {
+		prepareErr = cloud.ValidateExecutionProfile(&profile)
+	}
+	account := os.Getenv("AWS_ACCESS_KEY_ID")
+	if account == "test" {
+		account = "000000000000"
+	}
+	if prepareErr == nil && account != profile.AccountID {
+		prepareErr = fmt.Errorf("runner credential account differs from frozen profile")
+	}
+	if prepareErr == nil && (profile.S3Endpoint != artifactEndpoint || profile.ArtifactBucket != artifactBucket || profile.Region != artifactRegion) {
+		prepareErr = fmt.Errorf("artifact configuration differs from frozen execution profile")
+	}
+	if prepareErr == nil {
+		inputs, prepareErr = terraform.BindModuleInputs(inputs, &profile, infrastructureExecutionRoleARN)
+	}
+	if prepareErr == nil {
+		prepareErr = terraform.ValidateModule(request.WorkingDir, expectedVersion, inputs)
+	}
+	if prepareErr == nil {
+		content, err := os.ReadFile(request.BackendConfigPath)
+		if err != nil {
+			prepareErr = err
+		} else {
+			prepareErr = terraform.ValidateBackendProfile(content, &profile)
+		}
+	}
+	inputContent, _ := json.Marshal(inputs)
+	if prepareErr == nil {
+		request.InputsPath = filepath.Join(os.TempDir(), "kpcp-inputs.tfvars.json")
+		prepareErr = os.WriteFile(request.InputsPath, inputContent, 0600)
+	}
+	if prepareErr == nil {
+		_, prepareErr = store.PutImmutable(ctx, artifactKey(artifactPrefix, "module-inputs.json"), inputContent)
+	}
+	if prepareErr != nil {
+		terminal := terminalResult{RunUID: runUID, JobUID: jobUID, Operation: operation, StartedAt: startedAt, FinishedAt: time.Now().UTC(), ExecutionOutcome: "Failed", MutationClassification: "FailedPreMutation", Error: prepareErr.Error()}
+		_ = persistTerminalResult(ctx, store, artifactPrefix, &terminal)
+		emit(terminal)
+		os.Exit(2)
+	}
 	if err := executor.VerifyTerraformVersion(ctx, expectedVersion, request.WorkingDir); err != nil {
 		terminal := terminalResult{RunUID: runUID, JobUID: jobUID, Operation: operation, StartedAt: startedAt, FinishedAt: time.Now().UTC(), ExecutionOutcome: "Failed", MutationClassification: "FailedPreMutation", Error: err.Error()}
 		_ = persistTerminalResult(ctx, store, artifactPrefix, &terminal)
@@ -184,9 +234,12 @@ func main() {
 				terminal.ArtifactsReady = false
 			}
 		}
-		_ = persistTerminalResult(ctx, store, artifactPrefix, &terminal)
+		if persistErr := persistTerminalResult(ctx, store, artifactPrefix, &terminal); persistErr != nil {
+			terminal.ArtifactsReady = false
+			terminal.Error = persistErr.Error()
+		}
 		emit(terminal)
-		if err != nil {
+		if err != nil || !terminal.ArtifactsReady {
 			os.Exit(1)
 		}
 	case "Apply":
@@ -246,8 +299,14 @@ func main() {
 			}
 		}
 		terminal.EffectivePlanInputDigest = effectiveInputDigest(request, expectedVersion, sourceBundleDigest, backendConfigDigest, planDigest)
-		_ = persistTerminalResult(ctx, store, artifactPrefix, &terminal)
+		if persistErr := persistTerminalResult(ctx, store, artifactPrefix, &terminal); persistErr != nil {
+			terminal.ArtifactsReady = false
+			terminal.Error = persistErr.Error()
+		}
 		emit(terminal)
+		if !terminal.ArtifactsReady {
+			exitCode = 1
+		}
 		if exitCode != 0 {
 			os.Exit(exitCode)
 		}
@@ -293,7 +352,8 @@ func effectiveInputDigest(request terraform.Request, expectedVersion, sourceBund
 		WorkingDir         string
 		Workspace          string
 		Destroy            bool
-	}{sourceBundleDigest, backendDigest, planDigest, expectedVersion, request.WorkingDir, request.Workspace, request.Destroy})
+		Inputs             string
+	}{sourceBundleDigest, backendDigest, planDigest, expectedVersion, request.WorkingDir, request.Workspace, request.Destroy, os.Getenv("PCP_MODULE_INPUTS")})
 	if err != nil {
 		return ""
 	}
@@ -301,8 +361,8 @@ func effectiveInputDigest(request terraform.Request, expectedVersion, sourceBund
 }
 
 func buildArtifactStore(endpoint, region, bucket, kmsKeyID string) (*artifacts.Store, error) {
-	if endpoint == "" && bucket == "" {
-		return nil, nil
+	if endpoint == "" || bucket == "" {
+		return nil, fmt.Errorf("explicit emulator artifact store is required")
 	}
 	if region == "" || bucket == "" {
 		return nil, fmt.Errorf("artifact region and bucket are required")

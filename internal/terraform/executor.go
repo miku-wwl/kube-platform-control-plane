@@ -5,9 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -47,6 +45,7 @@ func (r OSCommandRunner) Run(ctx context.Context, workingDir string, args ...str
 }
 
 type Request struct {
+	InputsPath                     string
 	WorkingDir                     string
 	Workspace                      string
 	BackendConfigPath              string
@@ -117,12 +116,12 @@ func (e Executor) Plan(ctx context.Context, request Request) (PlanResult, error)
 	if err := request.validate(true); err != nil {
 		return PlanResult{}, err
 	}
-	cleanup, err := prepareExecutionProviderOverride(request.WorkingDir, request.InfrastructureExecutionRoleARN)
+	cleanup, err := prepareExecutionIdentity(request.WorkingDir, request.InfrastructureExecutionRoleARN)
 	if err != nil {
 		return PlanResult{}, err
 	}
 	defer cleanup()
-	if err := e.init(ctx, request, false); err != nil {
+	if err := e.init(ctx, request, true); err != nil {
 		return PlanResult{}, err
 	}
 	if err := e.selectWorkspace(ctx, request, true); err != nil {
@@ -132,6 +131,9 @@ func (e Executor) Plan(ctx context.Context, request Request) (PlanResult, error)
 	args := []string{"plan", "-input=false", "-no-color", "-detailed-exitcode", "-out", request.PlanPath}
 	if request.Destroy {
 		args = append(args, "-destroy")
+	}
+	if request.InputsPath != "" {
+		args = append(args, "-var-file", request.InputsPath)
 	}
 	args = appendLockTimeout(args, request.LockTimeout)
 	args = appendParallelism(args, request.Parallelism)
@@ -162,7 +164,7 @@ func (e Executor) Apply(ctx context.Context, request Request) (ApplyResult, erro
 	if err := request.validate(false); err != nil {
 		return ApplyResult{}, err
 	}
-	cleanup, err := prepareExecutionProviderOverride(request.WorkingDir, request.InfrastructureExecutionRoleARN)
+	cleanup, err := prepareExecutionIdentity(request.WorkingDir, request.InfrastructureExecutionRoleARN)
 	if err != nil {
 		return ApplyResult{}, err
 	}
@@ -199,30 +201,13 @@ func (e Executor) Apply(ctx context.Context, request Request) (ApplyResult, erro
 	return ApplyResult{Succeeded: true, ExitCode: 0, Stdout: result.Stdout, Stderr: result.Stderr}, nil
 }
 
-const executionProviderOverrideFile = "zz_platform_execution_override.tf"
-
-// prepareExecutionProviderOverride keeps the Runner Pod on its management
-// workload identity while making Terraform's AWS provider assume the target
-// infrastructure role. The file is ephemeral, excluded by source bundling,
-// and contains no credentials.
-func prepareExecutionProviderOverride(workingDir, roleARN string) (func(), error) {
-	if roleARN == "" {
-		return func() {}, nil
-	}
-	if !strings.HasPrefix(roleARN, "arn:") || strings.ContainsAny(roleARN, "\"\r\n") {
+// prepareExecutionIdentity validates the role passed to a fixed module input.
+// It intentionally never authors a provider override or any other HCL source.
+func prepareExecutionIdentity(workingDir, roleARN string) (func(), error) {
+	if roleARN != "" && (!strings.HasPrefix(roleARN, "arn:") || strings.ContainsAny(roleARN, "\"\r\n") || !strings.Contains(roleARN, ":role/")) {
 		return nil, fmt.Errorf("infrastructure execution role ARN is invalid")
 	}
-	file := filepath.Join(workingDir, executionProviderOverrideFile)
-	if _, err := os.Stat(file); err == nil {
-		return nil, fmt.Errorf("infrastructure execution provider override already exists")
-	} else if !os.IsNotExist(err) {
-		return nil, fmt.Errorf("check infrastructure execution provider override: %w", err)
-	}
-	content := fmt.Sprintf("provider \"aws\" {\n  assume_role {\n    role_arn = %q\n  }\n}\n", roleARN)
-	if err := os.WriteFile(file, []byte(content), 0o600); err != nil {
-		return nil, fmt.Errorf("write infrastructure execution provider override: %w", err)
-	}
-	return func() { _ = os.Remove(file) }, nil
+	return func() {}, nil
 }
 
 func (e Executor) init(ctx context.Context, request Request, readonlyLockfile bool) error {

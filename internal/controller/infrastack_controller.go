@@ -115,6 +115,9 @@ func (r *InfraStackReconciler) reconcileDestroy(ctx context.Context, object *pla
 			for index := range runs.Items {
 				run := &runs.Items[index]
 				if run.Spec.StackRef.Name == object.Name && run.Spec.Operation == "Apply" {
+					if run.Status.ExecutionOutcome == "Rejected" && run.Status.JobRef == nil && !run.Status.MutationMayHaveOccurred {
+						continue // Admission rejected before a Job could be created.
+					}
 					return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "RecoveryRequired", "Destroy requires evidence for an Apply that may have changed infrastructure."), false)
 				}
 			}
@@ -127,7 +130,11 @@ func (r *InfraStackReconciler) reconcileDestroy(ctx context.Context, object *pla
 		}
 		return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "RecoveryRequired", "The last successful convergence closure is unavailable; refusing to guess a Destroy source."), false)
 	}
-	applied = *retainedRunFromClosure(object, object.Status.LastConverged)
+	retained := retainedRunFromClosure(object, object.Status.LastConverged)
+	if retained == nil {
+		return r.setStackCondition(ctx, object, lifecycleCondition(object.Generation, metav1.ConditionFalse, "RecoveryRequired", "Retained execution snapshot is invalid."), false)
+	}
+	applied = *retained
 
 	child, err := r.ensurePlanRun(ctx, object, true, &applied)
 	if err != nil {
@@ -203,6 +210,19 @@ func (r *InfraStackReconciler) ensurePlanRun(ctx context.Context, stack *platfor
 		child = *buildDestroyPlanRun(stack, applied[0], name)
 	} else {
 		child = *buildPlanRun(stack, name)
+	}
+	profile, err := resolveExecutionProfile(ctx, r.Client, stack.Namespace, child.Spec.ExecutionProfile)
+	if err != nil {
+		return nil, err
+	}
+	child.Spec.ExecutionProfile = profile
+	child.Spec.Inputs, err = terraformexec.BindModuleInputs(child.Spec.Inputs, profile, child.Spec.InfrastructureExecutionRoleARN)
+	if err != nil {
+		return nil, err
+	}
+	if !destroy {
+		child.Spec.ExecutionContextDigest = planContextDigest(stack.Spec, profile)
+		child.Spec.EffectivePlanInputDigest = child.Spec.ExecutionContextDigest
 	}
 	if err := ctrl.SetControllerReference(stack, &child, r.Scheme); err != nil {
 		return nil, err
@@ -378,11 +398,14 @@ func (r *InfraStackReconciler) ensureApplyRun(ctx context.Context, stack *platfo
 	}
 	for index := range runs.Items {
 		candidate := &runs.Items[index]
-		if candidate.Spec.Operation == "Apply" && candidate.Spec.PlanRunUID == string(plan.UID) && candidate.Spec.ApprovalUID == string(approval.UID) {
+		if candidate.Spec.StackRef.Name == stack.Name && candidate.Spec.Operation == "Apply" && candidate.Spec.PlanRunUID == string(plan.UID) {
+			if !ownedBy(candidate, stack, "InfraStack") {
+				return nil, fmt.Errorf("Apply run has a foreign owner")
+			}
 			return candidate, nil
 		}
 	}
-	apply := buildApplyRun(stack, plan, approval, applyRunName(plan.Name, string(approval.UID)))
+	apply := buildApplyRun(stack, plan, approval, applyRunName(plan.Name, string(plan.UID)))
 	if err := ctrl.SetControllerReference(stack, apply, r.Scheme); err != nil {
 		return nil, err
 	}
@@ -390,6 +413,9 @@ func (r *InfraStackReconciler) ensureApplyRun(ctx context.Context, stack *platfo
 		if apierrors.IsAlreadyExists(err) {
 			var existing platformv1alpha1.TerraformRun
 			if getErr := r.Get(ctx, client.ObjectKey{Name: apply.Name, Namespace: apply.Namespace}, &existing); getErr == nil {
+				if !ownedBy(&existing, stack, "InfraStack") || !reflect.DeepEqual(existing.Spec, apply.Spec) {
+					return nil, fmt.Errorf("existing Apply run identity does not match frozen execution")
+				}
 				return &existing, nil
 			}
 		}
@@ -404,6 +430,15 @@ func validateApplyAdmission(stack *platformv1alpha1.InfraStack, plan *platformv1
 	}
 	if stack.Spec.MutationFence && plan.Spec.PlanMode != "Destroy" {
 		return fmt.Errorf("mutation fence is set")
+	}
+	if plan.Spec.Operation != "Plan" || plan.Status.ExecutionOutcome != "ChangesPresent" || !planEvidenceReady(plan) {
+		return fmt.Errorf("only a verified ChangesPresent Plan can authorize Apply")
+	}
+	if approval.Spec.PlanRunRef.Name != plan.Name || plan.Namespace != stack.Namespace || approval.Namespace != plan.Namespace || plan.Spec.StackRef.Name != stack.Name || plan.Spec.InfraStackGeneration != stack.Generation {
+		return fmt.Errorf("Plan/approval stack, namespace or generation mismatch")
+	}
+	if plan.Spec.PlanMode != "Destroy" && plan.Spec.ExecutionContextDigest != planContextDigest(stack.Spec, plan.Spec.ExecutionProfile) {
+		return fmt.Errorf("source, inputs, target or execution identity changed since Plan")
 	}
 	if plan.UID == "" || approval.UID == "" || approval.Spec.PlanRunUID != string(plan.UID) {
 		return fmt.Errorf("PlanRun/approval UID binding mismatch")
@@ -570,6 +605,8 @@ func buildPlanRun(stack *platformv1alpha1.InfraStack, name string) *platformv1al
 	return &platformv1alpha1.TerraformRun{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: stack.Namespace},
 		Spec: platformv1alpha1.TerraformRunSpec{
+			ExecutionProfile:     stack.Spec.ExecutionProfile.DeepCopy(),
+			Inputs:               stack.Spec.Variables.Values,
 			StackRef:             corev1.LocalObjectReference{Name: stack.Name},
 			InfraStackGeneration: stack.Generation,
 			Operation:            "Plan",
@@ -616,6 +653,8 @@ func buildDestroyPlanRun(stack *platformv1alpha1.InfraStack, applied *platformv1
 	return &platformv1alpha1.TerraformRun{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: stack.Namespace},
 		Spec: platformv1alpha1.TerraformRunSpec{
+			ExecutionProfile:                      applied.Spec.ExecutionProfile.DeepCopy(),
+			Inputs:                                applied.Spec.Inputs,
 			StackRef:                              corev1.LocalObjectReference{Name: stack.Name},
 			InfraStackGeneration:                  stack.Generation,
 			Operation:                             "Plan",
@@ -670,6 +709,13 @@ func retainedBundle(applied *platformv1alpha1.TerraformRun) (string, string) {
 }
 
 func retainedRunFromClosure(stack *platformv1alpha1.InfraStack, closure *platformv1alpha1.LastConvergedSourceClosure) *platformv1alpha1.TerraformRun {
+	if closure.ExecutionSnapshot != nil {
+		var snapshot platformv1alpha1.TerraformRunSpec
+		if json.Unmarshal(closure.ExecutionSnapshot.Raw, &snapshot) != nil {
+			return nil
+		}
+		return &platformv1alpha1.TerraformRun{ObjectMeta: metav1.ObjectMeta{UID: types.UID(closure.TerraformRunUID)}, Spec: snapshot, Status: platformv1alpha1.TerraformRunStatus{SourceBundleRef: closure.SourceClosureRef, SourceBundleDigest: closure.SourceClosureDigest, ResolvedBackendConfigRef: closure.BackendSnapshotRef, ResolvedBackendConfigDigest: closure.BackendSnapshotDigest, TargetDiscoveryRef: closure.TargetDiscoveryRef, TargetDiscoveryDigest: closure.TargetDiscoveryDigest}}
+	}
 	return &platformv1alpha1.TerraformRun{
 		ObjectMeta: metav1.ObjectMeta{UID: types.UID(closure.TerraformRunUID)},
 		Spec: platformv1alpha1.TerraformRunSpec{
@@ -723,7 +769,12 @@ func convergenceClosure(stack *platformv1alpha1.InfraStack, sourceRun, terminalR
 	if sourceRef == "" || sourceDigest == "" || backendRef == "" || backendDigest == "" || effective == "" || stack.Spec.InfrastructureExecutionIdentity.Provider == "" || stack.Spec.RuntimeTargetIdentity.Provider == "" {
 		return nil, false
 	}
+	snapshot, err := json.Marshal(terminalRun.Spec)
+	if err != nil {
+		return nil, false
+	}
 	return &platformv1alpha1.LastConvergedSourceClosure{
+		ExecutionSnapshot:                     &runtime.RawExtension{Raw: snapshot},
 		SourceClosureRef:                      sourceRef,
 		SourceClosureDigest:                   sourceDigest,
 		BackendSnapshotRef:                    backendRef,
@@ -757,6 +808,8 @@ func buildApplyRun(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.Te
 			"platform.example.io/terraform-approval-uid": string(approval.UID),
 		}},
 		Spec: platformv1alpha1.TerraformRunSpec{
+			ExecutionProfile:                      plan.Spec.ExecutionProfile.DeepCopy(),
+			Inputs:                                plan.Spec.Inputs,
 			StackRef:                              corev1.LocalObjectReference{Name: stack.Name},
 			InfraStackGeneration:                  stack.Generation,
 			Operation:                             "Apply",
@@ -805,34 +858,21 @@ func buildApplyRun(stack *platformv1alpha1.InfraStack, plan *platformv1alpha1.Te
 }
 
 func executionContextDigest(spec platformv1alpha1.InfraStackSpec) string {
-	encoded, _ := json.Marshal(struct {
-		Source    platformv1alpha1.SourceSpec    `json:"source"`
-		Backend   platformv1alpha1.BackendSpec   `json:"backend"`
-		Workspace string                         `json:"workspace"`
-		Capacity  platformv1alpha1.CapacitySpec  `json:"capacity"`
-		Variables platformv1alpha1.VariablesSpec `json:"variables"`
-		Executor  platformv1alpha1.ExecutorSpec  `json:"executor"`
-	}{Source: spec.Source, Backend: spec.Backend, Workspace: spec.Workspace, Capacity: spec.Capacity, Variables: spec.Variables, Executor: spec.Executor})
-	hash := sha256.Sum256(encoded)
-	return "sha256:" + hex.EncodeToString(hash[:])
+	frozen := spec.DeepCopy()
+	frozen.MutationFence, frozen.RuntimeMutationAllowed = false, false
+	return digestIdentity(frozen)
 }
 
 func effectivePlanInputDigest(spec platformv1alpha1.InfraStackSpec) string {
-	digest, err := terraformexec.Digest(struct {
-		Source                 platformv1alpha1.SourceSpec
-		Backend                platformv1alpha1.BackendSpec
-		Workspace              string
-		Capacity               platformv1alpha1.CapacitySpec
-		Variables              platformv1alpha1.VariablesSpec
-		Executor               platformv1alpha1.ExecutorSpec
-		InfrastructureIdentity platformv1alpha1.InfrastructureExecutionIdentity
-		TargetIdentity         platformv1alpha1.RuntimeTargetIdentity
-		ConnectionProfile      platformv1alpha1.TargetConnectionProfile
-	}{Source: spec.Source, Backend: spec.Backend, Workspace: spec.Workspace, Capacity: spec.Capacity, Variables: spec.Variables, Executor: spec.Executor, InfrastructureIdentity: spec.InfrastructureExecutionIdentity, TargetIdentity: spec.RuntimeTargetIdentity, ConnectionProfile: spec.TargetConnectionProfile})
-	if err != nil {
-		return ""
+	return executionContextDigest(spec)
+}
+
+func planContextDigest(spec platformv1alpha1.InfraStackSpec, profile *platformv1alpha1.ExecutionProfile) string {
+	identity := ""
+	if profile != nil {
+		identity = profile.CredentialsIdentity
 	}
-	return digest
+	return digestIdentity([]string{executionContextDigest(spec), identity})
 }
 
 func digestIdentity(value any) string {

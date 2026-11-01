@@ -12,7 +12,9 @@ export type ClassInfo = {
   capacityBounds: { minNodeCount?: number; maxNodeCount?: number; maxEnvironments?: number; maxConcurrentPlans?: number; maxConcurrentApplies?: number }; ready: boolean; readyReason?: string
 }
 export type RuntimeObject = { group?: string; version: string; resource: string; object: Record<string, unknown>; wave?: number; ownershipID?: string; readinessPolicy?: string; deletionPolicy?: string }
+export type ExecutionProfile = { mode: string; s3Endpoint: string; stsEndpoint: string; region: string; accountID: string; artifactBucket: string; credentialsSecretRef: { name: string } }
 export type ClassSpec = {
+  executionProfile?: ExecutionProfile; inputs?: Record<string, string>
   version: string
   source: { url: string; revision: string; path: string }
   backend: { type: string; configRef: { name: string }; authRef: { serviceAccountName: string }; lockTimeout: string }

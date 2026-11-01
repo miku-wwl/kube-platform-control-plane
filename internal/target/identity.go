@@ -104,6 +104,9 @@ func MaterializeTarget(input TargetExpectation) (MaterializedTarget, error) {
 			incarnation = input.ClusterID
 		}
 		if incarnation == "" {
+			if provider == ProviderKubernetes {
+				return MaterializedTarget{}, fmt.Errorf("explicit target incarnation UID is required")
+			}
 			incarnation = input.ClusterName
 		}
 		endpoint := input.ConnectionProfile
@@ -111,13 +114,18 @@ func MaterializeTarget(input TargetExpectation) (MaterializedTarget, error) {
 			endpoint = "kubeconfig:" + input.ClusterName
 		}
 		authMode, route := AuthKubeconfigContext, "kubeconfig"
+		kubeContext := strings.TrimPrefix(endpoint, "kubeconfig:")
+		if provider == ProviderKubernetes && (kubeContext == endpoint || kubeContext == "") {
+			return MaterializedTarget{}, fmt.Errorf("explicit kubeconfig connection profile is required")
+		}
 		if provider == ProviderKind {
 			authMode, route = AuthKindContext, "local-kind"
+			kubeContext = input.ClusterName
 		}
 		materialized := MaterializedTarget{
 			InfrastructureExecutionIdentity: InfrastructureExecutionIdentity{Provider: provider, Mode: ModeLocal, AccountID: account, Region: region},
 			RuntimeTargetIdentity:           RuntimeTargetIdentity{Provider: provider, AccountID: account, Region: region, ClusterARN: input.ClusterARN, ClusterName: input.ClusterName, IncarnationID: incarnation},
-			TargetConnectionProfile:         TargetConnectionProfile{Endpoint: endpoint, AuthMode: authMode, KubeContext: input.ClusterName, NetworkRouteProfile: route},
+			TargetConnectionProfile:         TargetConnectionProfile{Endpoint: endpoint, AuthMode: authMode, KubeContext: kubeContext, NetworkRouteProfile: route},
 		}
 		if err := materialized.InfrastructureExecutionIdentity.Validate(); err != nil {
 			return MaterializedTarget{}, err

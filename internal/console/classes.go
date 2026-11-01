@@ -19,6 +19,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	platform "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/cloud"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/target"
 )
 
@@ -191,6 +192,14 @@ func (s *Server) writeClassMutationError(w http.ResponseWriter, err error) {
 var pinnedRevision = regexp.MustCompile(`^[0-9a-fA-F]{40,64}$`)
 
 func validateClassRequest(request CreateClassRequest) ClassValidation {
+	if request.Spec.ExecutionProfile != nil {
+		if err := cloud.ValidateExecutionProfile(request.Spec.ExecutionProfile); err != nil {
+			return ClassValidation{Errors: []string{err.Error()}}
+		}
+		if request.Spec.ExecutionProfile.CredentialsIdentity != "" {
+			return ClassValidation{Errors: []string{"class cannot supply resolved credential identity"}}
+		}
+	}
 	result := ClassValidation{Errors: []string{}, Warnings: []string{"Backend configuration must exist in each environment namespace. Ready confirms class admission and controller reconciliation; source access, runner images and infrastructure execution are checked later."}}
 	require := func(field, value string) {
 		if strings.TrimSpace(value) == "" {
@@ -288,6 +297,20 @@ func validateClassRequest(request CreateClassRequest) ClassValidation {
 // of the management read model and disable cloning a redacted specification.
 func redactClassSpec(spec *platform.EnvironmentClassSpec) bool {
 	redacted := false
+	if spec.ExecutionProfile != nil {
+		for _, endpoint := range []*string{&spec.ExecutionProfile.S3Endpoint, &spec.ExecutionProfile.STSEndpoint} {
+			if cloud.ValidateEmulatorEndpoint(*endpoint) != nil {
+				*endpoint = "[redacted invalid endpoint]"
+				redacted = true
+			}
+		}
+	}
+	for key, value := range spec.Inputs {
+		if sensitiveClassKey(key) && value != "" {
+			spec.Inputs[key] = "[redacted]"
+			redacted = true
+		}
+	}
 	if parsed, err := url.Parse(spec.Source.URL); err == nil && parsed.User != nil {
 		if _, hasPassword := parsed.User.Password(); hasPassword {
 			parsed.User = url.UserPassword(parsed.User.Username(), "[redacted]")

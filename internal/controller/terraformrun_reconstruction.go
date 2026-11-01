@@ -9,6 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	platformv1alpha1 "github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1"
+	"github.com/miku-wwl/kube-platform-control-plane/internal/observability"
 	"github.com/miku-wwl/kube-platform-control-plane/internal/reliability"
 )
 
@@ -50,7 +51,7 @@ func ReconstructActiveTerraformRuns(ctx context.Context, reader client.Reader, k
 				}
 			}
 		}
-		if run == nil {
+		if run == nil || job.Namespace != run.Namespace || job.Name != run.Name || validateTerraformJobIdentity(run, job) != nil {
 			// An active runner with no matching TerraformRun is not safe to
 			// classify. Reconstruct marks the invalid item as a safety fault.
 			items = append(items, reliability.WorkItem{ID: job.Namespace + "/" + job.Name})
@@ -62,13 +63,24 @@ func ReconstructActiveTerraformRuns(ctx context.Context, reader client.Reader, k
 }
 
 func workItemForTerraformRun(run *platformv1alpha1.TerraformRun) reliability.WorkItem {
-	kind := reliability.KindPlan
-	if run.Spec.Operation == "Apply" {
-		kind = reliability.KindApply
+	return (&TerraformRunReconciler{}).executionWorkItem(run)
+}
+
+// Reconstruction runs when this process becomes leader, not when a standby
+// first starts. Controllers cannot acquire execution slots before it completes.
+type ExecutionReconstruction struct {
+	Reader client.Reader
+	Kube   kubernetes.Interface
+	Gate   *reliability.Gate
+}
+
+func (r ExecutionReconstruction) NeedLeaderElection() bool { return true }
+func (r ExecutionReconstruction) Start(ctx context.Context) error {
+	result, err := ReconstructActiveTerraformRuns(ctx, r.Reader, r.Kube, r.Gate)
+	if err != nil {
+		return err
 	}
-	id := string(run.UID)
-	if id == "" {
-		id = run.Namespace + "/" + run.Name
-	}
-	return reliability.WorkItem{ID: id, Kind: kind, Stack: run.Spec.StackRef.Name}
+	observability.SetReconstructionState(result.OverCapacity, result.SafetyViolation)
+	<-ctx.Done()
+	return nil
 }

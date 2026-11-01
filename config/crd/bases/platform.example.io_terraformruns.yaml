@@ -79,8 +79,50 @@ spec:
                 type: string
               executionPlatformIdentityDigest:
                 type: string
-              infrastructureExecutionRoleARN:
-                type: string
+              executionProfile:
+                description: |-
+                  ExecutionProfile explicitly authorizes an emulator and a namespace-local
+                  credential Secret. CredentialsIdentity is resolved by the Operator, not a key.
+                properties:
+                  accountID:
+                    type: string
+                  artifactBucket:
+                    type: string
+                  credentialsIdentity:
+                    type: string
+                  credentialsSecretRef:
+                    description: |-
+                      LocalObjectReference contains enough information to let you locate the
+                      referenced object inside the same namespace.
+                    properties:
+                      name:
+                        default: ""
+                        description: |-
+                          Name of the referent.
+                          This field is effectively required, but due to backwards compatibility is
+                          allowed to be empty. Instances of this type with an empty value here are
+                          almost certainly wrong.
+                          More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                        type: string
+                    type: object
+                    x-kubernetes-map-type: atomic
+                  mode:
+                    type: string
+                  region:
+                    type: string
+                  s3Endpoint:
+                    type: string
+                  stsEndpoint:
+                    type: string
+                required:
+                - accountID
+                - artifactBucket
+                - credentialsSecretRef
+                - mode
+                - region
+                - s3Endpoint
+                - stsEndpoint
+                type: object
               executionTargetIdentityDigest:
                 type: string
               executor:
@@ -134,6 +176,12 @@ spec:
                 type: integer
               infrastructureExecutionIdentityDigest:
                 type: string
+              infrastructureExecutionRoleARN:
+                type: string
+              inputs:
+                additionalProperties:
+                  type: string
+                type: object
               lockTimeout:
                 type: string
               maxConcurrentApplies:
@@ -162,9 +210,9 @@ spec:
                 type: string
               runnerImageDigest:
                 type: string
-              runnerServiceAccountIdentityDigest:
-                type: string
               runnerManagementRoleARN:
+                type: string
+              runnerServiceAccountIdentityDigest:
                 type: string
               runnerServiceAccountName:
                 type: string

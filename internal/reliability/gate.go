@@ -43,6 +43,12 @@ func NewGate(maxPlans, maxApplies int) *Gate {
 	return &Gate{maxPlans: maxPlans, maxApplies: maxApplies, activeByStack: map[string]int{}, activeByPlanGroup: map[string]int{}, activeByApplyGroup: map[string]int{}, startedIDs: map[string]bool{}, activeItems: map[string]WorkItem{}, gateReady: true}
 }
 
+func (g *Gate) CloseAdmission() {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.gateReady = false
+}
+
 // TryAcquire reserves a slot without blocking. It is used by reconcilers so a
 // run with no capacity remains Pending instead of tying up a worker.
 func (g *Gate) TryAcquire(item WorkItem) bool {
@@ -54,7 +60,7 @@ func (g *Gate) TryAcquire(item WorkItem) bool {
 	if current, ok := g.activeItems[item.ID]; ok {
 		return current.Kind == item.Kind && current.Stack == item.Stack
 	}
-	if !g.gateReady || g.overCapacity || g.safetyViolation || g.startedIDs[item.ID] || !g.available(item) {
+	if !g.gateReady || g.overCapacity || g.safetyViolation || !g.available(item) {
 		return false
 	}
 	g.reserveLocked(item)
@@ -72,7 +78,7 @@ func (g *Gate) EnsureActive(item WorkItem) bool {
 	if current, ok := g.activeItems[item.ID]; ok {
 		return current.Kind == item.Kind && current.Stack == item.Stack
 	}
-	if !g.gateReady || g.startedIDs[item.ID] || !g.available(item) {
+	if !g.gateReady || g.overCapacity || g.safetyViolation || !g.available(item) {
 		return false
 	}
 	g.reserveLocked(item)
@@ -211,7 +217,7 @@ func (g *Gate) reserveObservedLocked(item WorkItem) {
 func (g *Gate) Ready() bool {
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	return g.gateReady
+	return g.gateReady && !g.safetyViolation && !g.overCapacity
 }
 
 func (g *Gate) ReadyCheck(_ *http.Request) error {

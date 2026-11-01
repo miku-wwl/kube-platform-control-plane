@@ -12,16 +12,18 @@ PlatformEnvironment -> EnvironmentClass -> InfraStack -> TerraformRun: Plan
 
 ## Phase 2.5 status
 
-Phase 2.5A removes legacy infrastructure orchestration and prepares the next
-refactor. **Phase 2.5 migration is not complete.** The old PowerShell E2E harness
-and its lifecycle Make targets are removed; Go integration parity is pending.
-The Go successor must consume supplied clusters; its implementation is pending.
+Phase 2.5B implements explicit emulator execution profiles, fixed modules,
+saved-plan admission and durable recovery. Real MiniStack/Kubernetes lifecycle
+tests run through Go. **PHASE_2_5B = PARTIAL:** two-cluster isolation and full
+legacy API/browser acceptance remain open; see the current validation report.
 
 - [Cleanup report](docs/phase2.5/CLEANUP_REPORT.md): actual changes and checks.
 - [Architecture contract](docs/phase2.5/ARCHITECTURE_CONTRACT.md): authoritative responsibilities and safety requirements.
 - [Acceptance matrix](docs/phase2.5/ACCEPTANCE_COVERAGE_MATRIX.md): retained unit tests, extracted legacy assertions and pending E2E ports.
 - [Phase 2.5B handoff](docs/phase2.5/REFACTOR_HANDOFF.md): exact remaining files and dependencies.
 - [Component architecture and API contracts](docs/architecture.md).
+- [Implementation report](docs/phase2.5/IMPLEMENTATION_REPORT.md).
+- [Current validation and limitations](docs/phase2.5/VALIDATION_REPORT.md).
 
 ## Deployment prerequisites
 
@@ -35,7 +37,8 @@ Terraform execution and AWS EKS integration remain disabled unless explicitly en
 
 The target stack is Go/controller-runtime, standard Kubernetes APIs, fixed
 versioned HCL modules and Terraform Jobs. MiniStack is the intended local AWS
-emulator; its required S3/STS and backend semantics are **not yet verified**.
+emulator. S3/STS, conditional writes and the saved-plan lifecycle have live
+evidence in the validation report; service-wide compatibility is not implied.
 Podman is the preferred developer OCI build tool. The two Dockerfiles are standard
 OCI image build inputs and impose no Docker CLI/runtime requirement.
 
@@ -49,17 +52,24 @@ OCI image build inputs and impose no Docker CLI/runtime requirement.
 
 New supplied-cluster targets use `provider: kubernetes`. Existing `kind` identities
 remain supported as serialized compatibility values. Neither value causes cluster
-creation. `PCP_TARGET_CONTEXTS` (or singular `PCP_TARGET_CONTEXT`) selects explicit
-contexts from `PCP_KUBECONFIG`; there is no current-context fallback for target
-registration. The initial generic registration uses local account/region and
-context-name incarnation; full explicit identity registration is Phase 2.5B work.
+creation. Set `PCP_TARGETS_FILE` to a JSON array of `{identity, connection}` and
+`PCP_KUBECONFIG` to the supplied kubeconfig. Identity uses `provider: kubernetes`,
+`accountId`, `region`, `clusterName` and `incarnationId` (the actual kube-system
+namespace UID). Connection uses `authMode: kubeconfig-context`, explicit
+`kubeContext`, `endpoint: kubeconfig:<context>` and `networkRouteProfile: kubeconfig`.
+Registration checks that UID against the API. Legacy `PCP_TARGET_CONTEXTS`
+continues to register legacy serialized identities only.
 
 Artifact configuration uses `PCP_ARTIFACT_ENDPOINT`, `PCP_ARTIFACT_REGION`,
 `PCP_ARTIFACT_BUCKET` and optional `PCP_ARTIFACT_KMS_KEY_ID`. Explicit HTTP(S)
-endpoints use path-style S3; credentials come from the standard AWS SDK chain.
-Endpoint names no longer inject dummy credentials. Provider endpoints, backend
-HCL and artifact endpoints are separate settings. Local runner credential
-provisioning and MiniStack deployment integration remain pending; see the contract.
+endpoints use path-style S3 and explicit dummy environment credentials
+(`AWS_ACCESS_KEY_ID=000000000000`, `AWS_SECRET_ACCESS_KEY=test`, no session token).
+Empty/AWS endpoints and ambient credential fallback are rejected. The Class
+`executionProfile` supplies emulator endpoints, region, 12-digit account,
+artifact bucket and namespace-local `credentialsSecretRef`; the Secret contains
+those same dummy AWS keys. The Operator binds its UID/resourceVersion to the Plan.
+Runner Jobs receive Secret references. Provider/backend endpoints must match
+the profile; the controller may use a separately routed host alias.
 Base egress allows DNS/443/6443; custom emulator/source ports need explicit site rules.
 
 ## Local console
@@ -108,7 +118,32 @@ git diff --check
 Terraform init/validate here are static tooling checks, not Plan/Apply acceptance.
 The fixed fixture has no default endpoint, bucket name or cluster context.
 
-The Go E2E successor is Phase 2.5B work and must use supplied clusters.
+Live tests are explicit opt-ins:
+
+```text
+KPCP_TEST_MINISTACK_ENDPOINT=<explicit endpoint> go test ./internal/artifacts -run TestMiniStackIntegration -v -count=1
+KPCP_E2E_CONFIG=<absolute JSON path> go test ./e2e -run TestLifecycle -v -count=1 -timeout=20m
+```
+
+Set these environment variables using your shell's syntax. E2E JSON fields are
+`Kubeconfig`, `Context`, `ControllerBinary`, `RunnerImage`, `HostEndpoint`,
+`PodEndpoint`, `SourceURL`, `SourceRevision`, optional `SecondContext` and
+`FaultFile`. Supply a dedicated management API,
+installed CRDs, a built controller executable, Pod-accessible fixed-module Git
+source pinned to its full commit, and an available runner image pinned by digest.
+This lane starts/restarts only its dedicated controller process, owns unique
+namespaces/classes/buckets, and preserves finalizers/evidence on failure.
+`KPCP_E2E_EVIDENCE_DIR` optionally retains diagnostics outside version control.
+The default one-cluster lane also checks real HTTP class/template/draft/approval/
+update/delete APIs and concurrent environments with independent state, runner
+identities and runtime namespaces. With `SecondContext`, the kubeconfig must contain both independent target contexts.
+The suite checks distinct incarnations, cross-target runtime absence, independent
+state, overlapping approvals/global Apply contention and ordinary cleanup on both
+targets. Without it the cross-cluster gate skips; single-cluster concurrency
+remains executable. Optional `FaultFile` must be a new absolute test-owned path;
+an externally supplied test transport uses its bucket-name content to inject
+temporary 503 responses. The suite checks retained finalizers and recovery,
+then removes the switch. MiniStack itself stays externally managed.
 Live advisory-model tests independently require `PCP_RUN_OLLAMA_INTEGRATION=1`.
 
 ## Historical evidence

@@ -62,27 +62,28 @@ silently reroute the others:
 
 | Consumer | Configuration and credentials |
 |---|---|
-| Controller/runner artifact store | `PCP_ARTIFACT_ENDPOINT` and region/bucket/KMS settings; runner receives existing corresponding flags. Explicit HTTP(S) endpoint uses path-style S3. Empty endpoint retains SDK native resolution. SDK credential chain supplies identity; hostnames never inject credentials. |
+| Controller/runner artifact store | Explicit HTTP(S) emulator endpoint and region/bucket/KMS settings; path-style S3 and explicitly supplied dummy credentials only. Empty/AWS endpoints and ambient credential chains fail closed. Runner credentials use the profile's namespace-local Secret reference. |
 | Existing Go STS/EKS adapters | SDK configuration, including service-specific `AWS_ENDPOINT_URL_STS` / `AWS_ENDPOINT_URL_EKS`; credentials remain SDK/workload identity. No emulator adapter or EKS simulation is assumed. |
 | Terraform provider | Fixed module inputs and explicit S3/STS endpoints; no host-global endpoint rewriting. `test/fixtures/terraform/aws-compatible-basic` requires supplied endpoints and resource names. |
 | Terraform S3 backend | Referenced non-secret `backend.hcl`, retained and hashed for execution. Explicit backend endpoint settings, region, bucket, key/workspace and `use_lockfile=true`. Do not put credentials in the ConfigMap or artifact. |
 | Local console artifact preview | Existing loopback HTTP restriction remains in `internal/console/server.go`. A remote emulator requires an operator-supplied loopback transport; loosening the console boundary is outside cleanup. |
 
 `AWS_ENDPOINT_URL_*` support was inspected in the installed pinned Go SDK;
-actual emulator compatibility remains unverified. Credentials must be supplied by
-the deployment to each consumer. The deleted dummy-credential injection is not
-replaced by inherited workstation secrets. Local runner credential delivery and
-its identity binding require Phase 2.5B work.
+the optional legacy adapters remain disabled in this validation. Credentials
+must be supplied by the deployment to each consumer. Phase 2.5B binds the
+emulator credential Secret identity to immutable execution intent; it never
+inherits workstation AWS profiles. Current compatibility evidence is recorded
+in [VALIDATION_REPORT](VALIDATION_REPORT.md).
 
 Base manager egress retains DNS, TCP 443 and TCP 6443. Site-specific emulator,
 source, and API ports require explicit deployment NetworkPolicy rules. No script
 opens ports or patches DNS. NetworkPolicy effectiveness still depends on the
 supplied cluster and CNI and has not been tested here.
 
-## MiniStack compatibility gates: all pending real integration
+## MiniStack compatibility gates
 
-MiniStack is the intended local emulator, not yet verified in this checkout.
-Do not assume feature parity with historical LocalStack runs. Verify at least:
+MiniStack 1.5.35 has current local evidence for the selected S3 module. Do not
+assume service-wide parity with historical LocalStack runs. Track at least:
 
 - S3 path-style addressing, regional bucket behavior, Put/Get/Head/List/Delete,
   metadata, encryption headers, conditional `If-None-Match: *`, idempotent same
@@ -101,10 +102,7 @@ environments must remain untouched.
 
 ## Deliberately unresolved in 2.5A
 
-The existing ephemeral AssumeRole provider override in
-`internal/terraform/executor.go:prepareExecutionProviderOverride` remains to
-preserve the AWS execution path and its tests. Replace it with a fixed-module
-authentication contract in 2.5B; do not expand it into a source generator.
-`internal/terraform/identity.go:EndpointProfile` is currently not wired end to
-end. Kubeconfig registration still uses context-based local identities, not a
-verified cluster incarnation UID. See [REFACTOR_HANDOFF](REFACTOR_HANDOFF.md).
+The Phase 2.5A handoff is historical. Phase 2.5B removes provider override
+generation, uses the fixed module's execution-role input, and verifies configured
+generic target incarnations against kube-system UID. Acceptance remains partial;
+the current matrix and validation report identify unexecuted lanes.

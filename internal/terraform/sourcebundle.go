@@ -105,7 +105,7 @@ func BuildSourceBundle(root string) (SourceBundle, error) {
 		}
 		relative = filepath.ToSlash(relative)
 		if entry.IsDir() {
-			if relative == ".terraform" || strings.HasPrefix(relative, ".terraform/") {
+			if !bundlePathAllowed(relative) {
 				return filepath.SkipDir
 			}
 			return nil
@@ -221,7 +221,7 @@ func bundlePathAllowed(relative string) bool {
 		return false
 	}
 	for _, part := range strings.Split(clean, "/") {
-		if part == ".terraform" {
+		if part == ".terraform" || part == ".git" {
 			return false
 		}
 	}
