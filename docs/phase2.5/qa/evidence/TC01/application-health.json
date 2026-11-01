@@ -1,0 +1,123 @@
+{
+  "scope": "Current Execution; reviewed public projection, private configuration omitted",
+  "runID": "kpcp-qa-20261101-2253",
+  "recordedAtUTC": "2026-11-01T10:01:21.530590+00:00",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "originalSHA256": "fb03dc7bf83d82eb8869379056124560fda8704e30c27301971cb3c84ad7f2a4",
+  "rawEvidence": "Controlled local run directory; not committed",
+  "objects": [
+    {
+      "kind": "Job",
+      "name": "qa-prerequisite-probe",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "24d5a118-584e-45f9-87b6-1855e7f56598",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "succeeded": 1,
+      "conditions": [
+        {
+          "reason": "CompletionsReached",
+          "status": "True",
+          "type": "SuccessCriteriaMet"
+        },
+        {
+          "reason": "CompletionsReached",
+          "status": "True",
+          "type": "Complete"
+        }
+      ]
+    },
+    {
+      "kind": "Pod",
+      "name": "git-source-b8655f9f5-ssmrq",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "534f6cda-3a53-4f03-b008-7cd00503613d",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "observedGeneration": 1,
+      "phase": "Running",
+      "conditions": [
+        {
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "status": "True",
+          "type": "Ready"
+        },
+        {
+          "status": "True",
+          "type": "ContainersReady"
+        },
+        {
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ]
+    },
+    {
+      "kind": "Pod",
+      "name": "qa-prerequisite-probe-2xm28",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "8b24418f-16aa-4f36-9f3e-416e5702e1af",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "observedGeneration": 1,
+      "phase": "Succeeded",
+      "conditions": [
+        {
+          "reason": "PodSandboxNotReady",
+          "status": "False",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "reason": "PodCompleted",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "reason": "PodCompleted",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "reason": "PodCompleted",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ]
+    },
+    {
+      "kind": "ConfigMap",
+      "name": "unrelated-sentinel",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3501db4b-a21c-4a3e-a435-bb30d5566714",
+      "generation": null,
+      "deleting": false,
+      "finalizers": []
+    },
+    {
+      "kind": "ServiceAccount",
+      "name": "default",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3568b883-ff2f-4617-9ee4-160c38c76c3c",
+      "generation": null,
+      "deleting": false,
+      "finalizers": []
+    }
+  ],
+  "ownedBuckets": [
+    "kpcp-qa-20261101-2253"
+  ]
+}

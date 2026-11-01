@@ -1,0 +1,96 @@
+{
+  "scope": "Current Execution",
+  "recordedAtUTC": "2026-11-01T12:08:48.756903+00:00",
+  "runID": "kpcp-qa-20261101-2253",
+  "namespaceUID": "99cd7893-6a37-4eed-8312-6caaa33d823b",
+  "checkedObjects": [
+    {
+      "kind": "Service",
+      "name": "git-source",
+      "uid": "c6970f00-17d0-4f33-bcac-6504d9456190"
+    },
+    {
+      "kind": "Service",
+      "name": "ministack",
+      "uid": "fcf25411-d50a-47df-b70d-e20217987f25"
+    },
+    {
+      "kind": "Deployment",
+      "name": "git-source",
+      "uid": "6bf9cf72-c8c9-4fc1-8b02-3c7593397d7d"
+    },
+    {
+      "kind": "ReplicaSet",
+      "name": "git-source-b8655f9f5",
+      "uid": "28e79ce1-3b9e-4dbd-ba42-86407625f807"
+    },
+    {
+      "kind": "ConfigMap",
+      "name": "backend",
+      "uid": "813221fb-5e82-4dc4-b9c7-a4ada57e0c1c"
+    },
+    {
+      "kind": "ConfigMap",
+      "name": "fixed-git-source",
+      "uid": "d22a6086-fd38-4ddd-ae40-fca8c600449c"
+    },
+    {
+      "kind": "ConfigMap",
+      "name": "kube-root-ca.crt",
+      "uid": "a090ea4d-e44b-4d73-95a5-228d8b190a78"
+    },
+    {
+      "kind": "ConfigMap",
+      "name": "unrelated-sentinel",
+      "uid": "3501db4b-a21c-4a3e-a435-bb30d5566714"
+    },
+    {
+      "kind": "ServiceAccount",
+      "name": "default",
+      "uid": "3568b883-ff2f-4617-9ee4-160c38c76c3c"
+    },
+    {
+      "kind": "Endpoints",
+      "name": "git-source",
+      "uid": "0aa59cb7-0539-4b0e-b1ce-2697133bc155"
+    },
+    {
+      "kind": "EndpointSlice",
+      "name": "git-source-gqs6g",
+      "uid": "d7f42dbe-37fd-4a3b-99c6-b45c74df16d4"
+    },
+    {
+      "kind": "EndpointSlice",
+      "name": "ministack-qa",
+      "uid": "96dd9406-4b85-418e-ba2b-1602a04142f7"
+    },
+    {
+      "kind": "Lease",
+      "name": "platform-control-plane.platform.example.io",
+      "uid": "600172c8-01f5-4af7-8836-b7bab60c839d"
+    },
+    {
+      "kind": "ChangeApproval",
+      "name": "approve-2ea9ef24825cd0fe6dde3461",
+      "uid": "04694d1e-de82-4c31-b9a6-ba60dd8198f3"
+    },
+    {
+      "kind": "ChangeApproval",
+      "name": "approve-4e330c9571bb77ec21a2d702",
+      "uid": "3e145dd5-ab21-4caf-baa4-eb5c83e5aeed"
+    },
+    {
+      "kind": "Pod",
+      "name": "git-source-b8655f9f5-ssmrq",
+      "uid": "534f6cda-3a53-4f03-b008-7cd00503613d"
+    },
+    {
+      "kind": "Secret",
+      "name": "emulator",
+      "uid": "e0b296f1-99d2-4b00-8615-334b5a6b7a12",
+      "valueRead": false
+    }
+  ],
+  "businessLifecycleAlreadyFinalized": true,
+  "method": "Kubernetes DELETE with metadata UID precondition; ordinary namespace finalization; no finalizer patches"
+}

@@ -1,0 +1,75 @@
+{
+  "scope": "Current Execution; reviewed preflight projection, private network and Secret data omitted",
+  "runID": "kpcp-qa-20261101-2253",
+  "preflightAtUTC": "2026-11-01T09:54:39.706663+00:00",
+  "reviewedAtUTC": "2026-11-01T12:15:42.158993+00:00",
+  "sourceBaselineCommit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "historicalBuildCommit": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+  "productFilesChangedSinceBuildCommit": [],
+  "binaries": [
+    {
+      "role": "Controller",
+      "binaryName": "controller.exe",
+      "sha256": "d54898dd785a82bf6931749c3bf540b3e7f32c6307a836ac28eece980db67345",
+      "build": {
+        "GOARCH": "amd64",
+        "GOOS": "windows",
+        "vcs.revision": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+        "vcs.time": "2026-11-01T07:28:19Z",
+        "vcs.modified": "true"
+      }
+    },
+    {
+      "role": "Platform API",
+      "binaryName": "platform-api.exe",
+      "sha256": "3daad833c1bab80c700eea84c77f49722ad73ceca3d265abcecb21532d63bf4c",
+      "build": {
+        "GOARCH": "amd64",
+        "GOOS": "windows",
+        "vcs.revision": "5445a5fdf169a9f12296dc44df1ba1b2d2819342",
+        "vcs.time": "2026-11-01T07:28:19Z",
+        "vcs.modified": "true"
+      }
+    }
+  ],
+  "binaryLimit": "Existing binaries report vcs.modified=true; current source product diff is empty, but this is not a clean e40c422 rebuild provenance claim.",
+  "context": "podman-minikube",
+  "clusterUID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+  "platformResourcesBefore": 0,
+  "bucketsBefore": [],
+  "miniStackVersion": "1.5.35",
+  "dummyAccount": "000000000000",
+  "runnerImage": "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39",
+  "sourceProvenance": {
+    "sourceRevision": "547f45475c7186eafd35026fb994f22f26606d6c",
+    "files": [
+      {
+        "file": "main.tf",
+        "sha256": "470f0e9a9b332d85ad51b85427beee7b4bae859358f868ffd77d1092f51d37a1"
+      },
+      {
+        "file": "variables.tf",
+        "sha256": "957ce076171279da2f1d4ff5485da2f198d21f77ec6ee5712cc0aac33ddacd28"
+      },
+      {
+        "file": ".terraform.lock.hcl",
+        "sha256": "c9fdf3e4c695e49bf1176df234c6b46400457aa29fe45532d51ab6c97c39acc0"
+      },
+      {
+        "file": "kpcp-module.json",
+        "sha256": "a9097433e7ebec0aa2e2a56fc2d73ed79c5a6f2e899599ae88398621e318c10c"
+      }
+    ]
+  },
+  "prerequisiteProbe": {
+    "jobUID": "24d5a118-584e-45f9-87b6-1855e7f56598",
+    "rawLogSHA256": "991b315872c73e5121487fc9abd02bb35d7ac4a75e487b4b51c2d50932f0d10a",
+    "resultMarker": "QA_PREREQUISITES_OK",
+    "fixedGitAccessible": true,
+    "emulatorAccessible": true,
+    "terraformInitReadonlyLockfileSucceeded": true,
+    "planOrApplyPerformedByProbe": false
+  },
+  "draftProvider": "project-native deterministic; live LLM NOT RUN",
+  "cleanup": "All owned fixtures later removed; TC14 final-cleanup.public.json"
+}

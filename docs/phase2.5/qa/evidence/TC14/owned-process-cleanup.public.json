@@ -1,0 +1,35 @@
+{
+  "scope": "Current Execution",
+  "runID": "kpcp-qa-20261101-2253",
+  "recordedAtUTC": "2026-11-01T12:07:51.0495862Z",
+  "hostProcesses": [
+    {
+      "role": "qa-controller",
+      "pid": 49088,
+      "commandIdentityVerified": true,
+      "creationIdentityVerified": true,
+      "createdAtUTC": "2026-11-01T09:56:55.5298610Z",
+      "stoppedAtUTC": "2026-11-01T12:07:49.9894277Z"
+    },
+    {
+      "role": "qa-api",
+      "pid": 49096,
+      "commandIdentityVerified": true,
+      "creationIdentityVerified": true,
+      "createdAtUTC": "2026-11-01T09:56:55.5944560Z",
+      "stoppedAtUTC": "2026-11-01T12:07:50.3820445Z"
+    },
+    {
+      "role": "qa-vite",
+      "pid": 48212,
+      "commandIdentityVerified": true,
+      "creationIdentityVerified": true,
+      "createdAtUTC": "2026-11-01T09:56:55.6724620Z",
+      "stoppedAtUTC": "2026-11-01T12:07:50.7820023Z"
+    }
+  ],
+  "proxyLinuxPid": 173657,
+  "proxyCommandIdentityVerified": true,
+  "proxyStopRequested": true,
+  "sharedEngineClusterEmulatorRestarted": false
+}

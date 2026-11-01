@@ -1,0 +1,242 @@
+{
+  "scope": "Current Execution; reviewed public projection, private configuration omitted",
+  "runID": "kpcp-qa-20261101-2253",
+  "recordedAtUTC": "2026-11-01T10:09:24.204250+00:00",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "originalSHA256": "4e730fe9b03b39bbce5a8cd944e491c6e3e3b5a5aeab3054c5149e1825271282",
+  "rawEvidence": "Controlled local run directory; not committed",
+  "objects": [
+    {
+      "kind": "PlatformEnvironment",
+      "name": "qa-environment",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "443a7caa-25aa-48f2-9bbd-095e76210ab7",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/platformenvironment-finalizer"
+      ],
+      "observedGeneration": 1,
+      "conditions": [
+        {
+          "reason": "InfrastructureNotReady",
+          "status": "False",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "EnvironmentClass",
+      "name": "kpcp-qa-20261101-2253-v1",
+      "namespace": null,
+      "uid": "4878d691-c702-4214-bf20-e00b354e5fc4",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/environmentclass-finalizer"
+      ],
+      "approvalPolicy": "Manual",
+      "observedGeneration": 1,
+      "conditions": [
+        {
+          "reason": "ClassValidated",
+          "status": "True",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "InfraStack",
+      "name": "qa-environment-infra",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "a7322cd8-7fcc-49e4-9dd6-5886d8b5ab9d",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/infrastack-finalizer"
+      ],
+      "approvalPolicy": "Manual",
+      "workspace": "qa-environment",
+      "observedGeneration": 1,
+      "conditions": [
+        {
+          "reason": "PlanRunning",
+          "status": "False",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "TerraformRun",
+      "name": "qa-environment-infra-plan-1",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "ed10d459-93ee-4882-95d7-b8a049b3130c",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "operation": "Plan",
+      "planMode": "Reconcile",
+      "executionContextDigest": "sha256:e3287a080089a90004175f75f78c6825021102a3f0a090ab5ae072971960dac0",
+      "effectivePlanInputDigest": "sha256:e3287a080089a90004175f75f78c6825021102a3f0a090ab5ae072971960dac0",
+      "workspace": "qa-environment",
+      "executionOutcome": "Running",
+      "observedGeneration": 1,
+      "jobRef": {
+        "name": "qa-environment-infra-plan-1"
+      },
+      "conditions": [
+        {
+          "reason": "TerraformJobRunning",
+          "status": "False",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "ResourceSet",
+      "name": "qa-environment-resources",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "b6d4946f-cfdf-43f2-86e1-7c1d3a6cf45c",
+      "generation": 2,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/resourceset-finalizer"
+      ],
+      "observedGeneration": 2,
+      "conditions": [
+        {
+          "reason": "RuntimeMutationBlocked",
+          "status": "False",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "Job",
+      "name": "qa-environment-infra-plan-1",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "cf0c3896-ebbf-4aa8-a5e1-027c15e597d6",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": []
+    },
+    {
+      "kind": "Pod",
+      "name": "git-source-b8655f9f5-ssmrq",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "534f6cda-3a53-4f03-b008-7cd00503613d",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "observedGeneration": 1,
+      "phase": "Running",
+      "conditions": [
+        {
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "status": "True",
+          "type": "Ready"
+        },
+        {
+          "status": "True",
+          "type": "ContainersReady"
+        },
+        {
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ]
+    },
+    {
+      "kind": "Pod",
+      "name": "qa-environment-infra-plan-1-tkpvd",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3f35b072-4c14-4fa4-83ce-aea0ee2444ad",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "batch.kubernetes.io/job-tracking"
+      ],
+      "observedGeneration": 1,
+      "phase": "Running",
+      "conditions": [
+        {
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "status": "True",
+          "type": "Ready"
+        },
+        {
+          "status": "True",
+          "type": "ContainersReady"
+        },
+        {
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ]
+    },
+    {
+      "kind": "ConfigMap",
+      "name": "unrelated-sentinel",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3501db4b-a21c-4a3e-a435-bb30d5566714",
+      "generation": null,
+      "deleting": false,
+      "finalizers": []
+    },
+    {
+      "kind": "ServiceAccount",
+      "name": "default",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3568b883-ff2f-4617-9ee4-160c38c76c3c",
+      "generation": null,
+      "deleting": false,
+      "finalizers": []
+    },
+    {
+      "kind": "ServiceAccount",
+      "name": "runner",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "1e351235-c675-4b9d-b10c-4b366c9251dd",
+      "generation": null,
+      "deleting": false,
+      "finalizers": []
+    },
+    {
+      "kind": "EnvironmentClass",
+      "name": "kpcp-qa-20261101-2253-v1",
+      "namespace": null,
+      "uid": "4878d691-c702-4214-bf20-e00b354e5fc4",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/environmentclass-finalizer"
+      ],
+      "approvalPolicy": "Manual",
+      "observedGeneration": 1,
+      "conditions": [
+        {
+          "reason": "ClassValidated",
+          "status": "True",
+          "type": "Ready"
+        }
+      ]
+    }
+  ],
+  "ownedBuckets": [
+    "kpcp-qa-20261101-2253"
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "runID": "kpcp-qa-20261101-2253",
+  "sourceBaselineCommit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "testCaseCount": 15,
+  "statusCounts": {
+    "PASS": 14,
+    "FAIL": 1
+  },
+  "currentPNGCount": 43,
+  "historicalReferenceCount": 23,
+  "cases": [
+    {
+      "testID": "TC01",
+      "status": "PASS",
+      "document": "TC01_APPLICATION_HEALTH.md",
+      "screenshots": 2,
+      "historicalReferences": 3,
+      "scope": "Current Execution + explicitly preserved Historical PASS"
+    },
+    {
+      "testID": "TC02",
+      "status": "PASS",
+      "document": "TC02_ENVIRONMENT_CLASS.md",
+      "screenshots": 3,
+      "historicalReferences": 15,
+      "scope": "Historical configuration validation PASS preserved; Current Execution adds real UI creation and Controller Ready"
+    },
+    {
+      "testID": "TC03",
+      "status": "PASS",
+      "document": "TC03_AI_DRAFT.md",
+      "screenshots": 2,
+      "historicalReferences": 2,
+      "scope": "Current Execution: real UI + project-native deterministic provider; live LLM quality NOT RUN"
+    },
+    {
+      "testID": "TC04",
+      "status": "PASS",
+      "document": "TC04_DRAFT_ISOLATION.md",
+      "screenshots": 1,
+      "historicalReferences": 0,
+      "scope": "Current Execution: generated native draft with active Controller; before/after resource comparison"
+    },
+    {
+      "testID": "TC05",
+      "status": "PASS",
+      "document": "TC05_ENVIRONMENT_SUBMIT.md",
+      "screenshots": 2,
+      "historicalReferences": 0,
+      "scope": "Current Execution"
+    },
+    {
+      "testID": "TC06",
+      "status": "PASS",
+      "document": "TC06_TERRAFORM_PLAN.md",
+      "screenshots": 3,
+      "historicalReferences": 0,
+      "scope": "Current Execution"
+    },
+    {
+      "testID": "TC07",
+      "status": "PASS",
+      "document": "TC07_APPROVAL_GATE.md",
+      "screenshots": 2,
+      "historicalReferences": 0,
+      "scope": "Current Execution"
+    },
+    {
+      "testID": "TC08",
+      "status": "PASS",
+      "document": "TC08_PLAN_TOPOLOGY.md",
+      "screenshots": 2,
+      "historicalReferences": 0,
+      "scope": "Current Execution"
+    },
+    {
+      "testID": "TC09",
+      "status": "PASS",
+      "document": "TC09_EXACT_APPROVAL.md",
+      "screenshots": 2,
+      "historicalReferences": 0,
+      "scope": "Current Execution"
+    },
+    {
+      "testID": "TC10",
+      "status": "PASS",
+      "document": "TC10_APPLY_READY.md",
+      "screenshots": 3,
+      "historicalReferences": 0,
+      "scope": "Current Execution；单集群、MiniStack S3 和项目支持的 ApplyOnly ConfigMap 运行时；不包含 EKS、Valkey 或工作负载健康探针验收。"
+    },
+    {
+      "testID": "TC11",
+      "status": "PASS",
+      "document": "TC11_UPDATE_NOCHANGE.md",
+      "screenshots": 6,
+      "historicalReferences": 0,
+      "scope": "Current Execution；容量字段更新与 S3 固定模块 NoChange，不声称真实工作节点扩容。"
+    },
+    {
+      "testID": "TC12",
+      "status": "PASS",
+      "document": "TC12_DELETE_REQUEST.md",
+      "screenshots": 4,
+      "historicalReferences": 0,
+      "scope": "Current Execution"
+    },
+    {
+      "testID": "TC13",
+      "status": "PASS",
+      "document": "TC13_DESTROY_APPROVAL.md",
+      "screenshots": 2,
+      "historicalReferences": 0,
+      "scope": "Current Execution"
+    },
+    {
+      "testID": "TC14",
+      "status": "PASS",
+      "document": "TC14_DESTROY_CLEANUP.md",
+      "screenshots": 6,
+      "historicalReferences": 0,
+      "scope": "Current Execution；单集群、MiniStack 本轮桶、ApplyOnly ConfigMap、普通 finalizer 清理；不包含故障恢复或跨集群清理。"
+    },
+    {
+      "testID": "TC15",
+      "status": "FAIL",
+      "document": "TC15_LANGUAGE_ERRORS.md",
+      "screenshots": 3,
+      "historicalReferences": 3,
+      "scope": "Current Execution; historical language PASS / localization PARTIAL preserved separately"
+    }
+  ],
+  "completeProductFreeze": "NO-GO",
+  "currentGoE2ERun": false,
+  "currentIndependentCrossClusterExecution": false,
+  "currentLiveLLMExecution": false,
+  "cleanup": "PASS; evidence/TC14/final-cleanup.public.json"
+}

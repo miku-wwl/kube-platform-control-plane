@@ -1,0 +1,38 @@
+{
+  "scope": "Current Execution; normal Controller finalization; terminal CR was garbage-collected before terminal-status screenshot, retained object hash checked against S3 metadata",
+  "recordedAtUTC": "2026-11-01T12:03:16.461403+00:00",
+  "runID": "kpcp-qa-20261101-2253",
+  "environmentUID": "443a7caa-25aa-48f2-9bbd-095e76210ab7",
+  "destroyRunUID": "068b0320-3e23-445c-b4e4-0528fcbc3bd2",
+  "destroyJobUID": "fd1e2cb6-1826-4524-bdb2-4678f7c54b00",
+  "planUID": "55ac0497-1f85-453d-8321-ad8a4c82ef1d",
+  "approvalUID": "3e145dd5-ab21-4caf-baa4-eb5c83e5aeed",
+  "terminalSHA256": "sha256:8163d78533d4a4c29d92d780eda0c40a00257143eb4fafb81bd01120d48ed866",
+  "terminalMetadataSHA256": "sha256:8163d78533d4a4c29d92d780eda0c40a00257143eb4fafb81bd01120d48ed866",
+  "startedAt": "2026-11-01T12:00:39.619075466Z",
+  "finishedAt": "2026-11-01T12:01:07.838405609Z",
+  "executionOutcome": "Succeeded",
+  "terraformExitCode": 0,
+  "remainingEnvironmentStackResourceSetRunsAndJobs": 0,
+  "auditApprovalUIDsRetained": [
+    "04694d1e-de82-4c31-b9a6-ba60dd8198f3",
+    "3e145dd5-ab21-4caf-baa4-eb5c83e5aeed"
+  ],
+  "auditApprovalCleanup": "Recorded owned approvals have no ownerReference; removed only with the QA namespace after evidence capture",
+  "unrelatedSentinelUID": "3501db4b-a21c-4a3e-a435-bb30d5566714",
+  "checks": {
+    "terminalDigestMatchesS3Metadata": true,
+    "terminalRunUID": true,
+    "terminalJobUID": true,
+    "savedDestroyPlanDigest": true,
+    "savedDestroyPlanRef": true,
+    "succeeded": true,
+    "environmentStackResourceSetRunsAndJobsGone": true,
+    "auditApprovalsRetainedUntilFixtureCleanup": true,
+    "runtimeGone": true,
+    "sentinelRetained": true,
+    "cloudBucketGone": true,
+    "artifactBucketRetainedForEvidence": true
+  },
+  "result": "PASS"
+}

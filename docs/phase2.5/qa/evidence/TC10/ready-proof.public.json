@@ -1,0 +1,39 @@
+{
+  "scope": "Current Execution; single-cluster MiniStack and ApplyOnly ConfigMap runtime",
+  "recordedAtUTC": "2026-11-01T11:54:57.679517+00:00",
+  "runID": "kpcp-qa-20261101-2253",
+  "environmentUID": "443a7caa-25aa-48f2-9bbd-095e76210ab7",
+  "environmentGeneration": 1,
+  "observedGeneration": 1,
+  "planUID": "6dcf21e3-322d-43e0-864a-50d8dad6aa62",
+  "planDigest": "sha256:7ec07f2c9f1e747a07f86d089a664bc8d42fb844a27fd990ac09fddc24a4bad8",
+  "approvalUID": "04694d1e-de82-4c31-b9a6-ba60dd8198f3",
+  "applyRunCount": 1,
+  "runtimeUID": "16924f81-c3dd-49a1-83d4-4223c4810b7a",
+  "checks": {
+    "environmentReadyCurrent": true,
+    "infraReadyCurrent": true,
+    "runtimeReadyCurrent": true,
+    "savedPlanUID": true,
+    "savedPlanDigest": true,
+    "savedPlanRef": true,
+    "approvalUID": true,
+    "retainedSource": true,
+    "inventoryUID": true,
+    "runtimeOwnership": true,
+    "runtimeRunID": true,
+    "cloudBucketExists": true
+  },
+  "apply": {
+    "terraformRunName": "qa-environment-infra-plan-1-attempt-1793531387648458-a2b6014f96",
+    "terraformRunUID": "58914d88-251d-4d44-bb29-c0c378388541",
+    "jobName": "qa-environment-infra-plan-1-attempt-1793531387648458-a2b6014f96",
+    "jobUID": "cba2db62-f123-4454-a8af-8a3b7f7a374d",
+    "terminalSHA256": "sha256:276b89500ec9659f617b4af610f4831e01f8f45bff98cf091456dd4c43efe5fb",
+    "terminalRunUID": "58914d88-251d-4d44-bb29-c0c378388541",
+    "terminalJobUID": "cba2db62-f123-4454-a8af-8a3b7f7a374d",
+    "terminalDigestAndIdentitiesMatch": true,
+    "outcome": "Succeeded"
+  },
+  "result": "PASS"
+}

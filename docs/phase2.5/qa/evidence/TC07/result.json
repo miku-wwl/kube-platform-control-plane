@@ -1,0 +1,50 @@
+{
+  "testID": "TC07",
+  "name": "Approval Gate",
+  "status": "PASS",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Current Execution",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-01T23:12:45.300000+13:00 → 2026-11-02T00:44:56.833000+13:00",
+  "executionStartedAtUTC": "2026-11-01T10:12:45.300000+00:00",
+  "executionEndedAtUTC": "2026-11-01T11:44:56.833000+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:51.251781+13:00",
+  "actual": "两次 UI 观察均为 WaitingApproval、RuntimeMutationBlocked、资源数 0、待审批；只读证据为 Apply Run=0、Apply Job=0、审批=0，qa-runtime 与 cloud bucket 均不存在。",
+  "historical": "原 TC07 为 BLOCKED；本轮在真实有变更 Plan 上验证，旧的历史零资源状态未被当成新证据。",
+  "screenshots": [
+    {
+      "tc": "TC07",
+      "name": "01-unapproved-waiting",
+      "capturedAt": "2026-11-01T10:12:45.300Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "3",
+      "fullPage": true,
+      "path": "screenshots/TC07/01-unapproved-waiting.png",
+      "sha256": "2087cd796d7144168b9c9098ae9ba4a14b0e528bf538ec788ac71c6cfe9d3a9a",
+      "originalJPEGSHA256": "0858739249cb22b10f66aff138effe089bb3a4cc54b66b21b5b0ac49d0d6330f",
+      "width": 2027,
+      "height": 1568,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC07",
+      "name": "02-unapproved-replacement-plan",
+      "capturedAt": "2026-11-01T11:44:56.833Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC07/02-unapproved-replacement-plan.png",
+      "sha256": "67cf7319e0ae714d1fbd9c6dfaddad230256d19cb7e5ca18a0fd24e558f8855a",
+      "originalJPEGSHA256": "4f7e9fdfb91dc1803d79a78d7293faf878d0db8287ca061e1f92ddce4a07fd1c",
+      "width": 1264,
+      "height": 1381,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [],
+  "checkpointFiles": [
+    "unapproved-current-plan.json"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "testID": "TC09",
+  "name": "Exact Approval",
+  "status": "PASS",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Current Execution",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-02T00:46:55.065000+13:00 → 2026-11-02T00:47:19.013851+13:00",
+  "executionStartedAtUTC": "2026-11-01T11:46:55.065000+00:00",
+  "executionEndedAtUTC": "2026-11-01T11:47:19.013851+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:52.124036+13:00",
+  "actual": "点击一次批准此确切 Plan；审批 approve-2ea9ef24825cd0fe6dde3461 已记录，UID 04694d1e-de82-4c31-b9a6-ba60dd8198f3；七项绑定均一致，随后只有一个 Apply Job 被准入。",
+  "historical": "原 TC09 为 BLOCKED；历史错误审批 Go E2E 仅作独立追溯。本轮从当前有效 Plan 的真实 UI 按钮完成正向审批。",
+  "screenshots": [
+    {
+      "tc": "TC09",
+      "name": "01-before-exact-approval",
+      "capturedAt": "2026-11-01T11:46:55.065Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC09/01-before-exact-approval.png",
+      "sha256": "93a2b50726288dab37d84564d24548571c06cf05a9dc1e3fa44688658657b758",
+      "originalJPEGSHA256": "634c8c177cac021231d624ee59cebfec75dab424efe72dbf709d94944b264f15",
+      "width": 1264,
+      "height": 967,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC09",
+      "name": "02-approval-recorded",
+      "capturedAt": "2026-11-01T11:46:56.634Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC09/02-approval-recorded.png",
+      "sha256": "e6f3de862764db8b73e560102d7aea05d881dca8a4475cd1e1e3bcc1c134c42f",
+      "originalJPEGSHA256": "b14ed66b187d274b6ad9add3c3175e8f0d801a2807b09560e75289d504cd40a2",
+      "width": 1264,
+      "height": 1477,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [],
+  "checkpointFiles": [
+    "after-exact-approval.json"
+  ]
+}

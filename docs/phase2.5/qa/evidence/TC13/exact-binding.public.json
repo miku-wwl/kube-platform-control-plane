@@ -1,0 +1,31 @@
+{
+  "scope": "Current Execution",
+  "recordedAtUTC": "2026-11-01T12:00:48.895192+00:00",
+  "runID": "kpcp-qa-20261101-2253",
+  "approvalName": "approve-4e330c9571bb77ec21a2d702",
+  "approvalUID": "3e145dd5-ab21-4caf-baa4-eb5c83e5aeed",
+  "planName": "qa-environment-infra-destroy-plan-4",
+  "planUID": "55ac0497-1f85-453d-8321-ad8a4c82ef1d",
+  "planMode": "Destroy",
+  "binding": {
+    "effectivePlanInputDigest": "sha256:b93815367c9b92c084e67121871bc3b250ba68097d7d7648e81ebf5c69469674",
+    "executionContextDigest": "sha256:46c59ab40f1233dba0855479343364045ccd6639137b2a9eb933181ed8d5157e",
+    "planDigest": "sha256:be352368adf534803df853b5bb03c6a34302b830fa47cf89570fe4becc46832c",
+    "planReportDigest": "sha256:6f6c4a7e392c47af05f3d4bac287ee8be290e76bcfa7c79b74baf498cf437804",
+    "planReportRef": "runs/55ac0497-1f85-453d-8321-ad8a4c82ef1d/plan-report.json",
+    "planRunRef": {
+      "name": "qa-environment-infra-destroy-plan-4"
+    },
+    "planRunUID": "55ac0497-1f85-453d-8321-ad8a4c82ef1d"
+  },
+  "checks": {
+    "planName": true,
+    "planUID": true,
+    "planDigest": true,
+    "contextDigest": true,
+    "inputDigest": true,
+    "reportRef": true,
+    "reportDigest": true
+  },
+  "result": "PASS"
+}

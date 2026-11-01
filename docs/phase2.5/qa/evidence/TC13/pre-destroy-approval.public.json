@@ -1,0 +1,38 @@
+{
+  "scope": "Current Execution; deletion requested through real UI, before independent Destroy approval",
+  "recordedAtUTC": "2026-11-01T12:00:06.956242+00:00",
+  "runID": "kpcp-qa-20261101-2253",
+  "environmentUID": "443a7caa-25aa-48f2-9bbd-095e76210ab7",
+  "deletionTimestamp": "2026-11-01T11:58:25Z",
+  "environmentFinalizers": [
+    "platform.example.io/platformenvironment-finalizer"
+  ],
+  "infraUID": "a7322cd8-7fcc-49e4-9dd6-5886d8b5ab9d",
+  "infraFinalizers": [
+    "platform.example.io/infrastack-finalizer"
+  ],
+  "destroyPlanName": "qa-environment-infra-destroy-plan-4",
+  "destroyPlanUID": "55ac0497-1f85-453d-8321-ad8a4c82ef1d",
+  "destroyPlanOutcome": "ChangesPresent",
+  "unrelatedSentinelUID": "3501db4b-a21c-4a3e-a435-bb30d5566714",
+  "checks": {
+    "environmentDeleting": true,
+    "environmentFinalizerHeld": true,
+    "infraFinalizerHeld": true,
+    "runtimePruned": true,
+    "unrelatedSentinelRetained": true,
+    "cloudBucketRetained": true,
+    "noDestroyRun": true,
+    "noDestroyJob": true,
+    "onlyPriorApproval": true,
+    "independentDestroyPlan": true
+  },
+  "result": "PASS",
+  "destroyAdmissionDefinition": "TerraformRun spec.operation=Apply AND spec.planMode=Destroy; Job resolved by owner Run UID",
+  "snapshotCrossCheck": {
+    "file": "before-destroy-approval.json",
+    "rawSHA256": "12224e2820023ade6f98157e406a18adcdbb9d24fbbb6ff009ddac7903f4c934",
+    "destroyRuns": 0,
+    "destroyJobs": 0
+  }
+}

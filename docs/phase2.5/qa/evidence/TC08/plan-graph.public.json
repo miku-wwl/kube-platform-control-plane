@@ -1,0 +1,56 @@
+{
+  "scope": "Current Execution; reviewed product-sanitized plan graph",
+  "recordedAtUTC": "2026-11-01T11:46:16.321604+00:00",
+  "sourceSHA256": "57c595b5811612ed50ca75ecce76bd3cf0340038c11fc22b39f4855edfd475d1",
+  "plan": {
+    "namespace": "kpcp-qa-20261101-2253",
+    "name": "qa-environment-infra-plan-1-attempt-1793531387648458400",
+    "uid": "6dcf21e3-322d-43e0-864a-50d8dad6aa62",
+    "operation": "Plan",
+    "planMode": "Reconcile",
+    "state": "Ready",
+    "reason": "TerraformSucceeded",
+    "message": "Terraform runner terminal result captured.",
+    "outcome": "ChangesPresent",
+    "hasChanges": true,
+    "planDigest": "sha256:7ec07f2c9f1e747a07f86d089a664bc8d42fb844a27fd990ac09fddc24a4bad8",
+    "planRef": "runs/6dcf21e3-322d-43e0-864a-50d8dad6aa62/plan.binary",
+    "planReportRef": "runs/6dcf21e3-322d-43e0-864a-50d8dad6aa62/plan-report.json",
+    "planReportDigest": "sha256:d8b366f5d15055ab84c7d3b4a482d6ee8a1f02cf05909054cc9f163178e8477d",
+    "effectivePlanInputDigest": "sha256:d757943660fa67c5960a52b4a02e0351ea354a80b73db465079fc871a4f80a02",
+    "executionContextDigest": "sha256:e3287a080089a90004175f75f78c6825021102a3f0a090ab5ae072971960dac0",
+    "planExpiresAt": "2026-11-01T12:10:25Z",
+    "planCreatedAt": "2026-11-01T11:10:25Z",
+    "artifactsReady": true,
+    "evidenceCaptured": true,
+    "terminalStartedAt": "2026-11-01T11:09:51Z",
+    "terminalFinishedAt": "2026-11-01T11:10:25Z",
+    "createdAt": "2026-11-01T11:09:47Z"
+  },
+  "graph": {
+    "version": 1,
+    "terraformRunUID": "6dcf21e3-322d-43e0-864a-50d8dad6aa62",
+    "planDigest": "sha256:7ec07f2c9f1e747a07f86d089a664bc8d42fb844a27fd990ac09fddc24a4bad8",
+    "nodes": [
+      {
+        "address": "aws_s3_bucket.lifecycle",
+        "type": "aws_s3_bucket",
+        "provider": "registry.terraform.io/hashicorp/aws",
+        "action": "create",
+        "after": {
+          "bucket": "kpcp-qa-20261101-2253-cloud"
+        }
+      }
+    ],
+    "edges": [],
+    "summary": {
+      "create": 1,
+      "update": 0,
+      "delete": 0,
+      "replace": 0,
+      "noOp": 0
+    }
+  },
+  "identityMatches": true,
+  "result": "PASS"
+}
