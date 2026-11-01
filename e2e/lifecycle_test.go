@@ -36,6 +36,7 @@ import (
 )
 
 type configuration struct {
+	ControllerImage, ControllerKubeconfig                string // optional isolated two-replica Kubernetes controller lane
 	TransportScopeFile                                   string // optional new test-owned path restricting an external transport to this run
 	Kubeconfig, Context, ControllerBinary, RunnerImage   string
 	HostEndpoint, PodEndpoint, SourceURL, SourceRevision string
@@ -59,7 +60,7 @@ func TestLifecycle(t *testing.T) {
 	if err := json.Unmarshal(content, &cfg); err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Context == "" || cfg.Kubeconfig == "" || cfg.ControllerBinary == "" || !strings.Contains(cfg.RunnerImage, "@sha256:") || cfg.SourceURL == "" || len(cfg.SourceRevision) != 40 {
+	if cfg.Context == "" || cfg.Kubeconfig == "" || (cfg.ControllerBinary == "" && cfg.ControllerImage == "") || !strings.Contains(cfg.RunnerImage, "@sha256:") || cfg.SourceURL == "" || len(cfg.SourceRevision) != 40 {
 		t.Fatal("explicit contexts, binary and immutable source/image are required")
 	}
 	for _, endpoint := range []string{cfg.HostEndpoint, cfg.PodEndpoint} {
@@ -208,6 +209,8 @@ func TestLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	var process *exec.Cmd
+	var deployment *controllerDeployment
+	complete := false
 	log, err := os.Create(filepath.Join(dir, "controller.log"))
 	if err != nil {
 		t.Fatal(err)
@@ -221,6 +224,12 @@ func TestLifecycle(t *testing.T) {
 		}
 	}
 	start := func() {
+		if cfg.ControllerImage != "" {
+			if deployment == nil {
+				deployment = startControllerDeployment(t, ctx, kube, scheme, rest, cfg, prefix, targetsFile, &complete)
+			}
+			return
+		}
 		process = exec.Command(cfg.ControllerBinary, "--leader-elect=true", "--health-probe-bind-address=0", "--metrics-bind-address=0")
 		process.Env = append(os.Environ(), "KUBECONFIG="+managementFile, "PCP_KUBECONFIG="+cfg.Kubeconfig, "PCP_TARGET_CONTEXTS=", "PCP_TARGETS_FILE="+targetsFile, "PCP_ENABLE_AWS_EKS=false", "PCP_ENABLE_TERRAFORM_EXECUTION=true", "PCP_ARTIFACT_ENDPOINT="+cfg.HostEndpoint, "PCP_ARTIFACT_BUCKET="+prefix, "PCP_ARTIFACT_REGION=us-east-1", "PCP_LEADER_ELECTION_NAMESPACE="+prefix, "PCP_MAX_CONCURRENT_APPLIES=1")
 		process.Stdout, process.Stderr = log, log
@@ -229,12 +238,15 @@ func TestLifecycle(t *testing.T) {
 		}
 	}
 	restart := func(phase string) {
+		if deployment != nil {
+			deployment.failover(t, ctx, phase)
+			return
+		}
 		stop()
 		start()
 		t.Logf("dedicated controller process restarted phase=%s", phase)
 	}
 	defer stop()
-	complete := false
 	t.Cleanup(func() {
 		if output := os.Getenv("KPCP_E2E_EVIDENCE_DIR"); output != "" {
 			if err := os.MkdirAll(output, 0700); err != nil {
@@ -670,7 +682,7 @@ func TestLifecycle(t *testing.T) {
 	}
 	if !t.Run("C_RestartRecovery", func(t *testing.T) {
 		if countApply() != 1 {
-			t.Fatal("duplicate Apply after four controller process restarts")
+			t.Fatal("duplicate Apply after four controller recoveries")
 		}
 		var jobs batchv1.JobList
 		if err := kube.List(ctx, &jobs, client.InNamespace(prefix)); err != nil {
@@ -686,6 +698,7 @@ func TestLifecycle(t *testing.T) {
 			t.Fatalf("expected exactly Plan+Apply Jobs, got %d", mainJobs)
 		}
 		t.Logf("Plan UID=%s digest=%s input=%s source=%s", plan.UID, plan.Status.PlanDigest, plan.Status.EffectivePlanInputDigest, plan.Status.SourceBundleDigest)
+		recordGateEvidence(t, prefix, "controller-recovery-result", map[string]any{"deploymentLane": deployment != nil, "plan": plan, "applyCount": countApply(), "jobs": jobs})
 	}) {
 		return
 	}
