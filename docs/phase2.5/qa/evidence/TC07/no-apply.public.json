@@ -1,0 +1,20 @@
+{
+  "scope": "Current Execution",
+  "recordedAtUTC": "2026-11-01T11:44:22.307478+00:00",
+  "counts": {
+    "applyRuns": 0,
+    "approvals": 0,
+    "applyJobs": 0
+  },
+  "runtimeAbsent": true,
+  "cloudBucketAbsent": true,
+  "planUIDs": [
+    "ed10d459-93ee-4882-95d7-b8a049b3130c",
+    "6dcf21e3-322d-43e0-864a-50d8dad6aa62"
+  ],
+  "planOutcomes": [
+    "Superseded",
+    "ChangesPresent"
+  ],
+  "result": "PASS"
+}

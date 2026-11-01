@@ -1,0 +1,51 @@
+{
+  "testID": "TC13",
+  "name": "Destroy Approval",
+  "status": "PASS",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Current Execution",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-02T00:59:48.098000+13:00 → 2026-11-02T01:00:49.203329+13:00",
+  "executionStartedAtUTC": "2026-11-01T11:59:48.098000+00:00",
+  "executionEndedAtUTC": "2026-11-01T12:00:49.203329+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:55.222751+13:00",
+  "actual": "真实点击批准此确切 Plan；独立审批 UID 3e145dd5-ab21-4caf-baa4-eb5c83e5aeed 绑定 Destroy Plan UID 55ac0497-1f85-453d-8321-ad8a4c82ef1d；七项匹配，仅一个 Destroy 执行 Run/Job 准入。",
+  "historical": "原 TC13 为 BLOCKED；历史 TestLifecycle/F_DestroyFinalizer 独立审批仅作工程追溯。本轮通过实际页面完成新的 Destroy 审批。",
+  "screenshots": [
+    {
+      "tc": "TC13",
+      "name": "01-destroy-plan-review",
+      "capturedAt": "2026-11-01T11:59:48.098Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC13/01-destroy-plan-review.png",
+      "sha256": "7bba65c2655fb530b13d51ad202e75713abf4aa05d617b7797aae86e9faa8e1e",
+      "originalJPEGSHA256": "981d1605c6fae8df316f46e6cfed2439a1c9c46035697ca4509401635eed1cc2",
+      "width": 1264,
+      "height": 1252,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC13",
+      "name": "02-independent-destroy-approval-recorded",
+      "capturedAt": "2026-11-01T12:00:39.556Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC13/02-independent-destroy-approval-recorded.png",
+      "sha256": "c9fdd6867284d63af819512e8c302e6056a264991f49ee1c9e8ff78935287ad2",
+      "originalJPEGSHA256": "624a0edf9dc459f3433fd2fc498d0c6693cfd43ba2cc8851f5195da60e0005e2",
+      "width": 1264,
+      "height": 1216,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [],
+  "checkpointFiles": [
+    "after-destroy-approval.json",
+    "before-destroy-approval.json"
+  ]
+}

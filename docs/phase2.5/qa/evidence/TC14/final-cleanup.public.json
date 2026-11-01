@@ -1,0 +1,27 @@
+{
+  "scope": "Current Execution; ordinary finalizers, UID-bound isolated fixture cleanup, read-only final verification",
+  "runID": "kpcp-qa-20261101-2253",
+  "recordedAtUTC": "2026-11-01T12:10:24.002585+00:00",
+  "namespaceUIDBeforeDeletion": "99cd7893-6a37-4eed-8312-6caaa33d823b",
+  "classUIDBeforeDeletion": "4878d691-c702-4214-bf20-e00b354e5fc4",
+  "clusterUID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+  "bucketsAfterCleanup": [],
+  "remainingRegisteredHostProcesses": [],
+  "originalServiceURL": "http://127.0.0.1:5173/",
+  "checks": {
+    "ownedNamespaceAbsent": true,
+    "ownedClassAbsent": true,
+    "ownedHostProcessesExited": true,
+    "scopedProxyExited": true,
+    "artifactBucketAbsent": true,
+    "cloudBucketAbsent": true,
+    "sameClusterUID": true,
+    "nodesStillReady": true,
+    "originalServiceHealth200": true,
+    "sharedMiniStackHealth200": true,
+    "bucketsRestoredToEmptyBaseline": true
+  },
+  "sharedEngineClusterEmulatorRestartCommandsIssued": false,
+  "finalizerPatchesIssued": false,
+  "result": "PASS"
+}

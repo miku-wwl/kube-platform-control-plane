@@ -1,0 +1,66 @@
+{
+  "testID": "TC06",
+  "name": "Terraform Plan",
+  "status": "PASS",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Current Execution",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-01T23:10:07.629000+13:00 → 2026-11-02T00:43:25.276570+13:00",
+  "executionStartedAtUTC": "2026-11-01T10:10:07.629000+00:00",
+  "executionEndedAtUTC": "2026-11-01T11:43:25.276570+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:50.719971+13:00",
+  "actual": "首次 Plan 成功，5 类产物摘要相符；等待期间该 Plan 过期变为 Superseded，Controller 自动生成新 attempt，新的 ChangesPresent Plan 也有 5/5 摘要相符，尚未审批。",
+  "historical": "原 TC06 为 BLOCKED。本文件所有新截图和产物摘要来自本轮共享生命周期；历史 799 秒 Go E2E 只作另外的工程追溯。",
+  "screenshots": [
+    {
+      "tc": "TC06",
+      "name": "01-plan-generated",
+      "capturedAt": "2026-11-01T10:10:07.629Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "3",
+      "fullPage": true,
+      "path": "screenshots/TC06/01-plan-generated.png",
+      "sha256": "46c86f9234adea7df883a121a66c1f3e7a9723d0085775a8c3d0f7cfc4e9a5b7",
+      "originalJPEGSHA256": "7ddff2d4cae23a05dc417263aacc436bfd53e96244cac38b2401cd0891b2e26f",
+      "width": 2046,
+      "height": 981,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC06",
+      "name": "02-plan-immutable-evidence",
+      "capturedAt": "2026-11-01T10:10:21.789Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "3",
+      "fullPage": true,
+      "path": "screenshots/TC06/02-plan-immutable-evidence.png",
+      "sha256": "2d2ad25b87fc30ddfefe1fb89b4a7c1c58b84320bd19ae85771abfd11fe31656",
+      "originalJPEGSHA256": "371693a022b562159e7e4f7a9bb7551e3aea7ace5b18ec2c3302a00aeef42fd2",
+      "width": 2027,
+      "height": 1057,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC06",
+      "name": "03-expired-plan-replaced",
+      "capturedAt": "2026-11-01T11:42:49.826Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC06/03-expired-plan-replaced.png",
+      "sha256": "b469e53a534d674cc38fb1e2afc16953e50a2cc89009cec9ce154074c9f2513d",
+      "originalJPEGSHA256": "4686b57f756e33105726bbb91e3df6129acba73fbfff85551161ffae2042af01",
+      "width": 1264,
+      "height": 821,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [],
+  "checkpointFiles": [
+    "plan-generated.json",
+    "replacement-plan-valid.json"
+  ]
+}

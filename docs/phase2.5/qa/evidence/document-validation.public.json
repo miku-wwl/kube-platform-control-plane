@@ -1,0 +1,533 @@
+{
+  "scope": "Documentation/publication validation only; not a new Go E2E run",
+  "runID": "kpcp-qa-20261101-2253",
+  "reviewedAtUTC": "2026-11-01T12:20:08.887978+00:00",
+  "caseCount": 15,
+  "statusCounts": {
+    "PASS": 14,
+    "FAIL": 1
+  },
+  "caseChecks": [
+    {
+      "testID": "TC01",
+      "document": "TC01_APPLICATION_HEALTH.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 2,
+      "historicalReferences": 3,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC02",
+      "document": "TC02_ENVIRONMENT_CLASS.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 3,
+      "historicalReferences": 15,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC03",
+      "document": "TC03_AI_DRAFT.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 2,
+      "historicalReferences": 2,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC04",
+      "document": "TC04_DRAFT_ISOLATION.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 1,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC05",
+      "document": "TC05_ENVIRONMENT_SUBMIT.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 2,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC06",
+      "document": "TC06_TERRAFORM_PLAN.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 3,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC07",
+      "document": "TC07_APPROVAL_GATE.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 2,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC08",
+      "document": "TC08_PLAN_TOPOLOGY.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 2,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC09",
+      "document": "TC09_EXACT_APPROVAL.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 2,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC10",
+      "document": "TC10_APPLY_READY.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 3,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC11",
+      "document": "TC11_UPDATE_NOCHANGE.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 6,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC12",
+      "document": "TC12_DELETE_REQUEST.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 4,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC13",
+      "document": "TC13_DESTROY_APPROVAL.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 2,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC14",
+      "document": "TC14_DESTROY_CLEANUP.md",
+      "status": "PASS",
+      "sections": 8,
+      "newPNGCount": 6,
+      "historicalReferences": 0,
+      "manualGuideMarkersPresent": true
+    },
+    {
+      "testID": "TC15",
+      "document": "TC15_LANGUAGE_ERRORS.md",
+      "status": "FAIL",
+      "sections": 8,
+      "newPNGCount": 3,
+      "historicalReferences": 3,
+      "manualGuideMarkersPresent": true
+    }
+  ],
+  "markdownLinksChecked": 240,
+  "brokenLinks": [],
+  "currentPNGCount": 43,
+  "pngDecodeAndOriginalPixelComparison": "PASS for all 43",
+  "historicalUniqueReferences": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "historical23OriginalHashesUnchanged": true,
+  "protectedReportSHA256": {
+    "QA_VALIDATION_REPORT.md": "e34ecbc38aa3a6970d2b15e48e1f577643b4532188b773db82b564b5ba676d81",
+    "VALIDATION_REPORT.md": "d2e73f90ab886baec62b17e1b725add2455815277dafde95c7d32102859bac4a",
+    "ACCEPTANCE_COVERAGE_MATRIX.md": "c758566246ca2c1655e8995b815522e0c8272791a787ff8651f6a9015ad612bf"
+  },
+  "sourceProductDiff": [],
+  "privacyScanTextFiles": 70,
+  "privacyReview": "Published text/JSON and full DOM for each capture reviewed for private IPv4, Windows absolute paths and credential patterns; source image pixels reviewed in real browser; raw JPEG/DOM/config/log/artifact bytes remain local. No visual redaction or simulated screenshots introduced in this run.",
+  "cleanup": "PASS; final-cleanup.public.json",
+  "images": [
+    {
+      "case": "TC01",
+      "path": "screenshots/TC01/01-qa-home.png",
+      "sha256": "c91e9303f2fd591434c645023bc9f8529af26b45af83e82817e481292cbd6412",
+      "originalJPEGSHA256": "b9d4b9470a4c689af3fbc9c3a9572fa1fb12617e21d6b0de2457d4572565254b",
+      "pixelsMatchOriginal": true,
+      "bytes": 165106
+    },
+    {
+      "case": "TC01",
+      "path": "screenshots/TC01/02-environment-list-connected.png",
+      "sha256": "de4c7454f50c1adc1a000f18cad21e4c34fa2dcf84fb4abf8c1010c0f8923323",
+      "originalJPEGSHA256": "437a99affaa5398425d594929c40b8d18b62d9fbea1b4e392b0ac7860dc1d400",
+      "pixelsMatchOriginal": true,
+      "bytes": 191018
+    },
+    {
+      "case": "TC02",
+      "path": "screenshots/TC02/01-valid-qa-class-configuration.png",
+      "sha256": "12e4479fe7f538273ca119da312a3b6e57a494837789f50006aa92fcc342c8ed",
+      "originalJPEGSHA256": "45b484768d210536bcac036db02d0b9ac462b93919a0f94d6bb7ac1be0b2a907",
+      "pixelsMatchOriginal": true,
+      "bytes": 292342
+    },
+    {
+      "case": "TC02",
+      "path": "screenshots/TC02/02-class-created.png",
+      "sha256": "032dc1fe8c64af64c3b8bb0b7fd0d8a85d76c974cdbf32ec2f9eb2de33d945a9",
+      "originalJPEGSHA256": "92c310ee717c1056ae569a0ce551c79ed458a235db11919651520ed81ad7ccbb",
+      "pixelsMatchOriginal": true,
+      "bytes": 266260
+    },
+    {
+      "case": "TC02",
+      "path": "screenshots/TC02/03-ready-class-full.png",
+      "sha256": "587164f6b5ece5232f47d41740061f850425ccac07d723aa41b59be2e3f9838c",
+      "originalJPEGSHA256": "cd98b89319d1d627e8f12e202dab677326b96c3e13cc5ff6be85e13d35825e6d",
+      "pixelsMatchOriginal": true,
+      "bytes": 667020
+    },
+    {
+      "case": "TC03",
+      "path": "screenshots/TC03/01-draft-input-ready-class.png",
+      "sha256": "08cc092fb4d75024ed227260912abf53bba6d65c9a1a6fe3e0f61ed97198e78b",
+      "originalJPEGSHA256": "cc4e965449ff38129e73532e94d403825c28c15e6592089ebfe06c66ef73ad3a",
+      "pixelsMatchOriginal": true,
+      "bytes": 256912
+    },
+    {
+      "case": "TC03",
+      "path": "screenshots/TC03/02-generated-draft-review.png",
+      "sha256": "4e76adeca8e426fec992fbded1c1122e5c0e0bfc6a7e07d63448d835e0149ccd",
+      "originalJPEGSHA256": "f0ddfa171b5460e63589c9c651e7d8e9ba68c96e4e9e2f8dab6ae731a98be57e",
+      "pixelsMatchOriginal": true,
+      "bytes": 584926
+    },
+    {
+      "case": "TC04",
+      "path": "screenshots/TC04/01-reviewed-draft-not-submitted.png",
+      "sha256": "f7bed64ef15eff7513829e4b6f3a8ad4f7d5974a47191402f600a3bd8bcb690e",
+      "originalJPEGSHA256": "4e8a1ab95b88f9557b33c8c327d06c39538a7e66d592bb6236b8a87d9bb31692",
+      "pixelsMatchOriginal": true,
+      "bytes": 584961
+    },
+    {
+      "case": "TC05",
+      "path": "screenshots/TC05/01-reviewed-explicit-submit.png",
+      "sha256": "f7bed64ef15eff7513829e4b6f3a8ad4f7d5974a47191402f600a3bd8bcb690e",
+      "originalJPEGSHA256": "4e8a1ab95b88f9557b33c8c327d06c39538a7e66d592bb6236b8a87d9bb31692",
+      "pixelsMatchOriginal": true,
+      "bytes": 584961
+    },
+    {
+      "case": "TC05",
+      "path": "screenshots/TC05/02-environment-submitted.png",
+      "sha256": "a2ecb51a50853cb850b0badb38b13faaa26ce0173a5cd7b9b2f23e798444c56e",
+      "originalJPEGSHA256": "af832ea7c0278166fa94f69e3712acabf476d683ab743b2c95574d5560b313fd",
+      "pixelsMatchOriginal": true,
+      "bytes": 416170
+    },
+    {
+      "case": "TC06",
+      "path": "screenshots/TC06/01-plan-generated.png",
+      "sha256": "46c86f9234adea7df883a121a66c1f3e7a9723d0085775a8c3d0f7cfc4e9a5b7",
+      "originalJPEGSHA256": "7ddff2d4cae23a05dc417263aacc436bfd53e96244cac38b2401cd0891b2e26f",
+      "pixelsMatchOriginal": true,
+      "bytes": 347889
+    },
+    {
+      "case": "TC06",
+      "path": "screenshots/TC06/02-plan-immutable-evidence.png",
+      "sha256": "2d2ad25b87fc30ddfefe1fb89b4a7c1c58b84320bd19ae85771abfd11fe31656",
+      "originalJPEGSHA256": "371693a022b562159e7e4f7a9bb7551e3aea7ace5b18ec2c3302a00aeef42fd2",
+      "pixelsMatchOriginal": true,
+      "bytes": 459812
+    },
+    {
+      "case": "TC06",
+      "path": "screenshots/TC06/03-expired-plan-replaced.png",
+      "sha256": "b469e53a534d674cc38fb1e2afc16953e50a2cc89009cec9ce154074c9f2513d",
+      "originalJPEGSHA256": "4686b57f756e33105726bbb91e3df6129acba73fbfff85551161ffae2042af01",
+      "pixelsMatchOriginal": true,
+      "bytes": 312782
+    },
+    {
+      "case": "TC07",
+      "path": "screenshots/TC07/01-unapproved-waiting.png",
+      "sha256": "2087cd796d7144168b9c9098ae9ba4a14b0e528bf538ec788ac71c6cfe9d3a9a",
+      "originalJPEGSHA256": "0858739249cb22b10f66aff138effe089bb3a4cc54b66b21b5b0ac49d0d6330f",
+      "pixelsMatchOriginal": true,
+      "bytes": 625486
+    },
+    {
+      "case": "TC07",
+      "path": "screenshots/TC07/02-unapproved-replacement-plan.png",
+      "sha256": "67cf7319e0ae714d1fbd9c6dfaddad230256d19cb7e5ca18a0fd24e558f8855a",
+      "originalJPEGSHA256": "4f7e9fdfb91dc1803d79a78d7293faf878d0db8287ca061e1f92ddce4a07fd1c",
+      "pixelsMatchOriginal": true,
+      "bytes": 520977
+    },
+    {
+      "case": "TC08",
+      "path": "screenshots/TC08/01-plan-topology.png",
+      "sha256": "c1dcc6cf0034162753f27632d8a80e8f6805956beb1075aaaff01d4ad3c8b432",
+      "originalJPEGSHA256": "f157f6e6a4666d91a5c69e4b52a2c9fdde862394504d74e9e0cf36dfd7825d50",
+      "pixelsMatchOriginal": true,
+      "bytes": 526103
+    },
+    {
+      "case": "TC08",
+      "path": "screenshots/TC08/02-current-valid-plan-topology.png",
+      "sha256": "93a2b50726288dab37d84564d24548571c06cf05a9dc1e3fa44688658657b758",
+      "originalJPEGSHA256": "634c8c177cac021231d624ee59cebfec75dab424efe72dbf709d94944b264f15",
+      "pixelsMatchOriginal": true,
+      "bytes": 411223
+    },
+    {
+      "case": "TC09",
+      "path": "screenshots/TC09/01-before-exact-approval.png",
+      "sha256": "93a2b50726288dab37d84564d24548571c06cf05a9dc1e3fa44688658657b758",
+      "originalJPEGSHA256": "634c8c177cac021231d624ee59cebfec75dab424efe72dbf709d94944b264f15",
+      "pixelsMatchOriginal": true,
+      "bytes": 411223
+    },
+    {
+      "case": "TC09",
+      "path": "screenshots/TC09/02-approval-recorded.png",
+      "sha256": "e6f3de862764db8b73e560102d7aea05d881dca8a4475cd1e1e3bcc1c134c42f",
+      "originalJPEGSHA256": "b14ed66b187d274b6ad9add3c3175e8f0d801a2807b09560e75289d504cd40a2",
+      "pixelsMatchOriginal": true,
+      "bytes": 557623
+    },
+    {
+      "case": "TC10",
+      "path": "screenshots/TC10/01-apply-observed.png",
+      "sha256": "8ddf552aeb5a4ae50f38008a7b4f8c02bea9bac5b7b4a25086f0c24f245b37b2",
+      "originalJPEGSHA256": "605563de38b86bbb3065f5e5b110c5877978208d2feb4cff3490ef2c629a0c87",
+      "pixelsMatchOriginal": true,
+      "bytes": 386310
+    },
+    {
+      "case": "TC10",
+      "path": "screenshots/TC10/02-environment-ready.png",
+      "sha256": "578912a48a3880fcecd4714fce24cdd883119305708730c6bd050cddee4f6ff8",
+      "originalJPEGSHA256": "aa2026f024b3b772f0e8bae0a09515ec9799ba88069ab65213adad504da5c322",
+      "pixelsMatchOriginal": true,
+      "bytes": 493643
+    },
+    {
+      "case": "TC10",
+      "path": "screenshots/TC10/03-apply-ready-timeline.png",
+      "sha256": "a422ec2f8d5613c20367fcb5af88660fac8e222b45fb5d8a6e73e9d49a3d0dd5",
+      "originalJPEGSHA256": "090e6057fea8e1f70c6178c2ea5bdfd3f0d4ad39dac27d7e2da12906ce07d21d",
+      "pixelsMatchOriginal": true,
+      "bytes": 943362
+    },
+    {
+      "case": "TC11",
+      "path": "screenshots/TC11/01-capacity-update-input.png",
+      "sha256": "466602d7276314a195da1100e1b756664a06e4e5d2661d122a0bb20e48cb0e0e",
+      "originalJPEGSHA256": "8e78b4201411daa5966bb9bc04d270f6eff79e8a98574628fd9d9c9619230265",
+      "pixelsMatchOriginal": true,
+      "bytes": 474130
+    },
+    {
+      "case": "TC11",
+      "path": "screenshots/TC11/02-update-submitted.png",
+      "sha256": "b74dffda4a8779f1f3df266e35bee0c60f64968b6483e25965ecc6fa193b4417",
+      "originalJPEGSHA256": "251e625116389a3e484727c4f49f0875b3f2f1868369ee486a8c61627a302011",
+      "pixelsMatchOriginal": true,
+      "bytes": 485783
+    },
+    {
+      "case": "TC11",
+      "path": "screenshots/TC11/03-update-plan-progress.png",
+      "sha256": "18cf4c112f672c8542ae40d9a34a32a9332bb9c7f62312e726264cf172e1d8b4",
+      "originalJPEGSHA256": "f69127ed24a9e49841d1ff282d01ac21c1553b4c7ce197cc25f67d4c8a5e8610",
+      "pixelsMatchOriginal": true,
+      "bytes": 400741
+    },
+    {
+      "case": "TC11",
+      "path": "screenshots/TC11/04-nochange-plan-detail.png",
+      "sha256": "b80545d53d99d1b811fe301667d3e2283e711c10efaf39b90f977461ee37e798",
+      "originalJPEGSHA256": "75a886c3f5418dd6e57f802839627bc7f54c8f88872728e629d7a5fd79ade77c",
+      "pixelsMatchOriginal": true,
+      "bytes": 495301
+    },
+    {
+      "case": "TC11",
+      "path": "screenshots/TC11/05-nochange-ready.png",
+      "sha256": "2333c9dcfa96b321273071d8e835a21a4ff8a09adcbb217e370b85b5951f3c7b",
+      "originalJPEGSHA256": "ff8cc53ea00a17f28cb6d5bfd245b7417deafbb27625531e403b86e1d7cab95a",
+      "pixelsMatchOriginal": true,
+      "bytes": 487438
+    },
+    {
+      "case": "TC11",
+      "path": "screenshots/TC11/06-nochange-topology.png",
+      "sha256": "35939a4d036d2b1188fae4fc9e2b2b40b594222e4538faa535ca4afb25bd12bd",
+      "originalJPEGSHA256": "5b93db827db2386cdc698ada9d914050f12f9d10ab3106a8e8a2ac39b58e95e9",
+      "pixelsMatchOriginal": true,
+      "bytes": 446860
+    },
+    {
+      "case": "TC12",
+      "path": "screenshots/TC12/01-wrong-name-blocked.png",
+      "sha256": "eae9a901456e8ddddcbcc138b8523e2fa59ad84de4fe982c1c5794b82aec0488",
+      "originalJPEGSHA256": "66984b44263c19cf5d3b1edf8dde7a69883773d18dcbcca962d43d92789f700d",
+      "pixelsMatchOriginal": true,
+      "bytes": 533330
+    },
+    {
+      "case": "TC12",
+      "path": "screenshots/TC12/02-exact-delete-confirmation.png",
+      "sha256": "c9d90eaf34245bc63b4226c51cb09964320ee1c5443c51dcc7559fa8959411cf",
+      "originalJPEGSHA256": "d412f8461117e3a15637a336b996bbfbf7a23f914c5844b3e276c7c9675a7f65",
+      "pixelsMatchOriginal": true,
+      "bytes": 532902
+    },
+    {
+      "case": "TC12",
+      "path": "screenshots/TC12/03-delete-requested.png",
+      "sha256": "843b12cef1bdb80930ca47e68ddcc499b041842e5461a0eca9ade35eacf02045",
+      "originalJPEGSHA256": "6a145690fb403695f2a9375977b7322e3389d048adbfad727cc99f49abc033ea",
+      "pixelsMatchOriginal": true,
+      "bytes": 476994
+    },
+    {
+      "case": "TC12",
+      "path": "screenshots/TC12/04-finalizer-deleting-runtime-pruned.png",
+      "sha256": "93a01bf1ff3277269dc48eed839172130897f8f37e2c5cd70e7e303dbb76c7ae",
+      "originalJPEGSHA256": "4bdd800b55d19f925d865db4e51ae5bef7115143bf4d9d783c31c53cdb3b7886",
+      "pixelsMatchOriginal": true,
+      "bytes": 391111
+    },
+    {
+      "case": "TC13",
+      "path": "screenshots/TC13/01-destroy-plan-review.png",
+      "sha256": "7bba65c2655fb530b13d51ad202e75713abf4aa05d617b7797aae86e9faa8e1e",
+      "originalJPEGSHA256": "981d1605c6fae8df316f46e6cfed2439a1c9c46035697ca4509401635eed1cc2",
+      "pixelsMatchOriginal": true,
+      "bytes": 453585
+    },
+    {
+      "case": "TC13",
+      "path": "screenshots/TC13/02-independent-destroy-approval-recorded.png",
+      "sha256": "c9fdd6867284d63af819512e8c302e6056a264991f49ee1c9e8ff78935287ad2",
+      "originalJPEGSHA256": "624a0edf9dc459f3433fd2fc498d0c6693cfd43ba2cc8851f5195da60e0005e2",
+      "pixelsMatchOriginal": true,
+      "bytes": 466021
+    },
+    {
+      "case": "TC14",
+      "path": "screenshots/TC14/01-destroy-execution.png",
+      "sha256": "457a8ba6e42240841ba9699f835d41581e66c3265c579a72d20844c3fdbbab14",
+      "originalJPEGSHA256": "73037eeb1978790dd59d65b2dd02b6b8f052f14a0733da07fd787b877f85770c",
+      "pixelsMatchOriginal": true,
+      "bytes": 519183
+    },
+    {
+      "case": "TC14",
+      "path": "screenshots/TC14/02-environment-removed.png",
+      "sha256": "1407eaa0b8f69388a4302dfb1c3b293844748dbb831db327ca77807c508c7750",
+      "originalJPEGSHA256": "b05a3f39c1f0472d25c9b4b115b6477f8b17a87e145ce6dafce83c9f5fdd3f5f",
+      "pixelsMatchOriginal": true,
+      "bytes": 218429
+    },
+    {
+      "case": "TC14",
+      "path": "screenshots/TC14/03-unused-class-delete-confirmation.png",
+      "sha256": "3b86f4f352dbd713672153c5083f1decef1becfdcd107119be7e2216926f7289",
+      "originalJPEGSHA256": "310b353a0a3dbd0226267b7b0b22671898f56853b610c8dbadf8041c67f20e82",
+      "pixelsMatchOriginal": true,
+      "bytes": 627105
+    },
+    {
+      "case": "TC14",
+      "path": "screenshots/TC14/04-class-cleaned.png",
+      "sha256": "917d767a5df18e4c06c9d87a74986b3e281c20a3cc3fd2466fa06c28ec7fd8cb",
+      "originalJPEGSHA256": "0ea04af7ee0aa27ecdd586142d4a065c383c759aef136920c97d1e1c21f2996c",
+      "pixelsMatchOriginal": true,
+      "bytes": 669629
+    },
+    {
+      "case": "TC14",
+      "path": "screenshots/TC14/05-no-classes-remain.png",
+      "sha256": "6ed4000bf083fa446cb6d8315a045b1e58dad73752745f3d7df3e6dd3dc2604a",
+      "originalJPEGSHA256": "ebbf041d0191430bb957057820a9ed0836d348244e2dc81c10a8497e5ba8ad34",
+      "pixelsMatchOriginal": true,
+      "bytes": 208625
+    },
+    {
+      "case": "TC14",
+      "path": "screenshots/TC14/06-original-service-preserved.png",
+      "sha256": "2d84e0512b1437344f549e564dbf12eb4599bf13c44943270f41375f07c370eb",
+      "originalJPEGSHA256": "65eed431e3c8698b9f157728a0bcef04629673c8ab6ddc5340d6b35c109b9003",
+      "pixelsMatchOriginal": true,
+      "bytes": 248306
+    },
+    {
+      "case": "TC15",
+      "path": "screenshots/TC15/01-chinese-english-server-error.png",
+      "sha256": "932ae639a3408b037a062e462bd8e3cadb145a12ced48294e8800a58e5fefb32",
+      "originalJPEGSHA256": "3240468c3b032b24e50c0731d7d17c302085acb375ab4d33b44cbb9cc652b516",
+      "pixelsMatchOriginal": true,
+      "bytes": 280376
+    },
+    {
+      "case": "TC15",
+      "path": "screenshots/TC15/02-english-validation-state.png",
+      "sha256": "fc49b2f363dc92f254d5e1f75e3fc2a421ac1fc6290175fd7342b22d1d2c9d2f",
+      "originalJPEGSHA256": "1951e5b07d35c5d3e249e3635944c9291f1fa36ec968d3c6cde0f9f27506084a",
+      "pixelsMatchOriginal": true,
+      "bytes": 273884
+    },
+    {
+      "case": "TC15",
+      "path": "screenshots/TC15/03-chinese-restored.png",
+      "sha256": "a5cc0281b529e5227264a13f242b98e14492b69f8870fdc652964ca4189ecc18",
+      "originalJPEGSHA256": "10dabda81dd3a222f3914690231ac46c39c7fcdf14911fd3e172b913c515575f",
+      "pixelsMatchOriginal": true,
+      "bytes": 248813
+    }
+  ],
+  "result": "PASS"
+}

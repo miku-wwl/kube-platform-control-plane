@@ -1,0 +1,134 @@
+{
+  "scope": "Current Execution; reviewed public projection, private configuration omitted",
+  "runID": "kpcp-qa-20261101-2253",
+  "recordedAtUTC": "2026-11-01T12:01:12.342418+00:00",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "originalSHA256": "959761665a9d2938b9a29f6df3f48e0394292b82b6b37bb86978c3ab93f61f0a",
+  "rawEvidence": "Controlled local run directory; not committed",
+  "objects": [
+    {
+      "kind": "EnvironmentClass",
+      "name": "kpcp-qa-20261101-2253-v1",
+      "namespace": null,
+      "uid": "4878d691-c702-4214-bf20-e00b354e5fc4",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/environmentclass-finalizer"
+      ],
+      "approvalPolicy": "Manual",
+      "observedGeneration": 1,
+      "conditions": [
+        {
+          "reason": "ClassValidated",
+          "status": "True",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "ChangeApproval",
+      "name": "approve-2ea9ef24825cd0fe6dde3461",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "04694d1e-de82-4c31-b9a6-ba60dd8198f3",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "planRunUID": "6dcf21e3-322d-43e0-864a-50d8dad6aa62",
+      "planDigest": "sha256:7ec07f2c9f1e747a07f86d089a664bc8d42fb844a27fd990ac09fddc24a4bad8",
+      "executionContextDigest": "sha256:e3287a080089a90004175f75f78c6825021102a3f0a090ab5ae072971960dac0",
+      "effectivePlanInputDigest": "sha256:d757943660fa67c5960a52b4a02e0351ea354a80b73db465079fc871a4f80a02",
+      "planReportRef": "runs/6dcf21e3-322d-43e0-864a-50d8dad6aa62/plan-report.json",
+      "planReportDigest": "sha256:d8b366f5d15055ab84c7d3b4a482d6ee8a1f02cf05909054cc9f163178e8477d"
+    },
+    {
+      "kind": "ChangeApproval",
+      "name": "approve-4e330c9571bb77ec21a2d702",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3e145dd5-ab21-4caf-baa4-eb5c83e5aeed",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "planRunUID": "55ac0497-1f85-453d-8321-ad8a4c82ef1d",
+      "planDigest": "sha256:be352368adf534803df853b5bb03c6a34302b830fa47cf89570fe4becc46832c",
+      "executionContextDigest": "sha256:46c59ab40f1233dba0855479343364045ccd6639137b2a9eb933181ed8d5157e",
+      "effectivePlanInputDigest": "sha256:b93815367c9b92c084e67121871bc3b250ba68097d7d7648e81ebf5c69469674",
+      "planReportRef": "runs/55ac0497-1f85-453d-8321-ad8a4c82ef1d/plan-report.json",
+      "planReportDigest": "sha256:6f6c4a7e392c47af05f3d4bac287ee8be290e76bcfa7c79b74baf498cf437804"
+    },
+    {
+      "kind": "Pod",
+      "name": "git-source-b8655f9f5-ssmrq",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "534f6cda-3a53-4f03-b008-7cd00503613d",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "observedGeneration": 1,
+      "phase": "Running",
+      "conditions": [
+        {
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "status": "True",
+          "type": "Ready"
+        },
+        {
+          "status": "True",
+          "type": "ContainersReady"
+        },
+        {
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ]
+    },
+    {
+      "kind": "ConfigMap",
+      "name": "unrelated-sentinel",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3501db4b-a21c-4a3e-a435-bb30d5566714",
+      "generation": null,
+      "deleting": false,
+      "finalizers": []
+    },
+    {
+      "kind": "ServiceAccount",
+      "name": "default",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3568b883-ff2f-4617-9ee4-160c38c76c3c",
+      "generation": null,
+      "deleting": false,
+      "finalizers": []
+    },
+    {
+      "kind": "EnvironmentClass",
+      "name": "kpcp-qa-20261101-2253-v1",
+      "namespace": null,
+      "uid": "4878d691-c702-4214-bf20-e00b354e5fc4",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/environmentclass-finalizer"
+      ],
+      "approvalPolicy": "Manual",
+      "observedGeneration": 1,
+      "conditions": [
+        {
+          "reason": "ClassValidated",
+          "status": "True",
+          "type": "Ready"
+        }
+      ]
+    }
+  ],
+  "ownedBuckets": [
+    "kpcp-qa-20261101-2253"
+  ]
+}

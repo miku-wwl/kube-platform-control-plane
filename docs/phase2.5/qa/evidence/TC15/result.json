@@ -1,0 +1,79 @@
+{
+  "testID": "TC15",
+  "name": "Language & Errors",
+  "status": "FAIL",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Current Execution; historical language PASS / localization PARTIAL preserved separately",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-01T23:02:57.847000+13:00 → 2026-11-01T23:03:20.947000+13:00",
+  "executionStartedAtUTC": "2026-11-01T10:02:57.847000+00:00",
+  "executionEndedAtUTC": "2026-11-01T10:03:20.947000+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:57.081846+13:00",
+  "actual": "语言切换与输入保留通过；中文模式下 source.revision 错误句及 Backend 警告仍为英文，QA-01 未关闭。",
+  "historical": "前一轮 TC15 为 PARTIAL：语言切换通过，QA-01 本地化缺陷未关闭；原图 20–22 保留。本轮重新复现，按当前完整预期判定 FAIL，未改写历史 PARTIAL。",
+  "screenshots": [
+    {
+      "tc": "TC15",
+      "name": "01-chinese-english-server-error",
+      "capturedAt": "2026-11-01T10:02:57.847Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/#classes",
+      "tabId": "3",
+      "fullPage": false,
+      "path": "screenshots/TC15/01-chinese-english-server-error.png",
+      "sha256": "932ae639a3408b037a062e462bd8e3cadb145a12ced48294e8800a58e5fefb32",
+      "originalJPEGSHA256": "3240468c3b032b24e50c0731d7d17c302085acb375ab4d33b44cbb9cc652b516",
+      "width": 1825,
+      "height": 875,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC15",
+      "name": "02-english-validation-state",
+      "capturedAt": "2026-11-01T10:03:20.510Z",
+      "title": "Platform Control Plane",
+      "url": "http://127.0.0.1:5174/#classes",
+      "tabId": "3",
+      "fullPage": false,
+      "path": "screenshots/TC15/02-english-validation-state.png",
+      "sha256": "fc49b2f363dc92f254d5e1f75e3fc2a421ac1fc6290175fd7342b22d1d2c9d2f",
+      "originalJPEGSHA256": "1951e5b07d35c5d3e249e3635944c9291f1fa36ec968d3c6cde0f9f27506084a",
+      "width": 1825,
+      "height": 875,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC15",
+      "name": "03-chinese-restored",
+      "capturedAt": "2026-11-01T10:03:20.947Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/#classes",
+      "tabId": "3",
+      "fullPage": false,
+      "path": "screenshots/TC15/03-chinese-restored.png",
+      "sha256": "a5cc0281b529e5227264a13f242b98e14492b69f8870fdc652964ca4189ecc18",
+      "originalJPEGSHA256": "10dabda81dd3a222f3914690231ac46c39c7fcdf14911fd3e172b913c515575f",
+      "width": 1825,
+      "height": 875,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [
+    {
+      "number": 20,
+      "path": "../screenshots/qa-20261101-20-builder-english.png",
+      "historical": true
+    },
+    {
+      "number": 21,
+      "path": "../screenshots/qa-20261101-21-builder-english-full.png",
+      "historical": true
+    },
+    {
+      "number": 22,
+      "path": "../screenshots/qa-20261101-22-builder-chinese-restored.png",
+      "historical": true
+    }
+  ],
+  "checkpointFiles": []
+}

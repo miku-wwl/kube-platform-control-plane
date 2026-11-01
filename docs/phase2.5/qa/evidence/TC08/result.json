@@ -1,0 +1,48 @@
+{
+  "testID": "TC08",
+  "name": "Plan Topology",
+  "status": "PASS",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Current Execution",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-01T23:12:46.075000+13:00 → 2026-11-02T00:46:16.321604+13:00",
+  "executionStartedAtUTC": "2026-11-01T10:12:46.075000+00:00",
+  "executionEndedAtUTC": "2026-11-01T11:46:16.321604+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:51.729954+13:00",
+  "actual": "架构预览显示 aws_s3_bucket.lifecycle 创建 1、更新/删除/替换均 0；当前为空、计划 bucket 为本轮 -cloud 名称。当前 API graph UID/digest 与有效 Plan 一致，edges 为空符合单资源模块。",
+  "historical": "原 TC08 为 BLOCKED。这里两张图片均为本轮真实 Plan 投影，分别属于首次 Plan 和过期后新 attempt；没有历史或静态拓扑替代。",
+  "screenshots": [
+    {
+      "tc": "TC08",
+      "name": "01-plan-topology",
+      "capturedAt": "2026-11-01T10:12:46.075Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "3",
+      "fullPage": true,
+      "path": "screenshots/TC08/01-plan-topology.png",
+      "sha256": "c1dcc6cf0034162753f27632d8a80e8f6805956beb1075aaaff01d4ad3c8b432",
+      "originalJPEGSHA256": "f157f6e6a4666d91a5c69e4b52a2c9fdde862394504d74e9e0cf36dfd7825d50",
+      "width": 2027,
+      "height": 1169,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC08",
+      "name": "02-current-valid-plan-topology",
+      "capturedAt": "2026-11-01T11:44:57.401Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC08/02-current-valid-plan-topology.png",
+      "sha256": "93a2b50726288dab37d84564d24548571c06cf05a9dc1e3fa44688658657b758",
+      "originalJPEGSHA256": "634c8c177cac021231d624ee59cebfec75dab424efe72dbf709d94944b264f15",
+      "width": 1264,
+      "height": 967,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [],
+  "checkpointFiles": []
+}

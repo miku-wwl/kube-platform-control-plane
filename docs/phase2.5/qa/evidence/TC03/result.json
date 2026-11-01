@@ -1,0 +1,59 @@
+{
+  "testID": "TC03",
+  "name": "AI Draft",
+  "status": "PASS",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Current Execution: real UI + project-native deterministic provider; live LLM quality NOT RUN",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-01T23:06:48.357000+13:00 → 2026-11-01T23:06:49.178000+13:00",
+  "executionStartedAtUTC": "2026-11-01T10:06:48.357000+00:00",
+  "executionEndedAtUTC": "2026-11-01T10:06:49.178000+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:49.261843+13:00",
+  "actual": "生成成功，提供方显示确定性生成；名称、命名空间、Class、local 区域、1 节点、Valkey 未启用与请求一致；提交按钮独立显示。",
+  "historical": "原 TC03 为 BLOCKED，图 18、19 显示无 Ready 类别；本轮已真正准备 Class 与执行前置条件，新截图证明原生草稿 UI 工作流可执行。历史 BLOCKED 仍保留身份。",
+  "screenshots": [
+    {
+      "tc": "TC03",
+      "name": "01-draft-input-ready-class",
+      "capturedAt": "2026-11-01T10:06:48.357Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/#builder",
+      "tabId": "3",
+      "fullPage": false,
+      "path": "screenshots/TC03/01-draft-input-ready-class.png",
+      "sha256": "08cc092fb4d75024ed227260912abf53bba6d65c9a1a6fe3e0f61ed97198e78b",
+      "originalJPEGSHA256": "cc4e965449ff38129e73532e94d403825c28c15e6592089ebfe06c66ef73ad3a",
+      "width": 1825,
+      "height": 875,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC03",
+      "name": "02-generated-draft-review",
+      "capturedAt": "2026-11-01T10:06:49.178Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/#builder",
+      "tabId": "3",
+      "fullPage": true,
+      "path": "screenshots/TC03/02-generated-draft-review.png",
+      "sha256": "4e76adeca8e426fec992fbded1c1122e5c0e0bfc6a7e07d63448d835e0149ccd",
+      "originalJPEGSHA256": "f0ddfa171b5460e63589c9c651e7d8e9ba68c96e4e9e2f8dab6ae731a98be57e",
+      "width": 2027,
+      "height": 1482,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [
+    {
+      "number": 18,
+      "path": "../screenshots/qa-20261101-18-builder-no-ready-class.png",
+      "historical": true
+    },
+    {
+      "number": 19,
+      "path": "../screenshots/qa-20261101-19-class-selector-empty.png",
+      "historical": true
+    }
+  ],
+  "checkpointFiles": []
+}

@@ -1,0 +1,25 @@
+{
+  "scope": "Current Execution; admission captured before normal finalizer garbage collection",
+  "recordedAtUTC": "2026-11-01T12:00:49.203329+00:00",
+  "runID": "kpcp-qa-20261101-2253",
+  "destroyOperation": "Apply",
+  "planMode": "Destroy",
+  "destroyRunName": "qa-environment-infra-destroy-plan-4-apply-5c0ccfabfe",
+  "destroyRunUID": "068b0320-3e23-445c-b4e4-0528fcbc3bd2",
+  "destroyJobName": "qa-environment-infra-destroy-plan-4-apply-5c0ccfabfe",
+  "destroyJobUID": "fd1e2cb6-1826-4524-bdb2-4678f7c54b00",
+  "approvalUID": "3e145dd5-ab21-4caf-baa4-eb5c83e5aeed",
+  "planUID": "55ac0497-1f85-453d-8321-ad8a4c82ef1d",
+  "planDigest": "sha256:be352368adf534803df853b5bb03c6a34302b830fa47cf89570fe4becc46832c",
+  "checks": {
+    "distinctApproval": true,
+    "distinctPlan": true,
+    "savedPlanUID": true,
+    "savedPlanDigest": true,
+    "savedPlanRef": true,
+    "exactApprovalUID": true,
+    "retainedSource": true,
+    "jobOwnedByDestroyRun": true
+  },
+  "result": "PASS"
+}

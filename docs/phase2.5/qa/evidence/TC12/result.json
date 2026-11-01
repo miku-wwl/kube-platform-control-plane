@@ -1,0 +1,80 @@
+{
+  "testID": "TC12",
+  "name": "Delete Request",
+  "status": "PASS",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Current Execution",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-02T00:58:15.111000+13:00 → 2026-11-02T00:59:08.308000+13:00",
+  "executionStartedAtUTC": "2026-11-01T11:58:15.111000+00:00",
+  "executionEndedAtUTC": "2026-11-01T11:59:08.308000+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:54.826134+13:00",
+  "actual": "错误名称时请求删除禁用，正确名称启用；真实点击后 deletionTimestamp=2026-11-01T11:58:25Z；运行时已 prune，Environment/InfraStack finalizer 保留，云桶仍在，未产生 Destroy Run/Job。",
+  "historical": "原 TC12 为 BLOCKED；本轮首次实际从该连续 UI 生命周期请求删除。历史 Go E2E 删除路径不替代本轮操作。",
+  "screenshots": [
+    {
+      "tc": "TC12",
+      "name": "01-wrong-name-blocked",
+      "capturedAt": "2026-11-01T11:58:15.111Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC12/01-wrong-name-blocked.png",
+      "sha256": "eae9a901456e8ddddcbcc138b8523e2fa59ad84de4fe982c1c5794b82aec0488",
+      "originalJPEGSHA256": "66984b44263c19cf5d3b1edf8dde7a69883773d18dcbcca962d43d92789f700d",
+      "width": 1264,
+      "height": 1540,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC12",
+      "name": "02-exact-delete-confirmation",
+      "capturedAt": "2026-11-01T11:58:16.411Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC12/02-exact-delete-confirmation.png",
+      "sha256": "c9d90eaf34245bc63b4226c51cb09964320ee1c5443c51dcc7559fa8959411cf",
+      "originalJPEGSHA256": "d412f8461117e3a15637a336b996bbfbf7a23f914c5844b3e276c7c9675a7f65",
+      "width": 1264,
+      "height": 1540,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC12",
+      "name": "03-delete-requested",
+      "capturedAt": "2026-11-01T11:58:27.422Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC12/03-delete-requested.png",
+      "sha256": "843b12cef1bdb80930ca47e68ddcc499b041842e5461a0eca9ade35eacf02045",
+      "originalJPEGSHA256": "6a145690fb403695f2a9375977b7322e3389d048adbfad727cc99f49abc033ea",
+      "width": 1264,
+      "height": 1332,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC12",
+      "name": "04-finalizer-deleting-runtime-pruned",
+      "capturedAt": "2026-11-01T11:59:08.308Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC12/04-finalizer-deleting-runtime-pruned.png",
+      "sha256": "93a01bf1ff3277269dc48eed839172130897f8f37e2c5cd70e7e303dbb76c7ae",
+      "originalJPEGSHA256": "4bdd800b55d19f925d865db4e51ae5bef7115143bf4d9d783c31c53cdb3b7886",
+      "width": 1264,
+      "height": 1174,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [],
+  "checkpointFiles": [
+    "after-delete-request.json"
+  ]
+}

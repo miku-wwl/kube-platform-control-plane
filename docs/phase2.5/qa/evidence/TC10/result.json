@@ -1,0 +1,65 @@
+{
+  "testID": "TC10",
+  "name": "Apply / Ready",
+  "status": "PASS",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Current Execution；单集群、MiniStack S3 和项目支持的 ApplyOnly ConfigMap 运行时；不包含 EKS、Valkey 或工作负载健康探针验收。",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-02T00:47:39.906000+13:00 → 2026-11-02T00:54:57.679517+13:00",
+  "executionStartedAtUTC": "2026-11-01T11:47:39.906000+00:00",
+  "executionEndedAtUTC": "2026-11-01T11:54:57.679517+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:52.846432+13:00",
+  "actual": "唯一 Apply Run/Job 成功，Environment generation/observedGeneration 均为 1；MiniStack 测试桶存在，唯一受管 ConfigMap UID 与 ResourceSet inventory 一致。",
+  "historical": "原 TC10 为 BLOCKED。本轮实际完成真实 UI 审批后的 Apply 和 Ready；没有把历史 Go E2E 成功作为本轮结果。",
+  "screenshots": [
+    {
+      "tc": "TC10",
+      "name": "01-apply-observed",
+      "capturedAt": "2026-11-01T11:47:39.906Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC10/01-apply-observed.png",
+      "sha256": "8ddf552aeb5a4ae50f38008a7b4f8c02bea9bac5b7b4a25086f0c24f245b37b2",
+      "originalJPEGSHA256": "605563de38b86bbb3065f5e5b110c5877978208d2feb4cff3490ef2c629a0c87",
+      "width": 1264,
+      "height": 1070,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC10",
+      "name": "02-environment-ready",
+      "capturedAt": "2026-11-01T11:51:00.617Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC10/02-environment-ready.png",
+      "sha256": "578912a48a3880fcecd4714fce24cdd883119305708730c6bd050cddee4f6ff8",
+      "originalJPEGSHA256": "aa2026f024b3b772f0e8bae0a09515ec9799ba88069ab65213adad504da5c322",
+      "width": 1264,
+      "height": 1373,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC10",
+      "name": "03-apply-ready-timeline",
+      "capturedAt": "2026-11-01T11:51:01.235Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/",
+      "tabId": "4",
+      "fullPage": true,
+      "path": "screenshots/TC10/03-apply-ready-timeline.png",
+      "sha256": "a422ec2f8d5613c20367fcb5af88660fac8e222b45fb5d8a6e73e9d49a3d0dd5",
+      "originalJPEGSHA256": "090e6057fea8e1f70c6178c2ea5bdfd3f0d4ad39dac27d7e2da12906ce07d21d",
+      "width": 1264,
+      "height": 2622,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [],
+  "checkpointFiles": [
+    "apply-ready.json"
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "testID": "TC02",
+  "name": "Environment Class",
+  "status": "PASS",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Historical configuration validation PASS preserved; Current Execution adds real UI creation and Controller Ready",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-01T23:03:21.772000+13:00 → 2026-11-01T23:06:00.860501+13:00",
+  "executionStartedAtUTC": "2026-11-01T10:03:21.772000+00:00",
+  "executionEndedAtUTC": "2026-11-01T10:06:00.860501+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:48.792435+13:00",
+  "actual": "真实 UI 校验通过并创建 kpcp-qa-20261101-2253-v1；页面显示就绪与 Ready/ClassValidated，Runner 与固定来源摘要可见。",
+  "historical": "原 TC02 PASS 仅限配置校验，未创建 Class。原图 03–17 逐张保留。当前 Ready Class 是新增记录，没有覆盖旧执行事实。",
+  "screenshots": [
+    {
+      "tc": "TC02",
+      "name": "01-valid-qa-class-configuration",
+      "capturedAt": "2026-11-01T10:03:21.772Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/#classes",
+      "tabId": "3",
+      "fullPage": false,
+      "path": "screenshots/TC02/01-valid-qa-class-configuration.png",
+      "sha256": "12e4479fe7f538273ca119da312a3b6e57a494837789f50006aa92fcc342c8ed",
+      "originalJPEGSHA256": "45b484768d210536bcac036db02d0b9ac462b93919a0f94d6bb7ac1be0b2a907",
+      "width": 1825,
+      "height": 875,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC02",
+      "name": "02-class-created",
+      "capturedAt": "2026-11-01T10:03:39.880Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/#classes",
+      "tabId": "3",
+      "fullPage": false,
+      "path": "screenshots/TC02/02-class-created.png",
+      "sha256": "032dc1fe8c64af64c3b8bb0b7fd0d8a85d76c974cdbf32ec2f9eb2de33d945a9",
+      "originalJPEGSHA256": "92c310ee717c1056ae569a0ce551c79ed458a235db11919651520ed81ad7ccbb",
+      "width": 1825,
+      "height": 875,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    },
+    {
+      "tc": "TC02",
+      "name": "03-ready-class-full",
+      "capturedAt": "2026-11-01T10:04:20.315Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/#classes",
+      "tabId": "3",
+      "fullPage": true,
+      "path": "screenshots/TC02/03-ready-class-full.png",
+      "sha256": "587164f6b5ece5232f47d41740061f850425ccac07d723aa41b59be2e3f9838c",
+      "originalJPEGSHA256": "cd98b89319d1d627e8f12e202dab677326b96c3e13cc5ff6be85e13d35825e6d",
+      "width": 2027,
+      "height": 1658,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [
+    {
+      "number": 3,
+      "path": "../screenshots/qa-20261101-03-class-templates.png",
+      "historical": true
+    },
+    {
+      "number": 4,
+      "path": "../screenshots/qa-20261101-04-class-form-top.png",
+      "historical": true
+    },
+    {
+      "number": 5,
+      "path": "../screenshots/qa-20261101-05-class-required-validation.png",
+      "historical": true
+    },
+    {
+      "number": 6,
+      "path": "../screenshots/qa-20261101-06-class-pinned-revision-error.png",
+      "historical": true
+    },
+    {
+      "number": 7,
+      "path": "../screenshots/qa-20261101-07-class-validation-error-detail.png",
+      "historical": true
+    },
+    {
+      "number": 8,
+      "path": "../screenshots/redacted/qa-20261101-08-class-source-fields-public-redacted.png",
+      "historical": true
+    },
+    {
+      "number": 9,
+      "path": "../screenshots/qa-20261101-09-class-validation-passed.png",
+      "historical": true
+    },
+    {
+      "number": 10,
+      "path": "../screenshots/qa-20261101-10-change-requires-revalidation.png",
+      "historical": true
+    },
+    {
+      "number": 11,
+      "path": "../screenshots/qa-20261101-11-advanced-json-fields.png",
+      "historical": true
+    },
+    {
+      "number": 12,
+      "path": "../screenshots/qa-20261101-12-advanced-json-rejected.png",
+      "historical": true
+    },
+    {
+      "number": 13,
+      "path": "../screenshots/qa-20261101-13-runtime-json-rejected.png",
+      "historical": true
+    },
+    {
+      "number": 14,
+      "path": "../screenshots/redacted/qa-20261101-14-emulator-validation-yaml-public-redacted.png",
+      "historical": true
+    },
+    {
+      "number": 15,
+      "path": "../screenshots/qa-20261101-15-yaml-preview.png",
+      "historical": true
+    },
+    {
+      "number": 16,
+      "path": "../screenshots/redacted/qa-20261101-16-yaml-execution-profile-public-redacted.png",
+      "historical": true
+    },
+    {
+      "number": 17,
+      "path": "../screenshots/qa-20261101-17-cancel-class-no-persistence.png",
+      "historical": true
+    }
+  ],
+  "checkpointFiles": [
+    "class-ready.json"
+  ]
+}

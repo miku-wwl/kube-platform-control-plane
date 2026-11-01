@@ -1,0 +1,26 @@
+{
+  "scope": "Current Execution",
+  "beforeAt": "2026-11-01T10:06:32.132837+00:00",
+  "afterAt": "2026-11-01T10:08:33.809957+00:00",
+  "beforeCounts": {
+    "PlatformEnvironment": 0,
+    "InfraStack": 0,
+    "TerraformRun": 0,
+    "ChangeApproval": 0,
+    "ResourceSet": 0,
+    "Job": 0
+  },
+  "afterCounts": {
+    "PlatformEnvironment": 0,
+    "InfraStack": 0,
+    "TerraformRun": 0,
+    "ChangeApproval": 0,
+    "ResourceSet": 0,
+    "Job": 0
+  },
+  "beforeSHA256": "614d40ee9f7b5757e84634a3ddc792a5ee8720421dd36985c7533a8a99c38b40",
+  "afterSHA256": "84947cce5555d3e046504dc84189c2601ccece8016b8de620df21ae18851a1db",
+  "runtimeNotCreated": true,
+  "cloudBucketNotCreated": true,
+  "result": "PASS"
+}

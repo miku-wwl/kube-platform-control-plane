@@ -1,0 +1,58 @@
+{
+  "scope": "Current Execution; raw artifact bytes retained locally, only reviewed hashes/identities public",
+  "recordedAtUTC": "2026-11-01T10:12:15.409791+00:00",
+  "runID": "kpcp-qa-20261101-2253",
+  "terraformRunName": "qa-environment-infra-plan-1",
+  "terraformRunUID": "ed10d459-93ee-4882-95d7-b8a049b3130c",
+  "operation": "Plan",
+  "planMode": "Reconcile",
+  "jobName": "qa-environment-infra-plan-1",
+  "jobUID": "cf0c3896-ebbf-4aa8-a5e1-027c15e597d6",
+  "jobOwnerUIDs": [
+    "ed10d459-93ee-4882-95d7-b8a049b3130c"
+  ],
+  "podImageIDs": [
+    "localhost/kpcp-runner@sha256:f94aa16a0136f5414fe10f5851e6cfad89f240168f47da93eb1bbf26702cbc39"
+  ],
+  "checks": [
+    {
+      "artifact": "plan.binary",
+      "expectedDigest": "sha256:beca08f1e9e281b25881211c3bc6de141d5568ae39144dc644c7c5815b61527a",
+      "actualDigest": "sha256:beca08f1e9e281b25881211c3bc6de141d5568ae39144dc644c7c5815b61527a",
+      "bytes": 4489,
+      "matches": true
+    },
+    {
+      "artifact": "source-bundle.tar.zst",
+      "expectedDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+      "actualDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+      "bytes": 1816,
+      "matches": true
+    },
+    {
+      "artifact": "backend.hcl",
+      "expectedDigest": "sha256:28cc995e411c10db7f0621414898133206d38f862e3b6786aad093cbab5b1f65",
+      "actualDigest": "sha256:28cc995e411c10db7f0621414898133206d38f862e3b6786aad093cbab5b1f65",
+      "bytes": 426,
+      "matches": true
+    },
+    {
+      "artifact": "plan-report.json",
+      "expectedDigest": "sha256:aa75da833507c4234c315a0b0ec0deb3423549d4fecc4590a8ecd70d45a32299",
+      "actualDigest": "sha256:aa75da833507c4234c315a0b0ec0deb3423549d4fecc4590a8ecd70d45a32299",
+      "bytes": 211,
+      "matches": true
+    },
+    {
+      "artifact": "terminal-result.json",
+      "expectedDigest": "sha256:65873da7379904b2efc7221213bb378775a18803f23a42dd71dff06f45a57986",
+      "actualDigest": "sha256:65873da7379904b2efc7221213bb378775a18803f23a42dd71dff06f45a57986",
+      "bytes": 1250,
+      "matches": true
+    }
+  ],
+  "allDigestChecksMatch": true,
+  "terminalRunUID": "ed10d459-93ee-4882-95d7-b8a049b3130c",
+  "terminalJobUID": "cf0c3896-ebbf-4aa8-a5e1-027c15e597d6",
+  "terminalIdentitiesMatch": true
+}

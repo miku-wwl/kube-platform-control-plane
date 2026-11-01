@@ -1,0 +1,356 @@
+{
+  "scope": "Current Execution; reviewed public projection, private configuration omitted",
+  "runID": "kpcp-qa-20261101-2253",
+  "recordedAtUTC": "2026-11-01T11:43:25.276570+00:00",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "originalSHA256": "1e7a297fd837e50ea654b9993e2ca6066d36c9e498b7cc3ec5b35968cf340f32",
+  "rawEvidence": "Controlled local run directory; not committed",
+  "objects": [
+    {
+      "kind": "PlatformEnvironment",
+      "name": "qa-environment",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "443a7caa-25aa-48f2-9bbd-095e76210ab7",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/platformenvironment-finalizer"
+      ],
+      "observedGeneration": 1,
+      "conditions": [
+        {
+          "reason": "InfrastructureNotReady",
+          "status": "False",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "EnvironmentClass",
+      "name": "kpcp-qa-20261101-2253-v1",
+      "namespace": null,
+      "uid": "4878d691-c702-4214-bf20-e00b354e5fc4",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/environmentclass-finalizer"
+      ],
+      "approvalPolicy": "Manual",
+      "observedGeneration": 1,
+      "conditions": [
+        {
+          "reason": "ClassValidated",
+          "status": "True",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "InfraStack",
+      "name": "qa-environment-infra",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "a7322cd8-7fcc-49e4-9dd6-5886d8b5ab9d",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/infrastack-finalizer"
+      ],
+      "approvalPolicy": "Manual",
+      "workspace": "qa-environment",
+      "observedGeneration": 1,
+      "conditions": [
+        {
+          "reason": "WaitingApproval",
+          "status": "False",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "TerraformRun",
+      "name": "qa-environment-infra-plan-1",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "ed10d459-93ee-4882-95d7-b8a049b3130c",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "operation": "Plan",
+      "planMode": "Reconcile",
+      "executionContextDigest": "sha256:e3287a080089a90004175f75f78c6825021102a3f0a090ab5ae072971960dac0",
+      "effectivePlanInputDigest": "sha256:72719f594cd02e325cadc88689f8f0b30893bdd2bc07509bc9d77a9c839f3cee",
+      "workspace": "qa-environment",
+      "executionOutcome": "Superseded",
+      "planDigest": "sha256:beca08f1e9e281b25881211c3bc6de141d5568ae39144dc644c7c5815b61527a",
+      "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+      "planReportDigest": "sha256:aa75da833507c4234c315a0b0ec0deb3423549d4fecc4590a8ecd70d45a32299",
+      "resolvedBackendConfigDigest": "sha256:28cc995e411c10db7f0621414898133206d38f862e3b6786aad093cbab5b1f65",
+      "terminalResultDigest": "sha256:65873da7379904b2efc7221213bb378775a18803f23a42dd71dff06f45a57986",
+      "artifactsReady": true,
+      "evidenceCaptured": true,
+      "observedGeneration": 1,
+      "jobRef": {
+        "name": "qa-environment-infra-plan-1"
+      },
+      "conditions": [
+        {
+          "reason": "Superseded",
+          "status": "False",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "TerraformRun",
+      "name": "qa-environment-infra-plan-1-attempt-1793531387648458400",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "6dcf21e3-322d-43e0-864a-50d8dad6aa62",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "operation": "Plan",
+      "planMode": "Reconcile",
+      "executionContextDigest": "sha256:e3287a080089a90004175f75f78c6825021102a3f0a090ab5ae072971960dac0",
+      "effectivePlanInputDigest": "sha256:d757943660fa67c5960a52b4a02e0351ea354a80b73db465079fc871a4f80a02",
+      "workspace": "qa-environment",
+      "executionOutcome": "ChangesPresent",
+      "planDigest": "sha256:7ec07f2c9f1e747a07f86d089a664bc8d42fb844a27fd990ac09fddc24a4bad8",
+      "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+      "planReportDigest": "sha256:d8b366f5d15055ab84c7d3b4a482d6ee8a1f02cf05909054cc9f163178e8477d",
+      "resolvedBackendConfigDigest": "sha256:28cc995e411c10db7f0621414898133206d38f862e3b6786aad093cbab5b1f65",
+      "terminalResultDigest": "sha256:fb6187efe942f52c1f4e55d824dc6caf2b9fb7cb11dbf2915b0060da496a4cbd",
+      "artifactsReady": true,
+      "evidenceCaptured": true,
+      "observedGeneration": 1,
+      "jobRef": {
+        "name": "qa-environment-infra-plan-1-attempt-1793531387648458400"
+      },
+      "conditions": [
+        {
+          "reason": "TerraformSucceeded",
+          "status": "True",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "ResourceSet",
+      "name": "qa-environment-resources",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "b6d4946f-cfdf-43f2-86e1-7c1d3a6cf45c",
+      "generation": 2,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/resourceset-finalizer"
+      ],
+      "observedGeneration": 2,
+      "conditions": [
+        {
+          "reason": "RuntimeMutationBlocked",
+          "status": "False",
+          "type": "Ready"
+        }
+      ]
+    },
+    {
+      "kind": "Job",
+      "name": "qa-environment-infra-plan-1",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "cf0c3896-ebbf-4aa8-a5e1-027c15e597d6",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "succeeded": 1,
+      "conditions": [
+        {
+          "reason": "CompletionsReached",
+          "status": "True",
+          "type": "SuccessCriteriaMet"
+        },
+        {
+          "reason": "CompletionsReached",
+          "status": "True",
+          "type": "Complete"
+        }
+      ]
+    },
+    {
+      "kind": "Job",
+      "name": "qa-environment-infra-plan-1-attempt-1793531387648458400",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "bc609e4c-45c3-4c61-8cc9-0b3cd761d2c2",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "succeeded": 1,
+      "conditions": [
+        {
+          "reason": "CompletionsReached",
+          "status": "True",
+          "type": "SuccessCriteriaMet"
+        },
+        {
+          "reason": "CompletionsReached",
+          "status": "True",
+          "type": "Complete"
+        }
+      ]
+    },
+    {
+      "kind": "Pod",
+      "name": "git-source-b8655f9f5-ssmrq",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "534f6cda-3a53-4f03-b008-7cd00503613d",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "observedGeneration": 1,
+      "phase": "Running",
+      "conditions": [
+        {
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "status": "True",
+          "type": "Ready"
+        },
+        {
+          "status": "True",
+          "type": "ContainersReady"
+        },
+        {
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ]
+    },
+    {
+      "kind": "Pod",
+      "name": "qa-environment-infra-plan-1-attempt-1793531387648458400-6tvtm",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "df0e7734-2dc6-447c-8fe2-d1ed2ac9a05f",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "observedGeneration": 1,
+      "phase": "Succeeded",
+      "conditions": [
+        {
+          "reason": "PodSandboxNotReady",
+          "status": "False",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "reason": "PodCompleted",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "reason": "PodCompleted",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "reason": "PodCompleted",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ]
+    },
+    {
+      "kind": "Pod",
+      "name": "qa-environment-infra-plan-1-tkpvd",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3f35b072-4c14-4fa4-83ce-aea0ee2444ad",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [],
+      "observedGeneration": 1,
+      "phase": "Succeeded",
+      "conditions": [
+        {
+          "reason": "PodSandboxNotReady",
+          "status": "False",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "reason": "PodCompleted",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "reason": "PodCompleted",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "reason": "PodCompleted",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ]
+    },
+    {
+      "kind": "ConfigMap",
+      "name": "unrelated-sentinel",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3501db4b-a21c-4a3e-a435-bb30d5566714",
+      "generation": null,
+      "deleting": false,
+      "finalizers": []
+    },
+    {
+      "kind": "ServiceAccount",
+      "name": "default",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "3568b883-ff2f-4617-9ee4-160c38c76c3c",
+      "generation": null,
+      "deleting": false,
+      "finalizers": []
+    },
+    {
+      "kind": "ServiceAccount",
+      "name": "runner",
+      "namespace": "kpcp-qa-20261101-2253",
+      "uid": "1e351235-c675-4b9d-b10c-4b366c9251dd",
+      "generation": null,
+      "deleting": false,
+      "finalizers": []
+    },
+    {
+      "kind": "EnvironmentClass",
+      "name": "kpcp-qa-20261101-2253-v1",
+      "namespace": null,
+      "uid": "4878d691-c702-4214-bf20-e00b354e5fc4",
+      "generation": 1,
+      "deleting": false,
+      "finalizers": [
+        "platform.example.io/environmentclass-finalizer"
+      ],
+      "approvalPolicy": "Manual",
+      "observedGeneration": 1,
+      "conditions": [
+        {
+          "reason": "ClassValidated",
+          "status": "True",
+          "type": "Ready"
+        }
+      ]
+    }
+  ],
+  "ownedBuckets": [
+    "kpcp-qa-20261101-2253"
+  ]
+}

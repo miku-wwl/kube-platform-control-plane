@@ -1,0 +1,36 @@
+{
+  "testID": "TC04",
+  "name": "Draft Isolation",
+  "status": "PASS",
+  "runID": "kpcp-qa-20261101-2253",
+  "scope": "Current Execution: generated native draft with active Controller; before/after resource comparison",
+  "commit": "e40c422327aa648a89d6baabf7268cb3239310d8",
+  "executionDate": "2026-11-01T23:06:32.132837+13:00 → 2026-11-01T23:08:33.809957+13:00",
+  "executionStartedAtUTC": "2026-11-01T10:06:32.132837+00:00",
+  "executionEndedAtUTC": "2026-11-01T10:08:33.809957+00:00",
+  "documentGeneratedAt": "2026-11-02T01:18:49.570218+13:00",
+  "actual": "生成前后业务资源与 Job 均为 0；本轮 artifact fixture bucket 保持一只，cloud bucket 不存在；UI 仍保留独立提交按钮和环境数 0。",
+  "historical": "原 TC04 为 BLOCKED，因为没有真实 Draft；本轮已在活动 Controller 和有效 Class 前提下生成，再做前后只读比较，属于新执行。",
+  "screenshots": [
+    {
+      "tc": "TC04",
+      "name": "01-reviewed-draft-not-submitted",
+      "capturedAt": "2026-11-01T10:07:28.978Z",
+      "title": "平台控制平面",
+      "url": "http://127.0.0.1:5174/#builder",
+      "tabId": "3",
+      "fullPage": true,
+      "path": "screenshots/TC04/01-reviewed-draft-not-submitted.png",
+      "sha256": "f7bed64ef15eff7513829e4b6f3a8ad4f7d5974a47191402f600a3bd8bcb690e",
+      "originalJPEGSHA256": "4e8a1ab95b88f9557b33c8c327d06c39538a7e66d592bb6236b8a87d9bb31692",
+      "width": 2027,
+      "height": 1482,
+      "review": "Current real browser capture; no private IP/Windows path in DOM; original unchanged locally; PNG decoded pixels equal original JPEG"
+    }
+  ],
+  "historicalScreenshots": [],
+  "checkpointFiles": [
+    "after-draft.json",
+    "before-draft.json"
+  ]
+}
