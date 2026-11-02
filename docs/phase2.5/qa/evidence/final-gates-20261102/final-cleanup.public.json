@@ -1,0 +1,39 @@
+{
+  "at": "2026-11-02T01:35:24.019078+00:00",
+  "businessObjectsRemaining": 0,
+  "ownedKpcpNamespacesRemaining": 0,
+  "ownedKpcpBucketsRemaining": 0,
+  "targetBProfileDeleted": true,
+  "targetBContainerID": "751511d5b972ac8fe153ca7823f1129d7b5e38acae72bfb5e1befff9f5975580",
+  "targetBClusterUID": "60e4ef1d-fb2f-4231-9d48-71a87696d6e7",
+  "targetBVolumeAndNetworkRemoved": true,
+  "normalMinikubeDeleteCommand": [
+    "minikube",
+    "delete",
+    "--profile=kpcp-gates-20261102-0223-b"
+  ],
+  "minikubeReportedSuccessButContainerRemained": true,
+  "explicitRemoteCleanup": [
+    "podman stop --time 15 <verified-owned-container-ID>",
+    "podman rm <verified-owned-container-ID>"
+  ],
+  "forceContainerRemoval": false,
+  "infraNamespaceUID": "7658af29-e599-425c-9c79-0070d004e227",
+  "normalNamespaceDeletion": true,
+  "manualBusinessFinalizerRemoval": false,
+  "qaApiAndViteStopped": true,
+  "qaTransportStopped": true,
+  "sharedPrimaryClusterUID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+  "sharedNodeUID": "ddd9911b-a2fe-471c-940b-83a82b87b287",
+  "sharedNodeReady": true,
+  "sharedContainerIDsUnchanged": true,
+  "MiniStackVersion": "1.5.35",
+  "originalAPIHealth": {
+    "aiProvider": "ollama",
+    "artifactPreview": true,
+    "status": "ok"
+  },
+  "originalUIHTTPStatus": 200,
+  "rawPrivateArchivesAndBuildCacheRetainedLocally": true,
+  "realAWSUsed": false
+}

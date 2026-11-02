@@ -1,0 +1,51 @@
+{
+  "at": "2026-11-02T01:40:20.034341+00:00",
+  "configuredProvider": "ollama",
+  "requestedModel": "phi4-mini:latest",
+  "servedVersion": null,
+  "servedModelVerified": false,
+  "modelInstalledInConfiguredStore": false,
+  "qualityVerdict": "NOT RUN",
+  "parameters": {
+    "temperature": 0,
+    "num_predict": 256,
+    "num_ctx": 4096
+  },
+  "localChecks": "PATH, standard install paths and uninstall registry absent; .ollama junction target D:/Ollama/UserData/.ollama missing; no install/download/config rewrite",
+  "availability": [
+    {
+      "url": "http://127.0.0.1:11434/api/version",
+      "error": "<urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+    },
+    {
+      "url": "http://127.0.0.1:11434/api/tags",
+      "error": "<urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+    }
+  ],
+  "realUnavailableUI": "PASS",
+  "namedEnvironment": "qa-final-ollama-unavailable",
+  "namedEnvironmentAndStackAbsentInPostClickSnapshot": true,
+  "noDraftOrSubmitControlShown": true,
+  "scope": "only the named UI request; a separate Go E2E was concurrently creating its own environment",
+  "uiCaptures": [
+    {
+      "name": "ollama-final-zh",
+      "capturedAt": "2026-11-02T01:15:40.865Z",
+      "url": "http://127.0.0.1:5175/#builder",
+      "fullPage": false
+    },
+    {
+      "name": "ollama-final-technical",
+      "capturedAt": "2026-11-02T01:15:47.188Z",
+      "url": "http://127.0.0.1:5175/#builder",
+      "fullPage": false
+    },
+    {
+      "name": "ollama-final-en",
+      "capturedAt": "2026-11-02T01:15:47.651Z",
+      "url": "http://127.0.0.1:5175/#builder",
+      "fullPage": false
+    }
+  ],
+  "controlledRegression": "Go/Node tests use controlled HTTP responses; never counted as live model quality"
+}

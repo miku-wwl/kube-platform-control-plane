@@ -1,0 +1,21 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:117: owned namespace=kpcp-1793580799342768300 uid=57967cd1-5b09-4b11-8a7e-b5b0ee8507c0 source=98da3fb6cad0b60c60a58169aeb282aa555dbeb8 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+=== RUN   TestLifecycle/PlatformAPI_DraftAndTemplate
+=== NAME  TestLifecycle
+    lifecycle_test.go:252: dedicated controller process restarted phase=active-plan
+    lifecycle_test.go:252: dedicated controller process restarted phase=pending-approval
+=== RUN   TestLifecycle/PlatformAPI_ExactApproval
+=== NAME  TestLifecycle
+    lifecycle_test.go:252: dedicated controller process restarted phase=active-apply
+    lifecycle_test.go:252: dedicated controller process restarted phase=ready
+=== RUN   TestLifecycle/F_DestroyFinalizer
+    lifecycle_test.go:1047: transient cloud failure Job UID=c36cb291-3969-403d-b72a-150382e44c6a
+=== NAME  TestLifecycle
+    lifecycle_test.go:252: dedicated controller process restarted phase=destroy-pending-approval
+    lifecycle_test.go:252: dedicated controller process restarted phase=active-destroy
+--- PASS: TestLifecycle (255.98s)
+    --- PASS: TestLifecycle/PlatformAPI_DraftAndTemplate (0.08s)
+    --- PASS: TestLifecycle/PlatformAPI_ExactApproval (0.03s)
+    --- PASS: TestLifecycle/F_DestroyFinalizer (146.03s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	256.453s

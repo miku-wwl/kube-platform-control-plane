@@ -1,0 +1,307 @@
+[
+  {
+    "rawReceiptFile": "kpcp-1793581344217132200-deployment-object-v1-ClusterRole-kpcp-1793581344217132200-controller.json",
+    "rawSHA256": "88a0e623c30f4fd3200dc7872e62ab1028e57cf0918a3c6c89e46d80838eb956",
+    "receipt": {
+      "at": "2026-11-02T01:02:24.3014437Z",
+      "evidence": {
+        "createdAt": "2026-11-02T01:02:24Z",
+        "name": "kpcp-1793581344217132200-controller",
+        "namespace": "",
+        "ownerNamespaceUID": "6be9db40-536a-4ca7-b5b1-56f71b8d8918",
+        "type": "v1-ClusterRole",
+        "uid": "d662abc1-b5fc-4a10-82fd-89da2316466c"
+      },
+      "runID": "kpcp-1793581344217132200",
+      "sourceSHA": "95c9cc9f5009be189bd5761d0ccbc391dc283047",
+      "test": "TestLifecycle"
+    }
+  },
+  {
+    "rawReceiptFile": "kpcp-1793581344217132200-deployment-object-v1-ClusterRoleBinding-kpcp-1793581344217132200-controller.json",
+    "rawSHA256": "149e66d66c344729bda7c13fd069380f2e5bcf1d24cf17270155b59d6971143c",
+    "receipt": {
+      "at": "2026-11-02T01:02:24.3148048Z",
+      "evidence": {
+        "createdAt": "2026-11-02T01:02:24Z",
+        "name": "kpcp-1793581344217132200-controller",
+        "namespace": "",
+        "ownerNamespaceUID": "6be9db40-536a-4ca7-b5b1-56f71b8d8918",
+        "type": "v1-ClusterRoleBinding",
+        "uid": "7e7d17fb-ec18-4fcc-96c6-d463922978c8"
+      },
+      "runID": "kpcp-1793581344217132200",
+      "sourceSHA": "95c9cc9f5009be189bd5761d0ccbc391dc283047",
+      "test": "TestLifecycle"
+    }
+  },
+  {
+    "rawReceiptFile": "kpcp-1793581344217132200-deployment-object-v1-Secret-kpcp-1793581344217132200-controller-targets.json",
+    "rawSHA256": "259b93baa7ddd033be0b79f5e4d9259d88f2ad7216ab92ade987ba6e9d0a1b9f",
+    "receipt": {
+      "at": "2026-11-02T01:02:24.3391463Z",
+      "evidence": {
+        "createdAt": "2026-11-02T01:02:24Z",
+        "name": "kpcp-1793581344217132200-controller-targets",
+        "namespace": "kpcp-1793581344217132200",
+        "ownerNamespaceUID": "6be9db40-536a-4ca7-b5b1-56f71b8d8918",
+        "type": "v1-Secret",
+        "uid": "346e2d42-7c3b-42a3-bbf8-6dcc24667b58"
+      },
+      "runID": "kpcp-1793581344217132200",
+      "sourceSHA": "95c9cc9f5009be189bd5761d0ccbc391dc283047",
+      "test": "TestLifecycle"
+    }
+  },
+  {
+    "rawReceiptFile": "kpcp-1793581344217132200-deployment-object-v1-ServiceAccount-kpcp-1793581344217132200-controller.json",
+    "rawSHA256": "4f487a0e6703fe3aaa467bbed16993e67ded9cc6775cb24a815f504abd425cd0",
+    "receipt": {
+      "at": "2026-11-02T01:02:24.3249132Z",
+      "evidence": {
+        "createdAt": "2026-11-02T01:02:24Z",
+        "name": "kpcp-1793581344217132200-controller",
+        "namespace": "kpcp-1793581344217132200",
+        "ownerNamespaceUID": "6be9db40-536a-4ca7-b5b1-56f71b8d8918",
+        "type": "v1-ServiceAccount",
+        "uid": "2511140e-5922-4af6-8ecc-f92cbad5fe30"
+      },
+      "runID": "kpcp-1793581344217132200",
+      "sourceSHA": "95c9cc9f5009be189bd5761d0ccbc391dc283047",
+      "test": "TestLifecycle"
+    }
+  },
+  {
+    "rawReceiptFile": "kpcp-1793581344217132200-leader-failed-initial.json",
+    "rawSHA256": "66924c83ecd6125b8e162680d940541abe7338a06f6a36ff2046487700beec2a",
+    "receipt": {
+      "at": "2026-11-02T01:03:54.3638244Z",
+      "evidence": {
+        "deployment": {
+          "metadata": {
+            "name": "kpcp-1793581344217132200-controller",
+            "namespace": "kpcp-1793581344217132200",
+            "uid": "12c3287b-c58d-473b-ab6d-0c6fb1aa8f95",
+            "resourceVersion": "94747",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T01:02:24Z"
+          },
+          "desiredReplicas": 2,
+          "status": {
+            "observedGeneration": 1,
+            "replicas": 2,
+            "updatedReplicas": 2,
+            "readyReplicas": 1,
+            "availableReplicas": 1,
+            "unavailableReplicas": 1,
+            "conditions": [
+              {
+                "type": "Available",
+                "status": "False",
+                "lastUpdateTime": "2026-11-02T01:02:24Z",
+                "lastTransitionTime": "2026-11-02T01:02:24Z",
+                "reason": "MinimumReplicasUnavailable",
+                "message": "Deployment does not have minimum availability."
+              },
+              {
+                "type": "Progressing",
+                "status": "True",
+                "lastUpdateTime": "2026-11-02T01:02:26Z",
+                "lastTransitionTime": "2026-11-02T01:02:24Z",
+                "reason": "ReplicaSetUpdated",
+                "message": "ReplicaSet \"kpcp-1793581344217132200-controller-66cbf9c488\" is progressing."
+              }
+            ]
+          }
+        },
+        "lease": {
+          "metadata": {
+            "name": "platform-control-plane.platform.example.io",
+            "namespace": "kpcp-1793581344217132200",
+            "uid": "2987bb2f-7f12-4f40-9ba1-d9ec06ff6c78",
+            "resourceVersion": "94890",
+            "creationTimestamp": "2026-11-02T01:02:26Z"
+          },
+          "leaseSpec": {
+            "holderIdentity": "kpcp-1793581344217132200-controller-66cbf9c488-4r8ml_942addcd-249a-401f-b275-2a2c5d4dc7ef",
+            "leaseDurationSeconds": 15,
+            "acquireTime": "2026-11-02T01:02:26.331259Z",
+            "renewTime": "2026-11-02T01:03:52.946662Z",
+            "leaseTransitions": 0
+          }
+        },
+        "runningReplicas": 2,
+        "currentLeaseHolders": 1,
+        "pods": [
+          {
+            "metadata": {
+              "name": "kpcp-1793581344217132200-controller-66cbf9c488-4r8ml",
+              "namespace": "kpcp-1793581344217132200",
+              "uid": "98218236-d6ea-4cc6-ba77-b1c5d7540cc9",
+              "resourceVersion": "94745",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T01:02:24Z",
+              "ownerReferences": [
+                {
+                  "apiVersion": "apps/v1",
+                  "kind": "ReplicaSet",
+                  "name": "kpcp-1793581344217132200-controller-66cbf9c488",
+                  "uid": "9707696e-383e-43d4-9b03-3115614ca491",
+                  "controller": true,
+                  "blockOwnerDeletion": true
+                }
+              ]
+            },
+            "phase": "Running",
+            "conditions": [
+              {
+                "type": "PodReadyToStartContainers",
+                "status": "True",
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-02T01:02:25Z"
+              },
+              {
+                "type": "Initialized",
+                "status": "True",
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-02T01:02:24Z"
+              },
+              {
+                "type": "Ready",
+                "status": "True",
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-02T01:02:26Z"
+              },
+              {
+                "type": "ContainersReady",
+                "status": "True",
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-02T01:02:26Z"
+              },
+              {
+                "type": "PodScheduled",
+                "status": "True",
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-02T01:02:24Z"
+              }
+            ],
+            "containerStatuses": [
+              {
+                "name": "manager",
+                "state": {
+                  "running": {
+                    "startedAt": "2026-11-02T01:02:25Z"
+                  }
+                },
+                "lastState": {},
+                "ready": true,
+                "restartCount": 0,
+                "image": "localhost/kpcp-controller:gates-d9f0386",
+                "imageID": "localhost/kpcp-controller@sha256:6e27a4795a2b336058fc5b5d6f0c88dea2719c7e7e34cc8734236f786bfe328c",
+                "containerID": "containerd://8ad5609eb3edc4eea602f10bb2763c1afb82e5fb4e8029bc4c0dba31d33d13b4",
+                "started": true,
+                "resources": {},
+                "user": {
+                  "linux": {
+                    "uid": 65532,
+                    "gid": 65532,
+                    "supplementalGroups": [
+                      65532
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "metadata": {
+              "name": "kpcp-1793581344217132200-controller-66cbf9c488-lbcfb",
+              "namespace": "kpcp-1793581344217132200",
+              "uid": "4dc12e5f-55f7-4953-906e-d6604c69625a",
+              "resourceVersion": "94738",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T01:02:24Z",
+              "ownerReferences": [
+                {
+                  "apiVersion": "apps/v1",
+                  "kind": "ReplicaSet",
+                  "name": "kpcp-1793581344217132200-controller-66cbf9c488",
+                  "uid": "9707696e-383e-43d4-9b03-3115614ca491",
+                  "controller": true,
+                  "blockOwnerDeletion": true
+                }
+              ]
+            },
+            "phase": "Running",
+            "conditions": [
+              {
+                "type": "PodReadyToStartContainers",
+                "status": "True",
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-02T01:02:25Z"
+              },
+              {
+                "type": "Initialized",
+                "status": "True",
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-02T01:02:24Z"
+              },
+              {
+                "type": "Ready",
+                "status": "False",
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-02T01:02:24Z",
+                "reason": "ContainersNotReady",
+                "message": "containers with unready status: [manager]"
+              },
+              {
+                "type": "ContainersReady",
+                "status": "False",
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-02T01:02:24Z",
+                "reason": "ContainersNotReady",
+                "message": "containers with unready status: [manager]"
+              },
+              {
+                "type": "PodScheduled",
+                "status": "True",
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-02T01:02:24Z"
+              }
+            ],
+            "containerStatuses": [
+              {
+                "name": "manager",
+                "state": {
+                  "running": {
+                    "startedAt": "2026-11-02T01:02:25Z"
+                  }
+                },
+                "lastState": {},
+                "ready": false,
+                "restartCount": 0,
+                "image": "localhost/kpcp-controller:gates-d9f0386",
+                "imageID": "localhost/kpcp-controller@sha256:6e27a4795a2b336058fc5b5d6f0c88dea2719c7e7e34cc8734236f786bfe328c",
+                "containerID": "containerd://5de518252ace5e26ab90876edc0edd6b001f15a019fcc44e042242704e22b283",
+                "started": true,
+                "resources": {},
+                "user": {
+                  "linux": {
+                    "uid": 65532,
+                    "gid": 65532,
+                    "supplementalGroups": [
+                      65532
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "runID": "kpcp-1793581344217132200",
+      "sourceSHA": "95c9cc9f5009be189bd5761d0ccbc391dc283047",
+      "test": "TestLifecycle"
+    }
+  }
+]

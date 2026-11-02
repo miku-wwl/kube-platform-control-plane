@@ -1,0 +1,7 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:117: owned namespace=kpcp-1793582052833323500 uid=48038521-1c9d-468b-8cfb-2249f95ed47b source=98da3fb6cad0b60c60a58169aeb282aa555dbeb8 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+=== RUN   TestLifecycle/PlatformAPI_DraftAndTemplate
+=== NAME  TestLifecycle
+    lifecycle_test.go:253: dedicated controller process restarted phase=active-plan
+FAIL	github.com/miku-wwl/kube-platform-control-plane/e2e	267.214s
+FAIL

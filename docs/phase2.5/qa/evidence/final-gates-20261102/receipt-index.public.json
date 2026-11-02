@@ -1,0 +1,64 @@
+{
+  "at": "2026-11-02T01:40:15.848500+00:00",
+  "runID": "kpcp-gates-20261102-0223",
+  "rawArtifactsRemainLocal": true,
+  "projection": "object UID/RV/conditions/execution binding only; no Secret values, kubeconfig or full private logs",
+  "lanes": [
+    {
+      "lane": "e2e-host-current",
+      "receiptFile": "e2e-host-current.receipts.public.json",
+      "receiptCount": 19,
+      "rawLogSHA256": "b976336a7937844ebb406d704bc97e4eab6f4ac25647e69c4ebfeb003446e19b",
+      "selectedLog": "e2e-host-current.selected.log"
+    },
+    {
+      "lane": "e2e-fault-corrected",
+      "receiptFile": "e2e-fault-corrected.receipts.public.json",
+      "receiptCount": 4,
+      "rawLogSHA256": "1b11597aa1a7f426e01b5937e530783e1f2cd1f990e3b8adfc4b9d0aa61c0357",
+      "selectedLog": "e2e-fault-corrected.selected.log"
+    },
+    {
+      "lane": "e2e-deployment-baseline",
+      "receiptFile": "e2e-deployment-baseline.receipts.public.json",
+      "receiptCount": 5,
+      "rawLogSHA256": "da52480f07a1c393b7529d6a406170c0e469ca236ca64c477d23c71844c6ae91",
+      "selectedLog": "e2e-deployment-baseline.selected.log"
+    },
+    {
+      "lane": "e2e-deployment-corrected",
+      "receiptFile": "e2e-deployment-corrected.receipts.public.json",
+      "receiptCount": 22,
+      "rawLogSHA256": "dfe7cd86418680f4a095c9c36921765e9da6e315e8a50552c55f6a5e54486e3a",
+      "selectedLog": "e2e-deployment-corrected.selected.log"
+    },
+    {
+      "lane": "e2e-startup-rejections",
+      "receiptFile": "e2e-startup-rejections.receipts.public.json",
+      "receiptCount": 1,
+      "rawLogSHA256": "fb3597e8e1bd94245ee6fd2709976c02d1984fe200f3173ed0e63c9c67251604",
+      "selectedLog": "e2e-startup-rejections.selected.log"
+    },
+    {
+      "lane": "e2e-two-cluster",
+      "receiptFile": "e2e-two-cluster.receipts.public.json",
+      "receiptCount": 1,
+      "rawLogSHA256": "f594397f1c6868f7e0675f0675daae6a258e6be9e8c7df8b7497588b731d71b2",
+      "selectedLog": "e2e-two-cluster.selected.log"
+    },
+    {
+      "lane": "e2e-two-cluster-corrected",
+      "receiptFile": "e2e-two-cluster-corrected.receipts.public.json",
+      "receiptCount": 2,
+      "rawLogSHA256": "b7cb4efb8da46caef4d089b161e1922962fc06ee13553c751de7c4a1c6082c15",
+      "selectedLog": "e2e-two-cluster-corrected.selected.log"
+    },
+    {
+      "lane": "e2e-two-cluster-final",
+      "receiptFile": "e2e-two-cluster-final.receipts.public.json",
+      "receiptCount": 12,
+      "rawLogSHA256": "a41a526c3fd612eb9c5d4230cf4c342361afbbd493ddda636fbcf927bc85c106",
+      "selectedLog": "e2e-two-cluster-final.selected.log"
+    }
+  ]
+}

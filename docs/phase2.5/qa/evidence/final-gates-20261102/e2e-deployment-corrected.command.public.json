@@ -1,0 +1,16 @@
+{
+  "command": [
+    "go",
+    "test",
+    "./e2e",
+    "-run",
+    "TestLifecycle/(PlatformAPI|C_RestartRecovery|F_DestroyFinalizer)",
+    "-v",
+    "-count=1",
+    "-timeout=15m"
+  ],
+  "cwd": "controlled clean-source checkout",
+  "startedAt": "2026-11-02T01:09:01.745517+00:00",
+  "finishedAt": "2026-11-02T01:13:30.409618+00:00",
+  "exitCode": 0
+}

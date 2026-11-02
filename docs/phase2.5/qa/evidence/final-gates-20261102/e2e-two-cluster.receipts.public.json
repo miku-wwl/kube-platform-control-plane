@@ -1,0 +1,30 @@
+[
+  {
+    "rawReceiptFile": "kpcp-1793582052833323500-target-credential-isolation.json",
+    "rawSHA256": "273f1232a1401cf484c5a3b245e9e57615ff3cf48636b4161821c52d51474a81",
+    "receipt": {
+      "at": "2026-11-02T01:14:12.9509528Z",
+      "evidence": {
+        "clientACertificateFingerprint": "sha256:ebdc84b6822ac0fbf31be8d57cfe36682020ea6787a34070c6537a0cbf3b19ae",
+        "clientBCertificateFingerprint": "sha256:4ee2ea787718bf5325e3674988683e6dd3cce57dc7e5db26b87678b9db78abf0",
+        "clusterACAFingerprint": "sha256:77a8551bdb5d9bc16cdbcac536419282a2dff8a2137f9b3d5f971ca501681399",
+        "clusterBCAFingerprint": "sha256:9cb66703031414e606dd0a4b4939a666d7ad791d657515eff4dbd0b405d249c5",
+        "crossCredentialReads": [
+          {
+            "attempt": "A credential against B",
+            "error": "Unauthorized",
+            "rejected": true
+          },
+          {
+            "attempt": "B credential against A",
+            "error": "Unauthorized",
+            "rejected": true
+          }
+        ]
+      },
+      "runID": "kpcp-1793582052833323500",
+      "sourceSHA": "fd90a8614c6616d9d3514546aaef3840cffa0296",
+      "test": "TestLifecycle"
+    }
+  }
+]

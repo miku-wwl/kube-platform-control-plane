@@ -1,0 +1,169 @@
+{
+  "at": "2026-11-02T01:45:14.938929+00:00",
+  "result": "PASS",
+  "documentsChecked": 23,
+  "localLinksChecked": 328,
+  "brokenLocalLinks": [],
+  "localLinkTargetsAllInGitIndex": true,
+  "gateDocuments": 7,
+  "gateRequiredSectionsEach": 10,
+  "newRealPNGs": [
+    {
+      "file": "handoff-original-home.png",
+      "dimensions": [
+        1841,
+        883
+      ],
+      "sha256": "18469277a7758f1280154491c3ed3723ca4d28343c7d7250306898b6e9da26ca",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "interrupted-recovery-destroy-approved.png",
+      "dimensions": [
+        1264,
+        1192
+      ],
+      "sha256": "43ffd8892e7e2a3a793a37c4fe1f8c20f642ef0d5ffe65990b8c430b5daec0b8",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "interrupted-recovery-destroy-review.png",
+      "dimensions": [
+        1264,
+        1192
+      ],
+      "sha256": "69633ec1e5c1f8ff8ce150d3a66b2da3e069c35405a86a6e2d23363303881519",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "interrupted-recovery-environment-removed.png",
+      "dimensions": [
+        1265,
+        712
+      ],
+      "sha256": "d9a923373e97a4cf7eed6b15f60f061a3b980279ba69f41e6684776575b65c69",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "ollama-final-en.png",
+      "dimensions": [
+        1826,
+        876
+      ],
+      "sha256": "f55d31b3cb43c0774aaead6176dd21bcf019eef5ad3565251d9ece891cfb9009",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "ollama-final-technical.png",
+      "dimensions": [
+        1826,
+        876
+      ],
+      "sha256": "923a17773733590f09d3f95ed3b32588f0e3d49d73aea52c12f0caff75258b6a",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "ollama-final-zh.png",
+      "dimensions": [
+        1826,
+        876
+      ],
+      "sha256": "b2789f84a4bd9ea8b478279b7a0fc3b98203b5b31c4252cd41becdef940b121f",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "qa01-after-en.png",
+      "dimensions": [
+        2027,
+        3429
+      ],
+      "sha256": "543deac9104b439752243cbc8cbedf1cc98da73340cf4c0d7334c3f3c6ccb4d6",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "qa01-after-technical-context.png",
+      "dimensions": [
+        2027,
+        3408
+      ],
+      "sha256": "b86ee535e3e2a7be5150227c1b8ffd9666ecf7a8af4636b9a563929071b3219a",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "qa01-after-zh.png",
+      "dimensions": [
+        2027,
+        3286
+      ],
+      "sha256": "053ef44cb52d1d75368ff8e31859decb26569ac21ea47672dc739eabfdb20087",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "qa01-before-zh.png",
+      "dimensions": [
+        1264,
+        2876
+      ],
+      "sha256": "a3d48b628af31e395e27e5b4a6a2a45c450865afec44ff579b20d8b99984ab4e",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "qa01-capacity-rejected-zh.png",
+      "dimensions": [
+        2027,
+        3286
+      ],
+      "sha256": "886fade297167bf315daa2b217c64451b18388b91fd56656a8d5f4c7b5870f7e",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "qa01-required-field-rejected.png",
+      "dimensions": [
+        2027,
+        3009
+      ],
+      "sha256": "dcc9b665771ed4dfd0c23aede7f3c65f69491a7f5aa44bcdd10fe8ff54a4c5fd",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "qa01-revalidation-required.png",
+      "dimensions": [
+        2027,
+        3009
+      ],
+      "sha256": "7a3ecf3e7d152acbe7bb919d0f68330fd8be7fd5b45c779e5111a2d877d26a14",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    },
+    {
+      "file": "qa01-valid-admission-zh.png",
+      "dimensions": [
+        2027,
+        3289
+      ],
+      "sha256": "b5dfd192c2c4bfadf295cece747398c9a7c3e9a876d1dd14c557a67b25cc3cf5",
+      "opens": true,
+      "rawJPEGDecodedPixelsEqual": true
+    }
+  ],
+  "existingTCHistoryPreserved": true,
+  "onlyTC03AndTC15Appended": true,
+  "historicalIndexTextPreservedVerbatim": true,
+  "historicalTopLevelReportsUnchanged": true,
+  "newPublicEvidenceParsesAsJSON": true,
+  "credentialPatternMatches": [],
+  "reviewScope": "text scan plus explicit field projection and screenshot visual review; raw private files are not staged"
+}

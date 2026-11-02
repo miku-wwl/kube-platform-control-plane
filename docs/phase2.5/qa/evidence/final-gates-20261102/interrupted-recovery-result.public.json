@@ -1,0 +1,49 @@
+{
+  "at": "2026-11-02T00:49:31.767568+00:00",
+  "runID": "kpcp-gates-20261102-0223",
+  "failedE2ERemains": "FAIL",
+  "recoveryResult": "PASS",
+  "namespaceUID": "1fccfc69-ced5-4c16-8f60-8e3083381e4b",
+  "approvalUID": "85cad2ca-2273-45b0-abb4-ac6283bc369c",
+  "approvalBinding": {
+    "effectivePlanInputDigest": "sha256:c4c17dcec68ed387ffed40b32bbe580034ac92f700b0c97761119322d0e24ce0",
+    "executionContextDigest": "sha256:7f3adf8b54c86936902427f1b02b61cf5c91ac71069ee5014c14261528d660cf",
+    "planDigest": "sha256:4c8ad8e74f4a2b6aa4cc44d710667671a296a615b507aab66593a73f10487939",
+    "planReportDigest": "sha256:be49aac3ab5646603127b06efba15ce39689df4069ce215be3fac87522889ea4",
+    "planReportRef": "runs/a302ace8-d989-4892-af4f-c2a85f0152f8/plan-report.json",
+    "planRunRef": {
+      "name": "environment-infra-destroy-plan-4-attempt-1793580065205567600"
+    },
+    "planRunUID": "a302ace8-d989-4892-af4f-c2a85f0152f8"
+  },
+  "terminal": {
+    "terraformRunUID": "54c9ae09-ffd2-4db9-b34c-571a0c540cc4",
+    "jobUID": "84223441-3d78-4d9d-9972-73e659b31fea",
+    "startedAt": "2026-11-02T00:45:12.859480694Z",
+    "finishedAt": "2026-11-02T00:45:43.445501653Z",
+    "operation": "Apply",
+    "terraformExitCode": 0,
+    "executionOutcome": "Succeeded",
+    "mutationClassification": "SucceededPostMutation",
+    "mutationMayHaveOccurred": false,
+    "artifactsReady": true,
+    "hasChanges": false,
+    "planRef": "runs/a302ace8-d989-4892-af4f-c2a85f0152f8/plan.binary",
+    "planDigest": "sha256:4c8ad8e74f4a2b6aa4cc44d710667671a296a615b507aab66593a73f10487939",
+    "sourceBundleRef": "runs/a302ace8-d989-4892-af4f-c2a85f0152f8/source-bundle.tar.zst",
+    "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+    "backendConfigRef": "runs/a302ace8-d989-4892-af4f-c2a85f0152f8/backend-config.hcl",
+    "backendConfigDigest": "sha256:05f95062add0a74c6e2aecf7d3abb3dd83ab6b95cdf1d4b7e57c7b401e3c8daa",
+    "terminalResultRef": "runs/54c9ae09-ffd2-4db9-b34c-571a0c540cc4/terminal-result.json",
+    "effectivePlanInputDigest": "sha256:c4c17dcec68ed387ffed40b32bbe580034ac92f700b0c97761119322d0e24ce0",
+    "targetDiscoveryRef": "runs/bd3cf396-9e9e-40db-a23e-814c7c0c1edd/target-discovery.json",
+    "targetDiscoveryDigest": "sha256:444efff72420c00735e97b0beac0d9f0d4d699442cdb3fceec4bb37d4ac8e21f"
+  },
+  "environmentAndBusinessResourcesAbsent": true,
+  "cloudBucketHTTPStatus": 404,
+  "unrelatedSentinelUID": "374e92ae-4d59-4aeb-ae3a-fb79d1832637",
+  "unrelatedSentinelUnchanged": true,
+  "archivedObjectCount": 152,
+  "archiveHasKnownCorruptedNegativeFixtures": true,
+  "manualFinalizerRemoval": false
+}

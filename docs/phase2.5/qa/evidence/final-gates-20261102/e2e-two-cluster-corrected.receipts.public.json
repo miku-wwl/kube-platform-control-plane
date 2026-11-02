@@ -1,0 +1,133 @@
+[
+  {
+    "rawReceiptFile": "kpcp-1793582347453419300-plan-active-before-restart.json",
+    "rawSHA256": "d4c4f0a087432686de15dd77a84da9b470d0b9694d7c0426d8442a31e9864a6a",
+    "receipt": {
+      "at": "2026-11-02T01:19:09.2122259Z",
+      "evidence": {
+        "job": {
+          "metadata": {
+            "name": "environment-infra-plan-1",
+            "namespace": "kpcp-1793582347453419300",
+            "uid": "dcdb5f70-ad34-46c3-b42e-342caf64fcbc",
+            "resourceVersion": "96662",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T01:19:08Z",
+            "ownerReferences": [
+              {
+                "apiVersion": "platform.example.io/v1alpha1",
+                "kind": "TerraformRun",
+                "name": "environment-infra-plan-1",
+                "uid": "320900e5-b7f6-4f67-aaee-2faed380138e",
+                "controller": true,
+                "blockOwnerDeletion": true
+              }
+            ]
+          },
+          "spec": {},
+          "status": {
+            "startTime": "2026-11-02T01:19:08Z",
+            "active": 1,
+            "terminating": 0,
+            "uncountedTerminatedPods": {},
+            "ready": 0
+          }
+        },
+        "run": {
+          "kind": "TerraformRun",
+          "apiVersion": "platform.example.io/v1alpha1",
+          "metadata": {
+            "name": "environment-infra-plan-1",
+            "namespace": "kpcp-1793582347453419300",
+            "uid": "320900e5-b7f6-4f67-aaee-2faed380138e",
+            "resourceVersion": "96666",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T01:19:08Z",
+            "ownerReferences": [
+              {
+                "apiVersion": "platform.example.io/v1alpha1",
+                "kind": "InfraStack",
+                "name": "environment-infra",
+                "uid": "df701d2b-ade1-4c3e-baad-89276779b8f6",
+                "controller": true,
+                "blockOwnerDeletion": true
+              }
+            ]
+          },
+          "spec": {
+            "stackRef": {
+              "name": "environment-infra"
+            },
+            "infraStackGeneration": 1,
+            "operation": "Plan",
+            "planMode": "Reconcile",
+            "source": {
+              "type": "GitCommit",
+              "url": "http://git-source.kpcp-gates-20261102-0223-infra.svc.cluster.local:18088/module/.git",
+              "revision": "98da3fb6cad0b60c60a58169aeb282aa555dbeb8",
+              "path": "."
+            },
+            "workspace": "environment",
+            "executionContextDigest": "sha256:175b44aecd85240cedd2828722f601b7fc82d498cea268574e51b26fd624b9f6",
+            "effectivePlanInputDigest": "sha256:175b44aecd85240cedd2828722f601b7fc82d498cea268574e51b26fd624b9f6",
+            "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+            "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+            "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "runnerServiceAccountName": "runner"
+          },
+          "status": {
+            "observedGeneration": 1,
+            "conditions": [
+              {
+                "type": "Ready",
+                "status": "False",
+                "observedGeneration": 1,
+                "lastTransitionTime": "2026-11-02T01:19:08Z",
+                "reason": "TerraformJobRunning",
+                "message": "Terraform Job is running."
+              }
+            ],
+            "jobRef": {
+              "name": "environment-infra-plan-1"
+            },
+            "executionOutcome": "Running",
+            "jobUID": "dcdb5f70-ad34-46c3-b42e-342caf64fcbc"
+          }
+        }
+      },
+      "runID": "kpcp-1793582347453419300",
+      "sourceSHA": "68df86ae83731782d84b56a570a5c83a4c1f6cac",
+      "test": "TestLifecycle"
+    }
+  },
+  {
+    "rawReceiptFile": "kpcp-1793582347453419300-target-credential-isolation.json",
+    "rawSHA256": "5332de040d5c8c1bdc408ddb4c0531213ce3cdf607d9b15392bf396db94d0443",
+    "receipt": {
+      "at": "2026-11-02T01:19:07.5373627Z",
+      "evidence": {
+        "clientACertificateFingerprint": "sha256:ebdc84b6822ac0fbf31be8d57cfe36682020ea6787a34070c6537a0cbf3b19ae",
+        "clientBCertificateFingerprint": "sha256:4ee2ea787718bf5325e3674988683e6dd3cce57dc7e5db26b87678b9db78abf0",
+        "clusterACAFingerprint": "sha256:77a8551bdb5d9bc16cdbcac536419282a2dff8a2137f9b3d5f971ca501681399",
+        "clusterBCAFingerprint": "sha256:9cb66703031414e606dd0a4b4939a666d7ad791d657515eff4dbd0b405d249c5",
+        "crossCredentialReads": [
+          {
+            "attempt": "A credential against B",
+            "error": "Unauthorized",
+            "rejected": true
+          },
+          {
+            "attempt": "B credential against A",
+            "error": "Unauthorized",
+            "rejected": true
+          }
+        ]
+      },
+      "runID": "kpcp-1793582347453419300",
+      "sourceSHA": "68df86ae83731782d84b56a570a5c83a4c1f6cac",
+      "test": "TestLifecycle"
+    }
+  }
+]

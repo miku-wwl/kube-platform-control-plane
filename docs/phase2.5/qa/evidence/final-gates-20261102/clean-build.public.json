@@ -1,0 +1,324 @@
+{
+  "at": "2026-11-02T01:40:25.910046+00:00",
+  "cleanSourceSHA": "5deadde90239afae38e6a725055d61855d86480c",
+  "binaries": [
+    {
+      "binary": "controller-final.exe",
+      "sha256": "f695f579f02f397eda8d61fd448485793462e248798de8818ae2bf03f8f25213",
+      "metadata": [
+        "<private-QA-root>\\controller-final.exe: go1.27.2",
+        "build\t-trimpath=true",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=windows",
+        "build\tvcs.revision=fd90a8614c6616d9d3514546aaef3840cffa0296",
+        "build\tvcs.time=2026-11-02T01:11:51Z",
+        "build\tvcs.modified=false"
+      ]
+    },
+    {
+      "binary": "platform-api-final.exe",
+      "sha256": "255e6376cf19a06af9dad620c2bd35d69d65a3c8ba07617c5fcb1a7e59901ca9",
+      "metadata": [
+        "<private-QA-root>\\platform-api-final.exe: go1.27.2",
+        "build\t-trimpath=true",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=windows",
+        "build\tvcs.revision=fd90a8614c6616d9d3514546aaef3840cffa0296",
+        "build\tvcs.time=2026-11-02T01:11:51Z",
+        "build\tvcs.modified=false"
+      ]
+    },
+    {
+      "binary": "controller-delivery.exe",
+      "sha256": "f22fdedc101cb0e17f9ef108f67721f7047319000a7139d0971b17b8f0d15afe",
+      "metadata": [
+        "<private-QA-root>\\controller-delivery.exe: go1.27.2",
+        "build\t-trimpath=true",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=windows",
+        "build\tvcs.revision=5deadde90239afae38e6a725055d61855d86480c",
+        "build\tvcs.time=2026-11-02T01:20:55Z",
+        "build\tvcs.modified=false"
+      ]
+    },
+    {
+      "binary": "platform-api-delivery.exe",
+      "sha256": "079b5a9996d2160b381d3020f588e017817da0e2412333f52d7a0fc5244a733c",
+      "metadata": [
+        "<private-QA-root>\\platform-api-delivery.exe: go1.27.2",
+        "build\t-trimpath=true",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=windows",
+        "build\tvcs.revision=5deadde90239afae38e6a725055d61855d86480c",
+        "build\tvcs.time=2026-11-02T01:20:55Z",
+        "build\tvcs.modified=false"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "command": [
+        "go",
+        "test",
+        "./...",
+        "-v",
+        "-count=1"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:12:51.022650+00:00",
+      "finishedAt": "2026-11-02T01:13:31.077232+00:00",
+      "exitCode": 0,
+      "label": "unit-final",
+      "logSHA256": "9aa99313e887d125b613f4b06e44002b19cb07c39130de890a837d7cd122bf2e",
+      "sourceCommit": "fd90a86"
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./...",
+        "-count=1"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:12:51.058548+00:00",
+      "finishedAt": "2026-11-02T01:13:35.697112+00:00",
+      "exitCode": 0,
+      "label": "race-final",
+      "logSHA256": "e3c421640931976b50461c170f1a9dd2aac0c29232a0646c037f9119c7731a6c",
+      "sourceCommit": "fd90a86"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:12:51.019555+00:00",
+      "finishedAt": "2026-11-02T01:13:03.538539+00:00",
+      "exitCode": 0,
+      "label": "vet-final",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceCommit": "fd90a86"
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "--prefix",
+        "web",
+        "run",
+        "build"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:13:30.102561+00:00",
+      "finishedAt": "2026-11-02T01:13:39.849987+00:00",
+      "exitCode": 0,
+      "label": "web-final",
+      "logSHA256": "5bcee8a5a8a84b89da141bbaebcefe6b2e51dfb1c0e7f07c1dcf1136470434f2",
+      "sourceCommit": "fd90a86"
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "--prefix",
+        "web",
+        "test"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:13:30.099550+00:00",
+      "finishedAt": "2026-11-02T01:13:33.696928+00:00",
+      "exitCode": 0,
+      "label": "web-tests-final",
+      "logSHA256": "caa05cf6d611331f60692810e6e20d88bf0d4be5db055717413b5e0a9c5951c7",
+      "sourceCommit": "fd90a86"
+    },
+    {
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-o",
+        "<private-QA-root>\\controller-final.exe",
+        "./cmd/controller"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:12:51.075155+00:00",
+      "finishedAt": "2026-11-02T01:13:26.600166+00:00",
+      "exitCode": 0,
+      "label": "controller-final-build",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceCommit": "fd90a86"
+    },
+    {
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-o",
+        "<private-QA-root>\\platform-api-final.exe",
+        "./cmd/platform-api"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:12:51.109278+00:00",
+      "finishedAt": "2026-11-02T01:13:24.502900+00:00",
+      "exitCode": 0,
+      "label": "api-final-build",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceCommit": "fd90a86"
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "./internal/artifacts",
+        "-run",
+        "TestMiniStackIntegration",
+        "-v",
+        "-count=1"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-01T13:59:46.818510+00:00",
+      "finishedAt": "2026-11-01T13:59:49.563763+00:00",
+      "exitCode": 0,
+      "label": "ministack-integration-clean",
+      "logSHA256": "61c554b823baebbf95edfd1197a3dce7c0c9d63f0bbf6700302931ade68927b9",
+      "sourceCommit": "d9f0386"
+    },
+    {
+      "command": [
+        "wsl.exe",
+        "-d",
+        "podman-machine-default",
+        "--exec",
+        "/usr/bin/podman",
+        "--remote",
+        "--url",
+        "unix:///run/user/1000/podman/podman.sock",
+        "build",
+        "--format",
+        "oci",
+        "--label",
+        "org.opencontainers.image.revision=d9f038650353768fc4a0341b73001e5954763625",
+        "-f",
+        "runner.Dockerfile",
+        "-t",
+        "localhost/kpcp-runner:gates-d9f0386",
+        "."
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-01T13:54:06.994705+00:00",
+      "finishedAt": "2026-11-01T13:56:19.239806+00:00",
+      "exitCode": 0,
+      "label": "runner-oci-build",
+      "logSHA256": "ca9ffa48c25ac1c9ab436d074e55c80cdb94865dc7c45e7939e1ea2fdabd5898",
+      "sourceCommit": "d9f0386"
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "./...",
+        "-v",
+        "-count=1"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:30:08.488708+00:00",
+      "finishedAt": "2026-11-02T01:30:29.968174+00:00",
+      "exitCode": 0,
+      "label": "unit-delivery",
+      "logSHA256": "fa74ea6cf125b2455965387bd296a134b1634a197a098f5f8b3e140bef701fb9",
+      "sourceCommit": "5deadde"
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./...",
+        "-count=1"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:30:08.515474+00:00",
+      "finishedAt": "2026-11-02T01:30:34.794106+00:00",
+      "exitCode": 0,
+      "label": "race-delivery",
+      "logSHA256": "f5bbfdd7ee491cbfae45de942ed16c0bd3e80dbc957de57aae1ad8ce61b4fa9b",
+      "sourceCommit": "5deadde"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:30:08.503409+00:00",
+      "finishedAt": "2026-11-02T01:30:17.616171+00:00",
+      "exitCode": 0,
+      "label": "vet-delivery",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceCommit": "5deadde"
+    },
+    {
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-o",
+        "<private-QA-root>\\controller-delivery.exe",
+        "./cmd/controller"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:30:08.556388+00:00",
+      "finishedAt": "2026-11-02T01:30:26.025199+00:00",
+      "exitCode": 0,
+      "label": "controller-delivery-build",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceCommit": "5deadde"
+    },
+    {
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-o",
+        "<private-QA-root>\\platform-api-delivery.exe",
+        "./cmd/platform-api"
+      ],
+      "cwd": "controlled clean-source checkout",
+      "startedAt": "2026-11-02T01:30:08.504771+00:00",
+      "finishedAt": "2026-11-02T01:30:23.859534+00:00",
+      "exitCode": 0,
+      "label": "api-delivery-build",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceCommit": "5deadde"
+    }
+  ],
+  "unitOptInSkips": [
+    "--- SKIP: TestLifecycle (0.00s)",
+    "--- SKIP: TestTargetStartupRejectsInvalidBinding (0.00s)",
+    "--- SKIP: TestMiniStackIntegration (0.00s)",
+    "--- SKIP: TestOllamaLiveDraftScenarios (0.00s)"
+  ],
+  "productSourceEquivalence": {
+    "580aef4": {
+      "currentSourceSHA": "5deadde90239afae38e6a725055d61855d86480c",
+      "productPathsChanged": []
+    },
+    "fd90a86": {
+      "currentSourceSHA": "5deadde90239afae38e6a725055d61855d86480c",
+      "productPathsChanged": []
+    }
+  },
+  "runnerRelevantPackagePaths": [
+    "api/v1alpha1",
+    "internal/cloud",
+    "internal/artifacts",
+    "internal/planview",
+    "internal/terraform",
+    "cmd/terraform-runner"
+  ],
+  "runnerProductionSourceDeltaSinceImageBuild": [],
+  "note": "opt-in integration skips are not live PASS; real targeted runs have separate receipts. OCI Dockerfile excludes .git; OCI source attestation is clean checkout + command + revision label, not embedded VCS. No byte-for-byte rebuild reproducibility claim."
+}

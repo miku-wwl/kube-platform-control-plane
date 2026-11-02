@@ -1,0 +1,46 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:111: owned namespace=kpcp-1793541857329652200 uid=1fccfc69-ced5-4c16-8f60-8e3083381e4b source=98da3fb6cad0b60c60a58169aeb282aa555dbeb8 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+=== RUN   TestLifecycle/PlatformAPI_DraftAndTemplate
+=== NAME  TestLifecycle
+    lifecycle_test.go:234: dedicated controller process restarted phase=active-plan
+    lifecycle_test.go:234: dedicated controller process restarted phase=pending-approval
+=== RUN   TestLifecycle/A_ExactApproval
+=== RUN   TestLifecycle/B_ImmutableEvidence
+    lifecycle_test.go:533: damage=tamper planUID=06b39061-41f4-4c97-a0a7-c25d2c0c7184 key=runs/06b39061-41f4-4c97-a0a7-c25d2c0c7184/plan.binary originalDigest=sha256:ab9bf53dff849396822f5e45d9fe1b5867fb0bbbcbe4a8aad8fdfc7a9442ed08 actualDigest=sha256:3af9b8d293318ace01cec2a07c638ac21e53d1842b77c99c7f9d3e91f05c3e15
+    lifecycle_test.go:527: damage=missing planUID=7f9c7923-f5c8-4a1e-ab19-4ba5b9dee809 key=runs/7f9c7923-f5c8-4a1e-ab19-4ba5b9dee809/source-bundle.tar.zst originalDigest=sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80 actual=missing
+    lifecycle_test.go:533: damage=source-tamper planUID=2407bd93-c823-4ce1-b87e-e40a2e7e3c2a key=runs/2407bd93-c823-4ce1-b87e-e40a2e7e3c2a/source-bundle.tar.zst originalDigest=sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80 actualDigest=sha256:76b4956e3a95585ca8bbb5fc3fc2adbe0cae6c95b06bcd8303c126b8f0a6b9a2
+    lifecycle_test.go:533: damage=backend-tamper planUID=4c8aa7cc-2ad2-4d86-98ce-9c123069a1cc key=runs/4c8aa7cc-2ad2-4d86-98ce-9c123069a1cc/backend-config.hcl originalDigest=sha256:05f95062add0a74c6e2aecf7d3abb3dd83ab6b95cdf1d4b7e57c7b401e3c8daa actualDigest=sha256:11fc2a3b4a9bbf1d7ef1bfb9304de14ccaa1aee8d0ad526f496303c38981ff4d
+    lifecycle_test.go:527: damage=report-missing planUID=a49231ec-3a71-452a-a2c3-06c1bc0d6e71 key=runs/a49231ec-3a71-452a-a2c3-06c1bc0d6e71/plan-report.json originalDigest=sha256:4ef38d988d1c31c7cc67770adcc051c01ee39bdec2ee7ba9398066df2931c620 actual=missing
+    lifecycle_test.go:533: damage=report-tamper planUID=e23f6d36-081b-4e0c-aed9-d64ade964d02 key=runs/e23f6d36-081b-4e0c-aed9-d64ade964d02/plan-report.json originalDigest=sha256:de5a8086e4208bfe73a43b67e9263f5bb9e6eff7c48a4861df931ef216e712b3 actualDigest=sha256:c61ce89a5a6287db5a637f3fc8e3c6978a7b018ebd9516b8439ff286c6c4190b
+    lifecycle_test.go:527: damage=plan-missing planUID=9366e8c6-f0d1-423c-b5cc-85369dafdf62 key=runs/9366e8c6-f0d1-423c-b5cc-85369dafdf62/plan.binary originalDigest=sha256:d916172e818451435f10280a99ab76c020d3ae6c0b32d659f60df1f9352c4175 actual=missing
+    lifecycle_test.go:533: damage=terminal-tamper planUID=211979c8-e484-44d6-9ab0-0bd735526d98 key=runs/211979c8-e484-44d6-9ab0-0bd735526d98/terminal-result.json originalDigest=sha256:f06882ffb3e90ff1495ff49b19fb13c8b119178b7e160e9aaf7a1390fe584778 actualDigest=sha256:2cc69fcb6e2d68ea2e5f019d48245fc60908dbf99dfcca658af0076ce2e0f739
+    lifecycle_test.go:517: credential drift secret=emulator-credential-change uid=8f2924d4-7580-4073-816e-ec12c76b7825 version=56890 planIdentity=sha256:a233f242f2255f028dea73a5a305a57bbf5c3780beaae86d7e532e2b39a53b35
+=== RUN   TestLifecycle/PlatformAPI_ExactApproval
+=== NAME  TestLifecycle
+    lifecycle_test.go:234: dedicated controller process restarted phase=active-apply
+    lifecycle_test.go:234: dedicated controller process restarted phase=ready
+=== RUN   TestLifecycle/C_RestartRecovery
+    lifecycle_test.go:688: Plan UID=d138cf13-9603-413d-92ec-8dbac2c22c67 digest=sha256:01b9f22ad73ee4d59445a8cf11a6a45fb858125ded4b62fda3ae01f3f327b93c input=sha256:a1e2a2997b66f81588d176b0579831de3e3f3a7bd5c5264e6914a529e69193ad source=sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80
+=== RUN   TestLifecycle/NoChange
+=== RUN   TestLifecycle/D_MultiTarget
+=== RUN   TestLifecycle/SingleClusterConcurrency
+    lifecycle_test.go:739: owned isolation namespace=kpcp-1793541857329652200-secondary uid=d2cc9f3b-a63f-46a4-ab8d-cfdebc67a395 clusterUID=2c62d6a8-08b6-460d-bb1b-ac59557dc281 multiCluster=false
+=== RUN   TestLifecycle/E_FailClosed
+=== RUN   TestLifecycle/F_DestroyFinalizer
+    lifecycle_test.go:1022: transient Destroy Plan failure: context deadline exceeded
+=== NAME  TestLifecycle
+    lifecycle_test.go:251: retained owned namespace/bucket kpcp-1793541857329652200; finalizers and evidence preserved
+--- FAIL: TestLifecycle (2100.03s)
+    --- PASS: TestLifecycle/PlatformAPI_DraftAndTemplate (0.06s)
+    --- PASS: TestLifecycle/A_ExactApproval (2.10s)
+    --- PASS: TestLifecycle/B_ImmutableEvidence (439.17s)
+    --- PASS: TestLifecycle/PlatformAPI_ExactApproval (0.05s)
+    --- PASS: TestLifecycle/C_RestartRecovery (0.01s)
+    --- PASS: TestLifecycle/NoChange (60.02s)
+    --- SKIP: TestLifecycle/D_MultiTarget (0.00s)
+    --- PASS: TestLifecycle/SingleClusterConcurrency (222.19s)
+    --- PASS: TestLifecycle/E_FailClosed (18.19s)
+    --- FAIL: TestLifecycle/F_DestroyFinalizer (1279.35s)
+FAIL
+FAIL	github.com/miku-wwl/kube-platform-control-plane/e2e	2100.399s
+FAIL

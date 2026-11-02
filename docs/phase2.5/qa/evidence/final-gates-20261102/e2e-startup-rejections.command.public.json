@@ -1,0 +1,16 @@
+{
+  "command": [
+    "go",
+    "test",
+    "./e2e",
+    "-run",
+    "^TestTargetStartupRejectsInvalidBinding$",
+    "-v",
+    "-count=1",
+    "-timeout=3m"
+  ],
+  "cwd": "controlled clean-source checkout",
+  "startedAt": "2026-11-02T01:13:47.674293+00:00",
+  "finishedAt": "2026-11-02T01:13:55.211954+00:00",
+  "exitCode": 0
+}

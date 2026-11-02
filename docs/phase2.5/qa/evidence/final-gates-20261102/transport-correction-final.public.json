@@ -1,0 +1,8 @@
+{
+  "at": "2026-11-02T00:52:47.991938+00:00",
+  "hostEndpoint": "http://127.0.0.1:4566",
+  "podEndpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568",
+  "faultScope": "only exact owned artifact bucket through test transport",
+  "reason": "Host and Pod requests share a peer IP. Separate endpoints replace the unsuccessful IP heuristic. Product checks unchanged.",
+  "priorExecutionRetained": "FAIL"
+}

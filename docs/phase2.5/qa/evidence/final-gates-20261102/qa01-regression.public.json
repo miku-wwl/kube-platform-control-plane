@@ -1,0 +1,172 @@
+{
+  "runID": "kpcp-gates-20261102-0223",
+  "recordedAt": "2026-11-01T13:41:06.508522+00:00",
+  "fixCommit": "92d009a",
+  "status": "PASS",
+  "scope": "QA-01 Class validation localization and TC15 affected paths",
+  "buildScope": "preliminary build of fix contents; clean committed build is a separate gate",
+  "checks": {
+    "go-qa01": {
+      "command": [
+        "go",
+        "test",
+        "./internal/console",
+        "-count=1"
+      ],
+      "startedAt": "2026-11-01T13:28:48.672750+00:00",
+      "finishedAt": "2026-11-01T13:28:56.049375+00:00",
+      "exitCode": 0,
+      "logSHA256": "0bd9e551ad43da5d7399df3dd7158411b5d725ab47a848a090413e755ce54757"
+    },
+    "web-qa01": {
+      "command": [
+        "node",
+        "--test",
+        "test/classValidation.test.mjs"
+      ],
+      "startedAt": "2026-11-01T13:28:48.638790+00:00",
+      "finishedAt": "2026-11-01T13:28:49.484221+00:00",
+      "exitCode": 0,
+      "logSHA256": "236733774ccb1877f8614241ef10d56f6874a354d394ae504e51f40a73e6c53d"
+    },
+    "web-build-qa01": {
+      "command": [
+        "npm.cmd",
+        "--prefix",
+        "web",
+        "run",
+        "build"
+      ],
+      "startedAt": "2026-11-01T13:28:48.667940+00:00",
+      "finishedAt": "2026-11-01T13:28:55.033822+00:00",
+      "exitCode": 0,
+      "logSHA256": "488b0669e48fce8965c991ecec0d69fe43a8d0a26f1a2d147f9b1d4ba52f5311"
+    },
+    "api-build-qa01": {
+      "command": [
+        "go",
+        "build",
+        "-o",
+        "<qa-owned>/platform-api.exe",
+        "./cmd/platform-api"
+      ],
+      "startedAt": "2026-11-01T13:28:48.673937+00:00",
+      "finishedAt": "2026-11-01T13:28:56.912042+00:00",
+      "exitCode": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "screenshots": [
+    {
+      "name": "qa01-before-zh",
+      "capturedAt": "2026-11-01T13:25:14.052Z",
+      "url": "http://127.0.0.1:5173/#classes",
+      "png": "screenshots/final-gates-20261102/qa01-before-zh.png",
+      "sha256": "a3d48b628af31e395e27e5b4a6a2a45c450865afec44ff579b20d8b99984ab4e",
+      "rawJPEGsha256": "d601129cb3bd649522d9ef92c5c423a3307e030ae861999042f279d115f48a41",
+      "size": [
+        1264,
+        2876
+      ],
+      "decodedPixelsEqual": true
+    },
+    {
+      "name": "qa01-after-zh",
+      "capturedAt": "2026-11-01T13:31:01.782Z",
+      "url": "http://127.0.0.1:5175/#classes",
+      "png": "screenshots/final-gates-20261102/qa01-after-zh.png",
+      "sha256": "053ef44cb52d1d75368ff8e31859decb26569ac21ea47672dc739eabfdb20087",
+      "rawJPEGsha256": "e9a247e4fc13684a9730addf79a1daaeba4208a0e0692292021cf2f813e05c5e",
+      "size": [
+        2027,
+        3286
+      ],
+      "decodedPixelsEqual": true
+    },
+    {
+      "name": "qa01-after-technical-context",
+      "capturedAt": "2026-11-01T13:31:16.234Z",
+      "url": "http://127.0.0.1:5175/#classes",
+      "png": "screenshots/final-gates-20261102/qa01-after-technical-context.png",
+      "sha256": "b86ee535e3e2a7be5150227c1b8ffd9666ecf7a8af4636b9a563929071b3219a",
+      "rawJPEGsha256": "49fec5f8462280b244c3aca0918e824841593dd15b9d219389bd7650d9a3c05b",
+      "size": [
+        2027,
+        3408
+      ],
+      "decodedPixelsEqual": true
+    },
+    {
+      "name": "qa01-after-en",
+      "capturedAt": "2026-11-01T13:31:45.288Z",
+      "url": "http://127.0.0.1:5175/#classes",
+      "png": "screenshots/final-gates-20261102/qa01-after-en.png",
+      "sha256": "543deac9104b439752243cbc8cbedf1cc98da73340cf4c0d7334c3f3c6ccb4d6",
+      "rawJPEGsha256": "ae88a346d4b1644d6f8309a7c1e0dd6c84f43dad02419b65755e9955b620bf42",
+      "size": [
+        2027,
+        3429
+      ],
+      "decodedPixelsEqual": true
+    },
+    {
+      "name": "qa01-capacity-rejected-zh",
+      "capturedAt": "2026-11-01T13:31:58.808Z",
+      "url": "http://127.0.0.1:5175/#classes",
+      "png": "screenshots/final-gates-20261102/qa01-capacity-rejected-zh.png",
+      "sha256": "886fade297167bf315daa2b217c64451b18388b91fd56656a8d5f4c7b5870f7e",
+      "rawJPEGsha256": "9315812a828b494c1d3fb5096039e45f934dc988c97a745e83578d977238baac",
+      "size": [
+        2027,
+        3286
+      ],
+      "decodedPixelsEqual": true
+    },
+    {
+      "name": "qa01-required-field-rejected",
+      "capturedAt": "2026-11-01T13:32:00.180Z",
+      "url": "http://127.0.0.1:5175/#classes",
+      "png": "screenshots/final-gates-20261102/qa01-required-field-rejected.png",
+      "sha256": "dcc9b665771ed4dfd0c23aede7f3c65f69491a7f5aa44bcdd10fe8ff54a4c5fd",
+      "rawJPEGsha256": "546622b72f13e8c316ae339522764d177593e382b0c2a0c8c2927d6d8f45e5e1",
+      "size": [
+        2027,
+        3009
+      ],
+      "decodedPixelsEqual": true
+    },
+    {
+      "name": "qa01-valid-admission-zh",
+      "capturedAt": "2026-11-01T13:33:45.939Z",
+      "url": "http://127.0.0.1:5175/#classes",
+      "png": "screenshots/final-gates-20261102/qa01-valid-admission-zh.png",
+      "sha256": "b5dfd192c2c4bfadf295cece747398c9a7c3e9a876d1dd14c557a67b25cc3cf5",
+      "rawJPEGsha256": "2c6e28ab2b2e2ab768f3e1b89bffc75daf835d2658aeb529437c64fccb9b2ee7",
+      "size": [
+        2027,
+        3289
+      ],
+      "decodedPixelsEqual": true
+    },
+    {
+      "name": "qa01-revalidation-required",
+      "capturedAt": "2026-11-01T13:33:46.441Z",
+      "url": "http://127.0.0.1:5175/#classes",
+      "png": "screenshots/final-gates-20261102/qa01-revalidation-required.png",
+      "sha256": "7a3ecf3e7d152acbe7bb919d0f68330fd8be7fd5b45c779e5111a2d877d26a14",
+      "rawJPEGsha256": "ce9c7a53521d80fabed3174131b9613d2f95c5cbcb125735d7dbab1d6e8a2610",
+      "size": [
+        2027,
+        3009
+      ],
+      "decodedPixelsEqual": true
+    }
+  ],
+  "languageInputsPreserved": true,
+  "technicalDiagnosticPreserved": true,
+  "requiredFieldRejected": true,
+  "capacityBoundsRejected": true,
+  "changedConfigurationInvalidatesValidation": true,
+  "postTestPlatformResourcesAndJobs": 0,
+  "cleanup": "unsaved class form cancelled; no class/environment/Job/bucket created"
+}

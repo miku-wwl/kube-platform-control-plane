@@ -1,0 +1,25 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:117: owned namespace=kpcp-1793582521855488800 uid=829964c2-262a-466a-b9da-4fd4b0381c17 source=98da3fb6cad0b60c60a58169aeb282aa555dbeb8 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+=== RUN   TestLifecycle/PlatformAPI_DraftAndTemplate
+=== NAME  TestLifecycle
+    lifecycle_test.go:253: dedicated controller process restarted phase=active-plan
+    lifecycle_test.go:253: dedicated controller process restarted phase=pending-approval
+=== RUN   TestLifecycle/PlatformAPI_ExactApproval
+=== NAME  TestLifecycle
+    lifecycle_test.go:253: dedicated controller process restarted phase=active-apply
+    lifecycle_test.go:253: dedicated controller process restarted phase=ready
+=== RUN   TestLifecycle/D_MultiTarget
+    lifecycle_test.go:780: owned isolation namespace=kpcp-1793582521855488800 uid=9bdf8dc7-53dc-4fe6-a99f-26f4437be4c7 clusterUID=60e4ef1d-fb2f-4231-9d48-71a87696d6e7 multiCluster=true
+=== NAME  TestLifecycle
+    lifecycle_test.go:253: dedicated controller process restarted phase=cross-target-apply-contention
+=== RUN   TestLifecycle/F_DestroyFinalizer
+=== NAME  TestLifecycle
+    lifecycle_test.go:253: dedicated controller process restarted phase=destroy-pending-approval
+    lifecycle_test.go:253: dedicated controller process restarted phase=active-destroy
+--- PASS: TestLifecycle (512.02s)
+    --- PASS: TestLifecycle/PlatformAPI_DraftAndTemplate (0.12s)
+    --- PASS: TestLifecycle/PlatformAPI_ExactApproval (0.03s)
+    --- PASS: TestLifecycle/D_MultiTarget (283.80s)
+    --- PASS: TestLifecycle/F_DestroyFinalizer (117.30s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	512.509s

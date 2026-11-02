@@ -1,0 +1,124 @@
+{
+  "observations": [
+    {
+      "at": "2026-11-02T01:19:47.670986+00:00",
+      "namespace": "kpcp-1793582347453419300",
+      "namespaceUID": "aef1cb12-a2d8-466f-80f3-999c6dd0de74",
+      "jobName": "environment-infra-plan-1",
+      "jobUID": "dcdb5f70-ad34-46c3-b42e-342caf64fcbc",
+      "runUID": "320900e5-b7f6-4f67-aaee-2faed380138e",
+      "podUID": "b42f53fd-6857-4ff0-ae27-b0951efaa53f",
+      "image": "localhost/kpcp-runner:gates-d9f0386",
+      "actualImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+      "matchesImportedManifestDigest": true
+    },
+    {
+      "at": "2026-11-02T01:27:54.489238+00:00",
+      "namespace": "kpcp-1793582521855488800",
+      "namespaceUID": "829964c2-262a-466a-b9da-4fd4b0381c17",
+      "jobName": "concurrent-infra-destroy-plan-3",
+      "jobUID": "f52646c6-56c7-4be7-9759-2f0be7541965",
+      "runUID": "5463b0e3-3987-45fa-a865-e4b75615b777",
+      "podUID": "83c79fc3-6452-496f-b21d-89e0350450c3",
+      "image": "localhost/kpcp-runner:gates-d9f0386",
+      "actualImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+      "matchesImportedManifestDigest": true
+    },
+    {
+      "at": "2026-11-02T01:27:54.489408+00:00",
+      "namespace": "kpcp-1793582521855488800",
+      "namespaceUID": "829964c2-262a-466a-b9da-4fd4b0381c17",
+      "jobName": "concurrent-infra-plan-1-apply-f013418b4d",
+      "jobUID": "2f3fb8a9-3ef8-4867-b8b9-051db9d6ab02",
+      "runUID": "6715bf71-782d-479c-8ed1-85f439e3fb0d",
+      "podUID": "17125495-3b0e-4bd4-b147-7c0f13ca3755",
+      "image": "localhost/kpcp-runner:gates-d9f0386",
+      "actualImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+      "matchesImportedManifestDigest": true
+    },
+    {
+      "at": "2026-11-02T01:27:54.489440+00:00",
+      "namespace": "kpcp-1793582521855488800",
+      "namespaceUID": "829964c2-262a-466a-b9da-4fd4b0381c17",
+      "jobName": "concurrent-infra-plan-1",
+      "jobUID": "ab9b69c9-09b0-4a5d-b9aa-04413c2fb0e6",
+      "runUID": "accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493",
+      "podUID": "9e2a21ea-d5ba-4595-8e3f-e435d93f78c1",
+      "image": "localhost/kpcp-runner:gates-d9f0386",
+      "actualImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+      "matchesImportedManifestDigest": true
+    },
+    {
+      "at": "2026-11-02T01:27:54.489470+00:00",
+      "namespace": "kpcp-1793582521855488800",
+      "namespaceUID": "829964c2-262a-466a-b9da-4fd4b0381c17",
+      "jobName": "environment-infra-plan-1-apply-ce42af994b",
+      "jobUID": "9944e738-9ac4-4a71-ba73-cd49daa4568e",
+      "runUID": "0ee0ddd2-3eb8-406e-be5c-0ff081b886e5",
+      "podUID": "1cf54cd4-a27d-46ab-b263-08f13b079bce",
+      "image": "localhost/kpcp-runner:gates-d9f0386",
+      "actualImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+      "matchesImportedManifestDigest": true
+    },
+    {
+      "at": "2026-11-02T01:27:54.489498+00:00",
+      "namespace": "kpcp-1793582521855488800",
+      "namespaceUID": "829964c2-262a-466a-b9da-4fd4b0381c17",
+      "jobName": "environment-infra-plan-1",
+      "jobUID": "14a5d99b-a67b-4ad0-9bd0-c22e7601da1b",
+      "runUID": "a267eae9-3b54-41ca-ab0d-d3dd878781cb",
+      "podUID": "7315c770-ff92-4181-ae87-7b4a0a0d09f0",
+      "image": "localhost/kpcp-runner:gates-d9f0386",
+      "actualImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+      "matchesImportedManifestDigest": true
+    },
+    {
+      "at": "2026-11-02T01:27:54.489524+00:00",
+      "namespace": "kpcp-1793582521855488800",
+      "namespaceUID": "829964c2-262a-466a-b9da-4fd4b0381c17",
+      "jobName": "second-infra-destroy-plan-3",
+      "jobUID": "abbb1497-b4c4-4aa9-bde6-b01d5d50906a",
+      "runUID": "e425c037-09d6-40f4-9a19-01c84935209b",
+      "podUID": "c2d4a8bc-fd27-4950-b05f-f30a8c06a5ad",
+      "image": "localhost/kpcp-runner:gates-d9f0386",
+      "actualImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+      "matchesImportedManifestDigest": true
+    },
+    {
+      "at": "2026-11-02T01:27:54.489551+00:00",
+      "namespace": "kpcp-1793582521855488800",
+      "namespaceUID": "829964c2-262a-466a-b9da-4fd4b0381c17",
+      "jobName": "second-infra-destroy-plan-3-apply-6ccbc85640",
+      "jobUID": "8159c8e5-d8c6-4417-b495-be6381ab150f",
+      "runUID": "2792676e-eb99-4123-bfb6-b248cdd92a10",
+      "podUID": "25667451-1479-4458-bda3-3e04223a2dfa",
+      "image": "localhost/kpcp-runner:gates-d9f0386",
+      "actualImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+      "matchesImportedManifestDigest": true
+    },
+    {
+      "at": "2026-11-02T01:27:54.489580+00:00",
+      "namespace": "kpcp-1793582521855488800",
+      "namespaceUID": "829964c2-262a-466a-b9da-4fd4b0381c17",
+      "jobName": "second-infra-plan-1",
+      "jobUID": "7910aedc-86e7-4be7-a3b8-b076472f3804",
+      "runUID": "f4c69a4e-f381-459e-af2a-e1205c78bfe2",
+      "podUID": "1149f42a-0b60-4a81-8be5-324e076a7f53",
+      "image": "localhost/kpcp-runner:gates-d9f0386",
+      "actualImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+      "matchesImportedManifestDigest": true
+    },
+    {
+      "at": "2026-11-02T01:27:54.489611+00:00",
+      "namespace": "kpcp-1793582521855488800",
+      "namespaceUID": "829964c2-262a-466a-b9da-4fd4b0381c17",
+      "jobName": "second-infra-plan-1-apply-55dcaef7cb",
+      "jobUID": "0f4b2cf7-8445-40c8-b042-9432d1bd046e",
+      "runUID": "d6008ffd-5541-4f14-82bf-27609360e6f8",
+      "podUID": "7fed98e2-975f-42b8-9d39-fd22d29aa783",
+      "image": "localhost/kpcp-runner:gates-d9f0386",
+      "actualImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+      "matchesImportedManifestDigest": true
+    }
+  ]
+}

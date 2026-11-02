@@ -1,0 +1,72 @@
+{
+  "at": "2026-11-02T01:18:43.583300+00:00",
+  "namespace": "kpcp-1793582052833323500",
+  "namespaceUID": "48038521-1c9d-468b-8cfb-2249f95ed47b",
+  "execution": "FAIL / aborted after confirmed fixture error before Gate D",
+  "reason": "test interrupted durable creation intent before an actual Plan Job existed",
+  "oldPlanUID": "2da212e3-7342-4b48-b08b-130767b5d7a7",
+  "oldPlanStatus": {
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-11-02T01:14:32Z",
+        "message": "A stale or failed Plan attempt was superseded by a fresh immutable attempt.",
+        "observedGeneration": 1,
+        "reason": "Superseded",
+        "status": "False",
+        "type": "Ready"
+      }
+    ],
+    "executionOutcome": "Superseded",
+    "jobRef": {
+      "name": "environment-infra-plan-1"
+    },
+    "observedGeneration": 1
+  },
+  "applyCount": 0,
+  "cloudBucketHTTPStatus": 404,
+  "artifactsArchived": [
+    {
+      "key": "env:/environment/kpcp-1793582052833323500/state.tfstate",
+      "file": "8592995455baeb71fc1a5e81d809b941e1ee8f9f0f64e7995038d78a2752fdbf.bin",
+      "sha256": "ee15f8013f021962b60c399f73437a343ed6a352c971db7fc50865dea096c56a"
+    },
+    {
+      "key": "runs/168bb746-0e7b-41c4-8f30-e6f19b235a30/backend-config.hcl",
+      "file": "b72a94630fd4d9192a8003fbdd4ac2aa03c6e64078d7e9f1857cf9c0fc25e1e9.bin",
+      "sha256": "2e9ca0eb46b9455aa6e37907c4eff1d37cbf189b52c330c544e5312053733cc7"
+    },
+    {
+      "key": "runs/168bb746-0e7b-41c4-8f30-e6f19b235a30/module-inputs.json",
+      "file": "a1f2bdf2034852690b6cb864d6fc5d2bc000c1b7b0a89bcb1a3850f70104a59b.bin",
+      "sha256": "e8e0c6bf62bb94662a01458c1e7da1b2e0552e1d075a69f691ae8a6330135167"
+    },
+    {
+      "key": "runs/168bb746-0e7b-41c4-8f30-e6f19b235a30/plan-report.json",
+      "file": "f91e8068780bb002053df1a2acdc4f48a98343145f72a58119a229c30103e978.bin",
+      "sha256": "2e1282fdfcbee7de153a89eae94a538eed04c9d266c2e730134f06919ebf640d"
+    },
+    {
+      "key": "runs/168bb746-0e7b-41c4-8f30-e6f19b235a30/plan-visualization.json",
+      "file": "f20e4f302fc01741c04945c137ec20aa47a202c71b2e9323412902a9483509c0.bin",
+      "sha256": "d838493552ee60af7911d44bbb3588292d81d8ac809b865b98672e33f8209733"
+    },
+    {
+      "key": "runs/168bb746-0e7b-41c4-8f30-e6f19b235a30/plan.binary",
+      "file": "f7e9bdab5fe7d02b613c192e7dbbb1086617d5137976fc22c517a6a401dc9ae9.bin",
+      "sha256": "bd9d91471734ee65fa972a1238fcfb0c898c19d5a88f9240011c9cfef9fce21f"
+    },
+    {
+      "key": "runs/168bb746-0e7b-41c4-8f30-e6f19b235a30/source-bundle.tar.zst",
+      "file": "2369643d0fb56832ed4048ead62c70235ac2705b9d02ec04aa0b26d91a76104f.bin",
+      "sha256": "58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80"
+    },
+    {
+      "key": "runs/168bb746-0e7b-41c4-8f30-e6f19b235a30/terminal-result.json",
+      "file": "330c7a0c856e3e1406e97cef75dbfacf3189feca3b4cb3723e2f143f3cf7e629.bin",
+      "sha256": "a532ba7f9dc5b192b72c2e78c46a48d289d40b8ac5345b89582dd8847d346d60"
+    }
+  ],
+  "normalBusinessFinalizerCleanup": true,
+  "manualFinalizerRemoval": false,
+  "secondClusterUntouched": true
+}

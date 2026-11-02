@@ -1,0 +1,112 @@
+[
+  {
+    "name": "ollama-final-zh",
+    "sourceJPEG_SHA256": "da8e5d56b9564564a9645161bd3593d1fc1a37d7b0e46eafd2d8bee9546e74d6",
+    "pngSHA256": "b2789f84a4bd9ea8b478279b7a0fc3b98203b5b31c4252cd41becdef940b121f",
+    "decodedPixelsEqual": true,
+    "dimensions": [
+      1826,
+      876
+    ],
+    "capture": {
+      "name": "ollama-final-zh",
+      "capturedAt": "2026-11-02T01:15:40.865Z",
+      "url": "http://127.0.0.1:5175/#builder",
+      "fullPage": false
+    }
+  },
+  {
+    "name": "ollama-final-technical",
+    "sourceJPEG_SHA256": "7a3f51d79c2d23177c5838cefb1dfa9d30de691b5829c87490c957255ca2fb78",
+    "pngSHA256": "923a17773733590f09d3f95ed3b32588f0e3d49d73aea52c12f0caff75258b6a",
+    "decodedPixelsEqual": true,
+    "dimensions": [
+      1826,
+      876
+    ],
+    "capture": {
+      "name": "ollama-final-technical",
+      "capturedAt": "2026-11-02T01:15:47.188Z",
+      "url": "http://127.0.0.1:5175/#builder",
+      "fullPage": false
+    }
+  },
+  {
+    "name": "ollama-final-en",
+    "sourceJPEG_SHA256": "631b46d864fba40dd46b4fd8e3551d379e12081d81e7957a7bc3c5bf2734ca40",
+    "pngSHA256": "f55d31b3cb43c0774aaead6176dd21bcf019eef5ad3565251d9ece891cfb9009",
+    "decodedPixelsEqual": true,
+    "dimensions": [
+      1826,
+      876
+    ],
+    "capture": {
+      "name": "ollama-final-en",
+      "capturedAt": "2026-11-02T01:15:47.651Z",
+      "url": "http://127.0.0.1:5175/#builder",
+      "fullPage": false
+    }
+  },
+  {
+    "name": "interrupted-recovery-destroy-review",
+    "sourceJPEG_SHA256": "11f8d76055f647f74bac9b1a8fdb203cab14331a7f4dd98df9f6373c68add0d5",
+    "pngSHA256": "69633ec1e5c1f8ff8ce150d3a66b2da3e069c35405a86a6e2d23363303881519",
+    "decodedPixelsEqual": true,
+    "dimensions": [
+      1264,
+      1192
+    ],
+    "capture": {
+      "name": "interrupted-recovery-destroy-review",
+      "capturedAt": "2026-11-02T00:45:04.855Z",
+      "url": "http://127.0.0.1:5175/"
+    }
+  },
+  {
+    "name": "interrupted-recovery-destroy-approved",
+    "sourceJPEG_SHA256": "4d9e3569559957cdc0ae53e0e53a2d1f98235ed62c1783255a7f22fa32d331c7",
+    "pngSHA256": "43ffd8892e7e2a3a793a37c4fe1f8c20f642ef0d5ffe65990b8c430b5daec0b8",
+    "decodedPixelsEqual": true,
+    "dimensions": [
+      1264,
+      1192
+    ],
+    "capture": {
+      "name": "interrupted-recovery-destroy-approved",
+      "capturedAt": "2026-11-02T00:45:15.949Z",
+      "url": "http://127.0.0.1:5175/"
+    }
+  },
+  {
+    "name": "interrupted-recovery-environment-removed",
+    "sourceJPEG_SHA256": "cea118c7687ce3212ae7bb5663c6e6059d1d51ad092d5bfa918061528d76574e",
+    "pngSHA256": "d9a923373e97a4cf7eed6b15f60f061a3b980279ba69f41e6684776575b65c69",
+    "decodedPixelsEqual": true,
+    "dimensions": [
+      1265,
+      712
+    ],
+    "capture": {
+      "name": "interrupted-recovery-environment-removed",
+      "capturedAt": "2026-11-02T00:46:49.833Z",
+      "url": "http://127.0.0.1:5175/",
+      "fullPage": false
+    }
+  },
+  {
+    "name": "handoff-original-home",
+    "sourceJPEG_SHA256": "31f411ea575b01a4767a7ff8c59d7529ecb0ec6c0ff82a099d0b65a93cb498b9",
+    "pngSHA256": "18469277a7758f1280154491c3ed3723ca4d28343c7d7250306898b6e9da26ca",
+    "decodedPixelsEqual": true,
+    "dimensions": [
+      1841,
+      883
+    ],
+    "capture": {
+      "name": "handoff-original-home",
+      "capturedAt": "2026-11-02T01:35:58.722Z",
+      "url": "http://127.0.0.1:5173/",
+      "fullPage": false
+    }
+  }
+]
