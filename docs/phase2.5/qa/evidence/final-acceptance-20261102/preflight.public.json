@@ -48,9 +48,11 @@
     "GIT_SOURCE_POD": "PASS",
     "CONTROLLER_READY": "PASS",
     "RUNNER_IMAGE": "PASS",
-    "BACKEND": "PENDING actual backend init",
+    "BACKEND": "PASS actual S3 backend init in pinned Runner Pod",
     "ARTIFACT_STORE": "PASS independent TestMiniStackIntegration immutable/read/write/lock contention",
-    "E2E_CONFIG": "PENDING lifecycle handoff",
+    "E2E_CONFIG": "PASS explicit JSON, clean controller, source commit and Runner digest",
     "OWNERSHIP": "PASS"
-  }
+  },
+  "status": "PASS",
+  "backendProbeJobUID": "8198427d-b318-42c1-b9b5-73292b5ceb05"
 }

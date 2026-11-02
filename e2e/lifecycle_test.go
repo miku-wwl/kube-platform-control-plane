@@ -43,6 +43,7 @@ type configuration struct {
 	HostEndpoint, PodEndpoint, SourceURL, SourceRevision string
 	FaultFile                                            string // optional test-owned transport fault switch
 	SecondContext                                        string // optional independent target in the supplied kubeconfig
+	FinalSafetyFaultFile, FinalSafetySourceRevision      string // optional owned live-fault transport and alternate fixed fixture revision
 }
 
 // The caller supplies Kubernetes, the emulator, a built controller and immutable
@@ -1081,6 +1082,17 @@ func TestLifecycle(t *testing.T) {
 	}) {
 		return
 	}
+	safetyClean := true
+	t.Run("FinalSafety", func(t *testing.T) {
+		if os.Getenv("KPCP_FINAL_SAFETY") != "1" {
+			t.Skip("set KPCP_FINAL_SAFETY=1 after the complete lifecycle baseline passes")
+		}
+		var template platform.InfraStack
+		if err := kube.Get(ctx, client.ObjectKey{Namespace: prefix, Name: "environment-infra"}, &template); err != nil {
+			t.Fatal(err)
+		}
+		safetyClean = runFinalSafety(t, ctx, kube, storage, store, cfg, prefix, template, stop, start)
+	})
 	if !t.Run("F_DestroyFinalizer", func(t *testing.T) {
 		if cfg.FaultFile != "" {
 			if !filepath.IsAbs(cfg.FaultFile) {
@@ -1232,5 +1244,5 @@ func TestLifecycle(t *testing.T) {
 		err := kube.Get(ctx, client.ObjectKeyFromObject(class), class)
 		return apierrors.IsNotFound(err), client.IgnoreNotFound(err)
 	})
-	complete = true
+	complete = safetyClean
 }
