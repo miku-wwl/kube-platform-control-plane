@@ -64,6 +64,8 @@ Go unit/race/vet/build、前端 npm ci / 7 tests / typecheck / build、Terraform
 
 [完整性核验](evidence/final-acceptance-20261102/evidence-integrity.public.json)：8 张原始 IAB JPEG 解码、文件长度和 SHA 匹配；live receipts/raw Controller/Pod log hash 匹配；实际 Pod Controller imageID 与 OCI index、child manifest、image 内 executable 的 hash 绑定。公开文本仅脱敏和规范换行，原始敏感证据不提交。真实 AWS/IAM、生产故障域、SLA 与生产可移植性不在验收范围。
 
+提交后 Gitleaks 命中新增收据中的一条 `secretUID`，只读核对 live dummy Secret 的 metadata UID 完全一致，是 36 字符 Kubernetes UUID，并非 credential。仅新增该历史 commit/file/rule/line 的精确 fingerprint，未关闭规则、未读取 Secret 数据；复扫无 finding。见[扫描复核收据](evidence/final-acceptance-20261102/secret-scan-review.public.json)。
+
 ## 7. 交付
 
 Feature branch 提交并创建 PR，**不合并 main**。GitHub Actions 发布后核验，最终 PR URL、head SHA 与最新 CI run 在交付收据中明确记录。NO-GO 来自 F04 受支持恢复与正常资源清理的实证阻塞，不被绿色单测/CI 或保护性拒绝覆盖。
