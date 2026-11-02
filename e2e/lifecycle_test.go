@@ -154,6 +154,7 @@ func TestLifecycle(t *testing.T) {
 		if secondIdentity.UID == target.UID {
 			t.Fatal("SecondContext must identify an independent cluster")
 		}
+		assertIndependentTargetCredentials(t, ctx, prefix, rest, secondREST)
 	}
 	storage := s3.NewFromConfig(aws.Config{Region: "us-east-1", Credentials: credentials.NewStaticCredentialsProvider("000000000000", "test", "")}, func(o *s3.Options) { o.BaseEndpoint = aws.String(cfg.HostEndpoint); o.UsePathStyle = true })
 	if _, err := storage.CreateBucket(ctx, &s3.CreateBucketInput{Bucket: aws.String(prefix)}); err != nil {
@@ -806,6 +807,7 @@ func TestLifecycle(t *testing.T) {
 			return len(plans) == 2, nil
 		}
 		wait(t, "two independent Plans", func() (bool, error) { return collect("Reconcile") })
+		recordGateEvidence(t, prefix, "isolation-plans", map[string]any{"multiCluster": multiCluster, "clusterAUID": target.UID, "clusterBUID": isolatedUID, "targetNamespace": secondNamespace, "plans": plans})
 		if plans["second"].Spec.Workspace == plans["concurrent"].Spec.Workspace || plans["second"].Spec.RunnerServiceAccountName == plans["concurrent"].Spec.RunnerServiceAccountName {
 			t.Fatal("state/runner identity shared across environments")
 		}
@@ -818,7 +820,8 @@ func TestLifecycle(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		contended := false
+		contended, recovered := false, false
+		retainedJobs := map[string]string{}
 		wait(t, "isolated concurrent Applies", func() (bool, error) {
 			var runs platform.TerraformRunList
 			if err := kube.List(ctx, &runs, client.InNamespace(prefix)); err != nil {
@@ -846,12 +849,22 @@ func TestLifecycle(t *testing.T) {
 				if job.Status.Succeeded == 0 && job.Status.Failed == 0 {
 					active++
 				}
+				if previous, ok := retainedJobs[run.Name]; ok && previous != string(job.UID) {
+					return false, fmt.Errorf("Apply Job identity changed across recovery")
+				}
+				retainedJobs[run.Name] = string(job.UID)
 			}
 			if active > 1 {
 				return false, fmt.Errorf("global Apply limit of one exceeded")
 			}
 			if active == 1 && waiting > 0 {
 				contended = true
+				if multiCluster && !recovered {
+					recordGateEvidence(t, prefix, "isolation-contention-before-restart", map[string]any{"runs": runs, "active": active, "waiting": waiting, "jobUIDs": retainedJobs})
+					restart("cross-target-apply-contention")
+					recovered = true
+					return false, nil
+				}
 			}
 			for _, e := range envs {
 				if err := kube.Get(ctx, client.ObjectKeyFromObject(e), e); err != nil {
@@ -866,6 +879,34 @@ func TestLifecycle(t *testing.T) {
 		if !contended {
 			t.Fatal("no actual Apply contention was observed")
 		}
+		if multiCluster && !recovered {
+			t.Fatal("no cross-target recovery was exercised")
+		}
+		var isolationRuns platform.TerraformRunList
+		var isolationJobs batchv1.JobList
+		if err := kube.List(ctx, &isolationRuns, client.InNamespace(prefix)); err != nil {
+			t.Fatal(err)
+		}
+		if err := kube.List(ctx, &isolationJobs, client.InNamespace(prefix)); err != nil {
+			t.Fatal(err)
+		}
+		for label := range envs {
+			count, jobs := 0, 0
+			for _, r := range isolationRuns.Items {
+				if r.Spec.StackRef.Name == label+"-infra" && r.Spec.Operation == "Apply" && r.Spec.PlanMode == "Reconcile" {
+					count++
+				}
+			}
+			for _, j := range isolationJobs.Items {
+				if strings.HasPrefix(j.Name, label+"-infra-apply-") {
+					jobs++
+				}
+			}
+			if count != 1 || jobs != 1 {
+				t.Fatalf("isolation target %s: Apply runs=%d Jobs=%d", label, count, jobs)
+			}
+		}
+		recordGateEvidence(t, prefix, "isolation-recovered", map[string]any{"multiCluster": multiCluster, "controllerRestartDuringContention": recovered, "runs": isolationRuns, "jobs": isolationJobs, "retainedJobUIDs": retainedJobs})
 		for _, pair := range []struct {
 			client                     client.Client
 			namespace, present, absent string
@@ -874,6 +915,7 @@ func TestLifecycle(t *testing.T) {
 			if err := pair.client.Get(ctx, client.ObjectKey{Namespace: pair.namespace, Name: pair.present}, &cm); err != nil || cm.Data["owner"] != prefix {
 				t.Fatal("expected target runtime missing: ", err)
 			}
+			recordGateEvidence(t, prefix, "isolation-runtime-"+pair.present, cm)
 			if err := pair.client.Get(ctx, client.ObjectKey{Namespace: pair.namespace, Name: pair.absent}, &cm); !apierrors.IsNotFound(err) {
 				t.Fatal("runtime written outside its intended namespace/target")
 			}
@@ -893,6 +935,7 @@ func TestLifecycle(t *testing.T) {
 		if len(states) != 2 {
 			t.Fatal("independent durable backend states were not observed")
 		}
+		recordGateEvidence(t, prefix, "isolation-states", objects)
 		for _, e := range envs {
 			if err := kube.Delete(ctx, e, client.Preconditions{UID: &e.UID}); err != nil {
 				t.Fatal(err)
