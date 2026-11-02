@@ -1,0 +1,3589 @@
+{
+  "at": "2026-11-02T08:17:33.609840+00:00",
+  "batch": "kpcp-final-20261102-1815",
+  "lane": "gate-a-final",
+  "command": {
+    "gate": "A",
+    "testSource": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+    "cases": "source,runner",
+    "exitCode": 0,
+    "controllerSource": "4f014c7e2b4ce81cc324e1ac2dde15974b8e6c12",
+    "command": "KPCP_FINAL_GATE=A KPCP_FINAL_CASES=source,runner go test ./e2e -run TestLifecycle/(FinalSafety|F_DestroyFinalizer)$ -v -count=1 -timeout=40m"
+  },
+  "rawLogSHA256": "3741cbf656222f3bac773463c03dd7363ce8145b46ea01a65138a9c2ea2e0285",
+  "rawControllerLogSHA256": {
+    "kpcp-1793606630392919800-controller.log": "1a839fc7afc2e173e36ae84d6d2d286f27700787eab38426262af81e3c28a08f"
+  },
+  "projection": "No kubeconfig, API key, Secret data, certificate bytes or public private-interface IP; raw files retained locally",
+  "receipts": [
+    {
+      "file": "kpcp-1793606630392919800-a-runner-context.json",
+      "rawSHA256": "892ec9acf968940d737aeda2543bd84746f3c7ab75cd595339bf328b679af616",
+      "projection": {
+        "at": "2026-11-02T08:09:08.9398866Z",
+        "evidence": {
+          "after": {
+            "metadata": {
+              "name": "a-runner",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "10176df5-efcd-4a56-9dbd-ca55e65a4a98",
+              "resourceVersion": "126739",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:08:20Z",
+              "labels": {
+                "platform.example.io/e2e": "kpcp-1793606630392919800"
+              },
+              "finalizers": [
+                "platform.example.io/infrastack-finalizer"
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                }
+              },
+              "source": {
+                "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+                "path": "."
+              },
+              "backend": {
+                "type": "s3",
+                "configRef": {
+                  "name": "backend"
+                },
+                "authRef": {
+                  "serviceAccountName": "runner"
+                },
+                "lockTimeout": "30s"
+              },
+              "workspace": "a-runner",
+              "capacity": {
+                "nodeCount": 1
+              },
+              "variables": {
+                "values": {
+                  "bucket_name": "kpcp-1793606630392919800-a-runner-cloud",
+                  "target_cluster_name": "podman-minikube",
+                  "target_endpoint": "kubeconfig:podman-minikube",
+                  "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+                }
+              },
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:c220014d9d0027502c49d7e6f3e27e92ae02725c58f8e5e4c1b8049eae1b6f8e",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "desiredState": "Present",
+              "approvalPolicy": "Manual",
+              "infrastructureExecutionIdentity": {
+                "provider": "kubernetes",
+                "mode": "local",
+                "accountID": "local",
+                "region": "local"
+              },
+              "runtimeTargetIdentity": {
+                "provider": "kubernetes",
+                "accountID": "local",
+                "region": "local",
+                "clusterName": "podman-minikube",
+                "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "targetConnectionProfile": {
+                "endpoint": "kubeconfig:podman-minikube",
+                "authMode": "kubeconfig-context",
+                "networkRouteProfile": "kubeconfig",
+                "kubeContext": "podman-minikube"
+              },
+              "runnerServiceAccountName": "runner",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "False",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:09:06Z",
+                  "reason": "WaitingApproval",
+                  "message": "Terraform plan contains changes and is waiting for a valid ChangeApproval."
+                }
+              ],
+              "latestPlanRunRef": {
+                "name": "a-runner-plan-1"
+              }
+            }
+          },
+          "before": {
+            "metadata": {
+              "name": "a-runner",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "1811f560-68d4-4d67-bec1-f9ce6c633779",
+              "resourceVersion": "126621",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:07:30Z",
+              "labels": {
+                "platform.example.io/e2e": "kpcp-1793606630392919800"
+              },
+              "finalizers": [
+                "platform.example.io/infrastack-finalizer"
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                }
+              },
+              "source": {
+                "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+                "path": "."
+              },
+              "backend": {
+                "type": "s3",
+                "configRef": {
+                  "name": "backend"
+                },
+                "authRef": {
+                  "serviceAccountName": "runner"
+                },
+                "lockTimeout": "30s"
+              },
+              "workspace": "a-runner",
+              "capacity": {
+                "nodeCount": 1
+              },
+              "variables": {
+                "values": {
+                  "bucket_name": "kpcp-1793606630392919800-a-runner-cloud",
+                  "target_cluster_name": "podman-minikube",
+                  "target_endpoint": "kubeconfig:podman-minikube",
+                  "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+                }
+              },
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "desiredState": "Present",
+              "approvalPolicy": "Manual",
+              "infrastructureExecutionIdentity": {
+                "provider": "kubernetes",
+                "mode": "local",
+                "accountID": "local",
+                "region": "local"
+              },
+              "runtimeTargetIdentity": {
+                "provider": "kubernetes",
+                "accountID": "local",
+                "region": "local",
+                "clusterName": "podman-minikube",
+                "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "targetConnectionProfile": {
+                "endpoint": "kubeconfig:podman-minikube",
+                "authMode": "kubeconfig-context",
+                "networkRouteProfile": "kubeconfig",
+                "kubeContext": "podman-minikube"
+              },
+              "runnerServiceAccountName": "runner",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "False",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:08:19Z",
+                  "reason": "WaitingApproval",
+                  "message": "Terraform plan contains changes and is waiting for a valid ChangeApproval."
+                }
+              ],
+              "latestPlanRunRef": {
+                "name": "a-runner-plan-1"
+              }
+            }
+          },
+          "immutableAdmissionRejection": "InfraStack.platform.example.io \"a-runner\" is invalid: spec.executor.image: Invalid value: \"localhost/kpcp-runner@sha256:c220014d9d0027502c49d7e6f3e27e92ae02725c58f8e5e4c1b8049eae1b6f8e\": EnvironmentClass executor is immutable",
+          "oldApproval": {
+            "metadata": {
+              "name": "a-runner-old-approval",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "2cfe90ec-8977-44d0-9150-b9740ff8015b",
+              "resourceVersion": "126632",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:08:20Z"
+            },
+            "spec": {
+              "planRunRef": {
+                "name": "a-runner-plan-1"
+              },
+              "planRunUID": "7032b6f0-9c64-4bcd-aa80-dd4419ca9155",
+              "planDigest": "sha256:f56b3998fbcaf708622626cd52992d4ddc3ba83a0752681efc028b1569162711",
+              "executionContextDigest": "sha256:d2b2b5b470c18978fe6832ba082fc8926378df0af15f44021e5be5c5d621be14",
+              "effectivePlanInputDigest": "sha256:84be38c5d57326a7d71508dd76d723ca9b5aea439b6b6337389f701e1e0d91f3",
+              "planReportRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/plan-report.json",
+              "planReportDigest": "sha256:42eaa12e5631f3a6d63d8d46b1acf3d749f210b14a238583b1ab753cf854e659"
+            },
+            "status": {}
+          },
+          "savedPlan": {
+            "kind": "TerraformRun",
+            "apiVersion": "platform.example.io/v1alpha1",
+            "metadata": {
+              "name": "a-runner-plan-1",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "7032b6f0-9c64-4bcd-aa80-dd4419ca9155",
+              "resourceVersion": "126620",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:07:31Z",
+              "ownerReferences": [
+                {
+                  "apiVersion": "platform.example.io/v1alpha1",
+                  "kind": "InfraStack",
+                  "name": "a-runner",
+                  "uid": "1811f560-68d4-4d67-bec1-f9ce6c633779",
+                  "controller": true,
+                  "blockOwnerDeletion": true
+                }
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                },
+                "credentialsIdentity": "sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141"
+              },
+              "inputs": {
+                "bucket_name": "kpcp-1793606630392919800-a-runner-cloud",
+                "execution_role_arn": "",
+                "region": "us-east-1",
+                "s3_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "sts_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "target_cluster_name": "podman-minikube",
+                "target_endpoint": "kubeconfig:podman-minikube",
+                "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "stackRef": {
+                "name": "a-runner"
+              },
+              "infraStackGeneration": 1,
+              "operation": "Plan",
+              "planMode": "Reconcile",
+              "source": {
+                "type": "GitCommit",
+                "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+                "path": "."
+              },
+              "resolvedBackendConfigRef": "backend",
+              "lockTimeout": "30s",
+              "workspace": "a-runner",
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "executionContextDigest": "sha256:d2b2b5b470c18978fe6832ba082fc8926378df0af15f44021e5be5c5d621be14",
+              "effectivePlanInputDigest": "sha256:d2b2b5b470c18978fe6832ba082fc8926378df0af15f44021e5be5c5d621be14",
+              "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+              "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+              "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "expectedTerraformVersion": "1.14.0",
+              "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "runnerServiceAccountName": "runner",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "True",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:08:19Z",
+                  "reason": "TerraformSucceeded",
+                  "message": "Terraform runner terminal result captured."
+                }
+              ],
+              "jobRef": {
+                "name": "a-runner-plan-1"
+              },
+              "sourceBundleRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/source-bundle.tar.zst",
+              "sourceBundleDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+              "planReportRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/plan-report.json",
+              "planReportDigest": "sha256:42eaa12e5631f3a6d63d8d46b1acf3d749f210b14a238583b1ab753cf854e659",
+              "terminalResultRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/terminal-result.json",
+              "terminalResultDigest": "sha256:0bc041c283e4bdd2f18696483d646b1ddd02f120ce700c5fef84b8d6e16685e7",
+              "resolvedBackendConfigRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/backend-config.hcl",
+              "resolvedBackendConfigDigest": "sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86",
+              "planRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/plan.binary",
+              "planDigest": "sha256:f56b3998fbcaf708622626cd52992d4ddc3ba83a0752681efc028b1569162711",
+              "effectivePlanInputDigest": "sha256:84be38c5d57326a7d71508dd76d723ca9b5aea439b6b6337389f701e1e0d91f3",
+              "hasChanges": true,
+              "planCreatedAt": "2026-11-02T08:08:11Z",
+              "planExpiresAt": "2026-11-02T09:08:11Z",
+              "executionOutcome": "ChangesPresent",
+              "mutationClassification": "NoMutation",
+              "artifactsReady": true,
+              "evidenceCaptured": true,
+              "jobUID": "4fd59500-eeac-4791-a0fb-40b76e3a47d5",
+              "terminalStartedAt": "2026-11-02T08:07:34Z",
+              "terminalFinishedAt": "2026-11-02T08:08:11Z"
+            }
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/FinalSafety/A_ContextDrift/runner"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-a-runner-created-10176df5-efcd-4a56-9dbd-ca55e65a4a98.json",
+      "rawSHA256": "98fd32d36d3a72deeabc46c706029e21ebd993d4dc2626a93d7e59bd179ccbd6",
+      "projection": {
+        "at": "2026-11-02T08:08:20.1025188Z",
+        "evidence": {
+          "metadata": {
+            "name": "a-runner",
+            "namespace": "kpcp-1793606630392919800",
+            "uid": "10176df5-efcd-4a56-9dbd-ca55e65a4a98",
+            "resourceVersion": "126631",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T08:08:20Z",
+            "labels": {
+              "platform.example.io/e2e": "kpcp-1793606630392919800"
+            }
+          },
+          "spec": {
+            "executionProfile": {
+              "mode": "emulator",
+              "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "region": "us-east-1",
+              "accountID": "000000000000",
+              "artifactBucket": "kpcp-1793606630392919800",
+              "credentialsSecretRef": {
+                "name": "emulator"
+              }
+            },
+            "source": {
+              "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+              "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+              "path": "."
+            },
+            "backend": {
+              "type": "s3",
+              "configRef": {
+                "name": "backend"
+              },
+              "authRef": {
+                "serviceAccountName": "runner"
+              },
+              "lockTimeout": "30s"
+            },
+            "workspace": "a-runner",
+            "capacity": {
+              "nodeCount": 1
+            },
+            "variables": {
+              "values": {
+                "bucket_name": "kpcp-1793606630392919800-a-runner-cloud",
+                "target_cluster_name": "podman-minikube",
+                "target_endpoint": "kubeconfig:podman-minikube",
+                "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              }
+            },
+            "executor": {
+              "terraformVersion": "1.14.0",
+              "image": "localhost/kpcp-runner@sha256:c220014d9d0027502c49d7e6f3e27e92ae02725c58f8e5e4c1b8049eae1b6f8e",
+              "workDir": "/workspace/terraform",
+              "executionTimeout": "8m0s"
+            },
+            "desiredState": "Present",
+            "approvalPolicy": "Manual",
+            "infrastructureExecutionIdentity": {
+              "provider": "kubernetes",
+              "mode": "local",
+              "accountID": "local",
+              "region": "local"
+            },
+            "runtimeTargetIdentity": {
+              "provider": "kubernetes",
+              "accountID": "local",
+              "region": "local",
+              "clusterName": "podman-minikube",
+              "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+            },
+            "targetConnectionProfile": {
+              "endpoint": "kubeconfig:podman-minikube",
+              "authMode": "kubeconfig-context",
+              "networkRouteProfile": "kubeconfig",
+              "kubeContext": "podman-minikube"
+            },
+            "runnerServiceAccountName": "runner",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+          },
+          "status": {}
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/FinalSafety/A_ContextDrift/runner"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-a-runner-created-1811f560-68d4-4d67-bec1-f9ce6c633779.json",
+      "rawSHA256": "aa9272f2a48fd84323700ccd60e3a53708622d1641e2fa4c87ce12a71b03c896",
+      "projection": {
+        "at": "2026-11-02T08:07:30.9856989Z",
+        "evidence": {
+          "metadata": {
+            "name": "a-runner",
+            "namespace": "kpcp-1793606630392919800",
+            "uid": "1811f560-68d4-4d67-bec1-f9ce6c633779",
+            "resourceVersion": "126509",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T08:07:30Z",
+            "labels": {
+              "platform.example.io/e2e": "kpcp-1793606630392919800"
+            }
+          },
+          "spec": {
+            "executionProfile": {
+              "mode": "emulator",
+              "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "region": "us-east-1",
+              "accountID": "000000000000",
+              "artifactBucket": "kpcp-1793606630392919800",
+              "credentialsSecretRef": {
+                "name": "emulator"
+              }
+            },
+            "source": {
+              "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+              "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+              "path": "."
+            },
+            "backend": {
+              "type": "s3",
+              "configRef": {
+                "name": "backend"
+              },
+              "authRef": {
+                "serviceAccountName": "runner"
+              },
+              "lockTimeout": "30s"
+            },
+            "workspace": "a-runner",
+            "capacity": {
+              "nodeCount": 1
+            },
+            "variables": {
+              "values": {
+                "bucket_name": "kpcp-1793606630392919800-a-runner-cloud",
+                "target_cluster_name": "podman-minikube",
+                "target_endpoint": "kubeconfig:podman-minikube",
+                "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              }
+            },
+            "executor": {
+              "terraformVersion": "1.14.0",
+              "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "workDir": "/workspace/terraform",
+              "executionTimeout": "8m0s"
+            },
+            "desiredState": "Present",
+            "approvalPolicy": "Manual",
+            "infrastructureExecutionIdentity": {
+              "provider": "kubernetes",
+              "mode": "local",
+              "accountID": "local",
+              "region": "local"
+            },
+            "runtimeTargetIdentity": {
+              "provider": "kubernetes",
+              "accountID": "local",
+              "region": "local",
+              "clusterName": "podman-minikube",
+              "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+            },
+            "targetConnectionProfile": {
+              "endpoint": "kubeconfig:podman-minikube",
+              "authMode": "kubeconfig-context",
+              "networkRouteProfile": "kubeconfig",
+              "kubeContext": "podman-minikube"
+            },
+            "runnerServiceAccountName": "runner",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+          },
+          "status": {}
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/FinalSafety/A_ContextDrift/runner"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-a-runner-old-approval-blocked.json",
+      "rawSHA256": "96967a64444b07b36756d573cb343d8ab18ab421d64b0f3c172d4ea6fe4f54ea",
+      "projection": {
+        "at": "2026-11-02T08:09:08.9388005Z",
+        "evidence": {
+          "applyCount": 0,
+          "cloudAbsent": true,
+          "jobs": [
+            {
+              "metadata": {
+                "name": "a-runner-plan-1",
+                "namespace": "kpcp-1793606630392919800",
+                "uid": "2ff890f0-6751-4415-8e79-49c0eb242f3d",
+                "resourceVersion": "126736",
+                "generation": 1,
+                "creationTimestamp": "2026-11-02T08:08:20Z",
+                "labels": {
+                  "platform.example.io/terraform-run": "a-runner-plan-1",
+                  "platform.example.io/terraform-run-uid": "29e28082-b160-493a-86ce-2f5491c5804c"
+                },
+                "ownerReferences": [
+                  {
+                    "apiVersion": "platform.example.io/v1alpha1",
+                    "kind": "TerraformRun",
+                    "name": "a-runner-plan-1",
+                    "uid": "29e28082-b160-493a-86ce-2f5491c5804c",
+                    "controller": true,
+                    "blockOwnerDeletion": true
+                  }
+                ]
+              },
+              "spec": {
+                "parallelism": 1,
+                "completions": 1,
+                "activeDeadlineSeconds": 480,
+                "backoffLimit": 0,
+                "selector": {
+                  "matchLabels": {
+                    "batch.kubernetes.io/controller-uid": "2ff890f0-6751-4415-8e79-49c0eb242f3d"
+                  }
+                },
+                "manualSelector": false,
+                "template": {
+                  "metadata": {
+                    "creationTimestamp": null,
+                    "labels": {
+                      "batch.kubernetes.io/controller-uid": "2ff890f0-6751-4415-8e79-49c0eb242f3d",
+                      "batch.kubernetes.io/job-name": "a-runner-plan-1",
+                      "controller-uid": "2ff890f0-6751-4415-8e79-49c0eb242f3d",
+                      "job-name": "a-runner-plan-1",
+                      "platform.example.io/terraform-run": "a-runner-plan-1",
+                      "platform.example.io/terraform-run-uid": "29e28082-b160-493a-86ce-2f5491c5804c"
+                    }
+                  },
+                  "spec": {
+                    "volumes": [
+                      {
+                        "name": "workspace",
+                        "emptyDir": {}
+                      },
+                      {
+                        "name": "tmp",
+                        "emptyDir": {}
+                      },
+                      {
+                        "name": "backend-config",
+                        "configMap": {
+                          "name": "backend",
+                          "defaultMode": 420
+                        }
+                      }
+                    ],
+                    "initContainers": [
+                      {
+                        "name": "source-clone",
+                        "image": "alpine/git:2.45.2",
+                        "command": [
+                          "git"
+                        ],
+                        "args": [
+                          "clone",
+                          "--no-checkout",
+                          "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                          "/workspace/terraform"
+                        ],
+                        "resources": {},
+                        "volumeMounts": [
+                          {
+                            "name": "workspace",
+                            "mountPath": "/workspace"
+                          }
+                        ],
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent",
+                        "securityContext": {
+                          "capabilities": {
+                            "drop": [
+                              "ALL"
+                            ]
+                          },
+                          "runAsUser": 1000,
+                          "runAsGroup": 1000,
+                          "runAsNonRoot": true,
+                          "allowPrivilegeEscalation": false
+                        }
+                      },
+                      {
+                        "name": "source-checkout",
+                        "image": "alpine/git:2.45.2",
+                        "command": [
+                          "git"
+                        ],
+                        "args": [
+                          "-C",
+                          "/workspace/terraform",
+                          "checkout",
+                          "--detach",
+                          "0eab0368c66e2a9abbac8522007f659205697d96"
+                        ],
+                        "resources": {},
+                        "volumeMounts": [
+                          {
+                            "name": "workspace",
+                            "mountPath": "/workspace"
+                          }
+                        ],
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent",
+                        "securityContext": {
+                          "capabilities": {
+                            "drop": [
+                              "ALL"
+                            ]
+                          },
+                          "runAsUser": 1000,
+                          "runAsGroup": 1000,
+                          "runAsNonRoot": true,
+                          "allowPrivilegeEscalation": false
+                        }
+                      }
+                    ],
+                    "containers": [
+                      {
+                        "name": "terraform-runner",
+                        "image": "localhost/kpcp-runner@sha256:c220014d9d0027502c49d7e6f3e27e92ae02725c58f8e5e4c1b8049eae1b6f8e",
+                        "command": [
+                          "terraform-runner"
+                        ],
+                        "args": [
+                          "--operation=Plan",
+                          "--run-uid=29e28082-b160-493a-86ce-2f5491c5804c",
+                          "--expected-terraform-version=1.14.0",
+                          "--working-dir=/workspace/terraform",
+                          "--workspace=a-runner",
+                          "--plan=/workspace/terraform/plan.binary",
+                          "--lock-timeout=30s",
+                          "--backend-config=/workspace/backend/backend.hcl",
+                          "--artifact-endpoint=http://QA_PRIVATE_INTERFACE:14576",
+                          "--artifact-region=us-east-1",
+                          "--artifact-bucket=kpcp-1793606630392919800",
+                          "--artifact-prefix=runs/29e28082-b160-493a-86ce-2f5491c5804c",
+                          "--source-root=/workspace/terraform"
+                        ],
+                        "env": [
+                          {
+                            "name": "HOME",
+                            "value": "/workspace"
+                          },
+                          {
+                            "name": "PCP_POD_NAME",
+                            "valueFrom": {
+                              "fieldRef": {
+                                "apiVersion": "v1",
+                                "fieldPath": "metadata.name"
+                              }
+                            }
+                          },
+                          {
+                            "name": "PCP_POD_NAMESPACE",
+                            "valueFrom": {
+                              "fieldRef": {
+                                "apiVersion": "v1",
+                                "fieldPath": "metadata.namespace"
+                              }
+                            }
+                          },
+                          {
+                            "name": "AWS_ACCESS_KEY_ID",
+                            "valueFrom": {
+                              "secretKeyRef": {
+                                "name": "emulator",
+                                "key": "AWS_ACCESS_KEY_ID"
+                              }
+                            }
+                          },
+                          {
+                            "name": "AWS_SECRET_ACCESS_KEY",
+                            "valueFrom": {
+                              "secretKeyRef": {
+                                "name": "emulator",
+                                "key": "AWS_SECRET_ACCESS_KEY"
+                              }
+                            }
+                          },
+                          {
+                            "name": "AWS_EC2_METADATA_DISABLED",
+                            "value": "true"
+                          },
+                          {
+                            "name": "PCP_EXECUTION_PROFILE",
+                            "value": "{\"mode\":\"emulator\",\"s3Endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"stsEndpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"region\":\"us-east-1\",\"accountID\":\"000000000000\",\"artifactBucket\":\"kpcp-1793606630392919800\",\"credentialsSecretRef\":{\"name\":\"emulator\"},\"credentialsIdentity\":\"sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141\"}"
+                          },
+                          {
+                            "name": "PCP_MODULE_INPUTS",
+                            "value": "{\"bucket_name\":\"kpcp-1793606630392919800-a-runner-cloud\",\"execution_role_arn\":\"\",\"region\":\"us-east-1\",\"s3_endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"sts_endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"target_cluster_name\":\"podman-minikube\",\"target_endpoint\":\"kubeconfig:podman-minikube\",\"target_incarnation_id\":\"2c62d6a8-08b6-460d-bb1b-ac59557dc281\"}"
+                          }
+                        ],
+                        "resources": {
+                          "limits": {
+                            "cpu": "1",
+                            "memory": "1Gi"
+                          },
+                          "requests": {
+                            "cpu": "100m",
+                            "memory": "128Mi"
+                          }
+                        },
+                        "volumeMounts": [
+                          {
+                            "name": "workspace",
+                            "mountPath": "/workspace"
+                          },
+                          {
+                            "name": "tmp",
+                            "mountPath": "/tmp"
+                          },
+                          {
+                            "name": "backend-config",
+                            "readOnly": true,
+                            "mountPath": "/workspace/backend"
+                          }
+                        ],
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent",
+                        "securityContext": {
+                          "capabilities": {
+                            "drop": [
+                              "ALL"
+                            ]
+                          },
+                          "runAsUser": 1000,
+                          "runAsGroup": 1000,
+                          "runAsNonRoot": true,
+                          "readOnlyRootFilesystem": true,
+                          "allowPrivilegeEscalation": false
+                        }
+                      }
+                    ],
+                    "restartPolicy": "Never",
+                    "terminationGracePeriodSeconds": 30,
+                    "dnsPolicy": "ClusterFirst",
+                    "serviceAccountName": "runner",
+                    "serviceAccount": "runner",
+                    "automountServiceAccountToken": true,
+                    "securityContext": {
+                      "runAsNonRoot": true,
+                      "fsGroup": 1000,
+                      "seccompProfile": {
+                        "type": "RuntimeDefault"
+                      }
+                    },
+                    "schedulerName": "default-scheduler"
+                  }
+                },
+                "completionMode": "NonIndexed",
+                "suspend": false,
+                "podReplacementPolicy": "TerminatingOrFailed"
+              },
+              "status": {
+                "conditions": [
+                  {
+                    "type": "SuccessCriteriaMet",
+                    "status": "True",
+                    "lastProbeTime": "2026-11-02T08:09:06Z",
+                    "lastTransitionTime": "2026-11-02T08:09:06Z",
+                    "reason": "CompletionsReached",
+                    "message": "Reached expected number of succeeded pods"
+                  },
+                  {
+                    "type": "Complete",
+                    "status": "True",
+                    "lastProbeTime": "2026-11-02T08:09:06Z",
+                    "lastTransitionTime": "2026-11-02T08:09:06Z",
+                    "reason": "CompletionsReached",
+                    "message": "Reached expected number of succeeded pods"
+                  }
+                ],
+                "startTime": "2026-11-02T08:08:20Z",
+                "completionTime": "2026-11-02T08:09:06Z",
+                "succeeded": 1,
+                "terminating": 0,
+                "uncountedTerminatedPods": {},
+                "ready": 0
+              }
+            }
+          ],
+          "runs": [
+            {
+              "kind": "TerraformRun",
+              "apiVersion": "platform.example.io/v1alpha1",
+              "metadata": {
+                "name": "a-runner-plan-1",
+                "namespace": "kpcp-1793606630392919800",
+                "uid": "29e28082-b160-493a-86ce-2f5491c5804c",
+                "resourceVersion": "126738",
+                "generation": 1,
+                "creationTimestamp": "2026-11-02T08:08:20Z",
+                "ownerReferences": [
+                  {
+                    "apiVersion": "platform.example.io/v1alpha1",
+                    "kind": "InfraStack",
+                    "name": "a-runner",
+                    "uid": "10176df5-efcd-4a56-9dbd-ca55e65a4a98",
+                    "controller": true,
+                    "blockOwnerDeletion": true
+                  }
+                ]
+              },
+              "spec": {
+                "executionProfile": {
+                  "mode": "emulator",
+                  "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                  "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                  "region": "us-east-1",
+                  "accountID": "000000000000",
+                  "artifactBucket": "kpcp-1793606630392919800",
+                  "credentialsSecretRef": {
+                    "name": "emulator"
+                  },
+                  "credentialsIdentity": "sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141"
+                },
+                "inputs": {
+                  "bucket_name": "kpcp-1793606630392919800-a-runner-cloud",
+                  "execution_role_arn": "",
+                  "region": "us-east-1",
+                  "s3_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                  "sts_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                  "target_cluster_name": "podman-minikube",
+                  "target_endpoint": "kubeconfig:podman-minikube",
+                  "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+                },
+                "stackRef": {
+                  "name": "a-runner"
+                },
+                "infraStackGeneration": 1,
+                "operation": "Plan",
+                "planMode": "Reconcile",
+                "source": {
+                  "type": "GitCommit",
+                  "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                  "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+                  "path": "."
+                },
+                "resolvedBackendConfigRef": "backend",
+                "lockTimeout": "30s",
+                "workspace": "a-runner",
+                "executor": {
+                  "terraformVersion": "1.14.0",
+                  "image": "localhost/kpcp-runner@sha256:c220014d9d0027502c49d7e6f3e27e92ae02725c58f8e5e4c1b8049eae1b6f8e",
+                  "workDir": "/workspace/terraform",
+                  "executionTimeout": "8m0s"
+                },
+                "executionContextDigest": "sha256:2df183ccacd6ca29d82075142b00bc8731c59ef50b99ae358401238c22d9cb07",
+                "effectivePlanInputDigest": "sha256:2df183ccacd6ca29d82075142b00bc8731c59ef50b99ae358401238c22d9cb07",
+                "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+                "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+                "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+                "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+                "expectedTerraformVersion": "1.14.0",
+                "runnerImageDigest": "localhost/kpcp-runner@sha256:c220014d9d0027502c49d7e6f3e27e92ae02725c58f8e5e4c1b8049eae1b6f8e",
+                "runnerServiceAccountName": "runner",
+                "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+              },
+              "status": {
+                "observedGeneration": 1,
+                "conditions": [
+                  {
+                    "type": "Ready",
+                    "status": "True",
+                    "observedGeneration": 1,
+                    "lastTransitionTime": "2026-11-02T08:09:06Z",
+                    "reason": "TerraformSucceeded",
+                    "message": "Terraform runner terminal result captured."
+                  }
+                ],
+                "jobRef": {
+                  "name": "a-runner-plan-1"
+                },
+                "sourceBundleRef": "runs/29e28082-b160-493a-86ce-2f5491c5804c/source-bundle.tar.zst",
+                "sourceBundleDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+                "planReportRef": "runs/29e28082-b160-493a-86ce-2f5491c5804c/plan-report.json",
+                "planReportDigest": "sha256:c52f2415ee7bd8002f39c40b749cab8c46b1a83be32d7c66509ec1dba6ec6843",
+                "terminalResultRef": "runs/29e28082-b160-493a-86ce-2f5491c5804c/terminal-result.json",
+                "terminalResultDigest": "sha256:af9a5d53baf9058bea143f39515af1955b9f4608f9a8b45679cff3e91ea67849",
+                "resolvedBackendConfigRef": "runs/29e28082-b160-493a-86ce-2f5491c5804c/backend-config.hcl",
+                "resolvedBackendConfigDigest": "sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86",
+                "planRef": "runs/29e28082-b160-493a-86ce-2f5491c5804c/plan.binary",
+                "planDigest": "sha256:9b3df422da6b2bbdafb3ddecda14b159f951771b4d02d60b965c2968d83ac9d2",
+                "effectivePlanInputDigest": "sha256:8c3ca006514fca29d53ed49cbb48aa6a0f750af84f331f0438bca2fc00b703d9",
+                "hasChanges": true,
+                "planCreatedAt": "2026-11-02T08:08:58Z",
+                "planExpiresAt": "2026-11-02T09:08:58Z",
+                "executionOutcome": "ChangesPresent",
+                "mutationClassification": "NoMutation",
+                "artifactsReady": true,
+                "evidenceCaptured": true,
+                "jobUID": "2ff890f0-6751-4415-8e79-49c0eb242f3d",
+                "terminalStartedAt": "2026-11-02T08:08:23Z",
+                "terminalFinishedAt": "2026-11-02T08:08:58Z"
+              }
+            }
+          ],
+          "stack": {
+            "metadata": {
+              "name": "a-runner",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "10176df5-efcd-4a56-9dbd-ca55e65a4a98",
+              "resourceVersion": "126739",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:08:20Z",
+              "labels": {
+                "platform.example.io/e2e": "kpcp-1793606630392919800"
+              },
+              "finalizers": [
+                "platform.example.io/infrastack-finalizer"
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                }
+              },
+              "source": {
+                "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+                "path": "."
+              },
+              "backend": {
+                "type": "s3",
+                "configRef": {
+                  "name": "backend"
+                },
+                "authRef": {
+                  "serviceAccountName": "runner"
+                },
+                "lockTimeout": "30s"
+              },
+              "workspace": "a-runner",
+              "capacity": {
+                "nodeCount": 1
+              },
+              "variables": {
+                "values": {
+                  "bucket_name": "kpcp-1793606630392919800-a-runner-cloud",
+                  "target_cluster_name": "podman-minikube",
+                  "target_endpoint": "kubeconfig:podman-minikube",
+                  "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+                }
+              },
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:c220014d9d0027502c49d7e6f3e27e92ae02725c58f8e5e4c1b8049eae1b6f8e",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "desiredState": "Present",
+              "approvalPolicy": "Manual",
+              "infrastructureExecutionIdentity": {
+                "provider": "kubernetes",
+                "mode": "local",
+                "accountID": "local",
+                "region": "local"
+              },
+              "runtimeTargetIdentity": {
+                "provider": "kubernetes",
+                "accountID": "local",
+                "region": "local",
+                "clusterName": "podman-minikube",
+                "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "targetConnectionProfile": {
+                "endpoint": "kubeconfig:podman-minikube",
+                "authMode": "kubeconfig-context",
+                "networkRouteProfile": "kubeconfig",
+                "kubeContext": "podman-minikube"
+              },
+              "runnerServiceAccountName": "runner",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "False",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:09:06Z",
+                  "reason": "WaitingApproval",
+                  "message": "Terraform plan contains changes and is waiting for a valid ChangeApproval."
+                }
+              ],
+              "latestPlanRunRef": {
+                "name": "a-runner-plan-1"
+              }
+            }
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/FinalSafety/A_ContextDrift/runner"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-a-runner-saved-plan.json",
+      "rawSHA256": "58c336728075e67aff48677d3f2fc4f785e1118c4e4d5e7a1ca6803a4e6f74f2",
+      "projection": {
+        "at": "2026-11-02T08:08:19.7884295Z",
+        "evidence": {
+          "kind": "TerraformRun",
+          "apiVersion": "platform.example.io/v1alpha1",
+          "metadata": {
+            "name": "a-runner-plan-1",
+            "namespace": "kpcp-1793606630392919800",
+            "uid": "7032b6f0-9c64-4bcd-aa80-dd4419ca9155",
+            "resourceVersion": "126620",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T08:07:31Z",
+            "ownerReferences": [
+              {
+                "apiVersion": "platform.example.io/v1alpha1",
+                "kind": "InfraStack",
+                "name": "a-runner",
+                "uid": "1811f560-68d4-4d67-bec1-f9ce6c633779",
+                "controller": true,
+                "blockOwnerDeletion": true
+              }
+            ]
+          },
+          "spec": {
+            "executionProfile": {
+              "mode": "emulator",
+              "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "region": "us-east-1",
+              "accountID": "000000000000",
+              "artifactBucket": "kpcp-1793606630392919800",
+              "credentialsSecretRef": {
+                "name": "emulator"
+              },
+              "credentialsIdentity": "sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141"
+            },
+            "inputs": {
+              "bucket_name": "kpcp-1793606630392919800-a-runner-cloud",
+              "execution_role_arn": "",
+              "region": "us-east-1",
+              "s3_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "sts_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "target_cluster_name": "podman-minikube",
+              "target_endpoint": "kubeconfig:podman-minikube",
+              "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+            },
+            "stackRef": {
+              "name": "a-runner"
+            },
+            "infraStackGeneration": 1,
+            "operation": "Plan",
+            "planMode": "Reconcile",
+            "source": {
+              "type": "GitCommit",
+              "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+              "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+              "path": "."
+            },
+            "resolvedBackendConfigRef": "backend",
+            "lockTimeout": "30s",
+            "workspace": "a-runner",
+            "executor": {
+              "terraformVersion": "1.14.0",
+              "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "workDir": "/workspace/terraform",
+              "executionTimeout": "8m0s"
+            },
+            "executionContextDigest": "sha256:d2b2b5b470c18978fe6832ba082fc8926378df0af15f44021e5be5c5d621be14",
+            "effectivePlanInputDigest": "sha256:d2b2b5b470c18978fe6832ba082fc8926378df0af15f44021e5be5c5d621be14",
+            "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+            "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+            "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "expectedTerraformVersion": "1.14.0",
+            "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "runnerServiceAccountName": "runner",
+            "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+          },
+          "status": {
+            "observedGeneration": 1,
+            "conditions": [
+              {
+                "type": "Ready",
+                "status": "True",
+                "observedGeneration": 1,
+                "lastTransitionTime": "2026-11-02T08:08:19Z",
+                "reason": "TerraformSucceeded",
+                "message": "Terraform runner terminal result captured."
+              }
+            ],
+            "jobRef": {
+              "name": "a-runner-plan-1"
+            },
+            "sourceBundleRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/source-bundle.tar.zst",
+            "sourceBundleDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+            "planReportRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/plan-report.json",
+            "planReportDigest": "sha256:42eaa12e5631f3a6d63d8d46b1acf3d749f210b14a238583b1ab753cf854e659",
+            "terminalResultRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/terminal-result.json",
+            "terminalResultDigest": "sha256:0bc041c283e4bdd2f18696483d646b1ddd02f120ce700c5fef84b8d6e16685e7",
+            "resolvedBackendConfigRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/backend-config.hcl",
+            "resolvedBackendConfigDigest": "sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86",
+            "planRef": "runs/7032b6f0-9c64-4bcd-aa80-dd4419ca9155/plan.binary",
+            "planDigest": "sha256:f56b3998fbcaf708622626cd52992d4ddc3ba83a0752681efc028b1569162711",
+            "effectivePlanInputDigest": "sha256:84be38c5d57326a7d71508dd76d723ca9b5aea439b6b6337389f701e1e0d91f3",
+            "hasChanges": true,
+            "planCreatedAt": "2026-11-02T08:08:11Z",
+            "planExpiresAt": "2026-11-02T09:08:11Z",
+            "executionOutcome": "ChangesPresent",
+            "mutationClassification": "NoMutation",
+            "artifactsReady": true,
+            "evidenceCaptured": true,
+            "jobUID": "4fd59500-eeac-4791-a0fb-40b76e3a47d5",
+            "terminalStartedAt": "2026-11-02T08:07:34Z",
+            "terminalFinishedAt": "2026-11-02T08:08:11Z"
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/FinalSafety/A_ContextDrift/runner"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-a-source-context.json",
+      "rawSHA256": "b1fe4beb17a6ecf0154ef06b4c844a20bc20f22275d5ecd16e7c28d26e9d9124",
+      "projection": {
+        "at": "2026-11-02T08:07:30.6873656Z",
+        "evidence": {
+          "after": {
+            "metadata": {
+              "name": "a-source",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "2cfe7791-3f7d-4bc5-b125-990d9d4635b4",
+              "resourceVersion": "126496",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:06:42Z",
+              "labels": {
+                "platform.example.io/e2e": "kpcp-1793606630392919800"
+              },
+              "finalizers": [
+                "platform.example.io/infrastack-finalizer"
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                }
+              },
+              "source": {
+                "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                "revision": "62bac872dfab8015da4b6240fda9107f76d58c3f",
+                "path": "."
+              },
+              "backend": {
+                "type": "s3",
+                "configRef": {
+                  "name": "backend"
+                },
+                "authRef": {
+                  "serviceAccountName": "runner"
+                },
+                "lockTimeout": "30s"
+              },
+              "workspace": "a-source",
+              "capacity": {
+                "nodeCount": 1
+              },
+              "variables": {
+                "values": {
+                  "bucket_name": "kpcp-1793606630392919800-a-source-cloud",
+                  "target_cluster_name": "podman-minikube",
+                  "target_endpoint": "kubeconfig:podman-minikube",
+                  "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+                }
+              },
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "desiredState": "Present",
+              "approvalPolicy": "Manual",
+              "infrastructureExecutionIdentity": {
+                "provider": "kubernetes",
+                "mode": "local",
+                "accountID": "local",
+                "region": "local"
+              },
+              "runtimeTargetIdentity": {
+                "provider": "kubernetes",
+                "accountID": "local",
+                "region": "local",
+                "clusterName": "podman-minikube",
+                "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "targetConnectionProfile": {
+                "endpoint": "kubeconfig:podman-minikube",
+                "authMode": "kubeconfig-context",
+                "networkRouteProfile": "kubeconfig",
+                "kubeContext": "podman-minikube"
+              },
+              "runnerServiceAccountName": "runner",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "False",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:07:28Z",
+                  "reason": "WaitingApproval",
+                  "message": "Terraform plan contains changes and is waiting for a valid ChangeApproval."
+                }
+              ],
+              "latestPlanRunRef": {
+                "name": "a-source-plan-1"
+              }
+            }
+          },
+          "before": {
+            "metadata": {
+              "name": "a-source",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "b6b979b2-3446-462e-a4bd-b9e1166ed668",
+              "resourceVersion": "126269",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:05:36Z",
+              "labels": {
+                "platform.example.io/e2e": "kpcp-1793606630392919800"
+              },
+              "finalizers": [
+                "platform.example.io/infrastack-finalizer"
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                }
+              },
+              "source": {
+                "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+                "path": "."
+              },
+              "backend": {
+                "type": "s3",
+                "configRef": {
+                  "name": "backend"
+                },
+                "authRef": {
+                  "serviceAccountName": "runner"
+                },
+                "lockTimeout": "30s"
+              },
+              "workspace": "a-source",
+              "capacity": {
+                "nodeCount": 1
+              },
+              "variables": {
+                "values": {
+                  "bucket_name": "kpcp-1793606630392919800-a-source-cloud",
+                  "target_cluster_name": "podman-minikube",
+                  "target_endpoint": "kubeconfig:podman-minikube",
+                  "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+                }
+              },
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "desiredState": "Present",
+              "approvalPolicy": "Manual",
+              "infrastructureExecutionIdentity": {
+                "provider": "kubernetes",
+                "mode": "local",
+                "accountID": "local",
+                "region": "local"
+              },
+              "runtimeTargetIdentity": {
+                "provider": "kubernetes",
+                "accountID": "local",
+                "region": "local",
+                "clusterName": "podman-minikube",
+                "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "targetConnectionProfile": {
+                "endpoint": "kubeconfig:podman-minikube",
+                "authMode": "kubeconfig-context",
+                "networkRouteProfile": "kubeconfig",
+                "kubeContext": "podman-minikube"
+              },
+              "runnerServiceAccountName": "runner",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "False",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:05:50Z",
+                  "reason": "PlanRunning",
+                  "message": "Terraform PlanRun is executing."
+                }
+              ],
+              "latestPlanRunRef": {
+                "name": "a-source-plan-1"
+              }
+            }
+          },
+          "immutableAdmissionRejection": "InfraStack.platform.example.io \"a-source\" is invalid: spec.source.revision: Invalid value: \"62bac872dfab8015da4b6240fda9107f76d58c3f\": EnvironmentClass source is immutable",
+          "oldApproval": {
+            "metadata": {
+              "name": "a-source-old-approval",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "6ce143c5-1f5c-4ace-afb8-f1af8f338562",
+              "resourceVersion": "126387",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:06:42Z"
+            },
+            "spec": {
+              "planRunRef": {
+                "name": "a-source-plan-1"
+              },
+              "planRunUID": "65df6e15-5f7f-4495-bec7-68b4da129d02",
+              "planDigest": "sha256:7d4b8c911e7c81604f83e5362f724e527b0b9a618549caece4dfa88924566a8c",
+              "executionContextDigest": "sha256:c3f7aa7f950855221a920b115d25e2814569b006fc149a49402eb6b9dbc3bb73",
+              "effectivePlanInputDigest": "sha256:997f6a3726a074e6c9452933b51f72de0a0f3f6144e884ed9eced668106e90fd",
+              "planReportRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/plan-report.json",
+              "planReportDigest": "sha256:39a5c669cc4860570d3fe1e7432495c7e2385d180be9a3594cb8b96f0d3b7124"
+            },
+            "status": {}
+          },
+          "savedPlan": {
+            "kind": "TerraformRun",
+            "apiVersion": "platform.example.io/v1alpha1",
+            "metadata": {
+              "name": "a-source-plan-1",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "65df6e15-5f7f-4495-bec7-68b4da129d02",
+              "resourceVersion": "126375",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:05:50Z",
+              "ownerReferences": [
+                {
+                  "apiVersion": "platform.example.io/v1alpha1",
+                  "kind": "InfraStack",
+                  "name": "a-source",
+                  "uid": "b6b979b2-3446-462e-a4bd-b9e1166ed668",
+                  "controller": true,
+                  "blockOwnerDeletion": true
+                }
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                },
+                "credentialsIdentity": "sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141"
+              },
+              "inputs": {
+                "bucket_name": "kpcp-1793606630392919800-a-source-cloud",
+                "execution_role_arn": "",
+                "region": "us-east-1",
+                "s3_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "sts_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "target_cluster_name": "podman-minikube",
+                "target_endpoint": "kubeconfig:podman-minikube",
+                "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "stackRef": {
+                "name": "a-source"
+              },
+              "infraStackGeneration": 1,
+              "operation": "Plan",
+              "planMode": "Reconcile",
+              "source": {
+                "type": "GitCommit",
+                "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+                "path": "."
+              },
+              "resolvedBackendConfigRef": "backend",
+              "lockTimeout": "30s",
+              "workspace": "a-source",
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "executionContextDigest": "sha256:c3f7aa7f950855221a920b115d25e2814569b006fc149a49402eb6b9dbc3bb73",
+              "effectivePlanInputDigest": "sha256:c3f7aa7f950855221a920b115d25e2814569b006fc149a49402eb6b9dbc3bb73",
+              "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+              "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+              "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "expectedTerraformVersion": "1.14.0",
+              "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "runnerServiceAccountName": "runner",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "True",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:06:42Z",
+                  "reason": "TerraformSucceeded",
+                  "message": "Terraform runner terminal result captured."
+                }
+              ],
+              "jobRef": {
+                "name": "a-source-plan-1"
+              },
+              "sourceBundleRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/source-bundle.tar.zst",
+              "sourceBundleDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+              "planReportRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/plan-report.json",
+              "planReportDigest": "sha256:39a5c669cc4860570d3fe1e7432495c7e2385d180be9a3594cb8b96f0d3b7124",
+              "terminalResultRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/terminal-result.json",
+              "terminalResultDigest": "sha256:3f402db34a72ca565a288c0e26dcb95a7b809653ea8cbe7817c925d7a7162116",
+              "resolvedBackendConfigRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/backend-config.hcl",
+              "resolvedBackendConfigDigest": "sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86",
+              "planRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/plan.binary",
+              "planDigest": "sha256:7d4b8c911e7c81604f83e5362f724e527b0b9a618549caece4dfa88924566a8c",
+              "effectivePlanInputDigest": "sha256:997f6a3726a074e6c9452933b51f72de0a0f3f6144e884ed9eced668106e90fd",
+              "hasChanges": true,
+              "planCreatedAt": "2026-11-02T08:06:34Z",
+              "planExpiresAt": "2026-11-02T09:06:34Z",
+              "executionOutcome": "ChangesPresent",
+              "mutationClassification": "NoMutation",
+              "artifactsReady": true,
+              "evidenceCaptured": true,
+              "jobUID": "89332d09-0107-4921-b308-3eb5c0a5ad03",
+              "terminalStartedAt": "2026-11-02T08:05:53Z",
+              "terminalFinishedAt": "2026-11-02T08:06:34Z"
+            }
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/FinalSafety/A_ContextDrift/source"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-a-source-created-2cfe7791-3f7d-4bc5-b125-990d9d4635b4.json",
+      "rawSHA256": "00572381dfcf84322db8b8bb692817e117f50958307bed8b05b83185b2e8a881",
+      "projection": {
+        "at": "2026-11-02T08:06:42.4369124Z",
+        "evidence": {
+          "metadata": {
+            "name": "a-source",
+            "namespace": "kpcp-1793606630392919800",
+            "uid": "2cfe7791-3f7d-4bc5-b125-990d9d4635b4",
+            "resourceVersion": "126386",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T08:06:42Z",
+            "labels": {
+              "platform.example.io/e2e": "kpcp-1793606630392919800"
+            }
+          },
+          "spec": {
+            "executionProfile": {
+              "mode": "emulator",
+              "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "region": "us-east-1",
+              "accountID": "000000000000",
+              "artifactBucket": "kpcp-1793606630392919800",
+              "credentialsSecretRef": {
+                "name": "emulator"
+              }
+            },
+            "source": {
+              "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+              "revision": "62bac872dfab8015da4b6240fda9107f76d58c3f",
+              "path": "."
+            },
+            "backend": {
+              "type": "s3",
+              "configRef": {
+                "name": "backend"
+              },
+              "authRef": {
+                "serviceAccountName": "runner"
+              },
+              "lockTimeout": "30s"
+            },
+            "workspace": "a-source",
+            "capacity": {
+              "nodeCount": 1
+            },
+            "variables": {
+              "values": {
+                "bucket_name": "kpcp-1793606630392919800-a-source-cloud",
+                "target_cluster_name": "podman-minikube",
+                "target_endpoint": "kubeconfig:podman-minikube",
+                "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              }
+            },
+            "executor": {
+              "terraformVersion": "1.14.0",
+              "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "workDir": "/workspace/terraform",
+              "executionTimeout": "8m0s"
+            },
+            "desiredState": "Present",
+            "approvalPolicy": "Manual",
+            "infrastructureExecutionIdentity": {
+              "provider": "kubernetes",
+              "mode": "local",
+              "accountID": "local",
+              "region": "local"
+            },
+            "runtimeTargetIdentity": {
+              "provider": "kubernetes",
+              "accountID": "local",
+              "region": "local",
+              "clusterName": "podman-minikube",
+              "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+            },
+            "targetConnectionProfile": {
+              "endpoint": "kubeconfig:podman-minikube",
+              "authMode": "kubeconfig-context",
+              "networkRouteProfile": "kubeconfig",
+              "kubeContext": "podman-minikube"
+            },
+            "runnerServiceAccountName": "runner",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+          },
+          "status": {}
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/FinalSafety/A_ContextDrift/source"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-a-source-created-b6b979b2-3446-462e-a4bd-b9e1166ed668.json",
+      "rawSHA256": "96faf7c7c142aea24cfafb21b9380e86340336677d4095c87f91c6678ff89bb7",
+      "projection": {
+        "at": "2026-11-02T08:05:36.2064496Z",
+        "evidence": {
+          "metadata": {
+            "name": "a-source",
+            "namespace": "kpcp-1793606630392919800",
+            "uid": "b6b979b2-3446-462e-a4bd-b9e1166ed668",
+            "resourceVersion": "126249",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T08:05:36Z",
+            "labels": {
+              "platform.example.io/e2e": "kpcp-1793606630392919800"
+            }
+          },
+          "spec": {
+            "executionProfile": {
+              "mode": "emulator",
+              "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "region": "us-east-1",
+              "accountID": "000000000000",
+              "artifactBucket": "kpcp-1793606630392919800",
+              "credentialsSecretRef": {
+                "name": "emulator"
+              }
+            },
+            "source": {
+              "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+              "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+              "path": "."
+            },
+            "backend": {
+              "type": "s3",
+              "configRef": {
+                "name": "backend"
+              },
+              "authRef": {
+                "serviceAccountName": "runner"
+              },
+              "lockTimeout": "30s"
+            },
+            "workspace": "a-source",
+            "capacity": {
+              "nodeCount": 1
+            },
+            "variables": {
+              "values": {
+                "bucket_name": "kpcp-1793606630392919800-a-source-cloud",
+                "target_cluster_name": "podman-minikube",
+                "target_endpoint": "kubeconfig:podman-minikube",
+                "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              }
+            },
+            "executor": {
+              "terraformVersion": "1.14.0",
+              "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "workDir": "/workspace/terraform",
+              "executionTimeout": "8m0s"
+            },
+            "desiredState": "Present",
+            "approvalPolicy": "Manual",
+            "infrastructureExecutionIdentity": {
+              "provider": "kubernetes",
+              "mode": "local",
+              "accountID": "local",
+              "region": "local"
+            },
+            "runtimeTargetIdentity": {
+              "provider": "kubernetes",
+              "accountID": "local",
+              "region": "local",
+              "clusterName": "podman-minikube",
+              "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+            },
+            "targetConnectionProfile": {
+              "endpoint": "kubeconfig:podman-minikube",
+              "authMode": "kubeconfig-context",
+              "networkRouteProfile": "kubeconfig",
+              "kubeContext": "podman-minikube"
+            },
+            "runnerServiceAccountName": "runner",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+          },
+          "status": {}
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/FinalSafety/A_ContextDrift/source"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-a-source-old-approval-blocked.json",
+      "rawSHA256": "d8011498e2a5041199a30d9d7b5a88bff8eeda13e488190558b266e1e6bcac82",
+      "projection": {
+        "at": "2026-11-02T08:07:30.6862745Z",
+        "evidence": {
+          "applyCount": 0,
+          "cloudAbsent": true,
+          "jobs": [
+            {
+              "metadata": {
+                "name": "a-source-plan-1",
+                "namespace": "kpcp-1793606630392919800",
+                "uid": "ec826385-c8fa-4e5d-b994-f34f1eb7306c",
+                "resourceVersion": "126492",
+                "generation": 1,
+                "creationTimestamp": "2026-11-02T08:06:42Z",
+                "labels": {
+                  "platform.example.io/terraform-run": "a-source-plan-1",
+                  "platform.example.io/terraform-run-uid": "358b93c0-3577-4a3f-9aea-9b6205cf1838"
+                },
+                "ownerReferences": [
+                  {
+                    "apiVersion": "platform.example.io/v1alpha1",
+                    "kind": "TerraformRun",
+                    "name": "a-source-plan-1",
+                    "uid": "358b93c0-3577-4a3f-9aea-9b6205cf1838",
+                    "controller": true,
+                    "blockOwnerDeletion": true
+                  }
+                ]
+              },
+              "spec": {
+                "parallelism": 1,
+                "completions": 1,
+                "activeDeadlineSeconds": 480,
+                "backoffLimit": 0,
+                "selector": {
+                  "matchLabels": {
+                    "batch.kubernetes.io/controller-uid": "ec826385-c8fa-4e5d-b994-f34f1eb7306c"
+                  }
+                },
+                "manualSelector": false,
+                "template": {
+                  "metadata": {
+                    "creationTimestamp": null,
+                    "labels": {
+                      "batch.kubernetes.io/controller-uid": "ec826385-c8fa-4e5d-b994-f34f1eb7306c",
+                      "batch.kubernetes.io/job-name": "a-source-plan-1",
+                      "controller-uid": "ec826385-c8fa-4e5d-b994-f34f1eb7306c",
+                      "job-name": "a-source-plan-1",
+                      "platform.example.io/terraform-run": "a-source-plan-1",
+                      "platform.example.io/terraform-run-uid": "358b93c0-3577-4a3f-9aea-9b6205cf1838"
+                    }
+                  },
+                  "spec": {
+                    "volumes": [
+                      {
+                        "name": "workspace",
+                        "emptyDir": {}
+                      },
+                      {
+                        "name": "tmp",
+                        "emptyDir": {}
+                      },
+                      {
+                        "name": "backend-config",
+                        "configMap": {
+                          "name": "backend",
+                          "defaultMode": 420
+                        }
+                      }
+                    ],
+                    "initContainers": [
+                      {
+                        "name": "source-clone",
+                        "image": "alpine/git:2.45.2",
+                        "command": [
+                          "git"
+                        ],
+                        "args": [
+                          "clone",
+                          "--no-checkout",
+                          "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                          "/workspace/terraform"
+                        ],
+                        "resources": {},
+                        "volumeMounts": [
+                          {
+                            "name": "workspace",
+                            "mountPath": "/workspace"
+                          }
+                        ],
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent",
+                        "securityContext": {
+                          "capabilities": {
+                            "drop": [
+                              "ALL"
+                            ]
+                          },
+                          "runAsUser": 1000,
+                          "runAsGroup": 1000,
+                          "runAsNonRoot": true,
+                          "allowPrivilegeEscalation": false
+                        }
+                      },
+                      {
+                        "name": "source-checkout",
+                        "image": "alpine/git:2.45.2",
+                        "command": [
+                          "git"
+                        ],
+                        "args": [
+                          "-C",
+                          "/workspace/terraform",
+                          "checkout",
+                          "--detach",
+                          "62bac872dfab8015da4b6240fda9107f76d58c3f"
+                        ],
+                        "resources": {},
+                        "volumeMounts": [
+                          {
+                            "name": "workspace",
+                            "mountPath": "/workspace"
+                          }
+                        ],
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent",
+                        "securityContext": {
+                          "capabilities": {
+                            "drop": [
+                              "ALL"
+                            ]
+                          },
+                          "runAsUser": 1000,
+                          "runAsGroup": 1000,
+                          "runAsNonRoot": true,
+                          "allowPrivilegeEscalation": false
+                        }
+                      }
+                    ],
+                    "containers": [
+                      {
+                        "name": "terraform-runner",
+                        "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                        "command": [
+                          "terraform-runner"
+                        ],
+                        "args": [
+                          "--operation=Plan",
+                          "--run-uid=358b93c0-3577-4a3f-9aea-9b6205cf1838",
+                          "--expected-terraform-version=1.14.0",
+                          "--working-dir=/workspace/terraform",
+                          "--workspace=a-source",
+                          "--plan=/workspace/terraform/plan.binary",
+                          "--lock-timeout=30s",
+                          "--backend-config=/workspace/backend/backend.hcl",
+                          "--artifact-endpoint=http://QA_PRIVATE_INTERFACE:14576",
+                          "--artifact-region=us-east-1",
+                          "--artifact-bucket=kpcp-1793606630392919800",
+                          "--artifact-prefix=runs/358b93c0-3577-4a3f-9aea-9b6205cf1838",
+                          "--source-root=/workspace/terraform"
+                        ],
+                        "env": [
+                          {
+                            "name": "HOME",
+                            "value": "/workspace"
+                          },
+                          {
+                            "name": "PCP_POD_NAME",
+                            "valueFrom": {
+                              "fieldRef": {
+                                "apiVersion": "v1",
+                                "fieldPath": "metadata.name"
+                              }
+                            }
+                          },
+                          {
+                            "name": "PCP_POD_NAMESPACE",
+                            "valueFrom": {
+                              "fieldRef": {
+                                "apiVersion": "v1",
+                                "fieldPath": "metadata.namespace"
+                              }
+                            }
+                          },
+                          {
+                            "name": "AWS_ACCESS_KEY_ID",
+                            "valueFrom": {
+                              "secretKeyRef": {
+                                "name": "emulator",
+                                "key": "AWS_ACCESS_KEY_ID"
+                              }
+                            }
+                          },
+                          {
+                            "name": "AWS_SECRET_ACCESS_KEY",
+                            "valueFrom": {
+                              "secretKeyRef": {
+                                "name": "emulator",
+                                "key": "AWS_SECRET_ACCESS_KEY"
+                              }
+                            }
+                          },
+                          {
+                            "name": "AWS_EC2_METADATA_DISABLED",
+                            "value": "true"
+                          },
+                          {
+                            "name": "PCP_EXECUTION_PROFILE",
+                            "value": "{\"mode\":\"emulator\",\"s3Endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"stsEndpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"region\":\"us-east-1\",\"accountID\":\"000000000000\",\"artifactBucket\":\"kpcp-1793606630392919800\",\"credentialsSecretRef\":{\"name\":\"emulator\"},\"credentialsIdentity\":\"sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141\"}"
+                          },
+                          {
+                            "name": "PCP_MODULE_INPUTS",
+                            "value": "{\"bucket_name\":\"kpcp-1793606630392919800-a-source-cloud\",\"execution_role_arn\":\"\",\"region\":\"us-east-1\",\"s3_endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"sts_endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"target_cluster_name\":\"podman-minikube\",\"target_endpoint\":\"kubeconfig:podman-minikube\",\"target_incarnation_id\":\"2c62d6a8-08b6-460d-bb1b-ac59557dc281\"}"
+                          }
+                        ],
+                        "resources": {
+                          "limits": {
+                            "cpu": "1",
+                            "memory": "1Gi"
+                          },
+                          "requests": {
+                            "cpu": "100m",
+                            "memory": "128Mi"
+                          }
+                        },
+                        "volumeMounts": [
+                          {
+                            "name": "workspace",
+                            "mountPath": "/workspace"
+                          },
+                          {
+                            "name": "tmp",
+                            "mountPath": "/tmp"
+                          },
+                          {
+                            "name": "backend-config",
+                            "readOnly": true,
+                            "mountPath": "/workspace/backend"
+                          }
+                        ],
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent",
+                        "securityContext": {
+                          "capabilities": {
+                            "drop": [
+                              "ALL"
+                            ]
+                          },
+                          "runAsUser": 1000,
+                          "runAsGroup": 1000,
+                          "runAsNonRoot": true,
+                          "readOnlyRootFilesystem": true,
+                          "allowPrivilegeEscalation": false
+                        }
+                      }
+                    ],
+                    "restartPolicy": "Never",
+                    "terminationGracePeriodSeconds": 30,
+                    "dnsPolicy": "ClusterFirst",
+                    "serviceAccountName": "runner",
+                    "serviceAccount": "runner",
+                    "automountServiceAccountToken": true,
+                    "securityContext": {
+                      "runAsNonRoot": true,
+                      "fsGroup": 1000,
+                      "seccompProfile": {
+                        "type": "RuntimeDefault"
+                      }
+                    },
+                    "schedulerName": "default-scheduler"
+                  }
+                },
+                "completionMode": "NonIndexed",
+                "suspend": false,
+                "podReplacementPolicy": "TerminatingOrFailed"
+              },
+              "status": {
+                "conditions": [
+                  {
+                    "type": "SuccessCriteriaMet",
+                    "status": "True",
+                    "lastProbeTime": "2026-11-02T08:07:28Z",
+                    "lastTransitionTime": "2026-11-02T08:07:28Z",
+                    "reason": "CompletionsReached",
+                    "message": "Reached expected number of succeeded pods"
+                  },
+                  {
+                    "type": "Complete",
+                    "status": "True",
+                    "lastProbeTime": "2026-11-02T08:07:28Z",
+                    "lastTransitionTime": "2026-11-02T08:07:28Z",
+                    "reason": "CompletionsReached",
+                    "message": "Reached expected number of succeeded pods"
+                  }
+                ],
+                "startTime": "2026-11-02T08:06:42Z",
+                "completionTime": "2026-11-02T08:07:28Z",
+                "succeeded": 1,
+                "terminating": 0,
+                "uncountedTerminatedPods": {},
+                "ready": 0
+              }
+            }
+          ],
+          "runs": [
+            {
+              "kind": "TerraformRun",
+              "apiVersion": "platform.example.io/v1alpha1",
+              "metadata": {
+                "name": "a-source-plan-1",
+                "namespace": "kpcp-1793606630392919800",
+                "uid": "358b93c0-3577-4a3f-9aea-9b6205cf1838",
+                "resourceVersion": "126494",
+                "generation": 1,
+                "creationTimestamp": "2026-11-02T08:06:42Z",
+                "ownerReferences": [
+                  {
+                    "apiVersion": "platform.example.io/v1alpha1",
+                    "kind": "InfraStack",
+                    "name": "a-source",
+                    "uid": "2cfe7791-3f7d-4bc5-b125-990d9d4635b4",
+                    "controller": true,
+                    "blockOwnerDeletion": true
+                  }
+                ]
+              },
+              "spec": {
+                "executionProfile": {
+                  "mode": "emulator",
+                  "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                  "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                  "region": "us-east-1",
+                  "accountID": "000000000000",
+                  "artifactBucket": "kpcp-1793606630392919800",
+                  "credentialsSecretRef": {
+                    "name": "emulator"
+                  },
+                  "credentialsIdentity": "sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141"
+                },
+                "inputs": {
+                  "bucket_name": "kpcp-1793606630392919800-a-source-cloud",
+                  "execution_role_arn": "",
+                  "region": "us-east-1",
+                  "s3_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                  "sts_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                  "target_cluster_name": "podman-minikube",
+                  "target_endpoint": "kubeconfig:podman-minikube",
+                  "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+                },
+                "stackRef": {
+                  "name": "a-source"
+                },
+                "infraStackGeneration": 1,
+                "operation": "Plan",
+                "planMode": "Reconcile",
+                "source": {
+                  "type": "GitCommit",
+                  "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                  "revision": "62bac872dfab8015da4b6240fda9107f76d58c3f",
+                  "path": "."
+                },
+                "resolvedBackendConfigRef": "backend",
+                "lockTimeout": "30s",
+                "workspace": "a-source",
+                "executor": {
+                  "terraformVersion": "1.14.0",
+                  "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                  "workDir": "/workspace/terraform",
+                  "executionTimeout": "8m0s"
+                },
+                "executionContextDigest": "sha256:d9292bbe7548f17d89d2a0f62c8ba0010e47c4eaad42f3a688ddf2f7e8fccc33",
+                "effectivePlanInputDigest": "sha256:d9292bbe7548f17d89d2a0f62c8ba0010e47c4eaad42f3a688ddf2f7e8fccc33",
+                "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+                "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+                "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+                "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+                "expectedTerraformVersion": "1.14.0",
+                "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "runnerServiceAccountName": "runner",
+                "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+              },
+              "status": {
+                "observedGeneration": 1,
+                "conditions": [
+                  {
+                    "type": "Ready",
+                    "status": "True",
+                    "observedGeneration": 1,
+                    "lastTransitionTime": "2026-11-02T08:07:28Z",
+                    "reason": "TerraformSucceeded",
+                    "message": "Terraform runner terminal result captured."
+                  }
+                ],
+                "jobRef": {
+                  "name": "a-source-plan-1"
+                },
+                "sourceBundleRef": "runs/358b93c0-3577-4a3f-9aea-9b6205cf1838/source-bundle.tar.zst",
+                "sourceBundleDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+                "planReportRef": "runs/358b93c0-3577-4a3f-9aea-9b6205cf1838/plan-report.json",
+                "planReportDigest": "sha256:07a2ed53c107cfd3bca715a3fcad538ed890fd176e1684e1b33c173404686f71",
+                "terminalResultRef": "runs/358b93c0-3577-4a3f-9aea-9b6205cf1838/terminal-result.json",
+                "terminalResultDigest": "sha256:2c5c1e6473ffab243288c3953eb47cb10304ffc32b028e27123e6827d528dc10",
+                "resolvedBackendConfigRef": "runs/358b93c0-3577-4a3f-9aea-9b6205cf1838/backend-config.hcl",
+                "resolvedBackendConfigDigest": "sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86",
+                "planRef": "runs/358b93c0-3577-4a3f-9aea-9b6205cf1838/plan.binary",
+                "planDigest": "sha256:28a304611f6ccd7f54e2433040c667bb28f844150986e3f8f364739f05564cf4",
+                "effectivePlanInputDigest": "sha256:63d3938621b9758bb61f612421942c5bdbb613d92b05b2c4a7bc39ab1a233b69",
+                "hasChanges": true,
+                "planCreatedAt": "2026-11-02T08:07:20Z",
+                "planExpiresAt": "2026-11-02T09:07:20Z",
+                "executionOutcome": "ChangesPresent",
+                "mutationClassification": "NoMutation",
+                "artifactsReady": true,
+                "evidenceCaptured": true,
+                "jobUID": "ec826385-c8fa-4e5d-b994-f34f1eb7306c",
+                "terminalStartedAt": "2026-11-02T08:06:45Z",
+                "terminalFinishedAt": "2026-11-02T08:07:20Z"
+              }
+            }
+          ],
+          "stack": {
+            "metadata": {
+              "name": "a-source",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "2cfe7791-3f7d-4bc5-b125-990d9d4635b4",
+              "resourceVersion": "126496",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:06:42Z",
+              "labels": {
+                "platform.example.io/e2e": "kpcp-1793606630392919800"
+              },
+              "finalizers": [
+                "platform.example.io/infrastack-finalizer"
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                }
+              },
+              "source": {
+                "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                "revision": "62bac872dfab8015da4b6240fda9107f76d58c3f",
+                "path": "."
+              },
+              "backend": {
+                "type": "s3",
+                "configRef": {
+                  "name": "backend"
+                },
+                "authRef": {
+                  "serviceAccountName": "runner"
+                },
+                "lockTimeout": "30s"
+              },
+              "workspace": "a-source",
+              "capacity": {
+                "nodeCount": 1
+              },
+              "variables": {
+                "values": {
+                  "bucket_name": "kpcp-1793606630392919800-a-source-cloud",
+                  "target_cluster_name": "podman-minikube",
+                  "target_endpoint": "kubeconfig:podman-minikube",
+                  "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+                }
+              },
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "desiredState": "Present",
+              "approvalPolicy": "Manual",
+              "infrastructureExecutionIdentity": {
+                "provider": "kubernetes",
+                "mode": "local",
+                "accountID": "local",
+                "region": "local"
+              },
+              "runtimeTargetIdentity": {
+                "provider": "kubernetes",
+                "accountID": "local",
+                "region": "local",
+                "clusterName": "podman-minikube",
+                "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "targetConnectionProfile": {
+                "endpoint": "kubeconfig:podman-minikube",
+                "authMode": "kubeconfig-context",
+                "networkRouteProfile": "kubeconfig",
+                "kubeContext": "podman-minikube"
+              },
+              "runnerServiceAccountName": "runner",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "False",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:07:28Z",
+                  "reason": "WaitingApproval",
+                  "message": "Terraform plan contains changes and is waiting for a valid ChangeApproval."
+                }
+              ],
+              "latestPlanRunRef": {
+                "name": "a-source-plan-1"
+              }
+            }
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/FinalSafety/A_ContextDrift/source"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-a-source-saved-plan.json",
+      "rawSHA256": "7b56061686baf41de321972cb79d532bb6b402ac498423214aa1822c09d69a18",
+      "projection": {
+        "at": "2026-11-02T08:06:42.0894474Z",
+        "evidence": {
+          "kind": "TerraformRun",
+          "apiVersion": "platform.example.io/v1alpha1",
+          "metadata": {
+            "name": "a-source-plan-1",
+            "namespace": "kpcp-1793606630392919800",
+            "uid": "65df6e15-5f7f-4495-bec7-68b4da129d02",
+            "resourceVersion": "126375",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T08:05:50Z",
+            "ownerReferences": [
+              {
+                "apiVersion": "platform.example.io/v1alpha1",
+                "kind": "InfraStack",
+                "name": "a-source",
+                "uid": "b6b979b2-3446-462e-a4bd-b9e1166ed668",
+                "controller": true,
+                "blockOwnerDeletion": true
+              }
+            ]
+          },
+          "spec": {
+            "executionProfile": {
+              "mode": "emulator",
+              "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "region": "us-east-1",
+              "accountID": "000000000000",
+              "artifactBucket": "kpcp-1793606630392919800",
+              "credentialsSecretRef": {
+                "name": "emulator"
+              },
+              "credentialsIdentity": "sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141"
+            },
+            "inputs": {
+              "bucket_name": "kpcp-1793606630392919800-a-source-cloud",
+              "execution_role_arn": "",
+              "region": "us-east-1",
+              "s3_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "sts_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+              "target_cluster_name": "podman-minikube",
+              "target_endpoint": "kubeconfig:podman-minikube",
+              "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+            },
+            "stackRef": {
+              "name": "a-source"
+            },
+            "infraStackGeneration": 1,
+            "operation": "Plan",
+            "planMode": "Reconcile",
+            "source": {
+              "type": "GitCommit",
+              "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+              "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+              "path": "."
+            },
+            "resolvedBackendConfigRef": "backend",
+            "lockTimeout": "30s",
+            "workspace": "a-source",
+            "executor": {
+              "terraformVersion": "1.14.0",
+              "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "workDir": "/workspace/terraform",
+              "executionTimeout": "8m0s"
+            },
+            "executionContextDigest": "sha256:c3f7aa7f950855221a920b115d25e2814569b006fc149a49402eb6b9dbc3bb73",
+            "effectivePlanInputDigest": "sha256:c3f7aa7f950855221a920b115d25e2814569b006fc149a49402eb6b9dbc3bb73",
+            "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+            "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+            "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "expectedTerraformVersion": "1.14.0",
+            "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "runnerServiceAccountName": "runner",
+            "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+          },
+          "status": {
+            "observedGeneration": 1,
+            "conditions": [
+              {
+                "type": "Ready",
+                "status": "True",
+                "observedGeneration": 1,
+                "lastTransitionTime": "2026-11-02T08:06:42Z",
+                "reason": "TerraformSucceeded",
+                "message": "Terraform runner terminal result captured."
+              }
+            ],
+            "jobRef": {
+              "name": "a-source-plan-1"
+            },
+            "sourceBundleRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/source-bundle.tar.zst",
+            "sourceBundleDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+            "planReportRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/plan-report.json",
+            "planReportDigest": "sha256:39a5c669cc4860570d3fe1e7432495c7e2385d180be9a3594cb8b96f0d3b7124",
+            "terminalResultRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/terminal-result.json",
+            "terminalResultDigest": "sha256:3f402db34a72ca565a288c0e26dcb95a7b809653ea8cbe7817c925d7a7162116",
+            "resolvedBackendConfigRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/backend-config.hcl",
+            "resolvedBackendConfigDigest": "sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86",
+            "planRef": "runs/65df6e15-5f7f-4495-bec7-68b4da129d02/plan.binary",
+            "planDigest": "sha256:7d4b8c911e7c81604f83e5362f724e527b0b9a618549caece4dfa88924566a8c",
+            "effectivePlanInputDigest": "sha256:997f6a3726a074e6c9452933b51f72de0a0f3f6144e884ed9eced668106e90fd",
+            "hasChanges": true,
+            "planCreatedAt": "2026-11-02T08:06:34Z",
+            "planExpiresAt": "2026-11-02T09:06:34Z",
+            "executionOutcome": "ChangesPresent",
+            "mutationClassification": "NoMutation",
+            "artifactsReady": true,
+            "evidenceCaptured": true,
+            "jobUID": "89332d09-0107-4921-b308-3eb5c0a5ad03",
+            "terminalStartedAt": "2026-11-02T08:05:53Z",
+            "terminalFinishedAt": "2026-11-02T08:06:34Z"
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/FinalSafety/A_ContextDrift/source"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-destroy-active-before-restart.json",
+      "rawSHA256": "a221ac414ec08c35867df57c81e15b926dba2d05fe8f327dcca0785d1ce1200e",
+      "projection": {
+        "at": "2026-11-02T08:10:33.9001492Z",
+        "evidence": {
+          "job": {
+            "metadata": {
+              "name": "environment-infra-destroy-plan-3-apply-6cb3bebcbc",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "1812c14e-526b-4054-854c-0ec7356f3bd4",
+              "resourceVersion": "126917",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:10:33Z",
+              "labels": {
+                "platform.example.io/terraform-run": "environment-infra-destroy-plan-3-apply-6cb3bebcbc",
+                "platform.example.io/terraform-run-uid": "50bebc52-5fb0-46f9-b0a3-aa16ed2220d4"
+              },
+              "ownerReferences": [
+                {
+                  "apiVersion": "platform.example.io/v1alpha1",
+                  "kind": "TerraformRun",
+                  "name": "environment-infra-destroy-plan-3-apply-6cb3bebcbc",
+                  "uid": "50bebc52-5fb0-46f9-b0a3-aa16ed2220d4",
+                  "controller": true,
+                  "blockOwnerDeletion": true
+                }
+              ]
+            },
+            "spec": {
+              "parallelism": 1,
+              "completions": 1,
+              "activeDeadlineSeconds": 480,
+              "backoffLimit": 0,
+              "selector": {
+                "matchLabels": {
+                  "batch.kubernetes.io/controller-uid": "1812c14e-526b-4054-854c-0ec7356f3bd4"
+                }
+              },
+              "manualSelector": false,
+              "template": {
+                "metadata": {
+                  "creationTimestamp": null,
+                  "labels": {
+                    "batch.kubernetes.io/controller-uid": "1812c14e-526b-4054-854c-0ec7356f3bd4",
+                    "batch.kubernetes.io/job-name": "environment-infra-destroy-plan-3-apply-6cb3bebcbc",
+                    "controller-uid": "1812c14e-526b-4054-854c-0ec7356f3bd4",
+                    "job-name": "environment-infra-destroy-plan-3-apply-6cb3bebcbc",
+                    "platform.example.io/terraform-run": "environment-infra-destroy-plan-3-apply-6cb3bebcbc",
+                    "platform.example.io/terraform-run-uid": "50bebc52-5fb0-46f9-b0a3-aa16ed2220d4"
+                  }
+                },
+                "spec": {
+                  "volumes": [
+                    {
+                      "name": "workspace",
+                      "emptyDir": {}
+                    },
+                    {
+                      "name": "tmp",
+                      "emptyDir": {}
+                    }
+                  ],
+                  "containers": [
+                    {
+                      "name": "terraform-runner",
+                      "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                      "command": [
+                        "terraform-runner"
+                      ],
+                      "args": [
+                        "--operation=Apply",
+                        "--run-uid=50bebc52-5fb0-46f9-b0a3-aa16ed2220d4",
+                        "--expected-terraform-version=1.14.0",
+                        "--working-dir=/workspace/terraform",
+                        "--workspace=environment",
+                        "--plan=/workspace/terraform/plan.binary",
+                        "--lock-timeout=30s",
+                        "--destroy=true",
+                        "--artifact-endpoint=http://QA_PRIVATE_INTERFACE:14576",
+                        "--artifact-region=us-east-1",
+                        "--artifact-bucket=kpcp-1793606630392919800",
+                        "--artifact-prefix=runs/50bebc52-5fb0-46f9-b0a3-aa16ed2220d4",
+                        "--source-root=/workspace/terraform",
+                        "--source-bundle-ref=runs/d8e4a694-2cd7-45b6-bc12-576746badd24/source-bundle.tar.zst",
+                        "--source-bundle-digest=sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+                        "--plan-ref=runs/d8e4a694-2cd7-45b6-bc12-576746badd24/plan.binary",
+                        "--plan-digest=sha256:a255183d4891df64a8b31d56b54c0d2e325ba5110a51082aac12ae77e378870f",
+                        "--target-discovery-ref=runs/2d1d35ff-8891-46b0-97ae-c3d4976193ca/target-discovery.json",
+                        "--target-discovery-digest=sha256:d4d795c714f1a277354d8bd66182fd423dc93ba46a43c9a8d6d043740b232222",
+                        "--backend-config=/workspace/backend/backend.hcl",
+                        "--backend-config-ref=runs/d8e4a694-2cd7-45b6-bc12-576746badd24/backend-config.hcl",
+                        "--backend-config-digest=sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86"
+                      ],
+                      "env": [
+                        {
+                          "name": "HOME",
+                          "value": "/workspace"
+                        },
+                        {
+                          "name": "PCP_POD_NAME",
+                          "valueFrom": {
+                            "fieldRef": {
+                              "apiVersion": "v1",
+                              "fieldPath": "metadata.name"
+                            }
+                          }
+                        },
+                        {
+                          "name": "PCP_POD_NAMESPACE",
+                          "valueFrom": {
+                            "fieldRef": {
+                              "apiVersion": "v1",
+                              "fieldPath": "metadata.namespace"
+                            }
+                          }
+                        },
+                        {
+                          "name": "AWS_ACCESS_KEY_ID",
+                          "valueFrom": {
+                            "secretKeyRef": {
+                              "name": "emulator",
+                              "key": "AWS_ACCESS_KEY_ID"
+                            }
+                          }
+                        },
+                        {
+                          "name": "AWS_SECRET_ACCESS_KEY",
+                          "valueFrom": {
+                            "secretKeyRef": {
+                              "name": "emulator",
+                              "key": "AWS_SECRET_ACCESS_KEY"
+                            }
+                          }
+                        },
+                        {
+                          "name": "AWS_EC2_METADATA_DISABLED",
+                          "value": "true"
+                        },
+                        {
+                          "name": "PCP_EXECUTION_PROFILE",
+                          "value": "{\"mode\":\"emulator\",\"s3Endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"stsEndpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"region\":\"us-east-1\",\"accountID\":\"000000000000\",\"artifactBucket\":\"kpcp-1793606630392919800\",\"credentialsSecretRef\":{\"name\":\"emulator\"},\"credentialsIdentity\":\"sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141\"}"
+                        },
+                        {
+                          "name": "PCP_MODULE_INPUTS",
+                          "value": "{\"bucket_name\":\"kpcp-1793606630392919800-cloud\",\"execution_role_arn\":\"\",\"region\":\"us-east-1\",\"s3_endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"sts_endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"target_cluster_name\":\"podman-minikube\",\"target_endpoint\":\"kubeconfig:podman-minikube\",\"target_incarnation_id\":\"2c62d6a8-08b6-460d-bb1b-ac59557dc281\"}"
+                        }
+                      ],
+                      "resources": {
+                        "limits": {
+                          "cpu": "1",
+                          "memory": "1Gi"
+                        },
+                        "requests": {
+                          "cpu": "100m",
+                          "memory": "128Mi"
+                        }
+                      },
+                      "volumeMounts": [
+                        {
+                          "name": "workspace",
+                          "mountPath": "/workspace"
+                        },
+                        {
+                          "name": "tmp",
+                          "mountPath": "/tmp"
+                        }
+                      ],
+                      "terminationMessagePath": "/dev/termination-log",
+                      "terminationMessagePolicy": "File",
+                      "imagePullPolicy": "IfNotPresent",
+                      "securityContext": {
+                        "capabilities": {
+                          "drop": [
+                            "ALL"
+                          ]
+                        },
+                        "runAsUser": 1000,
+                        "runAsGroup": 1000,
+                        "runAsNonRoot": true,
+                        "readOnlyRootFilesystem": true,
+                        "allowPrivilegeEscalation": false
+                      }
+                    }
+                  ],
+                  "restartPolicy": "Never",
+                  "terminationGracePeriodSeconds": 30,
+                  "dnsPolicy": "ClusterFirst",
+                  "serviceAccountName": "runner",
+                  "serviceAccount": "runner",
+                  "automountServiceAccountToken": true,
+                  "securityContext": {
+                    "runAsNonRoot": true,
+                    "fsGroup": 1000,
+                    "seccompProfile": {
+                      "type": "RuntimeDefault"
+                    }
+                  },
+                  "schedulerName": "default-scheduler"
+                }
+              },
+              "completionMode": "NonIndexed",
+              "suspend": false,
+              "podReplacementPolicy": "TerminatingOrFailed"
+            },
+            "status": {
+              "startTime": "2026-11-02T08:10:33Z",
+              "active": 1,
+              "terminating": 0,
+              "uncountedTerminatedPods": {},
+              "ready": 0
+            }
+          },
+          "run": {
+            "kind": "TerraformRun",
+            "apiVersion": "platform.example.io/v1alpha1",
+            "metadata": {
+              "name": "environment-infra-destroy-plan-3-apply-6cb3bebcbc",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "50bebc52-5fb0-46f9-b0a3-aa16ed2220d4",
+              "resourceVersion": "126918",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:10:33Z",
+              "labels": {
+                "platform.example.io/terraform-approval-uid": "baf75be0-772b-4177-b557-1605cb50ed1c",
+                "platform.example.io/terraform-plan": "environment-infra-destroy-plan-3",
+                "platform.example.io/terraform-plan-uid": "d8e4a694-2cd7-45b6-bc12-576746badd24"
+              },
+              "ownerReferences": [
+                {
+                  "apiVersion": "platform.example.io/v1alpha1",
+                  "kind": "InfraStack",
+                  "name": "environment-infra",
+                  "uid": "67e3f489-dbc4-4d20-8642-baf238083ed1",
+                  "controller": true,
+                  "blockOwnerDeletion": true
+                }
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                },
+                "credentialsIdentity": "sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141"
+              },
+              "inputs": {
+                "bucket_name": "kpcp-1793606630392919800-cloud",
+                "execution_role_arn": "",
+                "region": "us-east-1",
+                "s3_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "sts_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "target_cluster_name": "podman-minikube",
+                "target_endpoint": "kubeconfig:podman-minikube",
+                "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "stackRef": {
+                "name": "environment-infra"
+              },
+              "infraStackGeneration": 3,
+              "operation": "Apply",
+              "planMode": "Destroy",
+              "source": {
+                "type": "RetainedBundle",
+                "path": ".",
+                "ref": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/source-bundle.tar.zst",
+                "digest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30"
+              },
+              "resolvedBackendConfigRef": "backend",
+              "backendConfigArtifactRef": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/backend-config.hcl",
+              "backendConfigArtifactDigest": "sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86",
+              "lockTimeout": "30s",
+              "workspace": "environment",
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "executionContextDigest": "sha256:4dc8f8d8364c8e42e10af7fea067f2d700146c465565814a2e1a48409cd62670",
+              "planRunUID": "d8e4a694-2cd7-45b6-bc12-576746badd24",
+              "planRef": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/plan.binary",
+              "planDigest": "sha256:a255183d4891df64a8b31d56b54c0d2e325ba5110a51082aac12ae77e378870f",
+              "planReportRef": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/plan-report.json",
+              "planReportDigest": "sha256:ab6326ad3a4050826b7986ca14e547e1bb491ed4a9dfb97018aea2ef58db6b3c",
+              "targetDiscoveryRef": "runs/2d1d35ff-8891-46b0-97ae-c3d4976193ca/target-discovery.json",
+              "targetDiscoveryDigest": "sha256:d4d795c714f1a277354d8bd66182fd423dc93ba46a43c9a8d6d043740b232222",
+              "approvalRef": {
+                "name": "approve-02c978d85529f7212102086a"
+              },
+              "approvalUID": "baf75be0-772b-4177-b557-1605cb50ed1c",
+              "effectivePlanInputDigest": "sha256:ad3d080b6ab651581af8279888756f156ffb9a78542cd256999cc5c7aef47ca5",
+              "sourceClosureDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+              "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+              "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+              "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "expectedTerraformVersion": "1.14.0",
+              "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "mutationFence": true,
+              "runnerServiceAccountName": "runner",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "False",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:10:33Z",
+                  "reason": "TerraformJobPending",
+                  "message": "Terraform Job is pending."
+                }
+              ],
+              "jobRef": {
+                "name": "environment-infra-destroy-plan-3-apply-6cb3bebcbc"
+              },
+              "executionOutcome": "Pending",
+              "jobUID": "1812c14e-526b-4054-854c-0ec7356f3bd4"
+            }
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/F_DestroyFinalizer"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-destroy-approval-blocked.json",
+      "rawSHA256": "0c4349ec8967ba91270ec1c5eb6645e95c7479554c83553a82e743db9e3078f4",
+      "projection": {
+        "at": "2026-11-02T08:10:16.2675452Z",
+        "evidence": {
+          "applyCount": 1,
+          "badApproval": {
+            "metadata": {
+              "name": "wrong-destroy-digest",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "18b15722-7fcb-4ca6-af84-6ace667edbf5",
+              "resourceVersion": "126885",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:10:14Z"
+            },
+            "spec": {
+              "planRunRef": {
+                "name": "environment-infra-destroy-plan-3"
+              },
+              "planRunUID": "d8e4a694-2cd7-45b6-bc12-576746badd24",
+              "planDigest": "sha256:not-the-destroy-plan",
+              "executionContextDigest": "sha256:4dc8f8d8364c8e42e10af7fea067f2d700146c465565814a2e1a48409cd62670",
+              "effectivePlanInputDigest": "sha256:ad3d080b6ab651581af8279888756f156ffb9a78542cd256999cc5c7aef47ca5",
+              "planReportRef": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/plan-report.json",
+              "planReportDigest": "sha256:ab6326ad3a4050826b7986ca14e547e1bb491ed4a9dfb97018aea2ef58db6b3c"
+            },
+            "status": {}
+          },
+          "environment": {
+            "metadata": {
+              "name": "environment",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "c0e47759-25f7-417b-a46e-61aa4f8144a1",
+              "resourceVersion": "126755",
+              "generation": 2,
+              "creationTimestamp": "2026-11-02T08:03:50Z",
+              "deletionTimestamp": "2026-11-02T08:09:09Z",
+              "deletionGracePeriodSeconds": 0,
+              "finalizers": [
+                "platform.example.io/platformenvironment-finalizer"
+              ]
+            },
+            "spec": {
+              "classRef": {
+                "name": "kpcp-1793606630392919800"
+              },
+              "infraStackRef": {},
+              "target": {
+                "provider": "",
+                "clusterName": ""
+              },
+              "region": "local",
+              "capacity": {
+                "nodeCount": 1
+              },
+              "valkey": {},
+              "desiredState": "Present"
+            },
+            "status": {
+              "observedGeneration": 2,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "False",
+                  "observedGeneration": 2,
+                  "lastTransitionTime": "2026-11-02T08:09:09Z",
+                  "reason": "Deleting",
+                  "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal."
+                }
+              ],
+              "infraStackRef": {
+                "name": "environment-infra"
+              },
+              "resourceSetRef": {
+                "name": "environment-resources"
+              },
+              "targetIdentity": {
+                "provider": "kubernetes",
+                "accountID": "local",
+                "region": "local",
+                "clusterName": "podman-minikube",
+                "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "targetConnection": {
+                "endpoint": "kubeconfig:podman-minikube",
+                "authMode": "kubeconfig-context",
+                "networkRouteProfile": "kubeconfig",
+                "kubeContext": "podman-minikube"
+              }
+            }
+          },
+          "existingReconcileApproval": {
+            "metadata": {
+              "name": "approve-ed23e39acbbfa8f78481ac0e",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "aa7a2e60-1953-4ab3-9f36-83b850398476",
+              "resourceVersion": "126146",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:04:40Z",
+              "labels": {
+                "platform.example.io/managed-by": "platform-api"
+              }
+            },
+            "spec": {
+              "planRunRef": {
+                "name": "environment-infra-plan-1"
+              },
+              "planRunUID": "fd8eb2f1-ed30-4465-85b8-b73472365a27",
+              "planDigest": "sha256:142a2cbd91f6b5084d3cf7584b73b807d0f456578cb6687bf5aee1ea0a058506",
+              "executionContextDigest": "sha256:4dc8f8d8364c8e42e10af7fea067f2d700146c465565814a2e1a48409cd62670",
+              "effectivePlanInputDigest": "sha256:71fe5876633d1a21a3ed9f89bf37ced7a9715fc89542fa148d2f18ec66ec1cea",
+              "planReportRef": "runs/fd8eb2f1-ed30-4465-85b8-b73472365a27/plan-report.json",
+              "planReportDigest": "sha256:565a112d95ca646e50cbf2583e8b4aa58c5fb1143deba3ea12497aaf6c36d95c"
+            },
+            "status": {}
+          },
+          "plan": {
+            "kind": "TerraformRun",
+            "apiVersion": "platform.example.io/v1alpha1",
+            "metadata": {
+              "name": "environment-infra-destroy-plan-3",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "d8e4a694-2cd7-45b6-bc12-576746badd24",
+              "resourceVersion": "126883",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:09:09Z",
+              "ownerReferences": [
+                {
+                  "apiVersion": "platform.example.io/v1alpha1",
+                  "kind": "InfraStack",
+                  "name": "environment-infra",
+                  "uid": "67e3f489-dbc4-4d20-8642-baf238083ed1",
+                  "controller": true,
+                  "blockOwnerDeletion": true
+                }
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                },
+                "credentialsIdentity": "sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141"
+              },
+              "inputs": {
+                "bucket_name": "kpcp-1793606630392919800-cloud",
+                "execution_role_arn": "",
+                "region": "us-east-1",
+                "s3_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "sts_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "target_cluster_name": "podman-minikube",
+                "target_endpoint": "kubeconfig:podman-minikube",
+                "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "stackRef": {
+                "name": "environment-infra"
+              },
+              "infraStackGeneration": 3,
+              "operation": "Plan",
+              "planMode": "Destroy",
+              "source": {
+                "type": "RetainedBundle",
+                "path": ".",
+                "ref": "runs/fd8eb2f1-ed30-4465-85b8-b73472365a27/source-bundle.tar.zst",
+                "digest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30"
+              },
+              "resolvedBackendConfigRef": "backend",
+              "backendConfigArtifactRef": "runs/fd8eb2f1-ed30-4465-85b8-b73472365a27/backend-config.hcl",
+              "backendConfigArtifactDigest": "sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86",
+              "lockTimeout": "30s",
+              "workspace": "environment",
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "executionContextDigest": "sha256:4dc8f8d8364c8e42e10af7fea067f2d700146c465565814a2e1a48409cd62670",
+              "targetDiscoveryRef": "runs/2d1d35ff-8891-46b0-97ae-c3d4976193ca/target-discovery.json",
+              "targetDiscoveryDigest": "sha256:d4d795c714f1a277354d8bd66182fd423dc93ba46a43c9a8d6d043740b232222",
+              "effectivePlanInputDigest": "sha256:71fe5876633d1a21a3ed9f89bf37ced7a9715fc89542fa148d2f18ec66ec1cea",
+              "sourceClosureDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+              "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+              "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+              "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "expectedTerraformVersion": "1.14.0",
+              "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "mutationFence": true,
+              "runnerServiceAccountName": "runner",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "True",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:10:14Z",
+                  "reason": "TerraformSucceeded",
+                  "message": "Terraform runner terminal result captured."
+                }
+              ],
+              "jobRef": {
+                "name": "environment-infra-destroy-plan-3"
+              },
+              "sourceBundleRef": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/source-bundle.tar.zst",
+              "sourceBundleDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+              "planReportRef": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/plan-report.json",
+              "planReportDigest": "sha256:ab6326ad3a4050826b7986ca14e547e1bb491ed4a9dfb97018aea2ef58db6b3c",
+              "terminalResultRef": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/terminal-result.json",
+              "terminalResultDigest": "sha256:0463122835b8fd2982917265b3f99da7cad283b9aa8ca1c97a1b212947ec7cc6",
+              "resolvedBackendConfigRef": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/backend-config.hcl",
+              "resolvedBackendConfigDigest": "sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86",
+              "planRef": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/plan.binary",
+              "planDigest": "sha256:a255183d4891df64a8b31d56b54c0d2e325ba5110a51082aac12ae77e378870f",
+              "effectivePlanInputDigest": "sha256:ad3d080b6ab651581af8279888756f156ffb9a78542cd256999cc5c7aef47ca5",
+              "hasChanges": true,
+              "planCreatedAt": "2026-11-02T08:10:06Z",
+              "planExpiresAt": "2026-11-02T09:10:06Z",
+              "executionOutcome": "ChangesPresent",
+              "mutationClassification": "NoMutation",
+              "artifactsReady": true,
+              "evidenceCaptured": true,
+              "jobUID": "87d128ce-7023-4580-bdc2-2a99918ea5ad",
+              "terminalStartedAt": "2026-11-02T08:09:10Z",
+              "terminalFinishedAt": "2026-11-02T08:10:06Z"
+            }
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/F_DestroyFinalizer"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-destroy-recovered-terminal.json",
+      "rawSHA256": "6a619133c4c004336a8c1f7f1f6af61ff4de4488cb24c82557aa98517f0a6245",
+      "projection": {
+        "at": "2026-11-02T08:11:15.9781101Z",
+        "evidence": {
+          "cloudNotFound": true,
+          "environmentNotFound": true,
+          "ref": {
+            "Key": "runs/50bebc52-5fb0-46f9-b0a3-aa16ed2220d4/terminal-result.json",
+            "Digest": "sha256:74c8b6e873a75ee41af3d1f489ba5169ca75e24b56206923f805d34c42cd609e",
+            "Size": 1273,
+            "VersionID": ""
+          },
+          "terminal": {
+            "terraformRunUID": "50bebc52-5fb0-46f9-b0a3-aa16ed2220d4",
+            "JobUID": "1812c14e-526b-4054-854c-0ec7356f3bd4",
+            "Operation": "Apply",
+            "ExecutionOutcome": "Succeeded",
+            "PlanRef": "runs/d8e4a694-2cd7-45b6-bc12-576746badd24/plan.binary",
+            "PlanDigest": "sha256:a255183d4891df64a8b31d56b54c0d2e325ba5110a51082aac12ae77e378870f",
+            "TerraformExitCode": 0,
+            "ArtifactsReady": true
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle/F_DestroyFinalizer"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-exact-approval-idempotent.json",
+      "rawSHA256": "f8c55d677f401a860d8ec9a13a12fee40f8c70bf189ca38cd6f361c62301f294",
+      "projection": {
+        "at": "2026-11-02T08:04:40.8434454Z",
+        "evidence": {
+          "first": {
+            "metadata": {
+              "name": "approve-ed23e39acbbfa8f78481ac0e",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "aa7a2e60-1953-4ab3-9f36-83b850398476",
+              "resourceVersion": "126146",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:04:40Z",
+              "labels": {
+                "platform.example.io/managed-by": "platform-api"
+              }
+            },
+            "spec": {
+              "planRunRef": {
+                "name": "environment-infra-plan-1"
+              },
+              "planRunUID": "fd8eb2f1-ed30-4465-85b8-b73472365a27",
+              "planDigest": "sha256:142a2cbd91f6b5084d3cf7584b73b807d0f456578cb6687bf5aee1ea0a058506",
+              "executionContextDigest": "sha256:4dc8f8d8364c8e42e10af7fea067f2d700146c465565814a2e1a48409cd62670",
+              "effectivePlanInputDigest": "sha256:71fe5876633d1a21a3ed9f89bf37ced7a9715fc89542fa148d2f18ec66ec1cea",
+              "planReportRef": "runs/fd8eb2f1-ed30-4465-85b8-b73472365a27/plan-report.json",
+              "planReportDigest": "sha256:565a112d95ca646e50cbf2583e8b4aa58c5fb1143deba3ea12497aaf6c36d95c"
+            },
+            "status": {}
+          },
+          "plan": {
+            "kind": "TerraformRun",
+            "apiVersion": "platform.example.io/v1alpha1",
+            "metadata": {
+              "name": "environment-infra-plan-1",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "fd8eb2f1-ed30-4465-85b8-b73472365a27",
+              "resourceVersion": "126142",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:03:51Z",
+              "ownerReferences": [
+                {
+                  "apiVersion": "platform.example.io/v1alpha1",
+                  "kind": "InfraStack",
+                  "name": "environment-infra",
+                  "uid": "67e3f489-dbc4-4d20-8642-baf238083ed1",
+                  "controller": true,
+                  "blockOwnerDeletion": true
+                }
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                },
+                "credentialsIdentity": "sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141"
+              },
+              "inputs": {
+                "bucket_name": "kpcp-1793606630392919800-cloud",
+                "execution_role_arn": "",
+                "region": "us-east-1",
+                "s3_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "sts_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "target_cluster_name": "podman-minikube",
+                "target_endpoint": "kubeconfig:podman-minikube",
+                "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "stackRef": {
+                "name": "environment-infra"
+              },
+              "infraStackGeneration": 1,
+              "operation": "Plan",
+              "planMode": "Reconcile",
+              "source": {
+                "type": "GitCommit",
+                "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+                "path": "."
+              },
+              "resolvedBackendConfigRef": "backend",
+              "lockTimeout": "30s",
+              "workspace": "environment",
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "executionContextDigest": "sha256:4dc8f8d8364c8e42e10af7fea067f2d700146c465565814a2e1a48409cd62670",
+              "effectivePlanInputDigest": "sha256:4dc8f8d8364c8e42e10af7fea067f2d700146c465565814a2e1a48409cd62670",
+              "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+              "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+              "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "expectedTerraformVersion": "1.14.0",
+              "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "runnerServiceAccountName": "runner",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "True",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:04:40Z",
+                  "reason": "TerraformSucceeded",
+                  "message": "Terraform runner terminal result captured."
+                }
+              ],
+              "jobRef": {
+                "name": "environment-infra-plan-1"
+              },
+              "sourceBundleRef": "runs/fd8eb2f1-ed30-4465-85b8-b73472365a27/source-bundle.tar.zst",
+              "sourceBundleDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+              "planReportRef": "runs/fd8eb2f1-ed30-4465-85b8-b73472365a27/plan-report.json",
+              "planReportDigest": "sha256:565a112d95ca646e50cbf2583e8b4aa58c5fb1143deba3ea12497aaf6c36d95c",
+              "terminalResultRef": "runs/fd8eb2f1-ed30-4465-85b8-b73472365a27/terminal-result.json",
+              "terminalResultDigest": "sha256:346fd279b25a848f3e620260de606699eb25fed2a0c7f0e6e6da84efa32da1bf",
+              "resolvedBackendConfigRef": "runs/fd8eb2f1-ed30-4465-85b8-b73472365a27/backend-config.hcl",
+              "resolvedBackendConfigDigest": "sha256:1b407f24dce612b0ffcd9ab039c6e1136d0734879c3412dc9b9d4e330f3b9b86",
+              "planRef": "runs/fd8eb2f1-ed30-4465-85b8-b73472365a27/plan.binary",
+              "planDigest": "sha256:142a2cbd91f6b5084d3cf7584b73b807d0f456578cb6687bf5aee1ea0a058506",
+              "effectivePlanInputDigest": "sha256:71fe5876633d1a21a3ed9f89bf37ced7a9715fc89542fa148d2f18ec66ec1cea",
+              "hasChanges": true,
+              "planCreatedAt": "2026-11-02T08:04:32Z",
+              "planExpiresAt": "2026-11-02T09:04:32Z",
+              "executionOutcome": "ChangesPresent",
+              "mutationClassification": "NoMutation",
+              "artifactsReady": true,
+              "evidenceCaptured": true,
+              "jobUID": "cb188946-1937-491e-b105-c5fc2cce70e1",
+              "terminalStartedAt": "2026-11-02T08:03:54Z",
+              "terminalFinishedAt": "2026-11-02T08:04:32Z"
+            }
+          },
+          "retry": {
+            "metadata": {
+              "name": "approve-ed23e39acbbfa8f78481ac0e",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "aa7a2e60-1953-4ab3-9f36-83b850398476",
+              "resourceVersion": "126146",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:04:40Z",
+              "labels": {
+                "platform.example.io/managed-by": "platform-api"
+              }
+            },
+            "spec": {
+              "planRunRef": {
+                "name": "environment-infra-plan-1"
+              },
+              "planRunUID": "fd8eb2f1-ed30-4465-85b8-b73472365a27",
+              "planDigest": "sha256:142a2cbd91f6b5084d3cf7584b73b807d0f456578cb6687bf5aee1ea0a058506",
+              "executionContextDigest": "sha256:4dc8f8d8364c8e42e10af7fea067f2d700146c465565814a2e1a48409cd62670",
+              "effectivePlanInputDigest": "sha256:71fe5876633d1a21a3ed9f89bf37ced7a9715fc89542fa148d2f18ec66ec1cea",
+              "planReportRef": "runs/fd8eb2f1-ed30-4465-85b8-b73472365a27/plan-report.json",
+              "planReportDigest": "sha256:565a112d95ca646e50cbf2583e8b4aa58c5fb1143deba3ea12497aaf6c36d95c"
+            },
+            "status": {}
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle"
+      }
+    },
+    {
+      "file": "kpcp-1793606630392919800-plan-active-before-restart.json",
+      "rawSHA256": "ee7b9f4ae1683fe7c1bca74595fada7e2d6976135357e9b2e3acb4fbac657c21",
+      "projection": {
+        "at": "2026-11-02T08:03:51.9282834Z",
+        "evidence": {
+          "job": {
+            "metadata": {
+              "name": "environment-infra-plan-1",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "cb188946-1937-491e-b105-c5fc2cce70e1",
+              "resourceVersion": "126051",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:03:51Z",
+              "labels": {
+                "platform.example.io/terraform-run": "environment-infra-plan-1",
+                "platform.example.io/terraform-run-uid": "fd8eb2f1-ed30-4465-85b8-b73472365a27"
+              },
+              "ownerReferences": [
+                {
+                  "apiVersion": "platform.example.io/v1alpha1",
+                  "kind": "TerraformRun",
+                  "name": "environment-infra-plan-1",
+                  "uid": "fd8eb2f1-ed30-4465-85b8-b73472365a27",
+                  "controller": true,
+                  "blockOwnerDeletion": true
+                }
+              ]
+            },
+            "spec": {
+              "parallelism": 1,
+              "completions": 1,
+              "activeDeadlineSeconds": 480,
+              "backoffLimit": 0,
+              "selector": {
+                "matchLabels": {
+                  "batch.kubernetes.io/controller-uid": "cb188946-1937-491e-b105-c5fc2cce70e1"
+                }
+              },
+              "manualSelector": false,
+              "template": {
+                "metadata": {
+                  "creationTimestamp": null,
+                  "labels": {
+                    "batch.kubernetes.io/controller-uid": "cb188946-1937-491e-b105-c5fc2cce70e1",
+                    "batch.kubernetes.io/job-name": "environment-infra-plan-1",
+                    "controller-uid": "cb188946-1937-491e-b105-c5fc2cce70e1",
+                    "job-name": "environment-infra-plan-1",
+                    "platform.example.io/terraform-run": "environment-infra-plan-1",
+                    "platform.example.io/terraform-run-uid": "fd8eb2f1-ed30-4465-85b8-b73472365a27"
+                  }
+                },
+                "spec": {
+                  "volumes": [
+                    {
+                      "name": "workspace",
+                      "emptyDir": {}
+                    },
+                    {
+                      "name": "tmp",
+                      "emptyDir": {}
+                    },
+                    {
+                      "name": "backend-config",
+                      "configMap": {
+                        "name": "backend",
+                        "defaultMode": 420
+                      }
+                    }
+                  ],
+                  "initContainers": [
+                    {
+                      "name": "source-clone",
+                      "image": "alpine/git:2.45.2",
+                      "command": [
+                        "git"
+                      ],
+                      "args": [
+                        "clone",
+                        "--no-checkout",
+                        "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                        "/workspace/terraform"
+                      ],
+                      "resources": {},
+                      "volumeMounts": [
+                        {
+                          "name": "workspace",
+                          "mountPath": "/workspace"
+                        }
+                      ],
+                      "terminationMessagePath": "/dev/termination-log",
+                      "terminationMessagePolicy": "File",
+                      "imagePullPolicy": "IfNotPresent",
+                      "securityContext": {
+                        "capabilities": {
+                          "drop": [
+                            "ALL"
+                          ]
+                        },
+                        "runAsUser": 1000,
+                        "runAsGroup": 1000,
+                        "runAsNonRoot": true,
+                        "allowPrivilegeEscalation": false
+                      }
+                    },
+                    {
+                      "name": "source-checkout",
+                      "image": "alpine/git:2.45.2",
+                      "command": [
+                        "git"
+                      ],
+                      "args": [
+                        "-C",
+                        "/workspace/terraform",
+                        "checkout",
+                        "--detach",
+                        "0eab0368c66e2a9abbac8522007f659205697d96"
+                      ],
+                      "resources": {},
+                      "volumeMounts": [
+                        {
+                          "name": "workspace",
+                          "mountPath": "/workspace"
+                        }
+                      ],
+                      "terminationMessagePath": "/dev/termination-log",
+                      "terminationMessagePolicy": "File",
+                      "imagePullPolicy": "IfNotPresent",
+                      "securityContext": {
+                        "capabilities": {
+                          "drop": [
+                            "ALL"
+                          ]
+                        },
+                        "runAsUser": 1000,
+                        "runAsGroup": 1000,
+                        "runAsNonRoot": true,
+                        "allowPrivilegeEscalation": false
+                      }
+                    }
+                  ],
+                  "containers": [
+                    {
+                      "name": "terraform-runner",
+                      "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                      "command": [
+                        "terraform-runner"
+                      ],
+                      "args": [
+                        "--operation=Plan",
+                        "--run-uid=fd8eb2f1-ed30-4465-85b8-b73472365a27",
+                        "--expected-terraform-version=1.14.0",
+                        "--working-dir=/workspace/terraform",
+                        "--workspace=environment",
+                        "--plan=/workspace/terraform/plan.binary",
+                        "--lock-timeout=30s",
+                        "--backend-config=/workspace/backend/backend.hcl",
+                        "--artifact-endpoint=http://QA_PRIVATE_INTERFACE:14576",
+                        "--artifact-region=us-east-1",
+                        "--artifact-bucket=kpcp-1793606630392919800",
+                        "--artifact-prefix=runs/fd8eb2f1-ed30-4465-85b8-b73472365a27",
+                        "--source-root=/workspace/terraform"
+                      ],
+                      "env": [
+                        {
+                          "name": "HOME",
+                          "value": "/workspace"
+                        },
+                        {
+                          "name": "PCP_POD_NAME",
+                          "valueFrom": {
+                            "fieldRef": {
+                              "apiVersion": "v1",
+                              "fieldPath": "metadata.name"
+                            }
+                          }
+                        },
+                        {
+                          "name": "PCP_POD_NAMESPACE",
+                          "valueFrom": {
+                            "fieldRef": {
+                              "apiVersion": "v1",
+                              "fieldPath": "metadata.namespace"
+                            }
+                          }
+                        },
+                        {
+                          "name": "AWS_ACCESS_KEY_ID",
+                          "valueFrom": {
+                            "secretKeyRef": {
+                              "name": "emulator",
+                              "key": "AWS_ACCESS_KEY_ID"
+                            }
+                          }
+                        },
+                        {
+                          "name": "AWS_SECRET_ACCESS_KEY",
+                          "valueFrom": {
+                            "secretKeyRef": {
+                              "name": "emulator",
+                              "key": "AWS_SECRET_ACCESS_KEY"
+                            }
+                          }
+                        },
+                        {
+                          "name": "AWS_EC2_METADATA_DISABLED",
+                          "value": "true"
+                        },
+                        {
+                          "name": "PCP_EXECUTION_PROFILE",
+                          "value": "{\"mode\":\"emulator\",\"s3Endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"stsEndpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"region\":\"us-east-1\",\"accountID\":\"000000000000\",\"artifactBucket\":\"kpcp-1793606630392919800\",\"credentialsSecretRef\":{\"name\":\"emulator\"},\"credentialsIdentity\":\"sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141\"}"
+                        },
+                        {
+                          "name": "PCP_MODULE_INPUTS",
+                          "value": "{\"bucket_name\":\"kpcp-1793606630392919800-cloud\",\"execution_role_arn\":\"\",\"region\":\"us-east-1\",\"s3_endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"sts_endpoint\":\"http://QA_PRIVATE_INTERFACE:14576\",\"target_cluster_name\":\"podman-minikube\",\"target_endpoint\":\"kubeconfig:podman-minikube\",\"target_incarnation_id\":\"2c62d6a8-08b6-460d-bb1b-ac59557dc281\"}"
+                        }
+                      ],
+                      "resources": {
+                        "limits": {
+                          "cpu": "1",
+                          "memory": "1Gi"
+                        },
+                        "requests": {
+                          "cpu": "100m",
+                          "memory": "128Mi"
+                        }
+                      },
+                      "volumeMounts": [
+                        {
+                          "name": "workspace",
+                          "mountPath": "/workspace"
+                        },
+                        {
+                          "name": "tmp",
+                          "mountPath": "/tmp"
+                        },
+                        {
+                          "name": "backend-config",
+                          "readOnly": true,
+                          "mountPath": "/workspace/backend"
+                        }
+                      ],
+                      "terminationMessagePath": "/dev/termination-log",
+                      "terminationMessagePolicy": "File",
+                      "imagePullPolicy": "IfNotPresent",
+                      "securityContext": {
+                        "capabilities": {
+                          "drop": [
+                            "ALL"
+                          ]
+                        },
+                        "runAsUser": 1000,
+                        "runAsGroup": 1000,
+                        "runAsNonRoot": true,
+                        "readOnlyRootFilesystem": true,
+                        "allowPrivilegeEscalation": false
+                      }
+                    }
+                  ],
+                  "restartPolicy": "Never",
+                  "terminationGracePeriodSeconds": 30,
+                  "dnsPolicy": "ClusterFirst",
+                  "serviceAccountName": "runner",
+                  "serviceAccount": "runner",
+                  "automountServiceAccountToken": true,
+                  "securityContext": {
+                    "runAsNonRoot": true,
+                    "fsGroup": 1000,
+                    "seccompProfile": {
+                      "type": "RuntimeDefault"
+                    }
+                  },
+                  "schedulerName": "default-scheduler"
+                }
+              },
+              "completionMode": "NonIndexed",
+              "suspend": false,
+              "podReplacementPolicy": "TerminatingOrFailed"
+            },
+            "status": {
+              "startTime": "2026-11-02T08:03:51Z",
+              "active": 1,
+              "terminating": 0,
+              "uncountedTerminatedPods": {},
+              "ready": 0
+            }
+          },
+          "run": {
+            "kind": "TerraformRun",
+            "apiVersion": "platform.example.io/v1alpha1",
+            "metadata": {
+              "name": "environment-infra-plan-1",
+              "namespace": "kpcp-1793606630392919800",
+              "uid": "fd8eb2f1-ed30-4465-85b8-b73472365a27",
+              "resourceVersion": "126055",
+              "generation": 1,
+              "creationTimestamp": "2026-11-02T08:03:51Z",
+              "ownerReferences": [
+                {
+                  "apiVersion": "platform.example.io/v1alpha1",
+                  "kind": "InfraStack",
+                  "name": "environment-infra",
+                  "uid": "67e3f489-dbc4-4d20-8642-baf238083ed1",
+                  "controller": true,
+                  "blockOwnerDeletion": true
+                }
+              ]
+            },
+            "spec": {
+              "executionProfile": {
+                "mode": "emulator",
+                "s3Endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "stsEndpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "region": "us-east-1",
+                "accountID": "000000000000",
+                "artifactBucket": "kpcp-1793606630392919800",
+                "credentialsSecretRef": {
+                  "name": "emulator"
+                },
+                "credentialsIdentity": "sha256:540295db3e61a424f3fc01260ff1c3601ce266faa44bcf5f3d3b4aa40ccef141"
+              },
+              "inputs": {
+                "bucket_name": "kpcp-1793606630392919800-cloud",
+                "execution_role_arn": "",
+                "region": "us-east-1",
+                "s3_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "sts_endpoint": "http://QA_PRIVATE_INTERFACE:14576",
+                "target_cluster_name": "podman-minikube",
+                "target_endpoint": "kubeconfig:podman-minikube",
+                "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+              },
+              "stackRef": {
+                "name": "environment-infra"
+              },
+              "infraStackGeneration": 1,
+              "operation": "Plan",
+              "planMode": "Reconcile",
+              "source": {
+                "type": "GitCommit",
+                "url": "http://fixed-git-source.kpcp-final-20261102-1815-infra.svc.cluster.local:8085/module.git",
+                "revision": "0eab0368c66e2a9abbac8522007f659205697d96",
+                "path": "."
+              },
+              "resolvedBackendConfigRef": "backend",
+              "lockTimeout": "30s",
+              "workspace": "environment",
+              "executor": {
+                "terraformVersion": "1.14.0",
+                "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+                "workDir": "/workspace/terraform",
+                "executionTimeout": "8m0s"
+              },
+              "executionContextDigest": "sha256:4dc8f8d8364c8e42e10af7fea067f2d700146c465565814a2e1a48409cd62670",
+              "effectivePlanInputDigest": "sha256:4dc8f8d8364c8e42e10af7fea067f2d700146c465565814a2e1a48409cd62670",
+              "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+              "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+              "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+              "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+              "expectedTerraformVersion": "1.14.0",
+              "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "runnerServiceAccountName": "runner",
+              "concurrencyGroup": "environmentclass:kpcp-1793606630392919800"
+            },
+            "status": {
+              "observedGeneration": 1,
+              "conditions": [
+                {
+                  "type": "Ready",
+                  "status": "False",
+                  "observedGeneration": 1,
+                  "lastTransitionTime": "2026-11-02T08:03:51Z",
+                  "reason": "TerraformJobRunning",
+                  "message": "Terraform Job is running."
+                }
+              ],
+              "jobRef": {
+                "name": "environment-infra-plan-1"
+              },
+              "executionOutcome": "Running",
+              "jobUID": "cb188946-1937-491e-b105-c5fc2cce70e1"
+            }
+          }
+        },
+        "runID": "kpcp-1793606630392919800",
+        "sourceSHA": "550057e576f3d6e79de957c7a0e2ebf31fec5f89",
+        "test": "TestLifecycle"
+      }
+    }
+  ]
+}

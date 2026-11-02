@@ -1,5 +1,26 @@
 # Gate A — Exact Plan Approval
 
+## PR #3 后独立批次 — 2026-11-02：PASS（本地范围）
+
+Batch：`kpcp-final-20261102-1815`。先完成真实 Plan → exact approval → Apply → Ready → 独立 Destroy approval → Destroy/finalizer 基线，exit 0、232.75 秒；[基线收据](../evidence/final-acceptance-20261102/baseline.public.json)。11 项专属前置检查均通过，固定源码、Pod Git/S3/STS、backend、artifact、Runner 和 Controller 的身份见[预检](../evidence/final-acceptance-20261102/preflight.public.json)。
+
+| 变更 | 新执行与结果 | 可核对的批次 |
+|---|---|---|
+| Source Revision | 实际 saved Plan 后修改被 immutable admission 拒绝；正常删除未 Apply 的旧 Stack，使用真实 alternate Git commit 重建；旧 Plan UID approval 无法授权新的 Context / Plan | PASS；[final](../evidence/final-acceptance-20261102/gate-a-final.public.json) |
+| Target Incarnation | 受控 desired target incarnation 改变，实际集群 kube-system UID 保持原值；Controller 建立新的 Plan，旧 approval 不产生 Apply | PASS；[initial](../evidence/final-acceptance-20261102/gate-a.public.json) 的 target 子用例 |
+| Backend Identity | 同内容的新 ConfigMap 名称/UID；保留直接更新被拒绝的证据，再正常替换 Stack 身份；旧 approval 被新 Plan UID / Context 隔离 | PASS；[corrected](../evidence/final-acceptance-20261102/gate-a-corrected.public.json) 的 backend 子用例 |
+| Runner Digest | 不同的真实 OCI index digest，固定同一 runner 文件系统；实际新 Plan 可运行并等待新审批，旧 approval 无效 | PASS；[final](../evidence/final-acceptance-20261102/gate-a-final.public.json)、[两个镜像身份](../evidence/final-acceptance-20261102/runner-identity.public.json) |
+| Effective Inputs | 独立 Plan 后改变目标 bucket input；旧 approval 未创建 Apply Run/Job，原目标与改变后目标均无云副作用 | PASS；[initial](../evidence/final-acceptance-20261102/gate-a.public.json) 的 inputs 子用例 |
+| Execution Profile | 换用新的本轮 dummy credential Secret identity；Controller 生成新 Context / Plan，旧 approval 无效 | PASS；[initial](../evidence/final-acceptance-20261102/gate-a.public.json) 的 profile 子用例 |
+
+每项都有独立的真实 Plan UID、Plan/Report/Context/Input digests、Approval UID、Run/Job 列表、云资源不存在查询和正常清理结果。Source/Runner 最终 driver 为 `550057e`，Controller 为 clean `4f014c7`；driver-only 增量没有修改对应产品包。旧 UID 的重新创建不是直接修改 immutable 对象，也没有关闭安全断言。
+
+历史执行分别保留：首个 nested selector 未进入新用例，只算生命周期复核，不计 Gate A（[收据](../evidence/final-acceptance-20261102/selector-miss.public.json)）；initial lane exit 1（target/inputs/profile PASS，其余因不可变准入前置失败）；corrected lane exit 1（backend PASS，source/runner 因并发 resourceVersion 冲突失败）；final lane exit 0，source/runner PASS。只补测未通过的用例，没有把整条失败 lane 改为 PASS。
+
+两次保留的未 Apply Stack 都经 Controller 正常 finalizer 清理，先归档原始 artifact、验证没有 Apply/cloud mutation，再删除本轮 bucket/namespace。[initial 清理](../evidence/final-acceptance-20261102/gate-a-initial-cleanup.public.json)、[corrected 清理](../evidence/final-acceptance-20261102/gate-a-corrected-initial-cleanup.public.json)。最后一批 namespace、Class、业务 CR 已清空，正常 Destroy/finalizer 126.77 秒。没有人工 Finalizer patch、force delete 或非 QA 资源操作。
+
+**Gate A：PASS，限定本地主机 Podman/Minikube/MiniStack 的上述六项真实负例。** 不代表真实集群替换、生产 IAM 或 AWS certification。以下章节是此前各批次的原始记录，不覆盖。
+
 ## 1. Test Objective
 
 仅允许已经审核的、身份完全一致且未过期的 saved binary Plan 执行一次 Apply；Reconcile 审批不能授权 Destroy。

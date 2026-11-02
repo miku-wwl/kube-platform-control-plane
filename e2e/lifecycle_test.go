@@ -45,6 +45,8 @@ type configuration struct {
 	SecondContext                                        string // optional independent target in the supplied kubeconfig
 	FinalSafetyFaultFile, FinalSafetySourceRevision      string // optional owned live-fault transport and alternate fixed fixture revision
 	FinalSafetyRunnerImage                               string // optional second owned digest with the same runner executable
+	FinalSafetyGitNamespace, FinalSafetyOwnerID          string
+	FinalSafetyPartialRevision                           string
 }
 
 // The caller supplies Kubernetes, the emulator, a built controller and immutable
@@ -1092,7 +1094,7 @@ func TestLifecycle(t *testing.T) {
 		if err := kube.Get(ctx, client.ObjectKey{Namespace: prefix, Name: "environment-infra"}, &template); err != nil {
 			t.Fatal(err)
 		}
-		safetyClean = runFinalSafety(t, ctx, kube, storage, store, cfg, prefix, template, stop, start)
+		safetyClean = runFinalSafety(t, ctx, kube, storage, store, cfg, prefix, template, log.Name(), stop, start)
 	})
 	if !t.Run("F_DestroyFinalizer", func(t *testing.T) {
 		if cfg.FaultFile != "" {

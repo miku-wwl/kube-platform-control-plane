@@ -22,6 +22,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -30,28 +31,33 @@ import (
 // storage and fixed runner/source. Each attack gets a separately owned stack;
 // none changes a shared cluster setting or removes a business finalizer.
 type finalSafetyHarness struct {
-	ctx         context.Context
-	kube        client.Client
-	storage     *s3.Client
-	store       *artifacts.Store
-	cfg         configuration
-	namespace   string
-	template    platform.InfraStack
-	stop, start func()
-	clean       bool
-	remaining   map[string]bool
+	ctx           context.Context
+	kube          client.Client
+	storage       *s3.Client
+	store         *artifacts.Store
+	cfg           configuration
+	namespace     string
+	template      platform.InfraStack
+	stop, start   func()
+	clean         bool
+	remaining     map[string]bool
+	controllerLog string
+	logs          kubernetes.Interface
 }
 
-func runFinalSafety(t *testing.T, ctx context.Context, kube client.Client, storage *s3.Client, store *artifacts.Store, cfg configuration, namespace string, template platform.InfraStack, stop, start func()) bool {
-	h := &finalSafetyHarness{ctx: ctx, kube: kube, storage: storage, store: store, cfg: cfg, namespace: namespace, template: template, stop: stop, start: start, clean: true, remaining: map[string]bool{}}
+func runFinalSafety(t *testing.T, ctx context.Context, kube client.Client, storage *s3.Client, store *artifacts.Store, cfg configuration, namespace string, template platform.InfraStack, controllerLog string, stop, start func()) bool {
+	h := &finalSafetyHarness{ctx: ctx, kube: kube, storage: storage, store: store, cfg: cfg, namespace: namespace, template: template, controllerLog: controllerLog, stop: stop, start: start, clean: true, remaining: map[string]bool{}}
 	selected := os.Getenv("KPCP_FINAL_GATE")
-	if selected != "" && selected != "A" && selected != "B" && selected != "E" && selected != "F" {
-		t.Fatal("KPCP_FINAL_GATE must be A, B, E, F or empty for all")
+	if selected != "" && selected != "A" && selected != "B" && selected != "E" && selected != "F" && selected != "EF" {
+		t.Fatal("KPCP_FINAL_GATE must be A, B, E, F, EF or empty for all")
 	}
 	h.group(t, selected, "A", "A_ContextDrift", h.contextDrift)
 	h.group(t, selected, "B", "B_TerminalIdentity", h.terminalIdentity)
 	h.group(t, selected, "B", "B_PartialUpload", h.partialUpload)
 	h.group(t, selected, "B", "B_SnapshotDrift", h.snapshotDrift)
+	h.group(t, selected, "E", "E_WrongAccount", h.wrongAccount)
+	h.group(t, selected, "E", "E_GitOutage", h.gitOutage)
+	h.group(t, selected, "E", "E_ForeignJob", h.foreignJob)
 	if len(h.remaining) > 0 {
 		recordGateEvidence(t, namespace, "final-safety-retained", h.remaining)
 	}
@@ -154,7 +160,7 @@ func (h *finalSafetyHarness) terminalIdentity(t *testing.T) {
 					return false, err
 				}
 				switch run.Status.ExecutionOutcome {
-				case "ChangesPresent", "Failed", "Rejected", "Indeterminate":
+				case "ChangesPresent", "Failed", "Rejected", "Indeterminate", "Superseded":
 					return true, nil
 				}
 				return false, nil
@@ -196,7 +202,7 @@ func (h *finalSafetyHarness) partialUpload(t *testing.T) {
 	for _, mode := range []string{"interrupted", "missing-terminal", "uncertain-write"} {
 		t.Run(mode, func(t *testing.T) {
 			stack := h.createStack(t, "b-upload-"+mode, nil)
-			run, _ := h.activePlan(t, stack)
+			run, job := h.activePlan(t, stack)
 			key := path.Join("runs", string(run.UID), "plan-report.json")
 			action := "abort_before"
 			if mode == "missing-terminal" {
@@ -215,10 +221,13 @@ func (h *finalSafetyHarness) partialUpload(t *testing.T) {
 				if run.Status.ExecutionOutcome == "ChangesPresent" || run.Status.ExecutionOutcome == "Succeeded" {
 					return false, fmt.Errorf("incomplete upload became trusted success")
 				}
-				return run.Status.ExecutionOutcome == "Failed" || run.Status.ExecutionOutcome == "Indeterminate", nil
+				if err := h.kube.Get(h.ctx, client.ObjectKeyFromObject(&job), &job); err != nil {
+					return false, err
+				}
+				return job.Status.Failed > 0 && (run.Status.ExecutionOutcome == "Failed" || run.Status.ExecutionOutcome == "Indeterminate" || run.Status.ExecutionOutcome == "Superseded"), nil
 			})
 			h.noApply(t, stack, "partial-upload-blocked")
-			recordGateEvidence(t, h.namespace, "b-upload-"+mode+"-result", map[string]any{"run": run, "faultObject": key, "action": action, "noFalseSuccess": true})
+			recordGateEvidence(t, h.namespace, "b-upload-"+mode+"-result", map[string]any{"run": run, "faultObject": key, "action": action, "noFalseSuccess": true, "actualJob": h.jobTrace(t, job)})
 			h.clearFault(t)
 			if mode == "uncertain-write" {
 				ref, body, err := h.store.GetVerifiedByKey(h.ctx, key)
@@ -287,7 +296,7 @@ func (h *finalSafetyHarness) snapshotDrift(t *testing.T) {
 
 func (h *finalSafetyHarness) group(t *testing.T, selected, gate, name string, run func(*testing.T)) {
 	t.Run(name, func(t *testing.T) {
-		if selected != "" && selected != gate {
+		if selected != "" && selected != gate && !(selected == "EF" && (gate == "E" || gate == "F")) {
 			t.Skip("explicit KPCP_FINAL_GATE selection")
 		}
 		run(t)
