@@ -25,7 +25,8 @@ export type ClassSpec = {
   allowedRegions?: string[]; capacityBounds: ClassInfo['capacityBounds']; approvalPolicy: 'Manual' | 'Automatic'; dataRetentionPolicy?: string
 }
 export type ClassDetail = ClassInfo & { spec: ClassSpec; conditions: Condition[]; specDigest?: string; redacted: boolean; yaml: string }
-export type ClassValidation = { valid: boolean; errors: string[]; warnings: string[]; yaml?: string }
+export type ClassValidationDiagnostic = { code: string; field?: string; message: string }
+export type ClassValidation = { valid: boolean; errors: string[]; warnings: string[]; errorDetails?: ClassValidationDiagnostic[]; warningDetails?: ClassValidationDiagnostic[]; yaml?: string }
 export type ClassTemplate = { name: string; title: string; description: string; spec: ClassSpec; uid: string; createdAt: string; redacted: boolean }
 export type Approval = { namespace: string; name: string; planRun: string; planRunUID: string; state: string; planDigest: string; createdAt: string; approvedAt?: string }
 export type TerraformRun = {
@@ -46,12 +47,21 @@ export type PlanNode = { address: string; type: string; provider?: string; actio
 export type PlanGraph = { version: number; terraformRunUID: string; planDigest: string; nodes: PlanNode[]; edges: { from: string; to: string }[]; summary: { create: number; update: number; delete: number; replace: number; noOp: number } }
 export type PlanView = { terraformRun?: TerraformRun; available: boolean; message: string; graph?: PlanGraph }
 export type DraftRequest = { description: string; name?: string; namespace: string; classRef: string; region?: string; nodeCount?: number }
-export type DraftResponse = { provider: string; intent: { name: string; namespace: string; classRef: string; region?: string; nodeCount: number; valkeyEnabled: boolean; valkeyShards?: number; valkeyReplicas?: number }; valid: boolean; errors?: string[]; warnings?: string[]; yaml?: string }
+export type DraftResponse = { provider: string; intent: { name: string; namespace: string; classRef: string; region?: string; nodeCount: number; valkeyEnabled: boolean; valkeyShards?: number; valkeyReplicas?: number }; valid: boolean; errors?: string[]; warnings?: string[]; warningCodes?: string[]; yaml?: string }
+
+export class APIError extends Error {
+  readonly code: string
+  constructor(code: string, message: string) {
+    super(message)
+    this.name = 'APIError'
+    this.code = code
+  }
+}
 
 export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json', ...init?.headers } })
   const body = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(body.message || `${response.status} ${response.statusText}`)
+  if (!response.ok) throw new APIError(typeof body.code === 'string' ? body.code : '', body.message || `${response.status} ${response.statusText}`)
   return body as T
 }
 

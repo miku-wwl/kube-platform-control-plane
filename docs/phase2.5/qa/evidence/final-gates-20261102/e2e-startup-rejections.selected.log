@@ -1,0 +1,12 @@
+=== RUN   TestTargetStartupRejectsInvalidBinding
+=== RUN   TestTargetStartupRejectsInvalidBinding/incarnation
+=== RUN   TestTargetStartupRejectsInvalidBinding/unknown-context
+=== RUN   TestTargetStartupRejectsInvalidBinding/endpoint
+=== RUN   TestTargetStartupRejectsInvalidBinding/unknown-field
+--- PASS: TestTargetStartupRejectsInvalidBinding (1.31s)
+    --- PASS: TestTargetStartupRejectsInvalidBinding/incarnation (0.75s)
+    --- PASS: TestTargetStartupRejectsInvalidBinding/unknown-context (0.18s)
+    --- PASS: TestTargetStartupRejectsInvalidBinding/endpoint (0.14s)
+    --- PASS: TestTargetStartupRejectsInvalidBinding/unknown-field (0.16s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	1.713s

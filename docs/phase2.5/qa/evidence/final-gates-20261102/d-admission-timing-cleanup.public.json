@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-02T01:21:51.435082+00:00",
+  "namespace": "kpcp-1793582347453419300",
+  "namespaceUID": "aef1cb12-a2d8-466f-80f3-999c6dd0de74",
+  "executionRemains": "FAIL",
+  "noApplyAdmitted": true,
+  "cloudBucketHTTPStatus": 404,
+  "archivedObjects": 8,
+  "normalBusinessFinalizerCleanup": true,
+  "namespaceNotFound": true,
+  "manualFinalizerRemoval": false
+}

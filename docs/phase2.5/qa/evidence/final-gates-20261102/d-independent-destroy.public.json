@@ -1,0 +1,3506 @@
+{
+  "apiVersion": "v1",
+  "items": [
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "PlatformEnvironment",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:23:52Z",
+        "deletionTimestamp": "2026-11-02T01:26:21Z",
+        "finalizers": [
+          "platform.example.io/platformenvironment-finalizer"
+        ],
+        "generation": 2,
+        "name": "concurrent",
+        "namespace": "kpcp-1793582521855488800",
+        "resourceVersion": "97553",
+        "uid": "ac7c569e-5c23-46c5-9aef-6a74e9cd067c"
+      },
+      "spec": {
+        "target": {
+          "clusterName": "",
+          "provider": ""
+        }
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:26:21Z",
+            "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal.",
+            "observedGeneration": 2,
+            "reason": "Deleting",
+            "status": "False",
+            "type": "Ready"
+          }
+        ],
+        "infraStackRef": {
+          "name": "concurrent-infra"
+        },
+        "observedGeneration": 2,
+        "resourceSetRef": {
+          "name": "concurrent-resources"
+        },
+        "targetConnection": {
+          "authMode": "kubeconfig-context",
+          "endpoint": "kubeconfig:podman-minikube",
+          "kubeContext": "podman-minikube",
+          "networkRouteProfile": "kubeconfig"
+        },
+        "targetIdentity": {
+          "accountID": "local",
+          "clusterName": "podman-minikube",
+          "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+          "provider": "kubernetes",
+          "region": "local"
+        }
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "PlatformEnvironment",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:22:02Z",
+        "finalizers": [
+          "platform.example.io/platformenvironment-finalizer"
+        ],
+        "generation": 1,
+        "name": "environment",
+        "namespace": "kpcp-1793582521855488800",
+        "resourceVersion": "97161",
+        "uid": "f9e1e8b0-c388-4ee3-a106-4d31cd91d763"
+      },
+      "spec": {
+        "target": {
+          "clusterName": "",
+          "provider": ""
+        }
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:23:49Z",
+            "message": "Infrastructure, runtime, and required domain readiness are all current.",
+            "observedGeneration": 1,
+            "reason": "EnvironmentReady",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "infraStackRef": {
+          "name": "environment-infra"
+        },
+        "observedGeneration": 1,
+        "resourceSetRef": {
+          "name": "environment-resources"
+        },
+        "targetConnection": {
+          "authMode": "kubeconfig-context",
+          "endpoint": "kubeconfig:podman-minikube",
+          "kubeContext": "podman-minikube",
+          "networkRouteProfile": "kubeconfig"
+        },
+        "targetIdentity": {
+          "accountID": "local",
+          "clusterName": "podman-minikube",
+          "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+          "provider": "kubernetes",
+          "region": "local"
+        }
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "PlatformEnvironment",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:23:52Z",
+        "deletionTimestamp": "2026-11-02T01:26:21Z",
+        "finalizers": [
+          "platform.example.io/platformenvironment-finalizer"
+        ],
+        "generation": 2,
+        "name": "second",
+        "namespace": "kpcp-1793582521855488800",
+        "resourceVersion": "97551",
+        "uid": "d84816b5-3635-451a-ac4a-4400d140eb52"
+      },
+      "spec": {
+        "target": {
+          "clusterName": "",
+          "provider": ""
+        }
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:26:21Z",
+            "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal.",
+            "observedGeneration": 2,
+            "reason": "Deleting",
+            "status": "False",
+            "type": "Ready"
+          }
+        ],
+        "infraStackRef": {
+          "name": "second-infra"
+        },
+        "observedGeneration": 2,
+        "resourceSetRef": {
+          "name": "second-resources"
+        },
+        "targetConnection": {
+          "authMode": "kubeconfig-context",
+          "endpoint": "kubeconfig:kpcp-gates-20261102-0223-b",
+          "kubeContext": "kpcp-gates-20261102-0223-b",
+          "networkRouteProfile": "kubeconfig"
+        },
+        "targetIdentity": {
+          "accountID": "local",
+          "clusterName": "kpcp-gates-20261102-0223-b",
+          "incarnationID": "60e4ef1d-fb2f-4231-9d48-71a87696d6e7",
+          "provider": "kubernetes",
+          "region": "local"
+        }
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "InfraStack",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:24:08Z",
+        "finalizers": [
+          "platform.example.io/infrastack-finalizer"
+        ],
+        "generation": 3,
+        "name": "concurrent-infra",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "PlatformEnvironment",
+            "name": "concurrent",
+            "uid": "ac7c569e-5c23-46c5-9aef-6a74e9cd067c"
+          }
+        ],
+        "resourceVersion": "97726",
+        "uid": "e8eaaf09-3840-4b72-a283-d095649636c4"
+      },
+      "spec": {
+        "mutationFence": true,
+        "runnerServiceAccountIdentityDigest": "sha256:426bebd9b159cd2dfa41613c1c79c853ebbcef971bcf73dbcbfe940fa304af1b",
+        "runnerServiceAccountName": "runner-concurrent",
+        "runtimeTargetIdentity": {
+          "accountID": "local",
+          "clusterName": "podman-minikube",
+          "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+          "provider": "kubernetes",
+          "region": "local"
+        },
+        "source": {
+          "path": ".",
+          "revision": "98da3fb6cad0b60c60a58169aeb282aa555dbeb8",
+          "url": "http://git-source.kpcp-gates-20261102-0223-infra.svc.cluster.local:18088/module/.git"
+        },
+        "targetConnectionProfile": {
+          "authMode": "kubeconfig-context",
+          "endpoint": "kubeconfig:podman-minikube",
+          "kubeContext": "podman-minikube",
+          "networkRouteProfile": "kubeconfig"
+        },
+        "workspace": "concurrent"
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:27:19Z",
+            "message": "Destroy is waiting for the active Apply to reach a terminal classification.",
+            "observedGeneration": 3,
+            "reason": "DeletionHeld",
+            "status": "False",
+            "type": "Ready"
+          }
+        ],
+        "convergenceEvidenceDigest": "sha256:dd381e38584b37057c6bd5b6b5818c873db87581f9a8e217482e22afb6b108c1",
+        "convergenceEvidenceRef": "runs/6715bf71-782d-479c-8ed1-85f439e3fb0d/terminal-result.json",
+        "lastAppliedRunRef": {
+          "name": "concurrent-infra-plan-1-apply-f013418b4d"
+        },
+        "lastAppliedSourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "lastAppliedSourceBundleRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/source-bundle.tar.zst",
+        "lastConverged": {
+          "backendSnapshotDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+          "backendSnapshotRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/backend-config.hcl",
+          "effectivePlanInputDigest": "sha256:0cf29089d9e3e4bf53c11ce1107a9cbcc12050c31b74496afe796062cf9c927b",
+          "executionPlatformIdentityDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+          "executionSnapshot": {
+            "approvalRef": {
+              "name": "isolation-concurrent"
+            },
+            "approvalUID": "04d56bd1-53f8-40a1-9de2-b08f1266dca5",
+            "backendConfigArtifactDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+            "backendConfigArtifactRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/backend-config.hcl",
+            "concurrencyGroup": "environmentclass:kpcp-1793582521855488800-concurrent",
+            "effectivePlanInputDigest": "sha256:0cf29089d9e3e4bf53c11ce1107a9cbcc12050c31b74496afe796062cf9c927b",
+            "executionContextDigest": "sha256:934d246b5ab5db1c504b248695849fa2c866f3f221bcfde5307067a97f1d88e7",
+            "executionProfile": {
+              "accountID": "000000000000",
+              "artifactBucket": "kpcp-1793582521855488800",
+              "credentialsIdentity": "sha256:e9d9ffb7fffd821bbc4414a44048b304f2ef6a2fd5a2e0d83d8abb0655e2ac95",
+              "credentialsSecretRef": {
+                "name": "emulator"
+              },
+              "mode": "emulator",
+              "region": "us-east-1",
+              "s3Endpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568",
+              "stsEndpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568"
+            },
+            "executor": {
+              "executionTimeout": "8m0s",
+              "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "terraformVersion": "1.14.0",
+              "workDir": "/workspace/terraform"
+            },
+            "expectedTerraformVersion": "1.14.0",
+            "infraStackGeneration": 1,
+            "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+            "inputs": {
+              "bucket_name": "kpcp-1793582521855488800-concurrent-cloud",
+              "execution_role_arn": "",
+              "region": "us-east-1",
+              "s3_endpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568",
+              "sts_endpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568",
+              "target_cluster_name": "podman-minikube",
+              "target_endpoint": "kubeconfig:podman-minikube",
+              "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+            },
+            "lockTimeout": "30s",
+            "operation": "Apply",
+            "planDigest": "sha256:670d68375202a82c2f30171304e7c046a2e1bd0e825fb553d12099d30474c8bc",
+            "planMode": "Reconcile",
+            "planRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/plan.binary",
+            "planReportDigest": "sha256:b610f0b63b139ceb078b96818380692b8464eb168bf6b0f443bc0aff07cc9d17",
+            "planReportRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/plan-report.json",
+            "planRunUID": "accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493",
+            "resolvedBackendConfigRef": "backend",
+            "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "runnerServiceAccountIdentityDigest": "sha256:426bebd9b159cd2dfa41613c1c79c853ebbcef971bcf73dbcbfe940fa304af1b",
+            "runnerServiceAccountName": "runner-concurrent",
+            "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+            "source": {
+              "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+              "path": ".",
+              "ref": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/source-bundle.tar.zst",
+              "type": "RetainedBundle"
+            },
+            "sourceClosureDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+            "stackRef": {
+              "name": "concurrent-infra"
+            },
+            "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+            "workspace": "concurrent"
+          },
+          "generation": 1,
+          "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+          "runnerServiceAccountIdentityDigest": "sha256:426bebd9b159cd2dfa41613c1c79c853ebbcef971bcf73dbcbfe940fa304af1b",
+          "sourceClosureDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+          "sourceClosureRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/source-bundle.tar.zst",
+          "targetDiscoveryDigest": "sha256:6c484051685110e5244da06249711ed84667fe026968234ee1f3467988a640eb",
+          "targetDiscoveryRef": "runs/6715bf71-782d-479c-8ed1-85f439e3fb0d/target-discovery.json",
+          "terraformRunUID": "6715bf71-782d-479c-8ed1-85f439e3fb0d"
+        },
+        "latestPlanRunRef": {
+          "name": "concurrent-infra-destroy-plan-3"
+        },
+        "observedGeneration": 3
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "InfraStack",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:22:03Z",
+        "finalizers": [
+          "platform.example.io/infrastack-finalizer"
+        ],
+        "generation": 1,
+        "name": "environment-infra",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "PlatformEnvironment",
+            "name": "environment",
+            "uid": "f9e1e8b0-c388-4ee3-a106-4d31cd91d763"
+          }
+        ],
+        "resourceVersion": "97156",
+        "uid": "61708e3d-af58-481e-9713-8ff4c4404f54"
+      },
+      "spec": {
+        "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+        "runnerServiceAccountName": "runner",
+        "runtimeTargetIdentity": {
+          "accountID": "local",
+          "clusterName": "podman-minikube",
+          "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+          "provider": "kubernetes",
+          "region": "local"
+        },
+        "source": {
+          "path": ".",
+          "revision": "98da3fb6cad0b60c60a58169aeb282aa555dbeb8",
+          "url": "http://git-source.kpcp-gates-20261102-0223-infra.svc.cluster.local:18088/module/.git"
+        },
+        "targetConnectionProfile": {
+          "authMode": "kubeconfig-context",
+          "endpoint": "kubeconfig:podman-minikube",
+          "kubeContext": "podman-minikube",
+          "networkRouteProfile": "kubeconfig"
+        },
+        "workspace": "environment"
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:23:49Z",
+            "message": "Terraform Apply completed successfully.",
+            "observedGeneration": 1,
+            "reason": "InfrastructureReady",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "convergenceEvidenceDigest": "sha256:d2d81bda8d634af7dcdbcf81e605520d0173652b81fef99f0e26c844d5d18061",
+        "convergenceEvidenceRef": "runs/0ee0ddd2-3eb8-406e-be5c-0ff081b886e5/terminal-result.json",
+        "discoveredRuntimeTargetIdentity": {
+          "accountID": "local",
+          "clusterName": "podman-minikube",
+          "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+          "provider": "kubernetes",
+          "region": "local"
+        },
+        "discoveredTargetConnectionProfile": {
+          "authMode": "kubeconfig-context",
+          "endpoint": "kubeconfig:podman-minikube",
+          "kubeContext": "podman-minikube",
+          "networkRouteProfile": "kubeconfig"
+        },
+        "lastAppliedRunRef": {
+          "name": "environment-infra-plan-1-apply-ce42af994b"
+        },
+        "lastAppliedSourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "lastAppliedSourceBundleRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/source-bundle.tar.zst",
+        "lastConverged": {
+          "backendSnapshotDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+          "backendSnapshotRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/backend-config.hcl",
+          "effectivePlanInputDigest": "sha256:e9ec6519517800a8a79d381764c9c176fdcdd99495c56fc0c246064869b5c016",
+          "executionPlatformIdentityDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+          "executionSnapshot": {
+            "approvalRef": {
+              "name": "approve-402592c163bbeb1c068c0c70"
+            },
+            "approvalUID": "004ce57e-48eb-4db9-aac5-0ce064cee430",
+            "backendConfigArtifactDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+            "backendConfigArtifactRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/backend-config.hcl",
+            "concurrencyGroup": "environmentclass:kpcp-1793582521855488800",
+            "effectivePlanInputDigest": "sha256:e9ec6519517800a8a79d381764c9c176fdcdd99495c56fc0c246064869b5c016",
+            "executionContextDigest": "sha256:0e5e05860f19e84b4eaa6e07fa15997c26786717d4e90c7c556545ec8575f272",
+            "executionProfile": {
+              "accountID": "000000000000",
+              "artifactBucket": "kpcp-1793582521855488800",
+              "credentialsIdentity": "sha256:e9d9ffb7fffd821bbc4414a44048b304f2ef6a2fd5a2e0d83d8abb0655e2ac95",
+              "credentialsSecretRef": {
+                "name": "emulator"
+              },
+              "mode": "emulator",
+              "region": "us-east-1",
+              "s3Endpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568",
+              "stsEndpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568"
+            },
+            "executor": {
+              "executionTimeout": "8m0s",
+              "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "terraformVersion": "1.14.0",
+              "workDir": "/workspace/terraform"
+            },
+            "expectedTerraformVersion": "1.14.0",
+            "infraStackGeneration": 1,
+            "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+            "inputs": {
+              "bucket_name": "kpcp-1793582521855488800-cloud",
+              "execution_role_arn": "",
+              "region": "us-east-1",
+              "s3_endpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568",
+              "sts_endpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568",
+              "target_cluster_name": "podman-minikube",
+              "target_endpoint": "kubeconfig:podman-minikube",
+              "target_incarnation_id": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+            },
+            "lockTimeout": "30s",
+            "operation": "Apply",
+            "planDigest": "sha256:0922d8064d59eea11b3bfbcf366e992ced5c827a91a537cb13db516b1760cee9",
+            "planMode": "Reconcile",
+            "planRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/plan.binary",
+            "planReportDigest": "sha256:639ca608fe70f560f437f2756875ddeba236d0767c50f299f6492c37ebf0b70e",
+            "planReportRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/plan-report.json",
+            "planRunUID": "a267eae9-3b54-41ca-ab0d-d3dd878781cb",
+            "resolvedBackendConfigRef": "backend",
+            "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "runnerServiceAccountName": "runner",
+            "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+            "source": {
+              "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+              "path": ".",
+              "ref": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/source-bundle.tar.zst",
+              "type": "RetainedBundle"
+            },
+            "sourceClosureDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+            "stackRef": {
+              "name": "environment-infra"
+            },
+            "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+            "workspace": "environment"
+          },
+          "generation": 1,
+          "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+          "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+          "sourceClosureDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+          "sourceClosureRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/source-bundle.tar.zst",
+          "targetDiscoveryDigest": "sha256:10ce4c5a93ead242b4816dc12bca7837ac705241584faf9806d3620ea20c8c58",
+          "targetDiscoveryRef": "runs/0ee0ddd2-3eb8-406e-be5c-0ff081b886e5/target-discovery.json",
+          "terraformRunUID": "0ee0ddd2-3eb8-406e-be5c-0ff081b886e5"
+        },
+        "latestPlanRunRef": {
+          "name": "environment-infra-plan-1"
+        },
+        "observedGeneration": 1,
+        "targetDiscoveryDigest": "sha256:10ce4c5a93ead242b4816dc12bca7837ac705241584faf9806d3620ea20c8c58",
+        "targetDiscoveryRef": "runs/0ee0ddd2-3eb8-406e-be5c-0ff081b886e5/target-discovery.json"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "InfraStack",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:24:08Z",
+        "finalizers": [
+          "platform.example.io/infrastack-finalizer"
+        ],
+        "generation": 3,
+        "name": "second-infra",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "PlatformEnvironment",
+            "name": "second",
+            "uid": "d84816b5-3635-451a-ac4a-4400d140eb52"
+          }
+        ],
+        "resourceVersion": "97715",
+        "uid": "51f90ef2-7119-400f-bc32-8c1871f0e8d4"
+      },
+      "spec": {
+        "mutationFence": true,
+        "runnerServiceAccountIdentityDigest": "sha256:f3ba532886648a00d5cd16c1cbd7fd39d968dba5d25d292fccb7c6491b7c5dd5",
+        "runnerServiceAccountName": "runner-second",
+        "runtimeTargetIdentity": {
+          "accountID": "local",
+          "clusterName": "kpcp-gates-20261102-0223-b",
+          "incarnationID": "60e4ef1d-fb2f-4231-9d48-71a87696d6e7",
+          "provider": "kubernetes",
+          "region": "local"
+        },
+        "source": {
+          "path": ".",
+          "revision": "98da3fb6cad0b60c60a58169aeb282aa555dbeb8",
+          "url": "http://git-source.kpcp-gates-20261102-0223-infra.svc.cluster.local:18088/module/.git"
+        },
+        "targetConnectionProfile": {
+          "authMode": "kubeconfig-context",
+          "endpoint": "kubeconfig:kpcp-gates-20261102-0223-b",
+          "kubeContext": "kpcp-gates-20261102-0223-b",
+          "networkRouteProfile": "kubeconfig"
+        },
+        "workspace": "second"
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:27:19Z",
+            "message": "Destroy is waiting for the active Apply to reach a terminal classification.",
+            "observedGeneration": 3,
+            "reason": "DeletionHeld",
+            "status": "False",
+            "type": "Ready"
+          }
+        ],
+        "convergenceEvidenceDigest": "sha256:fe912a69d902f3f0eea3cca636637aa96534e1bdaab981c1c24bbd357bc2d58e",
+        "convergenceEvidenceRef": "runs/d6008ffd-5541-4f14-82bf-27609360e6f8/terminal-result.json",
+        "lastAppliedRunRef": {
+          "name": "second-infra-plan-1-apply-55dcaef7cb"
+        },
+        "lastAppliedSourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "lastAppliedSourceBundleRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/source-bundle.tar.zst",
+        "lastConverged": {
+          "backendSnapshotDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+          "backendSnapshotRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/backend-config.hcl",
+          "effectivePlanInputDigest": "sha256:89fbc06dd3c80a16efe6c67fd00d9bed23a409122d1ab480dedf7b0162ee0435",
+          "executionPlatformIdentityDigest": "sha256:b5b7786e503b5e3de6654613510e87c242331364f606f93a00bbfcc53a5d2a5b",
+          "executionSnapshot": {
+            "approvalRef": {
+              "name": "isolation-second"
+            },
+            "approvalUID": "45000960-959a-4fa5-9e40-3f122790a1b4",
+            "backendConfigArtifactDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+            "backendConfigArtifactRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/backend-config.hcl",
+            "concurrencyGroup": "environmentclass:kpcp-1793582521855488800-second",
+            "effectivePlanInputDigest": "sha256:89fbc06dd3c80a16efe6c67fd00d9bed23a409122d1ab480dedf7b0162ee0435",
+            "executionContextDigest": "sha256:9ef1a82203e55b5294a66b32a98a2fbbc9e965ee62c134ef9048a756880fe663",
+            "executionProfile": {
+              "accountID": "000000000000",
+              "artifactBucket": "kpcp-1793582521855488800",
+              "credentialsIdentity": "sha256:e9d9ffb7fffd821bbc4414a44048b304f2ef6a2fd5a2e0d83d8abb0655e2ac95",
+              "credentialsSecretRef": {
+                "name": "emulator"
+              },
+              "mode": "emulator",
+              "region": "us-east-1",
+              "s3Endpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568",
+              "stsEndpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568"
+            },
+            "executor": {
+              "executionTimeout": "8m0s",
+              "image": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+              "terraformVersion": "1.14.0",
+              "workDir": "/workspace/terraform"
+            },
+            "expectedTerraformVersion": "1.14.0",
+            "infraStackGeneration": 1,
+            "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+            "inputs": {
+              "bucket_name": "kpcp-1793582521855488800-second-cloud",
+              "execution_role_arn": "",
+              "region": "us-east-1",
+              "s3_endpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568",
+              "sts_endpoint": "http://artifact-proxy.kpcp-gates-20261102-0223-infra.svc.cluster.local:14568",
+              "target_cluster_name": "kpcp-gates-20261102-0223-b",
+              "target_endpoint": "kubeconfig:kpcp-gates-20261102-0223-b",
+              "target_incarnation_id": "60e4ef1d-fb2f-4231-9d48-71a87696d6e7"
+            },
+            "lockTimeout": "30s",
+            "operation": "Apply",
+            "planDigest": "sha256:aa99ef34302f35a1695d3747a448e42b732dcd5fdb6ae595a64152ddd254e347",
+            "planMode": "Reconcile",
+            "planRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/plan.binary",
+            "planReportDigest": "sha256:e154d8e5e2ebfc653429a644bc83e376b376e1ed037f75e4027c7bd49fb4b690",
+            "planReportRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/plan-report.json",
+            "planRunUID": "f4c69a4e-f381-459e-af2a-e1205c78bfe2",
+            "resolvedBackendConfigRef": "backend",
+            "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "runnerServiceAccountIdentityDigest": "sha256:f3ba532886648a00d5cd16c1cbd7fd39d968dba5d25d292fccb7c6491b7c5dd5",
+            "runnerServiceAccountName": "runner-second",
+            "runtimeTargetIdentityDigest": "sha256:d2b959edf636919ce1f622cf723d86f839889adcff5410e7be663b42eae2d113",
+            "source": {
+              "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+              "path": ".",
+              "ref": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/source-bundle.tar.zst",
+              "type": "RetainedBundle"
+            },
+            "sourceClosureDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+            "stackRef": {
+              "name": "second-infra"
+            },
+            "targetConnectionProfileDigest": "sha256:b5b7786e503b5e3de6654613510e87c242331364f606f93a00bbfcc53a5d2a5b",
+            "workspace": "second"
+          },
+          "generation": 1,
+          "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+          "runnerServiceAccountIdentityDigest": "sha256:f3ba532886648a00d5cd16c1cbd7fd39d968dba5d25d292fccb7c6491b7c5dd5",
+          "sourceClosureDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+          "sourceClosureRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/source-bundle.tar.zst",
+          "targetDiscoveryDigest": "sha256:27a1868959a0fe7ce585782c11b0a87e0ffa1b83ee2993e9cb83b3577fa7de76",
+          "targetDiscoveryRef": "runs/d6008ffd-5541-4f14-82bf-27609360e6f8/target-discovery.json",
+          "terraformRunUID": "d6008ffd-5541-4f14-82bf-27609360e6f8"
+        },
+        "latestPlanRunRef": {
+          "name": "second-infra-destroy-plan-3"
+        },
+        "observedGeneration": 3
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "TerraformRun",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:26:21Z",
+        "generation": 1,
+        "name": "concurrent-infra-destroy-plan-3",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "InfraStack",
+            "name": "concurrent-infra",
+            "uid": "e8eaaf09-3840-4b72-a283-d095649636c4"
+          }
+        ],
+        "resourceVersion": "97707",
+        "uid": "5463b0e3-3987-45fa-a865-e4b75615b777"
+      },
+      "spec": {
+        "backendConfigArtifactDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "backendConfigArtifactRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/backend-config.hcl",
+        "effectivePlanInputDigest": "sha256:0cf29089d9e3e4bf53c11ce1107a9cbcc12050c31b74496afe796062cf9c927b",
+        "executionContextDigest": "sha256:934d246b5ab5db1c504b248695849fa2c866f3f221bcfde5307067a97f1d88e7",
+        "infraStackGeneration": 3,
+        "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+        "mutationFence": true,
+        "operation": "Plan",
+        "planMode": "Destroy",
+        "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+        "runnerServiceAccountIdentityDigest": "sha256:426bebd9b159cd2dfa41613c1c79c853ebbcef971bcf73dbcbfe940fa304af1b",
+        "runnerServiceAccountName": "runner-concurrent",
+        "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+        "source": {
+          "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+          "path": ".",
+          "ref": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/source-bundle.tar.zst",
+          "type": "RetainedBundle"
+        },
+        "stackRef": {
+          "name": "concurrent-infra"
+        },
+        "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+        "workspace": "concurrent"
+      },
+      "status": {
+        "artifactsReady": true,
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:27:18Z",
+            "message": "Terraform runner terminal result captured.",
+            "observedGeneration": 1,
+            "reason": "TerraformSucceeded",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "effectivePlanInputDigest": "sha256:1ae6f2223897be759b8975f1f66b0ec653288337565ea9848962a03791c27f6e",
+        "evidenceCaptured": true,
+        "executionOutcome": "ChangesPresent",
+        "hasChanges": true,
+        "jobRef": {
+          "name": "concurrent-infra-destroy-plan-3"
+        },
+        "jobUID": "f52646c6-56c7-4be7-9759-2f0be7541965",
+        "mutationClassification": "NoMutation",
+        "observedGeneration": 1,
+        "planCreatedAt": "2026-11-02T01:27:10Z",
+        "planDigest": "sha256:20443e86841a9ece7e35f1793ff3a78eb7af9b0af272e7d6ded2972083381cab",
+        "planExpiresAt": "2026-11-02T02:27:10Z",
+        "planRef": "runs/5463b0e3-3987-45fa-a865-e4b75615b777/plan.binary",
+        "planReportDigest": "sha256:12eab6c9d87509a3c81ce712d45229374185e95445e7e0e58d9686aba113edfb",
+        "planReportRef": "runs/5463b0e3-3987-45fa-a865-e4b75615b777/plan-report.json",
+        "resolvedBackendConfigDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "resolvedBackendConfigRef": "runs/5463b0e3-3987-45fa-a865-e4b75615b777/backend-config.hcl",
+        "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "sourceBundleRef": "runs/5463b0e3-3987-45fa-a865-e4b75615b777/source-bundle.tar.zst",
+        "terminalFinishedAt": "2026-11-02T01:27:10Z",
+        "terminalResultDigest": "sha256:fe3da33dc1927ee40d8eb41f2bb07296676e72c8cb480f6268a00d8312f8c44b",
+        "terminalResultRef": "runs/5463b0e3-3987-45fa-a865-e4b75615b777/terminal-result.json",
+        "terminalStartedAt": "2026-11-02T01:26:22Z"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "TerraformRun",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:27:19Z",
+        "generation": 1,
+        "name": "concurrent-infra-destroy-plan-3-apply-3c95e00b68",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "InfraStack",
+            "name": "concurrent-infra",
+            "uid": "e8eaaf09-3840-4b72-a283-d095649636c4"
+          }
+        ],
+        "resourceVersion": "97727",
+        "uid": "60e61be9-06e4-4d7e-b968-da34ce2c7374"
+      },
+      "spec": {
+        "approvalRef": {
+          "name": "isolation-destroy-concurrent"
+        },
+        "approvalUID": "b2777780-1549-4f9b-9644-c59749eefba4",
+        "backendConfigArtifactDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "backendConfigArtifactRef": "runs/5463b0e3-3987-45fa-a865-e4b75615b777/backend-config.hcl",
+        "effectivePlanInputDigest": "sha256:1ae6f2223897be759b8975f1f66b0ec653288337565ea9848962a03791c27f6e",
+        "executionContextDigest": "sha256:934d246b5ab5db1c504b248695849fa2c866f3f221bcfde5307067a97f1d88e7",
+        "infraStackGeneration": 3,
+        "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+        "mutationFence": true,
+        "operation": "Apply",
+        "planDigest": "sha256:20443e86841a9ece7e35f1793ff3a78eb7af9b0af272e7d6ded2972083381cab",
+        "planMode": "Destroy",
+        "planRef": "runs/5463b0e3-3987-45fa-a865-e4b75615b777/plan.binary",
+        "planReportDigest": "sha256:12eab6c9d87509a3c81ce712d45229374185e95445e7e0e58d9686aba113edfb",
+        "planReportRef": "runs/5463b0e3-3987-45fa-a865-e4b75615b777/plan-report.json",
+        "planRunUID": "5463b0e3-3987-45fa-a865-e4b75615b777",
+        "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+        "runnerServiceAccountIdentityDigest": "sha256:426bebd9b159cd2dfa41613c1c79c853ebbcef971bcf73dbcbfe940fa304af1b",
+        "runnerServiceAccountName": "runner-concurrent",
+        "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+        "source": {
+          "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+          "path": ".",
+          "ref": "runs/5463b0e3-3987-45fa-a865-e4b75615b777/source-bundle.tar.zst",
+          "type": "RetainedBundle"
+        },
+        "stackRef": {
+          "name": "concurrent-infra"
+        },
+        "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+        "workspace": "concurrent"
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:27:19Z",
+            "message": "Terraform execution is waiting for an available concurrency slot.",
+            "observedGeneration": 1,
+            "reason": "ExecutionSlotUnavailable",
+            "status": "False",
+            "type": "Ready"
+          }
+        ],
+        "executionOutcome": "Pending",
+        "observedGeneration": 1
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "TerraformRun",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:24:08Z",
+        "generation": 1,
+        "name": "concurrent-infra-plan-1",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "InfraStack",
+            "name": "concurrent-infra",
+            "uid": "e8eaaf09-3840-4b72-a283-d095649636c4"
+          }
+        ],
+        "resourceVersion": "97375",
+        "uid": "accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493"
+      },
+      "spec": {
+        "effectivePlanInputDigest": "sha256:934d246b5ab5db1c504b248695849fa2c866f3f221bcfde5307067a97f1d88e7",
+        "executionContextDigest": "sha256:934d246b5ab5db1c504b248695849fa2c866f3f221bcfde5307067a97f1d88e7",
+        "infraStackGeneration": 1,
+        "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+        "operation": "Plan",
+        "planMode": "Reconcile",
+        "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+        "runnerServiceAccountIdentityDigest": "sha256:426bebd9b159cd2dfa41613c1c79c853ebbcef971bcf73dbcbfe940fa304af1b",
+        "runnerServiceAccountName": "runner-concurrent",
+        "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+        "source": {
+          "path": ".",
+          "revision": "98da3fb6cad0b60c60a58169aeb282aa555dbeb8",
+          "type": "GitCommit",
+          "url": "http://git-source.kpcp-gates-20261102-0223-infra.svc.cluster.local:18088/module/.git"
+        },
+        "stackRef": {
+          "name": "concurrent-infra"
+        },
+        "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+        "workspace": "concurrent"
+      },
+      "status": {
+        "artifactsReady": true,
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:25:04Z",
+            "message": "Terraform runner terminal result captured.",
+            "observedGeneration": 1,
+            "reason": "TerraformSucceeded",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "effectivePlanInputDigest": "sha256:0cf29089d9e3e4bf53c11ce1107a9cbcc12050c31b74496afe796062cf9c927b",
+        "evidenceCaptured": true,
+        "executionOutcome": "ChangesPresent",
+        "hasChanges": true,
+        "jobRef": {
+          "name": "concurrent-infra-plan-1"
+        },
+        "jobUID": "ab9b69c9-09b0-4a5d-b9aa-04413c2fb0e6",
+        "mutationClassification": "NoMutation",
+        "observedGeneration": 1,
+        "planCreatedAt": "2026-11-02T01:24:56Z",
+        "planDigest": "sha256:670d68375202a82c2f30171304e7c046a2e1bd0e825fb553d12099d30474c8bc",
+        "planExpiresAt": "2026-11-02T02:24:56Z",
+        "planRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/plan.binary",
+        "planReportDigest": "sha256:b610f0b63b139ceb078b96818380692b8464eb168bf6b0f443bc0aff07cc9d17",
+        "planReportRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/plan-report.json",
+        "resolvedBackendConfigDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "resolvedBackendConfigRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/backend-config.hcl",
+        "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "sourceBundleRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/source-bundle.tar.zst",
+        "terminalFinishedAt": "2026-11-02T01:24:56Z",
+        "terminalResultDigest": "sha256:e637e0481010137f379a18c9c06d109b0ee5a505aee4769f480559cdec316338",
+        "terminalResultRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/terminal-result.json",
+        "terminalStartedAt": "2026-11-02T01:24:11Z"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "TerraformRun",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:25:05Z",
+        "generation": 1,
+        "name": "concurrent-infra-plan-1-apply-f013418b4d",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "InfraStack",
+            "name": "concurrent-infra",
+            "uid": "e8eaaf09-3840-4b72-a283-d095649636c4"
+          }
+        ],
+        "resourceVersion": "97542",
+        "uid": "6715bf71-782d-479c-8ed1-85f439e3fb0d"
+      },
+      "spec": {
+        "approvalRef": {
+          "name": "isolation-concurrent"
+        },
+        "approvalUID": "04d56bd1-53f8-40a1-9de2-b08f1266dca5",
+        "backendConfigArtifactDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "backendConfigArtifactRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/backend-config.hcl",
+        "effectivePlanInputDigest": "sha256:0cf29089d9e3e4bf53c11ce1107a9cbcc12050c31b74496afe796062cf9c927b",
+        "executionContextDigest": "sha256:934d246b5ab5db1c504b248695849fa2c866f3f221bcfde5307067a97f1d88e7",
+        "infraStackGeneration": 1,
+        "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+        "operation": "Apply",
+        "planDigest": "sha256:670d68375202a82c2f30171304e7c046a2e1bd0e825fb553d12099d30474c8bc",
+        "planMode": "Reconcile",
+        "planRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/plan.binary",
+        "planReportDigest": "sha256:b610f0b63b139ceb078b96818380692b8464eb168bf6b0f443bc0aff07cc9d17",
+        "planReportRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/plan-report.json",
+        "planRunUID": "accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493",
+        "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+        "runnerServiceAccountIdentityDigest": "sha256:426bebd9b159cd2dfa41613c1c79c853ebbcef971bcf73dbcbfe940fa304af1b",
+        "runnerServiceAccountName": "runner-concurrent",
+        "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+        "source": {
+          "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+          "path": ".",
+          "ref": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/source-bundle.tar.zst",
+          "type": "RetainedBundle"
+        },
+        "stackRef": {
+          "name": "concurrent-infra"
+        },
+        "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+        "workspace": "concurrent"
+      },
+      "status": {
+        "artifactsReady": true,
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:26:20Z",
+            "message": "Terraform runner terminal result captured.",
+            "observedGeneration": 1,
+            "reason": "TerraformSucceeded",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "effectivePlanInputDigest": "sha256:0cf29089d9e3e4bf53c11ce1107a9cbcc12050c31b74496afe796062cf9c927b",
+        "evidenceCaptured": true,
+        "executionOutcome": "Succeeded",
+        "jobRef": {
+          "name": "concurrent-infra-plan-1-apply-f013418b4d"
+        },
+        "jobUID": "2f3fb8a9-3ef8-4867-b8b9-051db9d6ab02",
+        "mutationClassification": "SucceededPostMutation",
+        "observedGeneration": 1,
+        "planDigest": "sha256:670d68375202a82c2f30171304e7c046a2e1bd0e825fb553d12099d30474c8bc",
+        "planRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/plan.binary",
+        "resolvedBackendConfigDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "resolvedBackendConfigRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/backend-config.hcl",
+        "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "sourceBundleRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/source-bundle.tar.zst",
+        "targetDiscoveryDigest": "sha256:6c484051685110e5244da06249711ed84667fe026968234ee1f3467988a640eb",
+        "targetDiscoveryRef": "runs/6715bf71-782d-479c-8ed1-85f439e3fb0d/target-discovery.json",
+        "terminalFinishedAt": "2026-11-02T01:26:16Z",
+        "terminalResultDigest": "sha256:dd381e38584b37057c6bd5b6b5818c873db87581f9a8e217482e22afb6b108c1",
+        "terminalResultRef": "runs/6715bf71-782d-479c-8ed1-85f439e3fb0d/terminal-result.json",
+        "terminalStartedAt": "2026-11-02T01:25:44Z"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "TerraformRun",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:22:03Z",
+        "generation": 1,
+        "name": "environment-infra-plan-1",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "InfraStack",
+            "name": "environment-infra",
+            "uid": "61708e3d-af58-481e-9713-8ff4c4404f54"
+          }
+        ],
+        "resourceVersion": "97057",
+        "uid": "a267eae9-3b54-41ca-ab0d-d3dd878781cb"
+      },
+      "spec": {
+        "effectivePlanInputDigest": "sha256:0e5e05860f19e84b4eaa6e07fa15997c26786717d4e90c7c556545ec8575f272",
+        "executionContextDigest": "sha256:0e5e05860f19e84b4eaa6e07fa15997c26786717d4e90c7c556545ec8575f272",
+        "infraStackGeneration": 1,
+        "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+        "operation": "Plan",
+        "planMode": "Reconcile",
+        "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+        "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+        "runnerServiceAccountName": "runner",
+        "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+        "source": {
+          "path": ".",
+          "revision": "98da3fb6cad0b60c60a58169aeb282aa555dbeb8",
+          "type": "GitCommit",
+          "url": "http://git-source.kpcp-gates-20261102-0223-infra.svc.cluster.local:18088/module/.git"
+        },
+        "stackRef": {
+          "name": "environment-infra"
+        },
+        "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+        "workspace": "environment"
+      },
+      "status": {
+        "artifactsReady": true,
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:22:54Z",
+            "message": "Terraform runner terminal result captured.",
+            "observedGeneration": 1,
+            "reason": "TerraformSucceeded",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "effectivePlanInputDigest": "sha256:e9ec6519517800a8a79d381764c9c176fdcdd99495c56fc0c246064869b5c016",
+        "evidenceCaptured": true,
+        "executionOutcome": "ChangesPresent",
+        "hasChanges": true,
+        "jobRef": {
+          "name": "environment-infra-plan-1"
+        },
+        "jobUID": "14a5d99b-a67b-4ad0-9bd0-c22e7601da1b",
+        "mutationClassification": "NoMutation",
+        "observedGeneration": 1,
+        "planCreatedAt": "2026-11-02T01:22:45Z",
+        "planDigest": "sha256:0922d8064d59eea11b3bfbcf366e992ced5c827a91a537cb13db516b1760cee9",
+        "planExpiresAt": "2026-11-02T02:22:45Z",
+        "planRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/plan.binary",
+        "planReportDigest": "sha256:639ca608fe70f560f437f2756875ddeba236d0767c50f299f6492c37ebf0b70e",
+        "planReportRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/plan-report.json",
+        "resolvedBackendConfigDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "resolvedBackendConfigRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/backend-config.hcl",
+        "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "sourceBundleRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/source-bundle.tar.zst",
+        "terminalFinishedAt": "2026-11-02T01:22:45Z",
+        "terminalResultDigest": "sha256:57ea6fc83cdfcf1149af2bec5b54d78d16a9d3ef92033002724d301ef350a8c8",
+        "terminalResultRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/terminal-result.json",
+        "terminalStartedAt": "2026-11-02T01:22:06Z"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "TerraformRun",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:23:11Z",
+        "generation": 1,
+        "name": "environment-infra-plan-1-apply-ce42af994b",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "InfraStack",
+            "name": "environment-infra",
+            "uid": "61708e3d-af58-481e-9713-8ff4c4404f54"
+          }
+        ],
+        "resourceVersion": "97155",
+        "uid": "0ee0ddd2-3eb8-406e-be5c-0ff081b886e5"
+      },
+      "spec": {
+        "approvalRef": {
+          "name": "approve-402592c163bbeb1c068c0c70"
+        },
+        "approvalUID": "004ce57e-48eb-4db9-aac5-0ce064cee430",
+        "backendConfigArtifactDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "backendConfigArtifactRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/backend-config.hcl",
+        "effectivePlanInputDigest": "sha256:e9ec6519517800a8a79d381764c9c176fdcdd99495c56fc0c246064869b5c016",
+        "executionContextDigest": "sha256:0e5e05860f19e84b4eaa6e07fa15997c26786717d4e90c7c556545ec8575f272",
+        "infraStackGeneration": 1,
+        "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+        "operation": "Apply",
+        "planDigest": "sha256:0922d8064d59eea11b3bfbcf366e992ced5c827a91a537cb13db516b1760cee9",
+        "planMode": "Reconcile",
+        "planRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/plan.binary",
+        "planReportDigest": "sha256:639ca608fe70f560f437f2756875ddeba236d0767c50f299f6492c37ebf0b70e",
+        "planReportRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/plan-report.json",
+        "planRunUID": "a267eae9-3b54-41ca-ab0d-d3dd878781cb",
+        "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+        "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+        "runnerServiceAccountName": "runner",
+        "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+        "source": {
+          "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+          "path": ".",
+          "ref": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/source-bundle.tar.zst",
+          "type": "RetainedBundle"
+        },
+        "stackRef": {
+          "name": "environment-infra"
+        },
+        "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+        "workspace": "environment"
+      },
+      "status": {
+        "artifactsReady": true,
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:23:49Z",
+            "message": "Terraform runner terminal result captured.",
+            "observedGeneration": 1,
+            "reason": "TerraformSucceeded",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "effectivePlanInputDigest": "sha256:e9ec6519517800a8a79d381764c9c176fdcdd99495c56fc0c246064869b5c016",
+        "evidenceCaptured": true,
+        "executionOutcome": "Succeeded",
+        "jobRef": {
+          "name": "environment-infra-plan-1-apply-ce42af994b"
+        },
+        "jobUID": "9944e738-9ac4-4a71-ba73-cd49daa4568e",
+        "mutationClassification": "SucceededPostMutation",
+        "observedGeneration": 1,
+        "planDigest": "sha256:0922d8064d59eea11b3bfbcf366e992ced5c827a91a537cb13db516b1760cee9",
+        "planRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/plan.binary",
+        "resolvedBackendConfigDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "resolvedBackendConfigRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/backend-config.hcl",
+        "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "sourceBundleRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/source-bundle.tar.zst",
+        "targetDiscoveryDigest": "sha256:10ce4c5a93ead242b4816dc12bca7837ac705241584faf9806d3620ea20c8c58",
+        "targetDiscoveryRef": "runs/0ee0ddd2-3eb8-406e-be5c-0ff081b886e5/target-discovery.json",
+        "terminalFinishedAt": "2026-11-02T01:23:45Z",
+        "terminalResultDigest": "sha256:d2d81bda8d634af7dcdbcf81e605520d0173652b81fef99f0e26c844d5d18061",
+        "terminalResultRef": "runs/0ee0ddd2-3eb8-406e-be5c-0ff081b886e5/terminal-result.json",
+        "terminalStartedAt": "2026-11-02T01:23:12Z"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "TerraformRun",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:26:21Z",
+        "generation": 1,
+        "name": "second-infra-destroy-plan-3",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "InfraStack",
+            "name": "second-infra",
+            "uid": "51f90ef2-7119-400f-bc32-8c1871f0e8d4"
+          }
+        ],
+        "resourceVersion": "97709",
+        "uid": "e425c037-09d6-40f4-9a19-01c84935209b"
+      },
+      "spec": {
+        "backendConfigArtifactDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "backendConfigArtifactRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/backend-config.hcl",
+        "effectivePlanInputDigest": "sha256:89fbc06dd3c80a16efe6c67fd00d9bed23a409122d1ab480dedf7b0162ee0435",
+        "executionContextDigest": "sha256:9ef1a82203e55b5294a66b32a98a2fbbc9e965ee62c134ef9048a756880fe663",
+        "infraStackGeneration": 3,
+        "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+        "mutationFence": true,
+        "operation": "Plan",
+        "planMode": "Destroy",
+        "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+        "runnerServiceAccountIdentityDigest": "sha256:f3ba532886648a00d5cd16c1cbd7fd39d968dba5d25d292fccb7c6491b7c5dd5",
+        "runnerServiceAccountName": "runner-second",
+        "runtimeTargetIdentityDigest": "sha256:d2b959edf636919ce1f622cf723d86f839889adcff5410e7be663b42eae2d113",
+        "source": {
+          "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+          "path": ".",
+          "ref": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/source-bundle.tar.zst",
+          "type": "RetainedBundle"
+        },
+        "stackRef": {
+          "name": "second-infra"
+        },
+        "targetConnectionProfileDigest": "sha256:b5b7786e503b5e3de6654613510e87c242331364f606f93a00bbfcc53a5d2a5b",
+        "workspace": "second"
+      },
+      "status": {
+        "artifactsReady": true,
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:27:18Z",
+            "message": "Terraform runner terminal result captured.",
+            "observedGeneration": 1,
+            "reason": "TerraformSucceeded",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "effectivePlanInputDigest": "sha256:7f2a47976a5b9feb661fc6bfb60a5f6a761fe39ce57042d03a9f2f3a6c0a717d",
+        "evidenceCaptured": true,
+        "executionOutcome": "ChangesPresent",
+        "hasChanges": true,
+        "jobRef": {
+          "name": "second-infra-destroy-plan-3"
+        },
+        "jobUID": "abbb1497-b4c4-4aa9-bde6-b01d5d50906a",
+        "mutationClassification": "NoMutation",
+        "observedGeneration": 1,
+        "planCreatedAt": "2026-11-02T01:27:10Z",
+        "planDigest": "sha256:f291f47b182faad6b5b0480a05628b3ed3d31ec6dac710d3d2a5a15d19e886b1",
+        "planExpiresAt": "2026-11-02T02:27:10Z",
+        "planRef": "runs/e425c037-09d6-40f4-9a19-01c84935209b/plan.binary",
+        "planReportDigest": "sha256:516b41f56ae4692844143b32520be2c4bac071b2d5276e39ebb1fa8e3c2ae701",
+        "planReportRef": "runs/e425c037-09d6-40f4-9a19-01c84935209b/plan-report.json",
+        "resolvedBackendConfigDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "resolvedBackendConfigRef": "runs/e425c037-09d6-40f4-9a19-01c84935209b/backend-config.hcl",
+        "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "sourceBundleRef": "runs/e425c037-09d6-40f4-9a19-01c84935209b/source-bundle.tar.zst",
+        "terminalFinishedAt": "2026-11-02T01:27:10Z",
+        "terminalResultDigest": "sha256:0a344eede35bc467f53ceca164bc60c846b4fabc5e9db5587952307f60d288f8",
+        "terminalResultRef": "runs/e425c037-09d6-40f4-9a19-01c84935209b/terminal-result.json",
+        "terminalStartedAt": "2026-11-02T01:26:22Z"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "TerraformRun",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:27:19Z",
+        "generation": 1,
+        "name": "second-infra-destroy-plan-3-apply-6ccbc85640",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "InfraStack",
+            "name": "second-infra",
+            "uid": "51f90ef2-7119-400f-bc32-8c1871f0e8d4"
+          }
+        ],
+        "resourceVersion": "97729",
+        "uid": "2792676e-eb99-4123-bfb6-b248cdd92a10"
+      },
+      "spec": {
+        "approvalRef": {
+          "name": "isolation-destroy-second"
+        },
+        "approvalUID": "593a3b48-6b79-496b-a71e-ed65256bb407",
+        "backendConfigArtifactDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "backendConfigArtifactRef": "runs/e425c037-09d6-40f4-9a19-01c84935209b/backend-config.hcl",
+        "effectivePlanInputDigest": "sha256:7f2a47976a5b9feb661fc6bfb60a5f6a761fe39ce57042d03a9f2f3a6c0a717d",
+        "executionContextDigest": "sha256:9ef1a82203e55b5294a66b32a98a2fbbc9e965ee62c134ef9048a756880fe663",
+        "infraStackGeneration": 3,
+        "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+        "mutationFence": true,
+        "operation": "Apply",
+        "planDigest": "sha256:f291f47b182faad6b5b0480a05628b3ed3d31ec6dac710d3d2a5a15d19e886b1",
+        "planMode": "Destroy",
+        "planRef": "runs/e425c037-09d6-40f4-9a19-01c84935209b/plan.binary",
+        "planReportDigest": "sha256:516b41f56ae4692844143b32520be2c4bac071b2d5276e39ebb1fa8e3c2ae701",
+        "planReportRef": "runs/e425c037-09d6-40f4-9a19-01c84935209b/plan-report.json",
+        "planRunUID": "e425c037-09d6-40f4-9a19-01c84935209b",
+        "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+        "runnerServiceAccountIdentityDigest": "sha256:f3ba532886648a00d5cd16c1cbd7fd39d968dba5d25d292fccb7c6491b7c5dd5",
+        "runnerServiceAccountName": "runner-second",
+        "runtimeTargetIdentityDigest": "sha256:d2b959edf636919ce1f622cf723d86f839889adcff5410e7be663b42eae2d113",
+        "source": {
+          "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+          "path": ".",
+          "ref": "runs/e425c037-09d6-40f4-9a19-01c84935209b/source-bundle.tar.zst",
+          "type": "RetainedBundle"
+        },
+        "stackRef": {
+          "name": "second-infra"
+        },
+        "targetConnectionProfileDigest": "sha256:b5b7786e503b5e3de6654613510e87c242331364f606f93a00bbfcc53a5d2a5b",
+        "workspace": "second"
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:27:19Z",
+            "message": "Terraform Job is running.",
+            "observedGeneration": 1,
+            "reason": "TerraformJobRunning",
+            "status": "False",
+            "type": "Ready"
+          }
+        ],
+        "executionOutcome": "Running",
+        "jobRef": {
+          "name": "second-infra-destroy-plan-3-apply-6ccbc85640"
+        },
+        "jobUID": "8159c8e5-d8c6-4417-b495-be6381ab150f",
+        "observedGeneration": 1
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "TerraformRun",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:24:08Z",
+        "generation": 1,
+        "name": "second-infra-plan-1",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "InfraStack",
+            "name": "second-infra",
+            "uid": "51f90ef2-7119-400f-bc32-8c1871f0e8d4"
+          }
+        ],
+        "resourceVersion": "97356",
+        "uid": "f4c69a4e-f381-459e-af2a-e1205c78bfe2"
+      },
+      "spec": {
+        "effectivePlanInputDigest": "sha256:9ef1a82203e55b5294a66b32a98a2fbbc9e965ee62c134ef9048a756880fe663",
+        "executionContextDigest": "sha256:9ef1a82203e55b5294a66b32a98a2fbbc9e965ee62c134ef9048a756880fe663",
+        "infraStackGeneration": 1,
+        "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+        "operation": "Plan",
+        "planMode": "Reconcile",
+        "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+        "runnerServiceAccountIdentityDigest": "sha256:f3ba532886648a00d5cd16c1cbd7fd39d968dba5d25d292fccb7c6491b7c5dd5",
+        "runnerServiceAccountName": "runner-second",
+        "runtimeTargetIdentityDigest": "sha256:d2b959edf636919ce1f622cf723d86f839889adcff5410e7be663b42eae2d113",
+        "source": {
+          "path": ".",
+          "revision": "98da3fb6cad0b60c60a58169aeb282aa555dbeb8",
+          "type": "GitCommit",
+          "url": "http://git-source.kpcp-gates-20261102-0223-infra.svc.cluster.local:18088/module/.git"
+        },
+        "stackRef": {
+          "name": "second-infra"
+        },
+        "targetConnectionProfileDigest": "sha256:b5b7786e503b5e3de6654613510e87c242331364f606f93a00bbfcc53a5d2a5b",
+        "workspace": "second"
+      },
+      "status": {
+        "artifactsReady": true,
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:25:01Z",
+            "message": "Terraform runner terminal result captured.",
+            "observedGeneration": 1,
+            "reason": "TerraformSucceeded",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "effectivePlanInputDigest": "sha256:89fbc06dd3c80a16efe6c67fd00d9bed23a409122d1ab480dedf7b0162ee0435",
+        "evidenceCaptured": true,
+        "executionOutcome": "ChangesPresent",
+        "hasChanges": true,
+        "jobRef": {
+          "name": "second-infra-plan-1"
+        },
+        "jobUID": "7910aedc-86e7-4be7-a3b8-b076472f3804",
+        "mutationClassification": "NoMutation",
+        "observedGeneration": 1,
+        "planCreatedAt": "2026-11-02T01:24:53Z",
+        "planDigest": "sha256:aa99ef34302f35a1695d3747a448e42b732dcd5fdb6ae595a64152ddd254e347",
+        "planExpiresAt": "2026-11-02T02:24:53Z",
+        "planRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/plan.binary",
+        "planReportDigest": "sha256:e154d8e5e2ebfc653429a644bc83e376b376e1ed037f75e4027c7bd49fb4b690",
+        "planReportRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/plan-report.json",
+        "resolvedBackendConfigDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "resolvedBackendConfigRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/backend-config.hcl",
+        "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "sourceBundleRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/source-bundle.tar.zst",
+        "terminalFinishedAt": "2026-11-02T01:24:53Z",
+        "terminalResultDigest": "sha256:8dd4c83e97abbd2e7517b5800f40c922d361aadf65ff63154dc1d80519cf1991",
+        "terminalResultRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/terminal-result.json",
+        "terminalStartedAt": "2026-11-02T01:24:11Z"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "TerraformRun",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:25:04Z",
+        "generation": 1,
+        "name": "second-infra-plan-1-apply-55dcaef7cb",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "InfraStack",
+            "name": "second-infra",
+            "uid": "51f90ef2-7119-400f-bc32-8c1871f0e8d4"
+          }
+        ],
+        "resourceVersion": "97460",
+        "uid": "d6008ffd-5541-4f14-82bf-27609360e6f8"
+      },
+      "spec": {
+        "approvalRef": {
+          "name": "isolation-second"
+        },
+        "approvalUID": "45000960-959a-4fa5-9e40-3f122790a1b4",
+        "backendConfigArtifactDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "backendConfigArtifactRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/backend-config.hcl",
+        "effectivePlanInputDigest": "sha256:89fbc06dd3c80a16efe6c67fd00d9bed23a409122d1ab480dedf7b0162ee0435",
+        "executionContextDigest": "sha256:9ef1a82203e55b5294a66b32a98a2fbbc9e965ee62c134ef9048a756880fe663",
+        "infraStackGeneration": 1,
+        "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+        "operation": "Apply",
+        "planDigest": "sha256:aa99ef34302f35a1695d3747a448e42b732dcd5fdb6ae595a64152ddd254e347",
+        "planMode": "Reconcile",
+        "planRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/plan.binary",
+        "planReportDigest": "sha256:e154d8e5e2ebfc653429a644bc83e376b376e1ed037f75e4027c7bd49fb4b690",
+        "planReportRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/plan-report.json",
+        "planRunUID": "f4c69a4e-f381-459e-af2a-e1205c78bfe2",
+        "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+        "runnerServiceAccountIdentityDigest": "sha256:f3ba532886648a00d5cd16c1cbd7fd39d968dba5d25d292fccb7c6491b7c5dd5",
+        "runnerServiceAccountName": "runner-second",
+        "runtimeTargetIdentityDigest": "sha256:d2b959edf636919ce1f622cf723d86f839889adcff5410e7be663b42eae2d113",
+        "source": {
+          "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+          "path": ".",
+          "ref": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/source-bundle.tar.zst",
+          "type": "RetainedBundle"
+        },
+        "stackRef": {
+          "name": "second-infra"
+        },
+        "targetConnectionProfileDigest": "sha256:b5b7786e503b5e3de6654613510e87c242331364f606f93a00bbfcc53a5d2a5b",
+        "workspace": "second"
+      },
+      "status": {
+        "artifactsReady": true,
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:25:42Z",
+            "message": "Terraform runner terminal result captured.",
+            "observedGeneration": 1,
+            "reason": "TerraformSucceeded",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "effectivePlanInputDigest": "sha256:89fbc06dd3c80a16efe6c67fd00d9bed23a409122d1ab480dedf7b0162ee0435",
+        "evidenceCaptured": true,
+        "executionOutcome": "Succeeded",
+        "jobRef": {
+          "name": "second-infra-plan-1-apply-55dcaef7cb"
+        },
+        "jobUID": "0f4b2cf7-8445-40c8-b042-9432d1bd046e",
+        "mutationClassification": "SucceededPostMutation",
+        "observedGeneration": 1,
+        "planDigest": "sha256:aa99ef34302f35a1695d3747a448e42b732dcd5fdb6ae595a64152ddd254e347",
+        "planRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/plan.binary",
+        "resolvedBackendConfigDigest": "sha256:17d9c3bd7bb304eb0d38a95d60391f13d6608917a86f9134e21194e67f105ff5",
+        "resolvedBackendConfigRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/backend-config.hcl",
+        "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+        "sourceBundleRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/source-bundle.tar.zst",
+        "targetDiscoveryDigest": "sha256:27a1868959a0fe7ce585782c11b0a87e0ffa1b83ee2993e9cb83b3577fa7de76",
+        "targetDiscoveryRef": "runs/d6008ffd-5541-4f14-82bf-27609360e6f8/target-discovery.json",
+        "terminalFinishedAt": "2026-11-02T01:25:37Z",
+        "terminalResultDigest": "sha256:fe912a69d902f3f0eea3cca636637aa96534e1bdaab981c1c24bbd357bc2d58e",
+        "terminalResultRef": "runs/d6008ffd-5541-4f14-82bf-27609360e6f8/terminal-result.json",
+        "terminalStartedAt": "2026-11-02T01:25:05Z"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "ChangeApproval",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:22:54Z",
+        "generation": 1,
+        "name": "approve-402592c163bbeb1c068c0c70",
+        "namespace": "kpcp-1793582521855488800",
+        "resourceVersion": "97060",
+        "uid": "004ce57e-48eb-4db9-aac5-0ce064cee430"
+      },
+      "spec": {
+        "effectivePlanInputDigest": "sha256:e9ec6519517800a8a79d381764c9c176fdcdd99495c56fc0c246064869b5c016",
+        "executionContextDigest": "sha256:0e5e05860f19e84b4eaa6e07fa15997c26786717d4e90c7c556545ec8575f272",
+        "planDigest": "sha256:0922d8064d59eea11b3bfbcf366e992ced5c827a91a537cb13db516b1760cee9",
+        "planReportDigest": "sha256:639ca608fe70f560f437f2756875ddeba236d0767c50f299f6492c37ebf0b70e",
+        "planReportRef": "runs/a267eae9-3b54-41ca-ab0d-d3dd878781cb/plan-report.json",
+        "planRunRef": {
+          "name": "environment-infra-plan-1"
+        },
+        "planRunUID": "a267eae9-3b54-41ca-ab0d-d3dd878781cb"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "ChangeApproval",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:25:04Z",
+        "generation": 1,
+        "name": "isolation-concurrent",
+        "namespace": "kpcp-1793582521855488800",
+        "resourceVersion": "97379",
+        "uid": "04d56bd1-53f8-40a1-9de2-b08f1266dca5"
+      },
+      "spec": {
+        "effectivePlanInputDigest": "sha256:0cf29089d9e3e4bf53c11ce1107a9cbcc12050c31b74496afe796062cf9c927b",
+        "executionContextDigest": "sha256:934d246b5ab5db1c504b248695849fa2c866f3f221bcfde5307067a97f1d88e7",
+        "planDigest": "sha256:670d68375202a82c2f30171304e7c046a2e1bd0e825fb553d12099d30474c8bc",
+        "planReportDigest": "sha256:b610f0b63b139ceb078b96818380692b8464eb168bf6b0f443bc0aff07cc9d17",
+        "planReportRef": "runs/accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493/plan-report.json",
+        "planRunRef": {
+          "name": "concurrent-infra-plan-1"
+        },
+        "planRunUID": "accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "ChangeApproval",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:27:19Z",
+        "generation": 1,
+        "name": "isolation-destroy-concurrent",
+        "namespace": "kpcp-1793582521855488800",
+        "resourceVersion": "97711",
+        "uid": "b2777780-1549-4f9b-9644-c59749eefba4"
+      },
+      "spec": {
+        "effectivePlanInputDigest": "sha256:1ae6f2223897be759b8975f1f66b0ec653288337565ea9848962a03791c27f6e",
+        "executionContextDigest": "sha256:934d246b5ab5db1c504b248695849fa2c866f3f221bcfde5307067a97f1d88e7",
+        "planDigest": "sha256:20443e86841a9ece7e35f1793ff3a78eb7af9b0af272e7d6ded2972083381cab",
+        "planReportDigest": "sha256:12eab6c9d87509a3c81ce712d45229374185e95445e7e0e58d9686aba113edfb",
+        "planReportRef": "runs/5463b0e3-3987-45fa-a865-e4b75615b777/plan-report.json",
+        "planRunRef": {
+          "name": "concurrent-infra-destroy-plan-3"
+        },
+        "planRunUID": "5463b0e3-3987-45fa-a865-e4b75615b777"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "ChangeApproval",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:27:19Z",
+        "generation": 1,
+        "name": "isolation-destroy-second",
+        "namespace": "kpcp-1793582521855488800",
+        "resourceVersion": "97712",
+        "uid": "593a3b48-6b79-496b-a71e-ed65256bb407"
+      },
+      "spec": {
+        "effectivePlanInputDigest": "sha256:7f2a47976a5b9feb661fc6bfb60a5f6a761fe39ce57042d03a9f2f3a6c0a717d",
+        "executionContextDigest": "sha256:9ef1a82203e55b5294a66b32a98a2fbbc9e965ee62c134ef9048a756880fe663",
+        "planDigest": "sha256:f291f47b182faad6b5b0480a05628b3ed3d31ec6dac710d3d2a5a15d19e886b1",
+        "planReportDigest": "sha256:516b41f56ae4692844143b32520be2c4bac071b2d5276e39ebb1fa8e3c2ae701",
+        "planReportRef": "runs/e425c037-09d6-40f4-9a19-01c84935209b/plan-report.json",
+        "planRunRef": {
+          "name": "second-infra-destroy-plan-3"
+        },
+        "planRunUID": "e425c037-09d6-40f4-9a19-01c84935209b"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "ChangeApproval",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:25:04Z",
+        "generation": 1,
+        "name": "isolation-second",
+        "namespace": "kpcp-1793582521855488800",
+        "resourceVersion": "97378",
+        "uid": "45000960-959a-4fa5-9e40-3f122790a1b4"
+      },
+      "spec": {
+        "effectivePlanInputDigest": "sha256:89fbc06dd3c80a16efe6c67fd00d9bed23a409122d1ab480dedf7b0162ee0435",
+        "executionContextDigest": "sha256:9ef1a82203e55b5294a66b32a98a2fbbc9e965ee62c134ef9048a756880fe663",
+        "planDigest": "sha256:aa99ef34302f35a1695d3747a448e42b732dcd5fdb6ae595a64152ddd254e347",
+        "planReportDigest": "sha256:e154d8e5e2ebfc653429a644bc83e376b376e1ed037f75e4027c7bd49fb4b690",
+        "planReportRef": "runs/f4c69a4e-f381-459e-af2a-e1205c78bfe2/plan-report.json",
+        "planRunRef": {
+          "name": "second-infra-plan-1"
+        },
+        "planRunUID": "f4c69a4e-f381-459e-af2a-e1205c78bfe2"
+      }
+    },
+    {
+      "apiVersion": "platform.example.io/v1alpha1",
+      "kind": "ResourceSet",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:22:03Z",
+        "finalizers": [
+          "platform.example.io/resourceset-finalizer"
+        ],
+        "generation": 3,
+        "name": "environment-resources",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "PlatformEnvironment",
+            "name": "environment",
+            "uid": "f9e1e8b0-c388-4ee3-a106-4d31cd91d763"
+          }
+        ],
+        "resourceVersion": "97160",
+        "uid": "1c289c97-52c5-4e49-99a7-daab43323850"
+      },
+      "spec": {
+        "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+        "target": {
+          "clusterName": "podman-minikube",
+          "connectionProfileRef": "kubeconfig:podman-minikube",
+          "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+          "provider": "kubernetes",
+          "region": "local"
+        }
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T01:23:49Z",
+            "message": "1 runtime objects are ready",
+            "observedGeneration": 3,
+            "reason": "RuntimeReady",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "inventory": [
+          {
+            "deletionPolicy": "Prune",
+            "group": "",
+            "kind": "ConfigMap",
+            "name": "runtime",
+            "namespace": "kpcp-1793582521855488800",
+            "ownershipID": "f9e1e8b0-c388-4ee3-a106-4d31cd91d763",
+            "readinessPolicy": "ApplyOnly",
+            "resource": "configmaps",
+            "targetIdentityDigest": "sha256:31d3fbd33ec5dd030aad41eaac590660e76d624674c1bd1ff8b3c058df8b4f09",
+            "uid": "cf7b74e9-647a-45d9-8a8b-7df1a96af5ff",
+            "version": "v1"
+          }
+        ],
+        "inventoryItems": 1,
+        "observedGeneration": 3,
+        "targetIdentityDigest": "sha256:31d3fbd33ec5dd030aad41eaac590660e76d624674c1bd1ff8b3c058df8b4f09"
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:26:21Z",
+        "generation": 1,
+        "name": "concurrent-infra-destroy-plan-3",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "TerraformRun",
+            "name": "concurrent-infra-destroy-plan-3",
+            "uid": "5463b0e3-3987-45fa-a865-e4b75615b777"
+          }
+        ],
+        "resourceVersion": "97700",
+        "uid": "f52646c6-56c7-4be7-9759-2f0be7541965"
+      },
+      "spec": {},
+      "status": {
+        "completionTime": "2026-11-02T01:27:18Z",
+        "conditions": [
+          {
+            "lastProbeTime": "2026-11-02T01:27:18Z",
+            "lastTransitionTime": "2026-11-02T01:27:18Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "SuccessCriteriaMet"
+          },
+          {
+            "lastProbeTime": "2026-11-02T01:27:18Z",
+            "lastTransitionTime": "2026-11-02T01:27:18Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "Complete"
+          }
+        ],
+        "ready": 0,
+        "startTime": "2026-11-02T01:26:21Z",
+        "succeeded": 1,
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:24:08Z",
+        "generation": 1,
+        "name": "concurrent-infra-plan-1",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "TerraformRun",
+            "name": "concurrent-infra-plan-1",
+            "uid": "accb5a4f-3a59-4ad1-ae06-a2bf5cc0d493"
+          }
+        ],
+        "resourceVersion": "97373",
+        "uid": "ab9b69c9-09b0-4a5d-b9aa-04413c2fb0e6"
+      },
+      "spec": {},
+      "status": {
+        "completionTime": "2026-11-02T01:25:03Z",
+        "conditions": [
+          {
+            "lastProbeTime": "2026-11-02T01:25:03Z",
+            "lastTransitionTime": "2026-11-02T01:25:03Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "SuccessCriteriaMet"
+          },
+          {
+            "lastProbeTime": "2026-11-02T01:25:04Z",
+            "lastTransitionTime": "2026-11-02T01:25:04Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "Complete"
+          }
+        ],
+        "ready": 0,
+        "startTime": "2026-11-02T01:24:08Z",
+        "succeeded": 1,
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:25:42Z",
+        "generation": 1,
+        "name": "concurrent-infra-plan-1-apply-f013418b4d",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "TerraformRun",
+            "name": "concurrent-infra-plan-1-apply-f013418b4d",
+            "uid": "6715bf71-782d-479c-8ed1-85f439e3fb0d"
+          }
+        ],
+        "resourceVersion": "97540",
+        "uid": "2f3fb8a9-3ef8-4867-b8b9-051db9d6ab02"
+      },
+      "spec": {},
+      "status": {
+        "completionTime": "2026-11-02T01:26:20Z",
+        "conditions": [
+          {
+            "lastProbeTime": "2026-11-02T01:26:20Z",
+            "lastTransitionTime": "2026-11-02T01:26:20Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "SuccessCriteriaMet"
+          },
+          {
+            "lastProbeTime": "2026-11-02T01:26:20Z",
+            "lastTransitionTime": "2026-11-02T01:26:20Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "Complete"
+          }
+        ],
+        "ready": 0,
+        "startTime": "2026-11-02T01:25:42Z",
+        "succeeded": 1,
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:22:03Z",
+        "generation": 1,
+        "name": "environment-infra-plan-1",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "TerraformRun",
+            "name": "environment-infra-plan-1",
+            "uid": "a267eae9-3b54-41ca-ab0d-d3dd878781cb"
+          }
+        ],
+        "resourceVersion": "97055",
+        "uid": "14a5d99b-a67b-4ad0-9bd0-c22e7601da1b"
+      },
+      "spec": {},
+      "status": {
+        "completionTime": "2026-11-02T01:22:54Z",
+        "conditions": [
+          {
+            "lastProbeTime": "2026-11-02T01:22:54Z",
+            "lastTransitionTime": "2026-11-02T01:22:54Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "SuccessCriteriaMet"
+          },
+          {
+            "lastProbeTime": "2026-11-02T01:22:54Z",
+            "lastTransitionTime": "2026-11-02T01:22:54Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "Complete"
+          }
+        ],
+        "ready": 0,
+        "startTime": "2026-11-02T01:22:03Z",
+        "succeeded": 1,
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:23:11Z",
+        "generation": 1,
+        "name": "environment-infra-plan-1-apply-ce42af994b",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "TerraformRun",
+            "name": "environment-infra-plan-1-apply-ce42af994b",
+            "uid": "0ee0ddd2-3eb8-406e-be5c-0ff081b886e5"
+          }
+        ],
+        "resourceVersion": "97153",
+        "uid": "9944e738-9ac4-4a71-ba73-cd49daa4568e"
+      },
+      "spec": {},
+      "status": {
+        "completionTime": "2026-11-02T01:23:49Z",
+        "conditions": [
+          {
+            "lastProbeTime": "2026-11-02T01:23:49Z",
+            "lastTransitionTime": "2026-11-02T01:23:49Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "SuccessCriteriaMet"
+          },
+          {
+            "lastProbeTime": "2026-11-02T01:23:49Z",
+            "lastTransitionTime": "2026-11-02T01:23:49Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "Complete"
+          }
+        ],
+        "ready": 0,
+        "startTime": "2026-11-02T01:23:11Z",
+        "succeeded": 1,
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:26:21Z",
+        "generation": 1,
+        "name": "second-infra-destroy-plan-3",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "TerraformRun",
+            "name": "second-infra-destroy-plan-3",
+            "uid": "e425c037-09d6-40f4-9a19-01c84935209b"
+          }
+        ],
+        "resourceVersion": "97705",
+        "uid": "abbb1497-b4c4-4aa9-bde6-b01d5d50906a"
+      },
+      "spec": {},
+      "status": {
+        "completionTime": "2026-11-02T01:27:18Z",
+        "conditions": [
+          {
+            "lastProbeTime": "2026-11-02T01:27:18Z",
+            "lastTransitionTime": "2026-11-02T01:27:18Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "SuccessCriteriaMet"
+          },
+          {
+            "lastProbeTime": "2026-11-02T01:27:18Z",
+            "lastTransitionTime": "2026-11-02T01:27:18Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "Complete"
+          }
+        ],
+        "ready": 0,
+        "startTime": "2026-11-02T01:26:21Z",
+        "succeeded": 1,
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:27:19Z",
+        "generation": 1,
+        "name": "second-infra-destroy-plan-3-apply-6ccbc85640",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "TerraformRun",
+            "name": "second-infra-destroy-plan-3-apply-6ccbc85640",
+            "uid": "2792676e-eb99-4123-bfb6-b248cdd92a10"
+          }
+        ],
+        "resourceVersion": "97738",
+        "uid": "8159c8e5-d8c6-4417-b495-be6381ab150f"
+      },
+      "spec": {},
+      "status": {
+        "active": 1,
+        "ready": 1,
+        "startTime": "2026-11-02T01:27:19Z",
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:24:08Z",
+        "generation": 1,
+        "name": "second-infra-plan-1",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "TerraformRun",
+            "name": "second-infra-plan-1",
+            "uid": "f4c69a4e-f381-459e-af2a-e1205c78bfe2"
+          }
+        ],
+        "resourceVersion": "97354",
+        "uid": "7910aedc-86e7-4be7-a3b8-b076472f3804"
+      },
+      "spec": {},
+      "status": {
+        "completionTime": "2026-11-02T01:25:00Z",
+        "conditions": [
+          {
+            "lastProbeTime": "2026-11-02T01:25:00Z",
+            "lastTransitionTime": "2026-11-02T01:25:00Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "SuccessCriteriaMet"
+          },
+          {
+            "lastProbeTime": "2026-11-02T01:25:00Z",
+            "lastTransitionTime": "2026-11-02T01:25:00Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "Complete"
+          }
+        ],
+        "ready": 0,
+        "startTime": "2026-11-02T01:24:08Z",
+        "succeeded": 1,
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:25:04Z",
+        "generation": 1,
+        "name": "second-infra-plan-1-apply-55dcaef7cb",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "platform.example.io/v1alpha1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "TerraformRun",
+            "name": "second-infra-plan-1-apply-55dcaef7cb",
+            "uid": "d6008ffd-5541-4f14-82bf-27609360e6f8"
+          }
+        ],
+        "resourceVersion": "97458",
+        "uid": "0f4b2cf7-8445-40c8-b042-9432d1bd046e"
+      },
+      "spec": {},
+      "status": {
+        "completionTime": "2026-11-02T01:25:42Z",
+        "conditions": [
+          {
+            "lastProbeTime": "2026-11-02T01:25:42Z",
+            "lastTransitionTime": "2026-11-02T01:25:42Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "SuccessCriteriaMet"
+          },
+          {
+            "lastProbeTime": "2026-11-02T01:25:42Z",
+            "lastTransitionTime": "2026-11-02T01:25:42Z",
+            "message": "Reached expected number of succeeded pods",
+            "reason": "CompletionsReached",
+            "status": "True",
+            "type": "Complete"
+          }
+        ],
+        "ready": 0,
+        "startTime": "2026-11-02T01:25:04Z",
+        "succeeded": 1,
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:26:21Z",
+        "generation": 1,
+        "name": "concurrent-infra-destroy-plan-3-f98wc",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "concurrent-infra-destroy-plan-3",
+            "uid": "f52646c6-56c7-4be7-9759-2f0be7541965"
+          }
+        ],
+        "resourceVersion": "97697",
+        "uid": "83c79fc3-6452-496f-b21d-89e0350450c3"
+      },
+      "spec": {},
+      "status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        },
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:18Z",
+            "message": "pod sandbox is not ready",
+            "observedGeneration": 1,
+            "reason": "PodSandboxNotReady",
+            "status": "False",
+            "type": "PodReadyToStartContainers"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:26:21Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:16Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:16Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:26:21Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "containerd://fa77962f42d3e4b348a835f9a177421abc14b81e1b3f0ddfe506d40755333a4d",
+            "image": "localhost/kpcp-runner:gates-d9f0386",
+            "imageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "lastState": {},
+            "name": "terraform-runner",
+            "ready": false,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://fa77962f42d3e4b348a835f9a177421abc14b81e1b3f0ddfe506d40755333a4d",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:27:15Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:26:22Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "hostIP": "192.168.49.2",
+        "hostIPs": [
+          {
+            "ip": "192.168.49.2"
+          }
+        ],
+        "observedGeneration": 1,
+        "phase": "Succeeded",
+        "podIP": "10.244.0.135",
+        "podIPs": [
+          {
+            "ip": "10.244.0.135"
+          }
+        ],
+        "qosClass": "Burstable",
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "memory": "1Gi"
+          },
+          "requests": {
+            "cpu": "79m",
+            "memory": "128Mi"
+          }
+        },
+        "startTime": "2026-11-02T01:26:21Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:25:42Z",
+        "generation": 1,
+        "name": "concurrent-infra-plan-1-apply-f013418b4d-c7kmt",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "concurrent-infra-plan-1-apply-f013418b4d",
+            "uid": "2f3fb8a9-3ef8-4867-b8b9-051db9d6ab02"
+          }
+        ],
+        "resourceVersion": "97538",
+        "uid": "17125495-3b0e-4bd4-b147-7c0f13ca3755"
+      },
+      "spec": {},
+      "status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        },
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:26:19Z",
+            "message": "pod sandbox is not ready",
+            "observedGeneration": 1,
+            "reason": "PodSandboxNotReady",
+            "status": "False",
+            "type": "PodReadyToStartContainers"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:42Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:26:18Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:26:18Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:42Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "containerd://0e0d427bd040140a9b80dd76c5cc84c838b544d99b613891788113e41950385c",
+            "image": "localhost/kpcp-runner:gates-d9f0386",
+            "imageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "lastState": {},
+            "name": "terraform-runner",
+            "ready": false,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://0e0d427bd040140a9b80dd76c5cc84c838b544d99b613891788113e41950385c",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:26:18Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:25:44Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "hostIP": "192.168.49.2",
+        "hostIPs": [
+          {
+            "ip": "192.168.49.2"
+          }
+        ],
+        "observedGeneration": 1,
+        "phase": "Succeeded",
+        "podIP": "10.244.0.133",
+        "podIPs": [
+          {
+            "ip": "10.244.0.133"
+          }
+        ],
+        "qosClass": "Burstable",
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "memory": "1Gi"
+          },
+          "requests": {
+            "cpu": "79m",
+            "memory": "128Mi"
+          }
+        },
+        "startTime": "2026-11-02T01:25:42Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:24:08Z",
+        "generation": 1,
+        "name": "concurrent-infra-plan-1-n7zxh",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "concurrent-infra-plan-1",
+            "uid": "ab9b69c9-09b0-4a5d-b9aa-04413c2fb0e6"
+          }
+        ],
+        "resourceVersion": "97371",
+        "uid": "9e2a21ea-d5ba-4595-8e3f-e435d93f78c1"
+      },
+      "spec": {},
+      "status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        },
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:03Z",
+            "message": "pod sandbox is not ready",
+            "observedGeneration": 1,
+            "reason": "PodSandboxNotReady",
+            "status": "False",
+            "type": "PodReadyToStartContainers"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:24:11Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:01Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:01Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:24:08Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "containerd://e6eea2ff68be59d50560ae0ad39f580f430e3e3fea2d9887ca397d42bc7a1501",
+            "image": "localhost/kpcp-runner:gates-d9f0386",
+            "imageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "lastState": {},
+            "name": "terraform-runner",
+            "ready": false,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://e6eea2ff68be59d50560ae0ad39f580f430e3e3fea2d9887ca397d42bc7a1501",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:25:01Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:24:11Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "hostIP": "192.168.49.2",
+        "hostIPs": [
+          {
+            "ip": "192.168.49.2"
+          }
+        ],
+        "initContainerStatuses": [
+          {
+            "containerID": "containerd://0d8861ef0b13ed0ab786b691be658d30f6cb8a5d4086f4a14ff64077d9e6432b",
+            "image": "docker.io/alpine/git:2.45.2",
+            "imageID": "docker.io/alpine/git@sha256:16ad8e788e1d3b0c30f18da8dde5c0ace3b187445a62d8af893b003ca1e70592",
+            "lastState": {},
+            "name": "source-clone",
+            "ready": true,
+            "resources": {},
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://0d8861ef0b13ed0ab786b691be658d30f6cb8a5d4086f4a14ff64077d9e6432b",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:24:10Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:24:09Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          },
+          {
+            "containerID": "containerd://734d9cd90da22c515defa5a7a1bd685373977bb0cb356219c217a0ddc4246343",
+            "image": "docker.io/alpine/git:2.45.2",
+            "imageID": "docker.io/alpine/git@sha256:16ad8e788e1d3b0c30f18da8dde5c0ace3b187445a62d8af893b003ca1e70592",
+            "lastState": {},
+            "name": "source-checkout",
+            "ready": true,
+            "resources": {},
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://734d9cd90da22c515defa5a7a1bd685373977bb0cb356219c217a0ddc4246343",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:24:10Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:24:10Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "observedGeneration": 1,
+        "phase": "Succeeded",
+        "podIP": "10.244.0.130",
+        "podIPs": [
+          {
+            "ip": "10.244.0.130"
+          }
+        ],
+        "qosClass": "Burstable",
+        "resources": {
+          "requests": {
+            "cpu": "79m",
+            "memory": "128Mi"
+          }
+        },
+        "startTime": "2026-11-02T01:24:08Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:23:11Z",
+        "generation": 1,
+        "name": "environment-infra-plan-1-apply-ce42af994b-76jfr",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "environment-infra-plan-1-apply-ce42af994b",
+            "uid": "9944e738-9ac4-4a71-ba73-cd49daa4568e"
+          }
+        ],
+        "resourceVersion": "97151",
+        "uid": "1cf54cd4-a27d-46ab-b263-08f13b079bce"
+      },
+      "spec": {},
+      "status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        },
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:23:48Z",
+            "message": "pod sandbox is not ready",
+            "observedGeneration": 1,
+            "reason": "PodSandboxNotReady",
+            "status": "False",
+            "type": "PodReadyToStartContainers"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:23:11Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:23:47Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:23:47Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:23:11Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "containerd://250ca1a45a5bb939cb21c3a47abb4484e147662aeb72fa21c4eeaa53987152c2",
+            "image": "localhost/kpcp-runner:gates-d9f0386",
+            "imageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "lastState": {},
+            "name": "terraform-runner",
+            "ready": false,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://250ca1a45a5bb939cb21c3a47abb4484e147662aeb72fa21c4eeaa53987152c2",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:23:47Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:23:12Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "hostIP": "192.168.49.2",
+        "hostIPs": [
+          {
+            "ip": "192.168.49.2"
+          }
+        ],
+        "observedGeneration": 1,
+        "phase": "Succeeded",
+        "podIP": "10.244.0.129",
+        "podIPs": [
+          {
+            "ip": "10.244.0.129"
+          }
+        ],
+        "qosClass": "Burstable",
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "memory": "1Gi"
+          },
+          "requests": {
+            "memory": "128Mi"
+          }
+        },
+        "startTime": "2026-11-02T01:23:11Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:22:03Z",
+        "generation": 1,
+        "name": "environment-infra-plan-1-b6b4q",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "environment-infra-plan-1",
+            "uid": "14a5d99b-a67b-4ad0-9bd0-c22e7601da1b"
+          }
+        ],
+        "resourceVersion": "97054",
+        "uid": "7315c770-ff92-4181-ae87-7b4a0a0d09f0"
+      },
+      "spec": {},
+      "status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        },
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:22:53Z",
+            "message": "pod sandbox is not ready",
+            "observedGeneration": 1,
+            "reason": "PodSandboxNotReady",
+            "status": "False",
+            "type": "PodReadyToStartContainers"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:22:06Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:22:52Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:22:52Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:22:03Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "containerd://9a64b0990d16bada63a38c3080cb355554025303c30a39c2927ac30f84113609",
+            "image": "localhost/kpcp-runner:gates-d9f0386",
+            "imageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "lastState": {},
+            "name": "terraform-runner",
+            "ready": false,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://9a64b0990d16bada63a38c3080cb355554025303c30a39c2927ac30f84113609",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:22:51Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:22:06Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "hostIP": "192.168.49.2",
+        "hostIPs": [
+          {
+            "ip": "192.168.49.2"
+          }
+        ],
+        "initContainerStatuses": [
+          {
+            "containerID": "containerd://19d50922eae30ce8756123e34e3460e1d21269f27db2c0d5a5d2342f3d90f119",
+            "image": "docker.io/alpine/git:2.45.2",
+            "imageID": "docker.io/alpine/git@sha256:16ad8e788e1d3b0c30f18da8dde5c0ace3b187445a62d8af893b003ca1e70592",
+            "lastState": {},
+            "name": "source-clone",
+            "ready": true,
+            "resources": {},
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://19d50922eae30ce8756123e34e3460e1d21269f27db2c0d5a5d2342f3d90f119",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:22:04Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:22:04Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          },
+          {
+            "containerID": "containerd://06ea08589bc9af9d6a9aa100183c73ea859411ca7f35e0c398c9fa2fad3b1915",
+            "image": "docker.io/alpine/git:2.45.2",
+            "imageID": "docker.io/alpine/git@sha256:16ad8e788e1d3b0c30f18da8dde5c0ace3b187445a62d8af893b003ca1e70592",
+            "lastState": {},
+            "name": "source-checkout",
+            "ready": true,
+            "resources": {},
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://06ea08589bc9af9d6a9aa100183c73ea859411ca7f35e0c398c9fa2fad3b1915",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:22:05Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:22:05Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "observedGeneration": 1,
+        "phase": "Succeeded",
+        "podIP": "10.244.0.128",
+        "podIPs": [
+          {
+            "ip": "10.244.0.128"
+          }
+        ],
+        "qosClass": "Burstable",
+        "resources": {
+          "requests": {
+            "cpu": "79m",
+            "memory": "128Mi"
+          }
+        },
+        "startTime": "2026-11-02T01:22:03Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:26:21Z",
+        "generation": 1,
+        "name": "second-infra-destroy-plan-3-2hvlk",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "second-infra-destroy-plan-3",
+            "uid": "abbb1497-b4c4-4aa9-bde6-b01d5d50906a"
+          }
+        ],
+        "resourceVersion": "97702",
+        "uid": "c2d4a8bc-fd27-4950-b05f-f30a8c06a5ad"
+      },
+      "spec": {},
+      "status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        },
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:17Z",
+            "message": "pod sandbox is not ready",
+            "observedGeneration": 1,
+            "reason": "PodSandboxNotReady",
+            "status": "False",
+            "type": "PodReadyToStartContainers"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:26:21Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:16Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:16Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:26:21Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "containerd://0108df4b062d68734ee25fdee00b6b2b1f74332ad4c523a9ed0e4c34996a0a8a",
+            "image": "localhost/kpcp-runner:gates-d9f0386",
+            "imageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "lastState": {},
+            "name": "terraform-runner",
+            "ready": false,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://0108df4b062d68734ee25fdee00b6b2b1f74332ad4c523a9ed0e4c34996a0a8a",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:27:15Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:26:22Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "hostIP": "192.168.49.2",
+        "hostIPs": [
+          {
+            "ip": "192.168.49.2"
+          }
+        ],
+        "observedGeneration": 1,
+        "phase": "Succeeded",
+        "podIP": "10.244.0.134",
+        "podIPs": [
+          {
+            "ip": "10.244.0.134"
+          }
+        ],
+        "qosClass": "Burstable",
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "memory": "1Gi"
+          },
+          "requests": {
+            "cpu": "79m",
+            "memory": "128Mi"
+          }
+        },
+        "startTime": "2026-11-02T01:26:21Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:27:19Z",
+        "finalizers": [
+          "batch.kubernetes.io/job-tracking"
+        ],
+        "generation": 1,
+        "name": "second-infra-destroy-plan-3-apply-6ccbc85640-s6hnn",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "second-infra-destroy-plan-3-apply-6ccbc85640",
+            "uid": "8159c8e5-d8c6-4417-b495-be6381ab150f"
+          }
+        ],
+        "resourceVersion": "97736",
+        "uid": "25667451-1479-4458-bda3-3e04223a2dfa"
+      },
+      "spec": {},
+      "status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        },
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:20Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodReadyToStartContainers"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:19Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:20Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:20Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:27:19Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "containerd://f92844e3b9bb019336fc9164cfb663e6df7b8e5fc1d3b833e852f722f29287ff",
+            "image": "localhost/kpcp-runner:gates-d9f0386",
+            "imageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "lastState": {},
+            "name": "terraform-runner",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-02T01:27:20Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "hostIP": "192.168.49.2",
+        "hostIPs": [
+          {
+            "ip": "192.168.49.2"
+          }
+        ],
+        "observedGeneration": 1,
+        "phase": "Running",
+        "podIP": "10.244.0.136",
+        "podIPs": [
+          {
+            "ip": "10.244.0.136"
+          }
+        ],
+        "qosClass": "Burstable",
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "memory": "1Gi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "memory": "128Mi"
+          }
+        },
+        "startTime": "2026-11-02T01:27:19Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:24:08Z",
+        "generation": 1,
+        "name": "second-infra-plan-1-9h8zj",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "second-infra-plan-1",
+            "uid": "7910aedc-86e7-4be7-a3b8-b076472f3804"
+          }
+        ],
+        "resourceVersion": "97352",
+        "uid": "1149f42a-0b60-4a81-8be5-324e076a7f53"
+      },
+      "spec": {},
+      "status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        },
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:00Z",
+            "message": "pod sandbox is not ready",
+            "observedGeneration": 1,
+            "reason": "PodSandboxNotReady",
+            "status": "False",
+            "type": "PodReadyToStartContainers"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:24:11Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:24:58Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:24:58Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:24:08Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "containerd://a1ada032bfbf8241b77f4e8aea2dbb915b41cba3fef615b3e2d1795de6f79774",
+            "image": "localhost/kpcp-runner:gates-d9f0386",
+            "imageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "lastState": {},
+            "name": "terraform-runner",
+            "ready": false,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://a1ada032bfbf8241b77f4e8aea2dbb915b41cba3fef615b3e2d1795de6f79774",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:24:58Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:24:11Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "hostIP": "192.168.49.2",
+        "hostIPs": [
+          {
+            "ip": "192.168.49.2"
+          }
+        ],
+        "initContainerStatuses": [
+          {
+            "containerID": "containerd://e6c0f97a59255ca4701606d708d7290a80457bd76e4320e01851a9f736b3a0fd",
+            "image": "docker.io/alpine/git:2.45.2",
+            "imageID": "docker.io/alpine/git@sha256:16ad8e788e1d3b0c30f18da8dde5c0ace3b187445a62d8af893b003ca1e70592",
+            "lastState": {},
+            "name": "source-clone",
+            "ready": true,
+            "resources": {},
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://e6c0f97a59255ca4701606d708d7290a80457bd76e4320e01851a9f736b3a0fd",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:24:10Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:24:10Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          },
+          {
+            "containerID": "containerd://aef9f74f448df16f779193dd432fdea03f30cbc9be2bc205f5e6bedd2028641d",
+            "image": "docker.io/alpine/git:2.45.2",
+            "imageID": "docker.io/alpine/git@sha256:16ad8e788e1d3b0c30f18da8dde5c0ace3b187445a62d8af893b003ca1e70592",
+            "lastState": {},
+            "name": "source-checkout",
+            "ready": true,
+            "resources": {},
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://aef9f74f448df16f779193dd432fdea03f30cbc9be2bc205f5e6bedd2028641d",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:24:10Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:24:10Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "observedGeneration": 1,
+        "phase": "Succeeded",
+        "podIP": "10.244.0.131",
+        "podIPs": [
+          {
+            "ip": "10.244.0.131"
+          }
+        ],
+        "qosClass": "Burstable",
+        "resources": {
+          "requests": {
+            "memory": "128Mi"
+          }
+        },
+        "startTime": "2026-11-02T01:24:08Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "creationTimestamp": "2026-11-02T01:25:04Z",
+        "generation": 1,
+        "name": "second-infra-plan-1-apply-55dcaef7cb-4klvw",
+        "namespace": "kpcp-1793582521855488800",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "second-infra-plan-1-apply-55dcaef7cb",
+            "uid": "0f4b2cf7-8445-40c8-b042-9432d1bd046e"
+          }
+        ],
+        "resourceVersion": "97456",
+        "uid": "7fed98e2-975f-42b8-9d39-fd22d29aa783"
+      },
+      "spec": {},
+      "status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        },
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:41Z",
+            "message": "pod sandbox is not ready",
+            "observedGeneration": 1,
+            "reason": "PodSandboxNotReady",
+            "status": "False",
+            "type": "PodReadyToStartContainers"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:04Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:40Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:40Z",
+            "observedGeneration": 1,
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-11-02T01:25:04Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "containerd://a570265817fe040d89c280f9f9ed7b566171cc8d1e9e886ed8374a3bb68c1634",
+            "image": "localhost/kpcp-runner:gates-d9f0386",
+            "imageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "lastState": {},
+            "name": "terraform-runner",
+            "ready": false,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://a570265817fe040d89c280f9f9ed7b566171cc8d1e9e886ed8374a3bb68c1634",
+                "exitCode": 0,
+                "finishedAt": "2026-11-02T01:25:39Z",
+                "reason": "Completed",
+                "startedAt": "2026-11-02T01:25:05Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 1000,
+                "supplementalGroups": [
+                  1000
+                ],
+                "uid": 1000
+              }
+            }
+          }
+        ],
+        "hostIP": "192.168.49.2",
+        "hostIPs": [
+          {
+            "ip": "192.168.49.2"
+          }
+        ],
+        "observedGeneration": 1,
+        "phase": "Succeeded",
+        "podIP": "10.244.0.132",
+        "podIPs": [
+          {
+            "ip": "10.244.0.132"
+          }
+        ],
+        "qosClass": "Burstable",
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "memory": "1Gi"
+          },
+          "requests": {
+            "cpu": "79m",
+            "memory": "128Mi"
+          }
+        },
+        "startTime": "2026-11-02T01:25:04Z"
+      }
+    }
+  ],
+  "kind": "List",
+  "metadata": {
+    "resourceVersion": ""
+  }
+}

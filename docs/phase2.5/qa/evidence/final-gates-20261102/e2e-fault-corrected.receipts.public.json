@@ -1,0 +1,479 @@
+[
+  {
+    "rawReceiptFile": "kpcp-1793580799342768300-destroy-active-before-restart.json",
+    "rawSHA256": "791864aecd9a8c766d2b68e4b09e842ef10a94ed35ed605c763f08dca8afb59c",
+    "receipt": {
+      "at": "2026-11-02T00:56:55.5277726Z",
+      "evidence": {
+        "job": {
+          "metadata": {
+            "name": "environment-infra-destroy-plan-3-attempt-17935809375-287d1f2c8d",
+            "namespace": "kpcp-1793580799342768300",
+            "uid": "624f2050-a06a-44a0-babe-fc5523d2b939",
+            "resourceVersion": "94283",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T00:56:55Z",
+            "ownerReferences": [
+              {
+                "apiVersion": "platform.example.io/v1alpha1",
+                "kind": "TerraformRun",
+                "name": "environment-infra-destroy-plan-3-attempt-17935809375-287d1f2c8d",
+                "uid": "5daadbb1-3b67-4641-938c-5f4fe4149811",
+                "controller": true,
+                "blockOwnerDeletion": true
+              }
+            ]
+          },
+          "spec": {},
+          "status": {
+            "startTime": "2026-11-02T00:56:55Z",
+            "active": 1,
+            "terminating": 0,
+            "uncountedTerminatedPods": {},
+            "ready": 0
+          }
+        },
+        "run": {
+          "kind": "TerraformRun",
+          "apiVersion": "platform.example.io/v1alpha1",
+          "metadata": {
+            "name": "environment-infra-destroy-plan-3-attempt-17935809375-287d1f2c8d",
+            "namespace": "kpcp-1793580799342768300",
+            "uid": "5daadbb1-3b67-4641-938c-5f4fe4149811",
+            "resourceVersion": "94287",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T00:56:55Z",
+            "ownerReferences": [
+              {
+                "apiVersion": "platform.example.io/v1alpha1",
+                "kind": "InfraStack",
+                "name": "environment-infra",
+                "uid": "7084d855-5342-4ab7-9e1b-a9bc9ee16042",
+                "controller": true,
+                "blockOwnerDeletion": true
+              }
+            ]
+          },
+          "spec": {
+            "stackRef": {
+              "name": "environment-infra"
+            },
+            "infraStackGeneration": 3,
+            "operation": "Apply",
+            "planMode": "Destroy",
+            "source": {
+              "type": "RetainedBundle",
+              "path": ".",
+              "ref": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/source-bundle.tar.zst",
+              "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80"
+            },
+            "backendConfigArtifactRef": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/backend-config.hcl",
+            "backendConfigArtifactDigest": "sha256:5d527dc93c3b0793785671b57f0c3002d1feadf653b6bf17fd9a0d3fc6396819",
+            "workspace": "environment",
+            "executionContextDigest": "sha256:a772081b48d7ffb8788dd8c8221d1a1973c07855aabb37f7776dec61401904b5",
+            "planRunUID": "aee4ab77-bff8-4e1b-9351-96629368e5b0",
+            "planRef": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/plan.binary",
+            "planDigest": "sha256:4fb9e44151e1aa34b07e6a16027116412c0c6ad4df181d9e8b8134b8ab7a3ae6",
+            "planReportRef": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/plan-report.json",
+            "planReportDigest": "sha256:6ffd328c0f194870183c721ab50ffcfe5439de62ab474f8d9018165c32e501c8",
+            "approvalRef": {
+              "name": "approve-f029d8471a5b41aaf9d641a5"
+            },
+            "approvalUID": "175e01b0-8b09-4655-b1e8-ce7b7f537ea8",
+            "effectivePlanInputDigest": "sha256:e49e5160c4fe4bd851ddcf904c63232afb9f92dba815327c1fd9bfcbb7e0b07f",
+            "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+            "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+            "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "mutationFence": true,
+            "runnerServiceAccountName": "runner"
+          },
+          "status": {
+            "observedGeneration": 1,
+            "conditions": [
+              {
+                "type": "Ready",
+                "status": "False",
+                "observedGeneration": 1,
+                "lastTransitionTime": "2026-11-02T00:56:55Z",
+                "reason": "TerraformJobRunning",
+                "message": "Terraform Job is running."
+              }
+            ],
+            "jobRef": {
+              "name": "environment-infra-destroy-plan-3-attempt-17935809375-287d1f2c8d"
+            },
+            "executionOutcome": "Running",
+            "jobUID": "624f2050-a06a-44a0-babe-fc5523d2b939"
+          }
+        }
+      },
+      "runID": "kpcp-1793580799342768300",
+      "sourceSHA": "95c9cc9f5009be189bd5761d0ccbc391dc283047",
+      "test": "TestLifecycle/F_DestroyFinalizer"
+    }
+  },
+  {
+    "rawReceiptFile": "kpcp-1793580799342768300-destroy-approval-blocked.json",
+    "rawSHA256": "d43eb9b03bb3b94ef2bfd019a1f7f8e80f4fa6c6a5bdf3d3762f419d71fe041f",
+    "receipt": {
+      "at": "2026-11-02T00:56:38.0161644Z",
+      "evidence": {
+        "applyCount": 1,
+        "badApproval": {
+          "metadata": {
+            "name": "wrong-destroy-digest",
+            "namespace": "kpcp-1793580799342768300",
+            "uid": "b90ab03a-2339-44c5-be1d-01c2053ee24b",
+            "resourceVersion": "94249",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T00:56:35Z"
+          },
+          "spec": {
+            "planRunRef": {
+              "name": "environment-infra-destroy-plan-3-attempt-1793580937533102800"
+            },
+            "planRunUID": "aee4ab77-bff8-4e1b-9351-96629368e5b0",
+            "planDigest": "sha256:not-the-destroy-plan",
+            "executionContextDigest": "sha256:a772081b48d7ffb8788dd8c8221d1a1973c07855aabb37f7776dec61401904b5",
+            "effectivePlanInputDigest": "sha256:e49e5160c4fe4bd851ddcf904c63232afb9f92dba815327c1fd9bfcbb7e0b07f",
+            "planReportRef": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/plan-report.json",
+            "planReportDigest": "sha256:6ffd328c0f194870183c721ab50ffcfe5439de62ab474f8d9018165c32e501c8"
+          },
+          "status": {}
+        },
+        "environment": {
+          "metadata": {
+            "name": "environment",
+            "namespace": "kpcp-1793580799342768300",
+            "uid": "97efec9a-0a05-477e-b852-4e13d00a96ed",
+            "resourceVersion": "94081",
+            "generation": 2,
+            "creationTimestamp": "2026-11-02T00:53:19Z",
+            "deletionTimestamp": "2026-11-02T00:55:08Z",
+            "finalizers": [
+              "platform.example.io/platformenvironment-finalizer"
+            ]
+          },
+          "spec": {
+            "target": {
+              "provider": "",
+              "clusterName": ""
+            }
+          },
+          "status": {
+            "observedGeneration": 2,
+            "conditions": [
+              {
+                "type": "Ready",
+                "status": "False",
+                "observedGeneration": 2,
+                "lastTransitionTime": "2026-11-02T00:55:25Z",
+                "reason": "Deleting",
+                "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal."
+              }
+            ],
+            "infraStackRef": {
+              "name": "environment-infra"
+            },
+            "resourceSetRef": {
+              "name": "environment-resources"
+            },
+            "targetIdentity": {
+              "provider": "kubernetes",
+              "accountID": "local",
+              "region": "local",
+              "clusterName": "podman-minikube",
+              "incarnationID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281"
+            },
+            "targetConnection": {
+              "endpoint": "kubeconfig:podman-minikube",
+              "authMode": "kubeconfig-context",
+              "networkRouteProfile": "kubeconfig",
+              "kubeContext": "podman-minikube"
+            }
+          }
+        },
+        "existingReconcileApproval": {
+          "metadata": {
+            "name": "approve-29e393735ee43a0d99f27910",
+            "namespace": "kpcp-1793580799342768300",
+            "uid": "437199a2-de42-4160-a68b-0c662fe95cb8",
+            "resourceVersion": "93956",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T00:54:11Z"
+          },
+          "spec": {
+            "planRunRef": {
+              "name": "environment-infra-plan-1"
+            },
+            "planRunUID": "3707c053-ceda-4f6e-9c48-a5ffa56ecd92",
+            "planDigest": "sha256:cfda6be8d0f54c31a1ccbeac4c1b94dbc374b247e4e462f3aada248d045411c5",
+            "executionContextDigest": "sha256:a772081b48d7ffb8788dd8c8221d1a1973c07855aabb37f7776dec61401904b5",
+            "effectivePlanInputDigest": "sha256:a66e6c263b21e3e8fa1103fcfc3302b43b010fdbe54dbea6546424c9fa2d1b99",
+            "planReportRef": "runs/3707c053-ceda-4f6e-9c48-a5ffa56ecd92/plan-report.json",
+            "planReportDigest": "sha256:3dc3cdb0e9a26526f5ffe53c3946761af93c0ee248f0a4ef9042ecb2e7db4fd1"
+          },
+          "status": {}
+        },
+        "plan": {
+          "kind": "TerraformRun",
+          "apiVersion": "platform.example.io/v1alpha1",
+          "metadata": {
+            "name": "environment-infra-destroy-plan-3-attempt-1793580937533102800",
+            "namespace": "kpcp-1793580799342768300",
+            "uid": "aee4ab77-bff8-4e1b-9351-96629368e5b0",
+            "resourceVersion": "94246",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T00:55:37Z",
+            "ownerReferences": [
+              {
+                "apiVersion": "platform.example.io/v1alpha1",
+                "kind": "InfraStack",
+                "name": "environment-infra",
+                "uid": "7084d855-5342-4ab7-9e1b-a9bc9ee16042",
+                "controller": true,
+                "blockOwnerDeletion": true
+              }
+            ]
+          },
+          "spec": {
+            "stackRef": {
+              "name": "environment-infra"
+            },
+            "infraStackGeneration": 3,
+            "operation": "Plan",
+            "planMode": "Destroy",
+            "source": {
+              "type": "RetainedBundle",
+              "path": ".",
+              "ref": "runs/3707c053-ceda-4f6e-9c48-a5ffa56ecd92/source-bundle.tar.zst",
+              "digest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80"
+            },
+            "backendConfigArtifactRef": "runs/3707c053-ceda-4f6e-9c48-a5ffa56ecd92/backend-config.hcl",
+            "backendConfigArtifactDigest": "sha256:5d527dc93c3b0793785671b57f0c3002d1feadf653b6bf17fd9a0d3fc6396819",
+            "workspace": "environment",
+            "executionContextDigest": "sha256:a772081b48d7ffb8788dd8c8221d1a1973c07855aabb37f7776dec61401904b5",
+            "effectivePlanInputDigest": "sha256:a66e6c263b21e3e8fa1103fcfc3302b43b010fdbe54dbea6546424c9fa2d1b99",
+            "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+            "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+            "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "mutationFence": true,
+            "runnerServiceAccountName": "runner"
+          },
+          "status": {
+            "observedGeneration": 1,
+            "conditions": [
+              {
+                "type": "Ready",
+                "status": "True",
+                "observedGeneration": 1,
+                "lastTransitionTime": "2026-11-02T00:56:35Z",
+                "reason": "TerraformSucceeded",
+                "message": "Terraform runner terminal result captured."
+              }
+            ],
+            "jobRef": {
+              "name": "environment-infra-destroy-plan-3-attempt-1793580937533102800"
+            },
+            "sourceBundleRef": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/source-bundle.tar.zst",
+            "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+            "planReportRef": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/plan-report.json",
+            "planReportDigest": "sha256:6ffd328c0f194870183c721ab50ffcfe5439de62ab474f8d9018165c32e501c8",
+            "terminalResultRef": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/terminal-result.json",
+            "terminalResultDigest": "sha256:08d47ea02ebd4f4d41ec32bc633c8ae2009b2f0e923b41d69b50eeff7c022141",
+            "resolvedBackendConfigRef": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/backend-config.hcl",
+            "resolvedBackendConfigDigest": "sha256:5d527dc93c3b0793785671b57f0c3002d1feadf653b6bf17fd9a0d3fc6396819",
+            "planRef": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/plan.binary",
+            "planDigest": "sha256:4fb9e44151e1aa34b07e6a16027116412c0c6ad4df181d9e8b8134b8ab7a3ae6",
+            "effectivePlanInputDigest": "sha256:e49e5160c4fe4bd851ddcf904c63232afb9f92dba815327c1fd9bfcbb7e0b07f",
+            "hasChanges": true,
+            "planCreatedAt": "2026-11-02T00:56:26Z",
+            "planExpiresAt": "2026-11-02T01:56:26Z",
+            "executionOutcome": "ChangesPresent",
+            "mutationClassification": "NoMutation",
+            "artifactsReady": true,
+            "evidenceCaptured": true,
+            "jobUID": "e131eb93-9e80-4f1d-985a-5a8e9e7be628",
+            "terminalStartedAt": "2026-11-02T00:55:38Z",
+            "terminalFinishedAt": "2026-11-02T00:56:26Z"
+          }
+        }
+      },
+      "runID": "kpcp-1793580799342768300",
+      "sourceSHA": "95c9cc9f5009be189bd5761d0ccbc391dc283047",
+      "test": "TestLifecycle/F_DestroyFinalizer"
+    }
+  },
+  {
+    "rawReceiptFile": "kpcp-1793580799342768300-destroy-recovered-terminal.json",
+    "rawSHA256": "fe9fc1902d30a75f91d0b0513e9c941c492f2c9796a5eced0b3abddd3ca3b293",
+    "receipt": {
+      "at": "2026-11-02T00:57:34.7915401Z",
+      "evidence": {
+        "cloudNotFound": true,
+        "environmentNotFound": true,
+        "ref": {
+          "Key": "runs/5daadbb1-3b67-4641-938c-5f4fe4149811/terminal-result.json",
+          "Digest": "sha256:755efed88e1eac2678329bc194e3f4eb372c6b4842c127a2e095248f8fad1e46",
+          "Size": 1273,
+          "VersionID": ""
+        },
+        "terminal": {
+          "terraformRunUID": "5daadbb1-3b67-4641-938c-5f4fe4149811",
+          "JobUID": "624f2050-a06a-44a0-babe-fc5523d2b939",
+          "Operation": "Apply",
+          "ExecutionOutcome": "Succeeded",
+          "PlanRef": "runs/aee4ab77-bff8-4e1b-9351-96629368e5b0/plan.binary",
+          "PlanDigest": "sha256:4fb9e44151e1aa34b07e6a16027116412c0c6ad4df181d9e8b8134b8ab7a3ae6",
+          "TerraformExitCode": 0,
+          "ArtifactsReady": true
+        }
+      },
+      "runID": "kpcp-1793580799342768300",
+      "sourceSHA": "95c9cc9f5009be189bd5761d0ccbc391dc283047",
+      "test": "TestLifecycle/F_DestroyFinalizer"
+    }
+  },
+  {
+    "rawReceiptFile": "kpcp-1793580799342768300-exact-approval-idempotent.json",
+    "rawSHA256": "106db46839810301184899efb299d29ffbade0fc468f4359b54e34f1e95de3c4",
+    "receipt": {
+      "at": "2026-11-02T00:54:11.3218901Z",
+      "evidence": {
+        "first": {
+          "metadata": {
+            "name": "approve-29e393735ee43a0d99f27910",
+            "namespace": "kpcp-1793580799342768300",
+            "uid": "437199a2-de42-4160-a68b-0c662fe95cb8",
+            "resourceVersion": "93956",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T00:54:11Z"
+          },
+          "spec": {
+            "planRunRef": {
+              "name": "environment-infra-plan-1"
+            },
+            "planRunUID": "3707c053-ceda-4f6e-9c48-a5ffa56ecd92",
+            "planDigest": "sha256:cfda6be8d0f54c31a1ccbeac4c1b94dbc374b247e4e462f3aada248d045411c5",
+            "executionContextDigest": "sha256:a772081b48d7ffb8788dd8c8221d1a1973c07855aabb37f7776dec61401904b5",
+            "effectivePlanInputDigest": "sha256:a66e6c263b21e3e8fa1103fcfc3302b43b010fdbe54dbea6546424c9fa2d1b99",
+            "planReportRef": "runs/3707c053-ceda-4f6e-9c48-a5ffa56ecd92/plan-report.json",
+            "planReportDigest": "sha256:3dc3cdb0e9a26526f5ffe53c3946761af93c0ee248f0a4ef9042ecb2e7db4fd1"
+          },
+          "status": {}
+        },
+        "plan": {
+          "kind": "TerraformRun",
+          "apiVersion": "platform.example.io/v1alpha1",
+          "metadata": {
+            "name": "environment-infra-plan-1",
+            "namespace": "kpcp-1793580799342768300",
+            "uid": "3707c053-ceda-4f6e-9c48-a5ffa56ecd92",
+            "resourceVersion": "93953",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T00:53:20Z",
+            "ownerReferences": [
+              {
+                "apiVersion": "platform.example.io/v1alpha1",
+                "kind": "InfraStack",
+                "name": "environment-infra",
+                "uid": "7084d855-5342-4ab7-9e1b-a9bc9ee16042",
+                "controller": true,
+                "blockOwnerDeletion": true
+              }
+            ]
+          },
+          "spec": {
+            "stackRef": {
+              "name": "environment-infra"
+            },
+            "infraStackGeneration": 1,
+            "operation": "Plan",
+            "planMode": "Reconcile",
+            "source": {
+              "type": "GitCommit",
+              "url": "http://git-source.kpcp-gates-20261102-0223-infra.svc.cluster.local:18088/module/.git",
+              "revision": "98da3fb6cad0b60c60a58169aeb282aa555dbeb8",
+              "path": "."
+            },
+            "workspace": "environment",
+            "executionContextDigest": "sha256:a772081b48d7ffb8788dd8c8221d1a1973c07855aabb37f7776dec61401904b5",
+            "effectivePlanInputDigest": "sha256:a772081b48d7ffb8788dd8c8221d1a1973c07855aabb37f7776dec61401904b5",
+            "infrastructureExecutionIdentityDigest": "sha256:ae99edc0e6d85d1d773c5b25a53e6d008e47013333c04a88361500e77d253d1d",
+            "runtimeTargetIdentityDigest": "sha256:a84ca19a3a41966cc3a661100e08c031d919834a1ac35942d236d6a50776398a",
+            "targetConnectionProfileDigest": "sha256:6e8e9ebd8276651efc73d91bb8f2a3514245760659005e92fc001c8440eed896",
+            "runnerServiceAccountIdentityDigest": "sha256:c63248bce7c3e15540b98c04f9bafe5bdd8f991a226525912147356e2a3e7fd0",
+            "runnerImageDigest": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+            "runnerServiceAccountName": "runner"
+          },
+          "status": {
+            "observedGeneration": 1,
+            "conditions": [
+              {
+                "type": "Ready",
+                "status": "True",
+                "observedGeneration": 1,
+                "lastTransitionTime": "2026-11-02T00:54:11Z",
+                "reason": "TerraformSucceeded",
+                "message": "Terraform runner terminal result captured."
+              }
+            ],
+            "jobRef": {
+              "name": "environment-infra-plan-1"
+            },
+            "sourceBundleRef": "runs/3707c053-ceda-4f6e-9c48-a5ffa56ecd92/source-bundle.tar.zst",
+            "sourceBundleDigest": "sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80",
+            "planReportRef": "runs/3707c053-ceda-4f6e-9c48-a5ffa56ecd92/plan-report.json",
+            "planReportDigest": "sha256:3dc3cdb0e9a26526f5ffe53c3946761af93c0ee248f0a4ef9042ecb2e7db4fd1",
+            "terminalResultRef": "runs/3707c053-ceda-4f6e-9c48-a5ffa56ecd92/terminal-result.json",
+            "terminalResultDigest": "sha256:6b91513cf85169974c1b722f327df7164a402e4b45fa0b87db321b7a6a3f3fdd",
+            "resolvedBackendConfigRef": "runs/3707c053-ceda-4f6e-9c48-a5ffa56ecd92/backend-config.hcl",
+            "resolvedBackendConfigDigest": "sha256:5d527dc93c3b0793785671b57f0c3002d1feadf653b6bf17fd9a0d3fc6396819",
+            "planRef": "runs/3707c053-ceda-4f6e-9c48-a5ffa56ecd92/plan.binary",
+            "planDigest": "sha256:cfda6be8d0f54c31a1ccbeac4c1b94dbc374b247e4e462f3aada248d045411c5",
+            "effectivePlanInputDigest": "sha256:a66e6c263b21e3e8fa1103fcfc3302b43b010fdbe54dbea6546424c9fa2d1b99",
+            "hasChanges": true,
+            "planCreatedAt": "2026-11-02T00:54:03Z",
+            "planExpiresAt": "2026-11-02T01:54:03Z",
+            "executionOutcome": "ChangesPresent",
+            "mutationClassification": "NoMutation",
+            "artifactsReady": true,
+            "evidenceCaptured": true,
+            "jobUID": "fbe58ab9-ac18-4b2a-9263-f781aa4d2693",
+            "terminalStartedAt": "2026-11-02T00:53:23Z",
+            "terminalFinishedAt": "2026-11-02T00:54:03Z"
+          }
+        },
+        "retry": {
+          "metadata": {
+            "name": "approve-29e393735ee43a0d99f27910",
+            "namespace": "kpcp-1793580799342768300",
+            "uid": "437199a2-de42-4160-a68b-0c662fe95cb8",
+            "resourceVersion": "93956",
+            "generation": 1,
+            "creationTimestamp": "2026-11-02T00:54:11Z"
+          },
+          "spec": {
+            "planRunRef": {
+              "name": "environment-infra-plan-1"
+            },
+            "planRunUID": "3707c053-ceda-4f6e-9c48-a5ffa56ecd92",
+            "planDigest": "sha256:cfda6be8d0f54c31a1ccbeac4c1b94dbc374b247e4e462f3aada248d045411c5",
+            "executionContextDigest": "sha256:a772081b48d7ffb8788dd8c8221d1a1973c07855aabb37f7776dec61401904b5",
+            "effectivePlanInputDigest": "sha256:a66e6c263b21e3e8fa1103fcfc3302b43b010fdbe54dbea6546424c9fa2d1b99",
+            "planReportRef": "runs/3707c053-ceda-4f6e-9c48-a5ffa56ecd92/plan-report.json",
+            "planReportDigest": "sha256:3dc3cdb0e9a26526f5ffe53c3946761af93c0ee248f0a4ef9042ecb2e7db4fd1"
+          },
+          "status": {}
+        }
+      },
+      "runID": "kpcp-1793580799342768300",
+      "sourceSHA": "95c9cc9f5009be189bd5761d0ccbc391dc283047",
+      "test": "TestLifecycle"
+    }
+  }
+]

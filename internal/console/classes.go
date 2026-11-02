@@ -40,10 +40,25 @@ type ClassDetail struct {
 }
 
 type ClassValidation struct {
-	Valid    bool     `json:"valid"`
-	Errors   []string `json:"errors"`
-	Warnings []string `json:"warnings"`
-	YAML     string   `json:"yaml,omitempty"`
+	Valid          bool                        `json:"valid"`
+	Errors         []string                    `json:"errors"`
+	Warnings       []string                    `json:"warnings"`
+	ErrorDetails   []ClassValidationDiagnostic `json:"errorDetails,omitempty"`
+	WarningDetails []ClassValidationDiagnostic `json:"warningDetails,omitempty"`
+	YAML           string                      `json:"yaml,omitempty"`
+}
+
+// Codes and fields are presentation contracts. Message retains the complete
+// original diagnostic for API clients and the console's technical details.
+type ClassValidationDiagnostic struct {
+	Code    string `json:"code"`
+	Field   string `json:"field,omitempty"`
+	Message string `json:"message"`
+}
+
+func (v *ClassValidation) reject(code, field, message string) {
+	v.Errors = append(v.Errors, message)
+	v.ErrorDetails = append(v.ErrorDetails, ClassValidationDiagnostic{Code: code, Field: field, Message: message})
 }
 
 func classObject(request CreateClassRequest) *platform.EnvironmentClass {
@@ -104,7 +119,7 @@ func (s *Server) validateClass(w http.ResponseWriter, r *http.Request) {
 		if err := s.client.Create(r.Context(), classObject(request), client.DryRunAll); err != nil {
 			if apierrors.IsInvalid(err) || apierrors.IsAlreadyExists(err) || apierrors.IsBadRequest(err) {
 				result.Valid = false
-				result.Errors = append(result.Errors, err.Error())
+				result.reject("AdmissionRejected", "", err.Error())
 			} else {
 				s.writeClassMutationError(w, err)
 				return
@@ -121,7 +136,7 @@ func (s *Server) createClass(w http.ResponseWriter, r *http.Request) {
 	}
 	result := validateClassRequest(request)
 	if !result.Valid {
-		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"code": "ClassRejected", "message": strings.Join(result.Errors, "; "), "errors": result.Errors})
+		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"code": "ClassRejected", "message": strings.Join(result.Errors, "; "), "errors": result.Errors, "errorDetails": result.ErrorDetails})
 		return
 	}
 	class := classObject(request)
@@ -192,48 +207,53 @@ func (s *Server) writeClassMutationError(w http.ResponseWriter, err error) {
 var pinnedRevision = regexp.MustCompile(`^[0-9a-fA-F]{40,64}$`)
 
 func validateClassRequest(request CreateClassRequest) ClassValidation {
+	result := ClassValidation{Errors: []string{}, Warnings: []string{}}
 	if request.Spec.ExecutionProfile != nil {
 		if err := cloud.ValidateExecutionProfile(request.Spec.ExecutionProfile); err != nil {
-			return ClassValidation{Errors: []string{err.Error()}}
+			result.reject("ExecutionProfileInvalid", "executionProfile", err.Error())
+			return result
 		}
 		if request.Spec.ExecutionProfile.CredentialsIdentity != "" {
-			return ClassValidation{Errors: []string{"class cannot supply resolved credential identity"}}
+			result.reject("ResolvedCredentialsForbidden", "executionProfile.credentialsIdentity", "class cannot supply resolved credential identity")
+			return result
 		}
 	}
-	result := ClassValidation{Errors: []string{}, Warnings: []string{"Backend configuration must exist in each environment namespace. Ready confirms class admission and controller reconciliation; source access, runner images and infrastructure execution are checked later."}}
+	warning := "Backend configuration must exist in each environment namespace. Ready confirms class admission and controller reconciliation; source access, runner images and infrastructure execution are checked later."
+	result.Warnings = append(result.Warnings, warning)
+	result.WarningDetails = append(result.WarningDetails, ClassValidationDiagnostic{Code: "BackendPrerequisites", Field: "backend.configRef", Message: warning})
 	require := func(field, value string) {
 		if strings.TrimSpace(value) == "" {
-			result.Errors = append(result.Errors, field+" is required")
+			result.reject("Required", field, field+" is required")
 		}
 	}
 	if problems := validation.IsDNS1123Subdomain(request.Name); len(problems) > 0 {
-		result.Errors = append(result.Errors, "name: "+strings.Join(problems, ", "))
+		result.reject("KubernetesNameInvalid", "name", "name: "+strings.Join(problems, ", "))
 	}
 	spec := classObject(request).DeepCopy().Spec
 	require("version", spec.Version)
 	require("source.url", spec.Source.URL)
 	if !pinnedRevision.MatchString(spec.Source.Revision) {
-		result.Errors = append(result.Errors, "source.revision must be a pinned 40-64 character hexadecimal commit")
+		result.reject("SourceRevisionUnpinned", "source.revision", "source.revision must be a pinned 40-64 character hexadecimal commit")
 	}
 	if spec.Source.Path == "" || strings.Contains(spec.Source.Path, "\\") || path.IsAbs(spec.Source.Path) || path.Clean(spec.Source.Path) == ".." || strings.HasPrefix(path.Clean(spec.Source.Path), "../") {
-		result.Errors = append(result.Errors, "source.path must be a relative path inside the repository")
+		result.reject("SourcePathInvalid", "source.path", "source.path must be a relative path inside the repository")
 	}
 	if spec.Backend.Type != "s3" {
-		result.Errors = append(result.Errors, "backend.type must be s3")
+		result.reject("BackendTypeUnsupported", "backend.type", "backend.type must be s3")
 	}
 	for field, value := range map[string]string{"backend.configRef.name": spec.Backend.ConfigRef.Name, "backend.authRef.serviceAccountName": spec.Backend.AuthRef.ServiceAccountName, "runnerProfile.serviceAccountName": spec.RunnerProfile.ServiceAccountName} {
 		if problems := validation.IsDNS1123Subdomain(value); len(problems) > 0 {
-			result.Errors = append(result.Errors, field+": "+strings.Join(problems, ", "))
+			result.reject("KubernetesNameInvalid", field, field+": "+strings.Join(problems, ", "))
 		}
 	}
 	if spec.Backend.AuthRef.ServiceAccountName != spec.RunnerProfile.ServiceAccountName {
-		result.Errors = append(result.Errors, "backend and runner service accounts must match")
+		result.reject("ServiceAccountMismatch", "backend.authRef.serviceAccountName", "backend and runner service accounts must match")
 	}
 	if spec.Backend.LockTimeout.Duration <= 0 {
-		result.Errors = append(result.Errors, "backend.lockTimeout must be positive")
+		result.reject("PositiveRequired", "backend.lockTimeout", "backend.lockTimeout must be positive")
 	}
 	if spec.Executor.ExecutionTimeout.Duration <= 0 {
-		result.Errors = append(result.Errors, "executor.executionTimeout must be positive")
+		result.reject("PositiveRequired", "executor.executionTimeout", "executor.executionTimeout must be positive")
 	}
 	require("executor.image", spec.Executor.Image)
 	require("executor.terraformVersion", spec.Executor.TerraformVersion)
@@ -242,50 +262,53 @@ func validateClassRequest(request CreateClassRequest) ClassValidation {
 	require("runnerProfile.imageDigest", spec.RunnerProfile.ImageDigest)
 	require("runnerProfile.terraformVersion", spec.RunnerProfile.TerraformVersion)
 	if spec.Executor.TerraformVersion != spec.RunnerProfile.TerraformVersion || spec.Executor.Image != spec.RunnerProfile.Image {
-		result.Errors = append(result.Errors, "executor and runner image / Terraform version must match")
+		result.reject("RunnerMismatch", "runnerProfile", "executor and runner image / Terraform version must match")
 	}
 	if spec.Executor.Parallelism != nil && *spec.Executor.Parallelism < 1 {
-		result.Errors = append(result.Errors, "executor.parallelism must be positive")
+		result.reject("PositiveRequired", "executor.parallelism", "executor.parallelism must be positive")
 	}
 	t := spec.Target
 	if _, err := target.MaterializeTarget(target.TargetExpectation{Provider: t.Provider, AccountID: t.Account, Region: t.Region, ClusterName: t.ClusterName, ClusterID: t.ClusterID, ClusterARN: t.ClusterARN, IncarnationID: t.IncarnationID, ConnectionProfile: t.ConnectionProfileRef, ExecutionRoleARN: t.ExecutionRoleARN, RuntimeRoleARN: t.RuntimeRoleARN}); err != nil {
-		result.Errors = append(result.Errors, err.Error())
+		result.reject("TargetInvalid", "target", err.Error())
 	}
 	require("target.region", t.Region)
 	seen := map[string]bool{}
 	for _, region := range spec.AllowedRegions {
 		if strings.TrimSpace(region) == "" || seen[region] {
-			result.Errors = append(result.Errors, "allowedRegions must contain unique non-empty regions")
+			result.reject("AllowedRegionsInvalid", "allowedRegions", "allowedRegions must contain unique non-empty regions")
 		}
 		seen[region] = true
 	}
 	if len(spec.AllowedRegions) > 0 && !seen[t.Region] {
-		result.Errors = append(result.Errors, "target.region must be included in allowedRegions")
+		result.reject("RegionNotAllowed", "target.region", "target.region must be included in allowedRegions")
 	}
 	b := spec.CapacityBounds
 	if b.MinNodeCount < 0 || b.MaxNodeCount < 0 || b.MaxEnvironments < 0 || b.MaxConcurrentPlans < 0 || b.MaxConcurrentApplies < 0 {
-		result.Errors = append(result.Errors, "capacity limits cannot be negative")
+		result.reject("CapacityNegative", "capacityBounds", "capacity limits cannot be negative")
 	}
 	if b.MaxNodeCount > 0 && b.MinNodeCount > b.MaxNodeCount {
-		result.Errors = append(result.Errors, "minimum node count cannot exceed maximum")
+		result.reject("CapacityInverted", "capacityBounds", "minimum node count cannot exceed maximum")
 	}
 	if spec.ApprovalPolicy != platform.ApprovalPolicyManual && spec.ApprovalPolicy != platform.ApprovalPolicyAutomatic {
-		result.Errors = append(result.Errors, "approvalPolicy must be Manual or Automatic")
+		result.reject("ApprovalPolicyInvalid", "approvalPolicy", "approvalPolicy must be Manual or Automatic")
 	}
 	for i, object := range spec.RuntimeProfile.RuntimeObjects {
 		if object.Version == "" || object.Resource == "" || len(object.Object.Raw) == 0 {
-			result.Errors = append(result.Errors, fmt.Sprintf("runtimeObjects[%d] requires version, resource and object", i))
+			result.reject("RuntimeObjectIncomplete", fmt.Sprintf("runtimeObjects[%d]", i), fmt.Sprintf("runtimeObjects[%d] requires version, resource and object", i))
 		}
 		var manifest map[string]any
 		if err := json.Unmarshal(object.Object.Raw, &manifest); err != nil || manifest == nil {
-			result.Errors = append(result.Errors, fmt.Sprintf("runtimeObjects[%d].object must be a JSON object", i))
+			result.reject("RuntimeObjectInvalid", fmt.Sprintf("runtimeObjects[%d].object", i), fmt.Sprintf("runtimeObjects[%d].object must be a JSON object", i))
 		}
 	}
 	if redactClassSpec(&spec) {
-		result.Errors = append(result.Errors, "Inline credentials and Secret resources are not accepted; use credential references")
+		result.reject("InlineCredentialsForbidden", "spec", "Inline credentials and Secret resources are not accepted; use credential references")
 	}
 	result.Valid = len(result.Errors) == 0
-	sort.Strings(result.Errors)
+	sort.SliceStable(result.ErrorDetails, func(i, j int) bool { return result.ErrorDetails[i].Message < result.ErrorDetails[j].Message })
+	for i, diagnostic := range result.ErrorDetails {
+		result.Errors[i] = diagnostic.Message
+	}
 	if result.Valid {
 		content, _ := yaml.Marshal(classObject(request))
 		result.YAML = string(content)

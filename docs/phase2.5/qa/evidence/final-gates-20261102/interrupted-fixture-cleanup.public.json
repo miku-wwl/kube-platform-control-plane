@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-02T00:51:07.436549+00:00",
+  "namespace": "kpcp-1793541857329652200",
+  "namespaceUID": "1fccfc69-ced5-4c16-8f60-8e3083381e4b",
+  "normalNamespaceDeletion": true,
+  "archivedArtifactBucketDeleted": true,
+  "scopeRemoved": true,
+  "cloudDeletedOnlyByApprovedTerraform": true,
+  "manualFinalizerRemoval": false
+}

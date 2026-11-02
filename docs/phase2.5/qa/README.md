@@ -1,3 +1,44 @@
+# KPCP Phase 2.5 — 最终工程验证
+
+**完整 Freeze：NO-GO。** 本轮修复本地化与 Standby readiness，真实两副本 Leader failover、独立双集群及干净构建通过；真实 Ollama 质量 NOT RUN，部分 live 负例仍未关闭。完整操作、失败/恢复、UID 和证据见 [Engineering Gates](gates/README.md)。
+
+Run ID：`kpcp-gates-20261102-0223`；2026-11-02 NZDT。开始及交付前复核 remote/main 为 `0507f3164727d40fea73bf364a6effd537042e83`。本轮建立 `qa/phase25-final-gate-closure` 交付 PR，不自动合并。下方旧批次原文及 15 个 TC 历史结果保留，不把旧 PASS 当成本轮重新执行。
+
+## 最终矩阵
+
+| Area | Existing Evidence | New Execution | Final Status |
+|---|---|---|---|
+| TC01、TC02、TC04–TC14 | 历史 UI 各自限定 PASS | 没有重做这些完整 TC；新增 Go E2E 与真实恢复截图另计 | 历史有效；完整 UI 重跑 NOT RUN |
+| [TC03 AI Draft](TC03_AI_DRAFT.md) | deterministic UI PASS | 真实 Ollama unavailable 的 ZH/EN/原诊断/空 Draft 边界 PASS | 模型质量 NOT RUN |
+| [TC15 Language](TC15_LANGUAGE_ERRORS.md) | 历史 FAIL 保留 | Class 错误/warning、字段/切换/输入保留及真实 AI 错误路径 PASS | 限定路径 PASS；正常 AI advisory UI NOT RUN |
+| [Gate A](gates/GATE_A_EXACT_APPROVAL.md) | 正向 exact approval | 错误七绑定、过期/替代、幂等、独立 Destroy 审批 | PARTIAL |
+| [Gate B](gates/GATE_B_IMMUTABLE_EVIDENCE.md) | saved Plan 正向证据 | 多类 artifact 损坏/缺失、credential drift、immutable conflict | PARTIAL |
+| [Gate C](gates/GATE_C_CONTROLLER_RECOVERY.md) | 单进程恢复 | 两副本 Deployment，六阶段真实 Leader failover | PASS（本地范围） |
+| [Gate D](gates/GATE_D_MULTI_CLUSTER.md) | 独立双集群 NOT RUN | 两个实际 UID/CA/凭据，真实双目标并发、重启、state/runtime、逐目标 Destroy | PASS（本地范围） |
+| [Gate E](gates/GATE_E_FAIL_CLOSED.md) | 部分安全路径 | source/endpoint failure、4 项启动拒绝、scoped 503 | PARTIAL |
+| [Gate F](gates/GATE_F_DESTROY_FINALIZER.md) | 正向 Destroy | 真实 Destroy Plan Job failure、独立审批、进程/Leader 恢复、正常 finalizer | PARTIAL |
+| Real Ollama | 历史不可用 | 11434 version/tags/chat 拒绝连接；无 fallback、无下载 | NOT RUN（质量） |
+| Clean Build | 历史 modified=true | `5deadde` clean Controller/API，modified=false；Go/unit/race/vet、frontend、真实 TF/MiniStack | PASS，逐项来源见收据 |
+| Infrastructure | 一个本地集群 | 新建独立 QA profile；最终节点/卷/网络、业务资源正常清理 | PASS（主机本地范围） |
+| Production portability | 未验收 | 没有真实 AWS/IAM 或多物理故障域测试 | NOT RUN |
+
+## 交付与证据
+
+- [六 Gate 独立文档、执行时间线和 Freeze 条件](gates/README.md)
+- [脱敏收据索引](evidence/final-gates-20261102/receipt-index.public.json)
+- [最终 clean build、源码等价性和显式 opt-in SKIP](evidence/final-gates-20261102/clean-build.public.json)
+- [最终资源清理及原服务健康](evidence/final-gates-20261102/final-cleanup.public.json)
+- [文档、真实 PNG、引用与敏感信息检查](evidence/final-gates-20261102/document-validation.public.json)
+
+本轮新增 15 张真实 PNG：8 张 Class 回归、3 张最终 AI 错误、3 张中断后真实 Destroy 恢复、1 张原服务收尾。浏览器 API 返回 JPEG，PNG 为解码像素无损转存；逐图校验像素、文件存在/可打开及 SHA-256。没有 Mock 页面、补绘或历史图冒充新执行。
+
+所有产品修复均为必要的局部修改；没有架构重构、任意 Terraform 代码生成、旧 PowerShell Harness、共享引擎 reset/restart 或业务 finalizer 手工移除。完整原日志、kubeconfig、Secret 和产物字节只保留本地；未提交 GitHub。
+
+## 历史验收批次（原文保留）
+
+<details>
+<summary>展开 2026-11-01 的 15 TC、43 张截图及原矩阵</summary>
+
 # KPCP Phase 2.5 QA — 当前验收索引
 
 15 个用例已按 One Test Case = One Markdown 交付；本轮 **14 PASS、1 FAIL**。PASS 均受各 Case 的实际范围限定，TC03 仅验证项目原生 deterministic 草稿路径。完整 Phase 2.5 **不建议 Freeze**。
@@ -79,3 +120,5 @@ TC03–TC14 属于同一条实际生命周期：Draft → 隔离核对 → Submi
 清理证据独立记录在 [TC14](TC14_DESTROY_CLEANUP.md)：云桶由已审批 Terraform Destroy 删除；35 个原始产物先归档，再删除仅本轮夹具桶；namespace 以 UID precondition 正常删除；没有 patch finalizer、重启共享容器或调用旧 Harness。共享模拟器仍健康、原 cluster UID/Node Ready 保持，原 5173 服务仍 API 已连接。
 
 交付检查见[文档/图片验证收据](evidence/document-validation.public.json)。历史总报告、工程报告和覆盖矩阵保持原字节；本 PR 仅新增 `docs/phase2.5/qa/`。原始配置、日志、DOM、JPEG 和产物字节不在本次公开变更中。
+
+</details>

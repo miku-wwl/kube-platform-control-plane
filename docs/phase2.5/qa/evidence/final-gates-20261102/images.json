@@ -1,0 +1,20 @@
+{
+  "runner": {
+    "tag": "localhost/kpcp-runner:gates-d9f0386",
+    "actualImportedReference": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+    "importedManifestDigest": "sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+    "podmanImageID": "32d0df5d4f4551ca67992f1c69e4a6879034cf13d7d230d9cdca0c7321262279",
+    "sourceSHA": "d9f038650353768fc4a0341b73001e5954763625",
+    "archiveSHA256": "046006def0453f80e014328ab35f35f3f8260ba9aa4ae61b2070a56130a3496f",
+    "createdAt": "2026-11-01T13:58:05.602426+00:00"
+  },
+  "controller": {
+    "tag": "localhost/kpcp-controller:gates-d9f0386",
+    "actualImportedReference": "localhost/kpcp-controller@sha256:6e27a4795a2b336058fc5b5d6f0c88dea2719c7e7e34cc8734236f786bfe328c",
+    "importedManifestDigest": "sha256:6e27a4795a2b336058fc5b5d6f0c88dea2719c7e7e34cc8734236f786bfe328c",
+    "podmanImageID": "991dcbf8cc1059f84ffc7216a1666d81d6ce739193488010261132910b3d39d0",
+    "sourceSHA": "d9f038650353768fc4a0341b73001e5954763625",
+    "archiveSHA256": "cd979487792f77652b800c29001975e6d6f56aeda3d01984e941e5b6d8beb83b",
+    "createdAt": "2026-11-01T13:58:12.651968+00:00"
+  }
+}

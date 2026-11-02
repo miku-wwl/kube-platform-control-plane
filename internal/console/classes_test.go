@@ -94,6 +94,45 @@ func TestClassValidationCreateAndCopy(t *testing.T) {
 	}
 }
 
+func TestClassValidationDiagnosticCodesPreserveMessagesAndAdmission(t *testing.T) {
+	server, kube, _ := testServer(t)
+	request := validClassRequest()
+	request.Spec.Source.Revision = "main"
+	request.Spec.Version = ""
+	request.Spec.CapacityBounds.MinNodeCount = 99
+	response := classHTTP(t, server, "POST", "/api/classes/validate", request)
+	var result ClassValidation
+	if err := json.Unmarshal(response.Body.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if response.Code != http.StatusOK || result.Valid || len(result.ErrorDetails) != len(result.Errors) {
+		t.Fatalf("invalid diagnostic contract: %d %+v", response.Code, result)
+	}
+	codes := map[string]bool{}
+	for i, issue := range result.ErrorDetails {
+		if issue.Message != result.Errors[i] || issue.Code == "" || issue.Field == "" {
+			t.Fatalf("lost or misaligned technical diagnostic: %+v", result)
+		}
+		codes[issue.Code] = true
+	}
+	for _, code := range []string{"SourceRevisionUnpinned", "Required", "CapacityInverted"} {
+		if !codes[code] {
+			t.Fatalf("missing stable diagnostic %s: %+v", code, result)
+		}
+	}
+	if len(result.WarningDetails) != 1 || result.WarningDetails[0].Code != "BackendPrerequisites" || result.WarningDetails[0].Message != result.Warnings[0] {
+		t.Fatalf("warning context lost: %+v", result)
+	}
+	created := classHTTP(t, server, "POST", "/api/classes", request)
+	if created.Code != http.StatusUnprocessableEntity || !strings.Contains(created.Body.String(), `"errorDetails"`) {
+		t.Fatalf("create did not preserve rejection/details: %d %s", created.Code, created.Body.String())
+	}
+	var classes platform.EnvironmentClassList
+	if err := kube.List(context.Background(), &classes); err != nil || len(classes.Items) != 0 {
+		t.Fatalf("validation persisted an invalid class: %v %+v", err, classes.Items)
+	}
+}
+
 func TestClassCreationRejectsInvalidPoliciesAndForgedStatus(t *testing.T) {
 	cases := []struct {
 		name   string

@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-02T01:07:20.183432+00:00",
+  "namespace": "kpcp-1793581344217132200",
+  "namespaceUID": "6be9db40-536a-4ca7-b5b1-56f71b8d8918",
+  "baseline": "FAIL: two running / one Ready",
+  "businessObjectsCreated": false,
+  "normalNamespaceDeletion": true,
+  "emptyArtifactBucketDeleted": true,
+  "ownedRBACGarbageCollected": true,
+  "manualFinalizerRemoval": false
+}

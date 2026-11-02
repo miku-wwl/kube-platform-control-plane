@@ -1,0 +1,16 @@
+{
+  "command": [
+    "go",
+    "test",
+    "./e2e",
+    "-run",
+    "TestLifecycle",
+    "-v",
+    "-count=1",
+    "-timeout=40m"
+  ],
+  "cwd": "controlled clean-source checkout",
+  "startedAt": "2026-11-01T14:04:14.226954+00:00",
+  "finishedAt": "2026-11-01T14:39:17.772167+00:00",
+  "exitCode": 1
+}

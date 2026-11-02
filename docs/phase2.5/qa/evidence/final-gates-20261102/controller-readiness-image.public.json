@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-02T01:08:48.879482+00:00",
+  "sourceSHA": "580aef4dbe75fca11cf253b2aa55306eb44cf3ab",
+  "sourceWorktreeClean": true,
+  "tag": "localhost/kpcp-controller:gates-580aef4",
+  "actualImportedReference": "localhost/kpcp-controller@sha256:89ad57997f97fba75c0401824998e3d34016f363a7ea59ad76d5b4fbee339fc7",
+  "importedManifestDigest": "sha256:89ad57997f97fba75c0401824998e3d34016f363a7ea59ad76d5b4fbee339fc7",
+  "podmanImageID": "b3e8f29db4f6b91946a15c10be9868518a6898724b5204eecfd3f53752d4d3ca",
+  "archiveSHA256": "88ca04b4bd258f984c7872081ad8931913c875b1c73d78462b311592c18911de",
+  "dockerignoreExcludesGit": true,
+  "sourceBinding": "clean checkout + recorded build command + OCI revision label (not embedded Go VCS metadata)"
+}

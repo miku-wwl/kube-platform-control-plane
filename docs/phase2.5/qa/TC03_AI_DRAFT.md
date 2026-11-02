@@ -105,3 +105,39 @@ Current Execution：点击调用实际 QA API 的 /api/drafts，页面 provider=
 保留同一页的有效 Draft 给 TC04、TC05；不取消、刷新或删除 Class。没有通过 API/脚本代替 UI 生成。
 
 以上保留要求是本用例结束时的连续生命周期交接。整个 Run 的最终清理现已完成，见[TC14](TC14_DESTROY_CLEANUP.md)及[最终清理收据](evidence/TC14/final-cleanup.public.json)；没有待清理测试基础设施。
+
+## 9. 新执行批次 — 真实 Ollama 可用性与安全错误路径
+
+Test Run ID：`kpcp-gates-20261102-0223`。上述 deterministic PASS 与历史截图保持原记录。本批次真实模型质量 **NOT RUN**；不可用错误路径 **PASS**。
+
+前提与来源：实际 provider=`ollama`，请求模型 `phi4-mini:latest`，参数 temperature=0、num_predict=256、num_ctx=4096。最终浏览器复测 API 使用 clean `fd90a8614c6616d9d3514546aaef3840cffa0296` 二进制，`vcs.modified=false`。真实 Ollama `/api/version`、`/api/tags` 拒绝连接；没有服务版本或实际 served model 可报告。PATH/常见安装路径/卸载注册信息未发现 Ollama；`.ollama` junction 指向不存在的 `D:/Ollama/UserData/.ollama`。未下载模型、安装服务或重写配置。
+
+| Required scenario | 本批次结果 | 证据类型 |
+|---|---|---|
+| 正常小型开发请求、明确容量、含糊意图 | NOT RUN | 模型服务不可用，未发生真实推理 |
+| 超出 Class 容量限制 | 实际模型 NOT RUN | Class/typed validation 的 Go 回归不等于模型质量 |
+| 非法格式、缺必填字段、未知字段/越权资源 | controlled regression PASS | Go HTTP response fixture，非真实模型输出 |
+| 模型 timeout | controlled regression PASS | 测试 HTTP transport，非现场模型超时 |
+| 模型不可用 | real unavailable path PASS | 浏览器实际调用 Ollama，连接拒绝，没有 fallback |
+| Draft 后不自动 Submit、模型不能绕过审批 | real successful Draft NOT RUN | 历史 deterministic UI 边界及本轮 Go E2E 仍单独有效；不可用路径没有 Draft/Submit |
+
+实际操作（2026-11-02T01:15Z，NZDT 14:15）：
+
+1. 在同一个内置浏览器点击**平台构建器**；选择真实 Ready Class `kpcp-1793582052833323500`。
+2. **自然语言需求**输入“创建一个小型开发环境，1 个节点，使用所选类别默认区域。”；**环境名称**填 `qa-final-ollama-unavailable`；**命名空间**填该 QA namespace，**节点数量**为 1。
+3. 点击**生成草稿**，观察正在生成后出现中文错误；右侧仍为空草稿，页面没有提交资源的按钮。
+4. 展开**技术详情**，检查稳定码 `DraftGenerationFailed` 和完整原始连接错误。
+5. 点击 **EN**，核对英文错误且所有输入保持；再切回中文，点击**取消**。
+6. 读取实际 Kubernetes 快照：该请求名称及其 `-infra` stack 均不存在。并发 Go E2E 正在创建自己的独立 environment；“无副作用”断言只对应本次 UI 请求名称，未声称全局资源不变。
+
+![最终 clean API：中文不可用错误与空草稿](screenshots/final-gates-20261102/ollama-final-zh.png)
+
+![展开完整原始连接错误，保留诊断码](screenshots/final-gates-20261102/ollama-final-technical.png)
+
+![切换英文后错误正确、输入不丢失](screenshots/final-gates-20261102/ollama-final-en.png)
+
+缺陷及修复：本轮真实不可用路径暴露 AI 错误直接显示英文；`45a5ff5` 引入保留 stable code/original message 的 APIError，前端按码翻译。advisory warning 同样增加明确 `AdvisoryOnly` code，原文保留；正常模型 Draft 的 advisory UI 因模型缺失未复测。5 个 Node 回归、Go console 和最终前端 build PASS。
+
+工程收据：[真实端点错误、模型与请求边界](evidence/final-gates-20261102/ollama-final.public.json)、[clean build 与回归](evidence/final-gates-20261102/clean-build.public.json)、[截图像素/哈希](evidence/final-gates-20261102/new-screenshots.public.json)。
+
+Final Verdict：**真实模型质量 NOT RUN；真实不可用的中英文 UI / Fail-Closed 路径 PASS**。未把 deterministic 或 controlled fixture 输出写成 phi4-mini 推理。未生成/提交本次命名环境，无需清理模型基础设施。

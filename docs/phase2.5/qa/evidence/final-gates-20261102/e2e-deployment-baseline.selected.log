@@ -1,0 +1,8 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:117: owned namespace=kpcp-1793581344217132200 uid=6be9db40-536a-4ca7-b5b1-56f71b8d8918 source=98da3fb6cad0b60c60a58169aeb282aa555dbeb8 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+    lifecycle_test.go:234: two Ready replicas / fresh single leader not observed phase=initial running=2 ready=1
+    lifecycle_test.go:268: retained owned namespace/bucket kpcp-1793581344217132200; finalizers and evidence preserved
+--- FAIL: TestLifecycle (91.02s)
+FAIL
+FAIL	github.com/miku-wwl/kube-platform-control-plane/e2e	91.494s
+FAIL

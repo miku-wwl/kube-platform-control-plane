@@ -1,0 +1,46 @@
+[
+  {
+    "rawReceiptFile": "target-startup-rejections.json",
+    "rawSHA256": "aedc2954e6adb21d9bc5b0285975e1ff624f15fc59851a51b77018d778e0164f",
+    "receipt": {
+      "at": "2026-11-02T01:13:54.6597992Z",
+      "evidence": {
+        "cases": [
+          {
+            "actualOutput": "{\"level\":\"error\",\"ts\":\"2026-11-02T14:13:53+13:00\",\"logger\":\"setup\",\"msg\":\"unable to create target Kubernetes client\",\"error\":\"configured target incarnation does not match kube-system UID\",\"stacktrace\":\"main.main\\n\\tgithub.com/miku-wwl/kube-platform-control-plane/cmd/controller/main.go:76\\nruntime.main\\n\\truntime/proc.go:302\"}\n",
+            "case": "incarnation",
+            "exitCode": 1,
+            "expectedError": "configured target incarnation does not match kube-system UID",
+            "managerStarted": false
+          },
+          {
+            "actualOutput": "{\"level\":\"error\",\"ts\":\"2026-11-02T14:13:54+13:00\",\"logger\":\"setup\",\"msg\":\"unable to create target Kubernetes client\",\"error\":\"context \\\"qa-unregistered-context\\\" does not exist\",\"stacktrace\":\"main.main\\n\\tgithub.com/miku-wwl/kube-platform-control-plane/cmd/controller/main.go:76\\nruntime.main\\n\\truntime/proc.go:302\"}\n",
+            "case": "unknown-context",
+            "exitCode": 1,
+            "expectedError": "does not exist",
+            "managerStarted": false
+          },
+          {
+            "actualOutput": "{\"level\":\"error\",\"ts\":\"2026-11-02T14:13:54+13:00\",\"logger\":\"setup\",\"msg\":\"unable to create target Kubernetes client\",\"error\":\"explicit target kubeconfig and matching context endpoint are required\",\"stacktrace\":\"main.main\\n\\tgithub.com/miku-wwl/kube-platform-control-plane/cmd/controller/main.go:76\\nruntime.main\\n\\truntime/proc.go:302\"}\n",
+            "case": "endpoint",
+            "exitCode": 1,
+            "expectedError": "matching context endpoint are required",
+            "managerStarted": false
+          },
+          {
+            "actualOutput": "{\"level\":\"error\",\"ts\":\"2026-11-02T14:13:54+13:00\",\"logger\":\"setup\",\"msg\":\"unable to create target Kubernetes client\",\"error\":\"json: unknown field \\\"allowUnverifiedTarget\\\"\",\"stacktrace\":\"main.main\\n\\tgithub.com/miku-wwl/kube-platform-control-plane/cmd/controller/main.go:76\\nruntime.main\\n\\truntime/proc.go:302\"}\n",
+            "case": "unknown-field",
+            "exitCode": 1,
+            "expectedError": "unknown field",
+            "managerStarted": false
+          }
+        ],
+        "clusterUID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+        "jobUIDsUnchanged": true
+      },
+      "runID": "target-startup",
+      "sourceSHA": "fd90a8614c6616d9d3514546aaef3840cffa0296",
+      "test": "TestTargetStartupRejectsInvalidBinding"
+    }
+  }
+]

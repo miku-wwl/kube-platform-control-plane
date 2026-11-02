@@ -1,0 +1,16 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:117: owned namespace=kpcp-1793582347453419300 uid=aef1cb12-a2d8-466f-80f3-999c6dd0de74 source=98da3fb6cad0b60c60a58169aeb282aa555dbeb8 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+=== RUN   TestLifecycle/PlatformAPI_DraftAndTemplate
+=== NAME  TestLifecycle
+    lifecycle_test.go:253: dedicated controller process restarted phase=active-plan
+    lifecycle_test.go:253: dedicated controller process restarted phase=pending-approval
+=== RUN   TestLifecycle/PlatformAPI_ExactApproval
+=== NAME  TestLifecycle
+    lifecycle_test.go:654: POST /api/terraform-runs/kpcp-1793582347453419300/environment-infra-plan-1/approve: status=409 want=201 body={"code":"StackNotWaitingApproval","message":"the InfraStack is not waiting for approval of this plan"}
+    lifecycle_test.go:269: retained owned namespace/bucket kpcp-1793582347453419300; finalizers and evidence preserved
+--- FAIL: TestLifecycle (54.34s)
+    --- PASS: TestLifecycle/PlatformAPI_DraftAndTemplate (0.10s)
+    --- PASS: TestLifecycle/PlatformAPI_ExactApproval (0.04s)
+FAIL
+FAIL	github.com/miku-wwl/kube-platform-control-plane/e2e	54.834s
+FAIL

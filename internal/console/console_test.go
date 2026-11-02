@@ -15,6 +15,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -464,6 +465,56 @@ func TestOllamaUnavailableDoesNotFallBack(t *testing.T) {
 	}
 	if intent, err := generator.Generate(context.Background(), DraftRequest{Description: "Create a small environment", ClassRef: "dev-small"}); err == nil || intent.Name != "" {
 		t.Fatalf("unavailable inference must not generate a fallback draft: %+v, %v", intent, err)
+	}
+}
+
+func TestOllamaTimeoutDoesNotSubmitOrFallBack(t *testing.T) {
+	model := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-r.Context().Done():
+		case <-time.After(200 * time.Millisecond):
+			_, _ = io.WriteString(w, `{"done":false}`)
+		}
+	}))
+	defer model.Close()
+	httpClient := model.Client()
+	httpClient.Timeout = 20 * time.Millisecond
+	generator, err := newOllamaDraftGenerator(model.URL, defaultOllamaModel, httpClient)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, kube, err := testServer(t, readyDraftClass(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "default"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	server, err := NewServer(kube, nil, ollamaProvider, generator, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response := classHTTP(t, server, "POST", "/api/drafts", DraftRequest{Description: "Create a small environment", ClassRef: "dev-small", Namespace: "default"})
+	if response.Code != http.StatusBadGateway {
+		t.Fatalf("timeout returned fallback/success: %d %s", response.Code, response.Body.String())
+	}
+	for _, list := range []client.ObjectList{&platformv1alpha1.PlatformEnvironmentList{}, &platformv1alpha1.TerraformRunList{}, &platformv1alpha1.ChangeApprovalList{}} {
+		if err := kube.List(context.Background(), list); err != nil {
+			t.Fatal(err)
+		}
+		items, err := meta.ExtractList(list)
+		if err != nil || len(items) != 0 {
+			t.Fatalf("inference timeout created execution resources: %v %+v", err, items)
+		}
+	}
+}
+
+func TestDraftAdvisoryWarningHasStableCodeAndOriginalMessage(t *testing.T) {
+	server, _, err := testServer(t, readyDraftClass(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "default"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	response := classHTTP(t, server, "POST", "/api/drafts", DraftRequest{Description: "Create a small environment", ClassRef: "dev-small", Namespace: "default"})
+	var draft DraftResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &draft); err != nil || response.Code != http.StatusOK || !draft.Valid || len(draft.WarningCodes) != 1 || draft.WarningCodes[0] != "AdvisoryOnly" || len(draft.Warnings) != 1 || draft.Warnings[0] == "" {
+		t.Fatalf("lost advisory warning code or original diagnostic: %d %+v %v", response.Code, draft, err)
 	}
 }
 

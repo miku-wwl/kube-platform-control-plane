@@ -1,0 +1,10 @@
+=== RUN   TestMiniStackIntegration
+=== RUN   TestMiniStackIntegration/STSIdentity
+=== RUN   TestMiniStackIntegration/ImmutableArtifacts
+=== RUN   TestMiniStackIntegration/BackendLockContention
+--- PASS: TestMiniStackIntegration (0.18s)
+    --- PASS: TestMiniStackIntegration/STSIdentity (0.02s)
+    --- PASS: TestMiniStackIntegration/ImmutableArtifacts (0.06s)
+    --- PASS: TestMiniStackIntegration/BackendLockContention (0.01s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/artifacts	0.526s

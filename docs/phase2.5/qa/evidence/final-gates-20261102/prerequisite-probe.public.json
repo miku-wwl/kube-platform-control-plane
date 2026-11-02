@@ -1,0 +1,130 @@
+{
+  "job": {
+    "apiVersion": "batch/v1",
+    "kind": "Job",
+    "metadata": {
+      "creationTimestamp": "2026-11-01T13:59:03Z",
+      "generation": 1,
+      "name": "source-runner-probe",
+      "namespace": "kpcp-gates-20261102-0223-infra",
+      "resourceVersion": "55252",
+      "uid": "e97d271f-ca4c-4fd4-beff-f23753f48653"
+    },
+    "spec": {},
+    "status": {
+      "completionTime": "2026-11-01T14:01:22Z",
+      "conditions": [
+        {
+          "lastProbeTime": "2026-11-01T14:01:22Z",
+          "lastTransitionTime": "2026-11-01T14:01:22Z",
+          "message": "Reached expected number of succeeded pods",
+          "reason": "CompletionsReached",
+          "status": "True",
+          "type": "SuccessCriteriaMet"
+        },
+        {
+          "lastProbeTime": "2026-11-01T14:01:22Z",
+          "lastTransitionTime": "2026-11-01T14:01:22Z",
+          "message": "Reached expected number of succeeded pods",
+          "reason": "CompletionsReached",
+          "status": "True",
+          "type": "Complete"
+        }
+      ],
+      "ready": 0,
+      "startTime": "2026-11-01T13:59:03Z",
+      "succeeded": 1,
+      "terminating": 0,
+      "uncountedTerminatedPods": {}
+    }
+  },
+  "podIdentities": [
+    {
+      "metadata": {
+        "creationTimestamp": "2026-11-01T13:59:03Z",
+        "generateName": "source-runner-probe-",
+        "generation": 1,
+        "labels": {
+          "app.kubernetes.io/managed-by": "kpcp-final-gate-qa",
+          "batch.kubernetes.io/controller-uid": "e97d271f-ca4c-4fd4-beff-f23753f48653",
+          "batch.kubernetes.io/job-name": "source-runner-probe",
+          "controller-uid": "e97d271f-ca4c-4fd4-beff-f23753f48653",
+          "job-name": "source-runner-probe",
+          "platform.example.io/qa-run": "kpcp-gates-20261102-0223"
+        },
+        "name": "source-runner-probe-kgg6m",
+        "namespace": "kpcp-gates-20261102-0223-infra",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "source-runner-probe",
+            "uid": "e97d271f-ca4c-4fd4-beff-f23753f48653"
+          }
+        ],
+        "resourceVersion": "55251",
+        "uid": "6a27f3e4-641e-4fd3-bace-2d8c9569ba09"
+      },
+      "containerStatuses": [
+        {
+          "containerID": "containerd://5bd1f6e08e0313b9059d7bb2e72b981940da7abadeb48c723cb277c398db9b40",
+          "image": "localhost/kpcp-runner:gates-d9f0386",
+          "imageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+          "lastState": {},
+          "name": "probe",
+          "ready": false,
+          "resources": {},
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://5bd1f6e08e0313b9059d7bb2e72b981940da7abadeb48c723cb277c398db9b40",
+              "exitCode": 0,
+              "finishedAt": "2026-11-01T14:01:19Z",
+              "reason": "Completed",
+              "startedAt": "2026-11-01T14:00:59Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                6,
+                10,
+                11,
+                20,
+                26,
+                27
+              ],
+              "uid": 0
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "fixedSourceRevision": "98da3fb6cad0b60c60a58169aeb282aa555dbeb8",
+  "moduleFileSHA256": {
+    "main.tf": "470f0e9a9b332d85ad51b85427beee7b4bae859358f868ffd77d1092f51d37a1",
+    "variables.tf": "957ce076171279da2f1d4ff5485da2f198d21f77ec6ee5712cc0aac33ddacd28",
+    ".terraform.lock.hcl": "c9fdf3e4c695e49bf1176df234c6b46400457aa29fe45532d51ab6c97c39acc0",
+    "kpcp-module.json": "a9097433e7ebec0aa2e2a56fc2d73ed79c5a6f2e899599ae88398621e318c10c"
+  },
+  "commands": [
+    "git clone fixed source and detached checkout exact revision",
+    "terraform fmt -check",
+    "terraform init -backend=false -input=false -no-color -lockfile=readonly",
+    "terraform validate -no-color"
+  ],
+  "runnerImage": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+  "result": "PASS",
+  "logSHA256": "5680b634b83aec2064ca3db70f1c07019188f119070a57203b44d42a322479c4",
+  "logTail": "\n- Reusing previous version of hashicorp/aws from the dependency lock file\n- Installing hashicorp/aws v5.100.0...\n- Installed hashicorp/aws v5.100.0 (signed by HashiCorp)\n\nTerraform has been successfully initialized!\n\nYou may now begin working with Terraform. Try running \"terraform plan\" to see\nany changes that are required for your infrastructure. All Terraform commands\nshould now work.\n\nIf you ever set or change modules or backend configuration for Terraform,\nrerun this command to reinitialize your working directory. If you forget, other\ncommands will detect it and remind you to do so if necessary.\nSuccess! The configuration is valid.\n\nOWNED_PREREQUISITES_PASS\n"
+}

@@ -3,6 +3,7 @@ package e2e
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -35,6 +36,9 @@ import (
 )
 
 type configuration struct {
+	TimeoutSeconds                                       int    // optional bounded integration context; Go test timeout must allow cleanup
+	ControllerImage, ControllerKubeconfig                string // optional isolated two-replica Kubernetes controller lane
+	TransportScopeFile                                   string // optional new test-owned path restricting an external transport to this run
 	Kubeconfig, Context, ControllerBinary, RunnerImage   string
 	HostEndpoint, PodEndpoint, SourceURL, SourceRevision string
 	FaultFile                                            string // optional test-owned transport fault switch
@@ -57,7 +61,7 @@ func TestLifecycle(t *testing.T) {
 	if err := json.Unmarshal(content, &cfg); err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Context == "" || cfg.Kubeconfig == "" || cfg.ControllerBinary == "" || !strings.Contains(cfg.RunnerImage, "@sha256:") || cfg.SourceURL == "" || len(cfg.SourceRevision) != 40 {
+	if cfg.Context == "" || cfg.Kubeconfig == "" || (cfg.ControllerBinary == "" && cfg.ControllerImage == "") || !strings.Contains(cfg.RunnerImage, "@sha256:") || cfg.SourceURL == "" || len(cfg.SourceRevision) != 40 {
 		t.Fatal("explicit contexts, binary and immutable source/image are required")
 	}
 	for _, endpoint := range []string{cfg.HostEndpoint, cfg.PodEndpoint} {
@@ -68,7 +72,11 @@ func TestLifecycle(t *testing.T) {
 	t.Setenv("AWS_ACCESS_KEY_ID", "000000000000")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "test")
 	t.Setenv("AWS_SESSION_TOKEN", "")
-	ctx, cancel := context.WithTimeout(context.Background(), 18*time.Minute)
+	timeout := 35 * time.Minute
+	if cfg.TimeoutSeconds > 0 {
+		timeout = time.Duration(cfg.TimeoutSeconds) * time.Second
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	rules := clientcmd.NewDefaultClientConfigLoadingRules()
 	rules.ExplicitPath = cfg.Kubeconfig
@@ -107,6 +115,23 @@ func TestLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("owned namespace=%s uid=%s source=%s image=%s", ns.Name, ns.UID, cfg.SourceRevision, cfg.RunnerImage)
+	if cfg.TransportScopeFile != "" {
+		if !filepath.IsAbs(cfg.TransportScopeFile) {
+			t.Fatal("TransportScopeFile must be a new absolute test-owned path")
+		}
+		file, err := os.OpenFile(cfg.TransportScopeFile, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := file.WriteString(prefix); err != nil {
+			_ = file.Close()
+			t.Fatal(err)
+		}
+		if err := file.Close(); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = os.Remove(cfg.TransportScopeFile) })
+	}
 	var target corev1.Namespace
 	if err := kube.Get(ctx, client.ObjectKey{Name: "kube-system"}, &target); err != nil {
 		t.Fatal(err)
@@ -129,6 +154,7 @@ func TestLifecycle(t *testing.T) {
 		if secondIdentity.UID == target.UID {
 			t.Fatal("SecondContext must identify an independent cluster")
 		}
+		assertIndependentTargetCredentials(t, ctx, prefix, rest, secondREST)
 	}
 	storage := s3.NewFromConfig(aws.Config{Region: "us-east-1", Credentials: credentials.NewStaticCredentialsProvider("000000000000", "test", "")}, func(o *s3.Options) { o.BaseEndpoint = aws.String(cfg.HostEndpoint); o.UsePathStyle = true })
 	if _, err := storage.CreateBucket(ctx, &s3.CreateBucketInput{Bucket: aws.String(prefix)}); err != nil {
@@ -189,6 +215,8 @@ func TestLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	var process *exec.Cmd
+	var deployment *controllerDeployment
+	complete := false
 	log, err := os.Create(filepath.Join(dir, "controller.log"))
 	if err != nil {
 		t.Fatal(err)
@@ -202,6 +230,12 @@ func TestLifecycle(t *testing.T) {
 		}
 	}
 	start := func() {
+		if cfg.ControllerImage != "" {
+			if deployment == nil {
+				deployment = startControllerDeployment(t, ctx, kube, scheme, rest, cfg, prefix, targetsFile, &complete)
+			}
+			return
+		}
 		process = exec.Command(cfg.ControllerBinary, "--leader-elect=true", "--health-probe-bind-address=0", "--metrics-bind-address=0")
 		process.Env = append(os.Environ(), "KUBECONFIG="+managementFile, "PCP_KUBECONFIG="+cfg.Kubeconfig, "PCP_TARGET_CONTEXTS=", "PCP_TARGETS_FILE="+targetsFile, "PCP_ENABLE_AWS_EKS=false", "PCP_ENABLE_TERRAFORM_EXECUTION=true", "PCP_ARTIFACT_ENDPOINT="+cfg.HostEndpoint, "PCP_ARTIFACT_BUCKET="+prefix, "PCP_ARTIFACT_REGION=us-east-1", "PCP_LEADER_ELECTION_NAMESPACE="+prefix, "PCP_MAX_CONCURRENT_APPLIES=1")
 		process.Stdout, process.Stderr = log, log
@@ -209,8 +243,16 @@ func TestLifecycle(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	restart := func(phase string) {
+		if deployment != nil {
+			deployment.failover(t, ctx, phase)
+			return
+		}
+		stop()
+		start()
+		t.Logf("dedicated controller process restarted phase=%s", phase)
+	}
 	defer stop()
-	complete := false
 	t.Cleanup(func() {
 		if output := os.Getenv("KPCP_E2E_EVIDENCE_DIR"); output != "" {
 			if err := os.MkdirAll(output, 0700); err != nil {
@@ -348,7 +390,7 @@ func TestLifecycle(t *testing.T) {
 		for _, run := range runs.Items {
 			if run.Spec.StackRef.Name == "environment-infra" && run.Spec.Operation == "Plan" && run.Spec.PlanMode == mode {
 				plan = run
-				if run.Status.ExecutionOutcome == "Failed" || run.Status.ExecutionOutcome == "Rejected" {
+				if run.Status.ExecutionOutcome == "Failed" || run.Status.ExecutionOutcome == "Rejected" || run.Status.ExecutionOutcome == "Superseded" || run.Status.ExecutionOutcome == "Indeterminate" {
 					return false, fmt.Errorf("plan %s: %+v", run.Name, run.Status.Conditions)
 				}
 				return run.Status.ExecutionOutcome == "ChangesPresent", nil
@@ -375,22 +417,42 @@ func TestLifecycle(t *testing.T) {
 	// Kill a genuinely active Plan process, retaining its Job/UID.
 	wait(t, "active Plan Job", func() (bool, error) {
 		_, err := getPlan("Reconcile")
-		return plan.Status.JobRef != nil && plan.Status.ExecutionOutcome != "ChangesPresent", err
+		if err != nil || plan.Status.JobRef == nil || plan.Status.JobUID == "" {
+			return false, err
+		}
+		var job batchv1.Job
+		if err := kube.Get(ctx, client.ObjectKey{Namespace: prefix, Name: plan.Status.JobRef.Name}, &job); err != nil {
+			return false, client.IgnoreNotFound(err)
+		}
+		if string(job.UID) != plan.Status.JobUID || !hasOwnerUID(job.OwnerReferences, plan.UID) {
+			return false, fmt.Errorf("active Plan Job identity is not durable")
+		}
+		if job.Status.Succeeded > 0 || job.Status.Failed > 0 {
+			return false, fmt.Errorf("Plan Job is no longer active before restart")
+		}
+		recordGateEvidence(t, prefix, "plan-active-before-restart", map[string]any{"run": plan, "job": job})
+		return true, nil
 	})
 	planUID := plan.UID
-	stop()
-	start()
+	restart("active-plan")
 	wait(t, "saved Plan", func() (bool, error) { return getPlan("Reconcile") })
 	if plan.UID != planUID {
 		t.Fatal("restart replaced Plan UID")
 	}
-	stop()
-	start()
+	restart("pending-approval")
+	wait(t, "Reconcile approval admission after recovery", func() (bool, error) {
+		var stack platform.InfraStack
+		if err := kube.Get(ctx, client.ObjectKey{Namespace: prefix, Name: "environment-infra"}, &stack); err != nil {
+			return false, err
+		}
+		condition := meta.FindStatusCondition(stack.Status.Conditions, "Ready")
+		return stack.Status.LatestPlanRunRef != nil && stack.Status.LatestPlanRunRef.Name == plan.Name && condition != nil && condition.Reason == "WaitingApproval", nil
+	})
 	if !t.Run("A_ExactApproval", func(t *testing.T) {
 		if countApply() != 0 {
 			t.Fatal("Apply before approval")
 		}
-		for _, field := range []string{"digest", "uid", "input", "report", "context"} {
+		for _, field := range []string{"digest", "uid", "input", "report", "report-ref", "context", "plan-ref"} {
 			bad := approve("wrong-"+field, plan)
 			switch field {
 			case "digest":
@@ -401,17 +463,30 @@ func TestLifecycle(t *testing.T) {
 				bad.Spec.EffectivePlanInputDigest = "wrong"
 			case "report":
 				bad.Spec.PlanReportDigest = "wrong"
+			case "report-ref":
+				bad.Spec.PlanReportRef = "runs/foreign/report.json"
+			case "plan-ref":
+				bad.Spec.PlanRunRef.Name = "not-this-plan"
 			case "context":
 				bad.Spec.ExecutionContextDigest = "wrong"
 			}
 			if err := kube.Create(ctx, bad); err != nil {
 				t.Fatal(err)
 			}
+			recordGateEvidence(t, prefix, "approval-"+field, bad)
 		}
 		time.Sleep(2 * time.Second)
 		if countApply() != 0 {
 			t.Fatal("mismatched approval admitted Apply")
 		}
+		var jobs batchv1.JobList
+		if err := kube.List(ctx, &jobs, client.InNamespace(prefix)); err != nil || len(jobs.Items) != 1 || !hasOwnerUID(jobs.Items[0].OwnerReferences, plan.UID) {
+			t.Fatalf("unapproved execution created an unexpected Job: %v %+v", err, jobs.Items)
+		}
+		if _, err := storage.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: aws.String(prefix + "-cloud")}); !artifacts.IsNotFound(err) {
+			t.Fatal("unapproved execution changed cloud resources: ", err)
+		}
+		recordGateEvidence(t, prefix, "approval-blocked", map[string]any{"plan": plan, "jobs": jobs, "applyCount": countApply()})
 	}) {
 		return
 	}
@@ -424,13 +499,21 @@ func TestLifecycle(t *testing.T) {
 		if _, err := store.PutImmutable(ctx, plan.Status.PlanRef, []byte("tampered")); err == nil {
 			t.Fatal("saved plan overwrite accepted")
 		}
-		for _, damage := range []string{"tamper", "missing"} {
+		for _, damage := range []string{"tamper", "missing", "source-tamper", "backend-tamper", "report-missing", "report-tamper", "plan-missing", "terminal-tamper", "credential-change", "expired"} {
 			victimClass := class.DeepCopy()
 			victimClass.ObjectMeta = metav1.ObjectMeta{Name: prefix + "-" + damage}
 			victimClass.Status = platform.EnvironmentClassStatus{}
 			victimClass.Spec.Inputs["bucket_name"] = prefix + "-" + damage + "-cloud"
 			victimClass.Spec.RunnerProfile.ServiceAccountName = "runner-" + damage
 			victimClass.Spec.Backend.AuthRef.ServiceAccountName = "runner-" + damage
+			var victimSecret *corev1.Secret
+			if damage == "credential-change" {
+				victimSecret = &corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "emulator-" + damage, Namespace: prefix}, Data: map[string][]byte{"AWS_ACCESS_KEY_ID": []byte("000000000000"), "AWS_SECRET_ACCESS_KEY": []byte("test")}}
+				if err := kube.Create(ctx, victimSecret); err != nil {
+					t.Fatal(err)
+				}
+				victimClass.Spec.ExecutionProfile.CredentialsSecretRef.Name = victimSecret.Name
+			}
 			if err := kube.Create(ctx, victimClass); err != nil {
 				t.Fatal(err)
 			}
@@ -449,17 +532,45 @@ func TestLifecycle(t *testing.T) {
 						saved = run
 						return true, nil
 					}
+					if run.Spec.StackRef.Name == damage+"-infra" && (run.Status.ExecutionOutcome == "Failed" || run.Status.ExecutionOutcome == "Rejected") {
+						return false, fmt.Errorf("fixture Plan failed: %+v", run.Status.Conditions)
+					}
 				}
 				return false, nil
 			})
-			if damage == "tamper" {
-				if _, err := storage.PutObject(ctx, &s3.PutObjectInput{Bucket: aws.String(prefix), Key: aws.String(saved.Status.PlanRef), Body: bytes.NewReader([]byte("tampered")), Metadata: map[string]string{"sha256": saved.Status.PlanDigest}}); err != nil {
+			key, digest := saved.Status.PlanRef, saved.Status.PlanDigest
+			switch damage {
+			case "missing", "source-tamper":
+				key, digest = saved.Status.SourceBundleRef, saved.Status.SourceBundleDigest
+			case "backend-tamper":
+				key, digest = saved.Status.ResolvedBackendConfigRef, saved.Status.ResolvedBackendConfigDigest
+			case "report-missing", "report-tamper":
+				key, digest = saved.Status.PlanReportRef, saved.Status.PlanReportDigest
+			case "terminal-tamper":
+				key, digest = saved.Status.TerminalResultRef, saved.Status.TerminalResultDigest
+			}
+			if damage == "credential-change" {
+				victimSecret.Annotations = map[string]string{"qa.example.io/credential-rotation": "changed-after-plan"}
+				if err := kube.Update(ctx, victimSecret); err != nil {
 					t.Fatal(err)
 				}
+				t.Logf("credential drift secret=%s uid=%s version=%s planIdentity=%s", victimSecret.Name, victimSecret.UID, victimSecret.ResourceVersion, saved.Spec.ExecutionProfile.CredentialsIdentity)
+			} else if damage == "expired" {
+				saved.Status.PlanExpiresAt = &metav1.Time{Time: time.Now().Add(-time.Minute)}
+				if err := kube.Status().Update(ctx, &saved); err != nil {
+					t.Fatal(err)
+				}
+			} else if strings.HasSuffix(damage, "missing") || damage == "missing" {
+				if _, err := storage.DeleteObject(ctx, &s3.DeleteObjectInput{Bucket: aws.String(prefix), Key: aws.String(key)}); err != nil {
+					t.Fatal(err)
+				}
+				t.Logf("damage=%s planUID=%s key=%s originalDigest=%s actual=missing", damage, saved.UID, key, digest)
 			} else {
-				if _, err := storage.DeleteObject(ctx, &s3.DeleteObjectInput{Bucket: aws.String(prefix), Key: aws.String(saved.Status.SourceBundleRef)}); err != nil {
+				corrupt := []byte("test-owned corrupted " + damage)
+				if _, err := storage.PutObject(ctx, &s3.PutObjectInput{Bucket: aws.String(prefix), Key: aws.String(key), Body: bytes.NewReader(corrupt), Metadata: map[string]string{"sha256": digest}}); err != nil {
 					t.Fatal(err)
 				}
+				t.Logf("damage=%s planUID=%s key=%s originalDigest=%s actualDigest=sha256:%x", damage, saved.UID, key, digest, sha256.Sum256(corrupt))
 			}
 			if err := kube.Create(ctx, approve(damage+"-approval", saved)); err != nil {
 				t.Fatal(err)
@@ -470,15 +581,43 @@ func TestLifecycle(t *testing.T) {
 					return false, err
 				}
 				for _, run := range runs.Items {
+					if damage == "expired" && run.UID == saved.UID && run.Status.ExecutionOutcome == "Superseded" {
+						for _, candidate := range runs.Items {
+							if candidate.Spec.StackRef.Name == damage+"-infra" && candidate.Spec.Operation == "Apply" {
+								return false, fmt.Errorf("expired/superseded approval admitted Apply")
+							}
+						}
+						recordGateEvidence(t, prefix, "expired-superseded-blocked", runs)
+						return true, nil
+					}
 					if run.Spec.StackRef.Name == damage+"-infra" && run.Spec.Operation == "Apply" {
 						if run.Status.JobRef != nil {
 							return false, fmt.Errorf("damaged evidence started an Apply Job")
 						}
-						return run.Status.ExecutionOutcome == "Rejected", nil
+						if run.Status.ExecutionOutcome == "Rejected" {
+							recordGateEvidence(t, prefix, damage+"-rejected", map[string]any{"savedPlan": saved, "rejectedApply": run})
+							return true, nil
+						}
 					}
 				}
 				return false, nil
 			})
+			var after platform.TerraformRunList
+			if err := kube.List(ctx, &after, client.InNamespace(prefix)); err != nil {
+				t.Fatal(err)
+			}
+			plans := 0
+			for _, run := range after.Items {
+				if run.Spec.StackRef.Name == damage+"-infra" && run.Spec.Operation == "Plan" {
+					plans++
+				}
+			}
+			if damage != "expired" && plans != 1 {
+				t.Fatal("artifact/credential failure silently regenerated a Plan")
+			}
+			if _, err := storage.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: aws.String(prefix + "-" + damage + "-cloud")}); !artifacts.IsNotFound(err) {
+				t.Fatal("rejected execution changed cloud resources: ", err)
+			}
 			if err := kube.Delete(ctx, victim, client.Preconditions{UID: &victim.UID}); err != nil {
 				t.Fatal(err)
 			}
@@ -493,6 +632,11 @@ func TestLifecycle(t *testing.T) {
 				err := kube.Get(ctx, client.ObjectKeyFromObject(victimClass), victimClass)
 				return apierrors.IsNotFound(err), client.IgnoreNotFound(err)
 			})
+			if victimSecret != nil {
+				if err := kube.Delete(ctx, victimSecret, client.Preconditions{UID: &victimSecret.UID}); err != nil {
+					t.Fatal(err)
+				}
+			}
 		}
 	}) {
 		return
@@ -518,6 +662,18 @@ func TestLifecycle(t *testing.T) {
 	if err := json.Unmarshal(apiRequest(t, "POST", "/api/terraform-runs/"+prefix+"/"+plan.Name+"/approve", approvalPayload(plan), http.StatusCreated), &recorded); err != nil || recorded.State != "Recorded" || recorded.PlanRunUID != string(plan.UID) {
 		t.Fatalf("live approval: %+v %v", recorded, err)
 	}
+	var duplicate console.ApprovalView
+	var approvalBefore, approvalAfter platform.ChangeApproval
+	if err := kube.Get(ctx, client.ObjectKey{Namespace: prefix, Name: recorded.Name}, &approvalBefore); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(apiRequest(t, "POST", "/api/terraform-runs/"+prefix+"/"+plan.Name+"/approve", approvalPayload(plan), http.StatusOK), &duplicate); err != nil || duplicate.Name != recorded.Name {
+		t.Fatalf("exact retry did not preserve approval identity: %+v %v", duplicate, err)
+	}
+	if err := kube.Get(ctx, client.ObjectKeyFromObject(&approvalBefore), &approvalAfter); err != nil || approvalBefore.UID != approvalAfter.UID || approvalBefore.Spec != approvalAfter.Spec {
+		t.Fatal("exact retry changed the durable approval: ", err)
+	}
+	recordGateEvidence(t, prefix, "exact-approval-idempotent", map[string]any{"first": approvalBefore, "retry": approvalAfter, "plan": plan})
 	wait(t, "active Apply Job", func() (bool, error) {
 		var runs platform.TerraformRunList
 		if err := kube.List(ctx, &runs, client.InNamespace(prefix)); err != nil {
@@ -530,16 +686,14 @@ func TestLifecycle(t *testing.T) {
 		}
 		return false, nil
 	})
-	stop()
-	start()
+	restart("active-apply")
 	wait(t, "environment Ready", func() (bool, error) {
 		if err := kube.Get(ctx, client.ObjectKeyFromObject(environment), environment); err != nil {
 			return false, err
 		}
 		return meta.IsStatusConditionTrue(environment.Status.Conditions, "Ready"), nil
 	})
-	stop()
-	start()
+	restart("ready")
 	time.Sleep(2 * time.Second)
 	var runtimeObject corev1.ConfigMap
 	if err := kube.Get(ctx, client.ObjectKey{Namespace: prefix, Name: "runtime"}, &runtimeObject); err != nil {
@@ -556,7 +710,7 @@ func TestLifecycle(t *testing.T) {
 	}
 	if !t.Run("C_RestartRecovery", func(t *testing.T) {
 		if countApply() != 1 {
-			t.Fatal("duplicate Apply after four controller process restarts")
+			t.Fatal("duplicate Apply after four controller recoveries")
 		}
 		var jobs batchv1.JobList
 		if err := kube.List(ctx, &jobs, client.InNamespace(prefix)); err != nil {
@@ -572,6 +726,7 @@ func TestLifecycle(t *testing.T) {
 			t.Fatalf("expected exactly Plan+Apply Jobs, got %d", mainJobs)
 		}
 		t.Logf("Plan UID=%s digest=%s input=%s source=%s", plan.UID, plan.Status.PlanDigest, plan.Status.EffectivePlanInputDigest, plan.Status.SourceBundleDigest)
+		recordGateEvidence(t, prefix, "controller-recovery-result", map[string]any{"deploymentLane": deployment != nil, "plan": plan, "applyCount": countApply(), "jobs": jobs})
 	}) {
 		return
 	}
@@ -674,6 +829,7 @@ func TestLifecycle(t *testing.T) {
 			return len(plans) == 2, nil
 		}
 		wait(t, "two independent Plans", func() (bool, error) { return collect("Reconcile") })
+		recordGateEvidence(t, prefix, "isolation-plans", map[string]any{"multiCluster": multiCluster, "clusterAUID": target.UID, "clusterBUID": isolatedUID, "targetNamespace": secondNamespace, "plans": plans})
 		if plans["second"].Spec.Workspace == plans["concurrent"].Spec.Workspace || plans["second"].Spec.RunnerServiceAccountName == plans["concurrent"].Spec.RunnerServiceAccountName {
 			t.Fatal("state/runner identity shared across environments")
 		}
@@ -686,7 +842,8 @@ func TestLifecycle(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		contended := false
+		contended, recovered := false, false
+		retainedJobs := map[string]string{}
 		wait(t, "isolated concurrent Applies", func() (bool, error) {
 			var runs platform.TerraformRunList
 			if err := kube.List(ctx, &runs, client.InNamespace(prefix)); err != nil {
@@ -714,12 +871,22 @@ func TestLifecycle(t *testing.T) {
 				if job.Status.Succeeded == 0 && job.Status.Failed == 0 {
 					active++
 				}
+				if previous, ok := retainedJobs[run.Name]; ok && previous != string(job.UID) {
+					return false, fmt.Errorf("Apply Job identity changed across recovery")
+				}
+				retainedJobs[run.Name] = string(job.UID)
 			}
 			if active > 1 {
 				return false, fmt.Errorf("global Apply limit of one exceeded")
 			}
 			if active == 1 && waiting > 0 {
 				contended = true
+				if multiCluster && !recovered {
+					recordGateEvidence(t, prefix, "isolation-contention-before-restart", map[string]any{"runs": runs, "active": active, "waiting": waiting, "jobUIDs": retainedJobs})
+					restart("cross-target-apply-contention")
+					recovered = true
+					return false, nil
+				}
 			}
 			for _, e := range envs {
 				if err := kube.Get(ctx, client.ObjectKeyFromObject(e), e); err != nil {
@@ -734,6 +901,34 @@ func TestLifecycle(t *testing.T) {
 		if !contended {
 			t.Fatal("no actual Apply contention was observed")
 		}
+		if multiCluster && !recovered {
+			t.Fatal("no cross-target recovery was exercised")
+		}
+		var isolationRuns platform.TerraformRunList
+		var isolationJobs batchv1.JobList
+		if err := kube.List(ctx, &isolationRuns, client.InNamespace(prefix)); err != nil {
+			t.Fatal(err)
+		}
+		if err := kube.List(ctx, &isolationJobs, client.InNamespace(prefix)); err != nil {
+			t.Fatal(err)
+		}
+		for label := range envs {
+			count, jobs := 0, 0
+			for _, r := range isolationRuns.Items {
+				if r.Spec.StackRef.Name == label+"-infra" && r.Spec.Operation == "Apply" && r.Spec.PlanMode == "Reconcile" {
+					count++
+					for _, j := range isolationJobs.Items {
+						if hasOwnerUID(j.OwnerReferences, r.UID) {
+							jobs++
+						}
+					}
+				}
+			}
+			if count != 1 || jobs != 1 {
+				t.Fatalf("isolation target %s: Apply runs=%d Jobs=%d", label, count, jobs)
+			}
+		}
+		recordGateEvidence(t, prefix, "isolation-recovered", map[string]any{"multiCluster": multiCluster, "controllerRestartDuringContention": recovered, "runs": isolationRuns, "jobs": isolationJobs, "retainedJobUIDs": retainedJobs})
 		for _, pair := range []struct {
 			client                     client.Client
 			namespace, present, absent string
@@ -742,6 +937,7 @@ func TestLifecycle(t *testing.T) {
 			if err := pair.client.Get(ctx, client.ObjectKey{Namespace: pair.namespace, Name: pair.present}, &cm); err != nil || cm.Data["owner"] != prefix {
 				t.Fatal("expected target runtime missing: ", err)
 			}
+			recordGateEvidence(t, prefix, "isolation-runtime-"+pair.present, cm)
 			if err := pair.client.Get(ctx, client.ObjectKey{Namespace: pair.namespace, Name: pair.absent}, &cm); !apierrors.IsNotFound(err) {
 				t.Fatal("runtime written outside its intended namespace/target")
 			}
@@ -761,6 +957,7 @@ func TestLifecycle(t *testing.T) {
 		if len(states) != 2 {
 			t.Fatal("independent durable backend states were not observed")
 		}
+		recordGateEvidence(t, prefix, "isolation-states", objects)
 		for _, e := range envs {
 			if err := kube.Delete(ctx, e, client.Preconditions{UID: &e.UID}); err != nil {
 				t.Fatal(err)
@@ -963,7 +1160,44 @@ func TestLifecycle(t *testing.T) {
 			condition := meta.FindStatusCondition(stack.Status.Conditions, "Ready")
 			return stack.Status.LatestPlanRunRef != nil && stack.Status.LatestPlanRunRef.Name == plan.Name && condition != nil && condition.Reason == "WaitingApproval", nil
 		})
+		badDestroy := approve("wrong-destroy-digest", plan)
+		badDestroy.Spec.PlanDigest = "sha256:not-the-destroy-plan"
+		if err := kube.Create(ctx, badDestroy); err != nil {
+			t.Fatal(err)
+		}
+		time.Sleep(2 * time.Second)
+		if countApply() != 1 {
+			t.Fatal("Reconcile approval or mismatched Destroy approval authorized Destroy")
+		}
+		if _, err := storage.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: aws.String(prefix + "-cloud")}); err != nil {
+			t.Fatal("unapproved Destroy changed the cloud resource: ", err)
+		}
+		recordGateEvidence(t, prefix, "destroy-approval-blocked", map[string]any{"environment": environment, "plan": plan, "badApproval": badDestroy, "existingReconcileApproval": approvalBefore, "applyCount": countApply()})
+		restart("destroy-pending-approval")
 		apiRequest(t, "POST", "/api/terraform-runs/"+prefix+"/"+plan.Name+"/approve", approvalPayload(plan), http.StatusCreated)
+		var destroyApply platform.TerraformRun
+		wait(t, "active Destroy Apply Job", func() (bool, error) {
+			var runs platform.TerraformRunList
+			if err := kube.List(ctx, &runs, client.InNamespace(prefix)); err != nil {
+				return false, err
+			}
+			for _, run := range runs.Items {
+				if run.Spec.StackRef.Name == "environment-infra" && run.Spec.Operation == "Apply" && run.Spec.PlanMode == "Destroy" && run.Status.JobRef != nil {
+					destroyApply = run
+					var job batchv1.Job
+					if err := kube.Get(ctx, client.ObjectKey{Namespace: prefix, Name: run.Status.JobRef.Name}, &job); err != nil {
+						return false, err
+					}
+					if job.Status.Succeeded > 0 || job.Status.Failed > 0 {
+						return false, fmt.Errorf("Destroy was no longer active before restart")
+					}
+					recordGateEvidence(t, prefix, "destroy-active-before-restart", map[string]any{"run": run, "job": job})
+					return true, nil
+				}
+			}
+			return false, nil
+		})
+		restart("active-destroy")
 		wait(t, "verified environment deletion", func() (bool, error) {
 			err := kube.Get(ctx, client.ObjectKeyFromObject(environment), environment)
 			return apierrors.IsNotFound(err), client.IgnoreNotFound(err)
@@ -972,6 +1206,20 @@ func TestLifecycle(t *testing.T) {
 		if _, err := storage.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: aws.String(prefix + "-cloud")}); !artifacts.IsNotFound(err) {
 			t.Fatal("Terraform resource deletion is not verified: ", err)
 		}
+		terminalRef, terminalBytes, err := store.GetVerifiedByKey(ctx, "runs/"+string(destroyApply.UID)+"/terminal-result.json")
+		if err != nil {
+			t.Fatal("Destroy terminal evidence missing after recovery: ", err)
+		}
+		var terminal struct {
+			RunUID                                                   string `json:"terraformRunUID"`
+			JobUID, Operation, ExecutionOutcome, PlanRef, PlanDigest string
+			TerraformExitCode                                        int
+			ArtifactsReady                                           bool
+		}
+		if err := json.Unmarshal(terminalBytes, &terminal); err != nil || terminal.RunUID != string(destroyApply.UID) || terminal.JobUID != destroyApply.Status.JobUID || terminal.Operation != "Apply" || terminal.ExecutionOutcome != "Succeeded" || terminal.TerraformExitCode != 0 || !terminal.ArtifactsReady || terminal.PlanRef != plan.Status.PlanRef || terminal.PlanDigest != plan.Status.PlanDigest {
+			t.Fatalf("Destroy did not retain the exact saved-plan terminal identity: %+v %v", terminal, err)
+		}
+		recordGateEvidence(t, prefix, "destroy-recovered-terminal", map[string]any{"terminal": terminal, "ref": terminalRef, "environmentNotFound": true, "cloudNotFound": true})
 		var sentinel corev1.ConfigMap
 		if err := kube.Get(ctx, client.ObjectKey{Namespace: prefix, Name: "unrelated"}, &sentinel); err != nil || sentinel.Data["sentinel"] != prefix {
 			t.Fatal("unrelated runtime resource changed: ", err)

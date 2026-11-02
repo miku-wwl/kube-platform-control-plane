@@ -1,0 +1,36 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:117: owned namespace=kpcp-1793581747323844900 uid=5982f4d0-2e14-438b-a6f2-72bc2dbd87da source=98da3fb6cad0b60c60a58169aeb282aa555dbeb8 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+    lifecycle_test.go:234: Deployment failover phase=initial deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95278 holder=kpcp-1793581747323844900-controller-5b6bdf7498-9fqks_f6d9d3a9-28d8-483c-a867-17dcc7295e0f
+=== RUN   TestLifecycle/PlatformAPI_DraftAndTemplate
+=== NAME  TestLifecycle
+    lifecycle_test.go:247: Deployment failover phase=before-active-plan deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95322 holder=kpcp-1793581747323844900-controller-5b6bdf7498-9fqks_f6d9d3a9-28d8-483c-a867-17dcc7295e0f
+    lifecycle_test.go:247: owned leader Pod exited phase=active-plan pod=kpcp-1793581747323844900-controller-5b6bdf7498-9fqks uid=3741507e-60d7-4d37-a771-565bfc183d84
+    lifecycle_test.go:247: Deployment failover phase=after-active-plan deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95377 holder=kpcp-1793581747323844900-controller-5b6bdf7498-tgbvb_4a3ffe6e-c511-45ea-880e-1761ec1fb16f
+    lifecycle_test.go:247: Deployment failover phase=before-pending-approval deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95436 holder=kpcp-1793581747323844900-controller-5b6bdf7498-tgbvb_4a3ffe6e-c511-45ea-880e-1761ec1fb16f
+    lifecycle_test.go:247: owned leader Pod exited phase=pending-approval pod=kpcp-1793581747323844900-controller-5b6bdf7498-tgbvb uid=23f735cf-d9a1-45ba-951b-24c5823c04bd
+    lifecycle_test.go:247: Deployment failover phase=after-pending-approval deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95476 holder=kpcp-1793581747323844900-controller-5b6bdf7498-k6h52_eb08cafa-5c34-4e37-b5ad-d6265821fef1
+=== RUN   TestLifecycle/PlatformAPI_ExactApproval
+=== NAME  TestLifecycle
+    lifecycle_test.go:247: Deployment failover phase=before-active-apply deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95476 holder=kpcp-1793581747323844900-controller-5b6bdf7498-k6h52_eb08cafa-5c34-4e37-b5ad-d6265821fef1
+    lifecycle_test.go:247: owned leader Pod exited phase=active-apply pod=kpcp-1793581747323844900-controller-5b6bdf7498-k6h52 uid=1bcadaa2-7a10-4d32-aaa3-c2d011da66fb
+    lifecycle_test.go:247: Deployment failover phase=after-active-apply deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95533 holder=kpcp-1793581747323844900-controller-5b6bdf7498-ztpdt_050ed97c-4e77-455b-beab-c83b6e66f1be
+    lifecycle_test.go:247: Deployment failover phase=before-ready deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95565 holder=kpcp-1793581747323844900-controller-5b6bdf7498-ztpdt_050ed97c-4e77-455b-beab-c83b6e66f1be
+    lifecycle_test.go:247: owned leader Pod exited phase=ready pod=kpcp-1793581747323844900-controller-5b6bdf7498-ztpdt uid=3e4ed8dd-5b52-47c2-a59b-73f92a0927d2
+    lifecycle_test.go:247: Deployment failover phase=after-ready deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95617 holder=kpcp-1793581747323844900-controller-5b6bdf7498-h5qs7_a378b1bd-5dba-4e61-b86f-534055077196
+=== RUN   TestLifecycle/C_RestartRecovery
+    lifecycle_test.go:705: Plan UID=d9e6fd44-c348-4262-ac16-d66ecb7a04e6 digest=sha256:3d0c8afa0ee4e84210267bda28065e31b90876c7dac470f92ae50dcb2545dccc input=sha256:9de646a9896484ba88f98c08b9769fba88e0820c196609df3cc416060fec1414 source=sha256:58d0e8159d83d2042b9abd0745e6768e0bdf67ab966807f9a671070e31fddd80
+=== RUN   TestLifecycle/F_DestroyFinalizer
+=== NAME  TestLifecycle
+    lifecycle_test.go:247: Deployment failover phase=before-destroy-pending-approval deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95746 holder=kpcp-1793581747323844900-controller-5b6bdf7498-h5qs7_a378b1bd-5dba-4e61-b86f-534055077196
+    lifecycle_test.go:247: owned leader Pod exited phase=destroy-pending-approval pod=kpcp-1793581747323844900-controller-5b6bdf7498-h5qs7 uid=324e0983-b839-4b33-8117-746697e51678
+    lifecycle_test.go:247: Deployment failover phase=after-destroy-pending-approval deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95786 holder=kpcp-1793581747323844900-controller-5b6bdf7498-zvkrn_2b046d2c-f539-458a-878f-96bcf5b4d051
+    lifecycle_test.go:247: Deployment failover phase=before-active-destroy deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95786 holder=kpcp-1793581747323844900-controller-5b6bdf7498-zvkrn_2b046d2c-f539-458a-878f-96bcf5b4d051
+    lifecycle_test.go:247: owned leader Pod exited phase=active-destroy pod=kpcp-1793581747323844900-controller-5b6bdf7498-zvkrn uid=7ffaad3f-84d0-489e-b749-1ab274fee420
+    lifecycle_test.go:247: Deployment failover phase=after-active-destroy deploymentUID=5b014b91-b00c-4466-b0c0-5a15ec29b533 running=2 ready=2 leaseUID=d5ed2e5d-ef07-49f3-a80b-fb20e8aa3ecb rv=95843 holder=kpcp-1793581747323844900-controller-5b6bdf7498-h9cjb_f2647493-81a3-4bd0-8220-a9c84288e950
+--- PASS: TestLifecycle (261.85s)
+    --- PASS: TestLifecycle/PlatformAPI_DraftAndTemplate (0.09s)
+    --- PASS: TestLifecycle/PlatformAPI_ExactApproval (0.04s)
+    --- PASS: TestLifecycle/C_RestartRecovery (0.03s)
+    --- PASS: TestLifecycle/F_DestroyFinalizer (128.67s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	262.332s

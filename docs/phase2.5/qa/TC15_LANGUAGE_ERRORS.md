@@ -123,3 +123,53 @@ QA-01 / P2：中文模式的 source.revision 错误及后端警告仍为英文�
 本 TC 仅修改未保存表单与语言状态，未创建平台资源。已恢复中文，将同一表单交回 TC02 完成固定版本校验与创建。
 
 以上保留要求是本用例结束时的连续生命周期交接。整个 Run 的最终清理现已完成，见[TC14](TC14_DESTROY_CLEANUP.md)及[最终清理收据](evidence/TC14/final-cleanup.public.json)；没有待清理测试基础设施。
+
+## 9. 新执行批次 — QA-01 修复与回归
+
+- Test Run ID：`kpcp-gates-20261102-0223`；执行：2026-11-02 02:25–02:34 NZDT。
+- Root Cause：Class API 返回英文字符串，ClassManager 直接显示；后端校验正文没有稳定的 i18n 标识。
+- Fix Commit：`92d009a`。新增结构化 `code/field/message`，前端按明确诊断码翻译；保留原 `errors/warnings` API 字段及完整原文，技术详情可展开。未知码和旧 API 原文仍可见。
+- Preconditions：同一内置浏览器；原服务保存 Before；修复内容在独占 5175/8092 服务验证。此初步二进制不是最终 Clean Build 证明，干净构建另见工程 Gate 索引。
+- Regression Tests：Go console 全包、3 个 Node 回归、TypeScript/Vite build 均 exit 0；[执行与截图收据](evidence/final-gates-20261102/qa01-regression.public.json)。
+
+操作与实际结果：
+
+1. 填写同一未保存类别，`source.revision=main`，点击**校验配置**。中文错误和 Backend warning 已翻译；**创建类别**禁用。
+2. 展开两个**技术详情**，完整英文原文、诊断码与字段保留。
+3. 点击 **EN** 再点击**中文**，逐一对比所有 textbox 值；完全一致。英文提示正确。
+4. 固定 revision 后把最少节点改为 9、最多 3；中文容量错误，创建禁用。
+5. 清空版本并校验；浏览器 `required/valueMissing=true`，实际提示“请填写此字段”。
+6. 恢复有效字段并校验；绿色通过、中文 Backend warning、创建可用。再修改版本，创建与保存模板重新禁用。
+7. 点击**取消**；实际 Kubernetes 平台资源与 Job 均为 0，无持久化类别或环境。
+
+Before / After：
+
+![本轮 Before：中文模式中的英文校验正文](screenshots/final-gates-20261102/qa01-before-zh.png)
+
+![本轮 After：中文错误与 Backend warning](screenshots/final-gates-20261102/qa01-after-zh.png)
+
+![原始技术诊断保持可见](screenshots/final-gates-20261102/qa01-after-technical-context.png)
+
+![切换英文后保留输入与技术详情](screenshots/final-gates-20261102/qa01-after-en.png)
+
+![容量边界拒绝](screenshots/final-gates-20261102/qa01-capacity-rejected-zh.png)
+
+![必填字段拒绝](screenshots/final-gates-20261102/qa01-required-field-rejected.png)
+
+![有效配置与中文后端警告](screenshots/final-gates-20261102/qa01-valid-admission-zh.png)
+
+![修改字段后必须重新校验](screenshots/final-gates-20261102/qa01-revalidation-required.png)
+
+Actual Result / Final Verdict：**PASS（本批次 QA-01 的 Class 校验路径）**。历史 FAIL 与截图保留。该结果不覆盖任意 Kubernetes 错误的全面本地化，也不等同最终 Clean Build 或全部产品 Freeze。
+
+截图来自真实浏览器 JPEG；PNG 是解码像素无损转存，逐张像素比较通过，原始 JPEG 本地保留。
+
+## 10. 最终 clean API 回归 — AI 错误提示
+
+同一 Run，2026-11-02T01:15Z。API binary 来源 `fd90a8614c6616d9d3514546aaef3840cffa0296`，`vcs.modified=false`；最小 AI 本地化修复为 `45a5ff5`。浏览器实际调用真实配置的 Ollama，收到连接拒绝。
+
+操作：**平台构建器 → 填写需求/名称/命名空间 → 生成草稿 → 展开技术详情 → EN → 中文 → 取消**。中文摘要、英文摘要、完整服务端诊断及稳定码同时保留，输入没有丢失；右侧没有草稿、没有创建请求。步骤和本批次三张真实 PNG 见 [TC03 新批次](TC03_AI_DRAFT.md#9-新执行批次--真实-ollama-可用性与安全错误路径)。
+
+回归：5 个 Node tests、完整 Go tests/race/vet、frontend build 均 exit 0，见[clean 证据](evidence/final-gates-20261102/clean-build.public.json)。Class 本地化路径的产品源码自第 9 节验证后未改变。
+
+本批次结果：**Class 校验和真实 AI 不可用提示的已执行路径 PASS**。正常 AI Draft 的 advisory warning 已按结构化码修复、单测 PASS，但由于模型服务缺失，其正常 UI 路径 **NOT RUN**；不宣称全部服务端错误全面本地化。历史第 7 节 FAIL 保持不变。
