@@ -1,0 +1,22 @@
+=== RUN   TestDeepSeekLiveValidation
+=== RUN   TestDeepSeekLiveValidation/DS02
+    deepseek_live_test.go:64: LIVE_EVIDENCE id=DS02 model=deepseek-flash prompt_tokens=224 completion_tokens=35 total_tokens=259 duration_ms=935 request_id= raw_name="dev-environment" raw_region="" raw_nodes=2 raw_valkey=false raw_shards=0 raw_replicas=0 final_name="dev-environment" final_region="" final_nodes=2 final_valkey=false
+=== RUN   TestDeepSeekLiveValidation/DS03
+    deepseek_live_test.go:64: LIVE_EVIDENCE id=DS03 model=deepseek-flash prompt_tokens=261 completion_tokens=43 total_tokens=304 duration_ms=1040 request_id= raw_name="deepseek-explicit-guard" raw_region="us-east-1" raw_nodes=2 raw_valkey=false raw_shards=0 raw_replicas=0 final_name="deepseek-explicit-guard" final_region="us-east-1" final_nodes=2 final_valkey=false
+=== RUN   TestDeepSeekLiveValidation/DS04
+    deepseek_live_test.go:64: LIVE_EVIDENCE id=DS04 model=deepseek-flash prompt_tokens=222 completion_tokens=35 total_tokens=257 duration_ms=741 request_id= raw_name="dev-environment" raw_region="" raw_nodes=1 raw_valkey=true raw_shards=1 raw_replicas=1 final_name="dev-environment" final_region="" final_nodes=1 final_valkey=true
+=== RUN   TestDeepSeekLiveValidation/DS05
+    deepseek_live_test.go:64: LIVE_EVIDENCE id=DS05 model=deepseek-flash prompt_tokens=221 completion_tokens=36 total_tokens=257 duration_ms=869 request_id= raw_name="dev-cluster" raw_region="" raw_nodes=1 raw_valkey=false raw_shards=0 raw_replicas=0 final_name="dev-cluster" final_region="" final_nodes=1 final_valkey=false
+=== RUN   TestDeepSeekLiveValidation/DS06
+    deepseek_live_test.go:64: LIVE_EVIDENCE id=DS06 model=deepseek-flash prompt_tokens=249 completion_tokens=43 total_tokens=292 duration_ms=783 request_id= raw_name="deepseek-capacity-guard" raw_region="us-east-1" raw_nodes=100 raw_valkey=false raw_shards=0 raw_replicas=0 final_name="deepseek-capacity-guard" final_region="us-east-1" final_nodes=100 final_valkey=false
+=== RUN   TestDeepSeekLiveValidation/DS07
+    deepseek_live_test.go:64: LIVE_EVIDENCE id=DS07 model=deepseek-flash prompt_tokens=275 completion_tokens=43 total_tokens=318 duration_ms=713 request_id= raw_name="deepseek-injection-guard" raw_region="us-east-1" raw_nodes=1 raw_valkey=false raw_shards=0 raw_replicas=0 final_name="deepseek-injection-guard" final_region="us-east-1" final_nodes=1 final_valkey=false
+--- PASS: TestDeepSeekLiveValidation (5.09s)
+    --- PASS: TestDeepSeekLiveValidation/DS02 (0.94s)
+    --- PASS: TestDeepSeekLiveValidation/DS03 (1.04s)
+    --- PASS: TestDeepSeekLiveValidation/DS04 (0.74s)
+    --- PASS: TestDeepSeekLiveValidation/DS05 (0.87s)
+    --- PASS: TestDeepSeekLiveValidation/DS06 (0.79s)
+    --- PASS: TestDeepSeekLiveValidation/DS07 (0.71s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/console	5.469s

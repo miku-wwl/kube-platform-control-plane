@@ -1,0 +1,7 @@
+=== RUN   TestDeepSeekLiveValidation
+=== RUN   TestDeepSeekLiveValidation/DS01
+    deepseek_live_test.go:64: LIVE_EVIDENCE id=DS01 model=deepseek-flash prompt_tokens=226 completion_tokens=35 total_tokens=261 duration_ms=1592 request_id= raw_name="dev-environment" raw_region="" raw_nodes=1 raw_valkey=false raw_shards=0 raw_replicas=0 final_name="dev-environment" final_region="" final_nodes=1 final_valkey=false
+--- PASS: TestDeepSeekLiveValidation (1.59s)
+    --- PASS: TestDeepSeekLiveValidation/DS01 (1.59s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/console	1.996s
