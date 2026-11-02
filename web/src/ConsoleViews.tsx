@@ -490,9 +490,9 @@ export function Builder({
                       <code>{errorCode}</code>
                     </details>
                   </>
-                ) : errorCode === 'DraftGenerationFailed' ? (
+                ) : errorCode === 'DraftGenerationFailed' || errorCode === 'APIUnavailable' ? (
                   <>
-                    <p>{t('The AI provider could not generate a valid draft. Nothing was submitted.')}</p>
+                    <p>{t(errorCode === 'APIUnavailable' ? 'The local API is unavailable. Nothing was submitted.' : 'The AI provider could not generate a valid draft. Nothing was submitted.')}</p>
                     <details>
                       <summary>{t('Technical details')}</summary>
                       <code>{errorCode}</code>

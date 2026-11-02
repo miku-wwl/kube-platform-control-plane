@@ -58,3 +58,20 @@ Go API fixture 断言 Draft 不会创建 PlatformEnvironment、InfraStack、Terr
 ## 结论
 
 **DeepSeek 真实推理与语义矩阵：PASS（7/7，限定于 Draft intent）。** Provider contract 和错误分类通过 controlled fixture。**完整 DeepSeek UI acceptance：BLOCKED。** 结果不代表 Terraform 计划质量、真实 Class UI 校验、生产 IAM 或 AWS 可移植性。
+
+## PR #3 后新增批次 — 2026-11-02
+
+Run ID：`kpcp-final-20261102-1815`。以上七次请求、1,948 tokens 与 Browser BLOCKED 是原批次结果，保持不变。本轮新建内置 Browser 标签页预检成功；独立 QA `5174 → 8091` 的 runtime provider 真实返回 `deepseek`，clean backend 为 `f8c307fd6555ff118249f667dd2833d41f650e76`（`vcs.modified=false`），配置模型 `deepseek-flash`。成功 API 不暴露 served model 或 token usage，本轮未推测该值。
+
+两次真实 UI 调用：首次发现否定句 Do not enable Valkey 被本地正向 phrase matcher 错误覆盖，保留 FAIL 截图；最小修复及针对性 red→green 回归后，第二次页面显示 DeepSeek、正确名称/namespace/Class/local/2 nodes、Valkey Disabled、有效 YAML。中文/英文切换、Advisory、独立 Submit 与未提交边界均通过。真实专属 API outage 的首个英文直出错误也保留；修复前端 transport 分类后，中英文错误和技术详情通过，未增加模型调用。
+
+| 项目 | 新批次结果 | 边界 |
+|---|---|---|
+| Built-in Browser / 真截图 | PASS | 当前聊天新 tab；8 张真实 JPEG，有逐图 hash |
+| DeepSeek Draft / Typed Intent / YAML | PASS（修复后） | 2 次真实请求，未重跑 DS01–DS07 |
+| Class / 容量 / Advisory | PASS | 实际 Ready Class、1–3 节点边界内的 2 节点、EN/ZH Warning |
+| Error localization | PASS（修复后） | 真实本地 API outage；没有伪称真实 DeepSeek 429/500 故障注入 |
+| No Submit / No Mutation | PASS | 前后无 Environment/Stack/Run；仅另行创建的 preflight Job，UID 分开记录 |
+| Freeze / AWS Production | 另行评估 / NOT VALIDATED | UI PASS 不替代安全 Gate 或真实 AWS |
+
+逐 Step、预期/实际、截图解释见 [TC03 新批次](TC03_AI_DRAFT.md#11-pr-3-后独立验收批次--2026-11-02)。[本轮 UI 收据](evidence/final-acceptance-20261102/deepseek-ui.public.json)保留实际 URL、source、截图 hash、两次调用及资源计数；[首次失败收据](evidence/final-acceptance-20261102/browser-initial.public.json)不覆盖。没有输出、写入前端或提交 API key。

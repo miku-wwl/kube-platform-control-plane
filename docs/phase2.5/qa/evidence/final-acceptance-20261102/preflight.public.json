@@ -1,0 +1,56 @@
+{
+  "runID": "kpcp-final-20261102-1815",
+  "namespace": "kpcp-final-20261102-1815-infra",
+  "namespaceUID": "308f8dfb-d56d-4272-8a8b-a535a491d2ea",
+  "classUID": "e38c9a32-4a9e-435b-8866-26f76a63779c",
+  "classReady": [
+    {
+      "lastTransitionTime": "2026-11-02T05:17:40Z",
+      "message": "EnvironmentClass is immutable and available for typed PlatformEnvironment use",
+      "observedGeneration": 1,
+      "reason": "ClassValidated",
+      "status": "True",
+      "type": "Ready"
+    }
+  ],
+  "controllerLeaseUID": "71f3ba64-665b-400a-926b-d93ea58f9ea0",
+  "probeJobUID": "11574dc8-3f02-4cdb-b4fc-389bac344f82",
+  "probePodUID": "6a6fc7c2-8ebf-4aff-ac2a-2c3d80793ea1",
+  "probeImageID": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+  "exitCode": 0,
+  "sourceRevision": "0eab0368c66e2a9abbac8522007f659205697d96",
+  "sourceFileSHA256": {
+    "main.tf": "470f0e9a9b332d85ad51b85427beee7b4bae859358f868ffd77d1092f51d37a1",
+    "variables.tf": "957ce076171279da2f1d4ff5485da2f198d21f77ec6ee5712cc0aac33ddacd28",
+    ".terraform.lock.hcl": "c9fdf3e4c695e49bf1176df234c6b46400457aa29fe45532d51ab6c97c39acc0",
+    "kpcp-module.json": "a9097433e7ebec0aa2e2a56fc2d73ed79c5a6f2e899599ae88398621e318c10c"
+  },
+  "terraformVersion": "1.14.0",
+  "providerVersion": "5.100.0",
+  "probeLogSHA256": "d4504bfa0acadc3ca29cf429ed9883b78f191faffe20652af613aa31043fc7b4",
+  "podSTSAccount": "000000000000",
+  "transport": {
+    "bind": "private WLAN IPv4 interface; no wildcard listener",
+    "peerACL": [
+      "same host private IPv4",
+      "loopback"
+    ],
+    "bucketScope": "exact owned run or dynamic suite prefix and their hyphenated children",
+    "foreignBucketHTTPStatus": 403,
+    "WindowsToPodAlias": "not reachable; host uses direct loopback endpoint, pod uses private scoped alias",
+    "globalFirewallOrDNSOrRouteChanges": false
+  },
+  "checks": {
+    "KUBERNETES_READY": "PASS",
+    "MINISTACK_HOST": "PASS",
+    "MINISTACK_POD": "PASS",
+    "GIT_SOURCE_PINNED": "PASS",
+    "GIT_SOURCE_POD": "PASS",
+    "CONTROLLER_READY": "PASS",
+    "RUNNER_IMAGE": "PASS",
+    "BACKEND": "PENDING actual backend init",
+    "ARTIFACT_STORE": "PASS independent TestMiniStackIntegration immutable/read/write/lock contention",
+    "E2E_CONFIG": "PENDING lifecycle handoff",
+    "OWNERSHIP": "PASS"
+  }
+}

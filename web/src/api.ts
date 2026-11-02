@@ -59,9 +59,14 @@ export class APIError extends Error {
 }
 
 export async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json', ...init?.headers } })
+  let response: Response
+  try {
+    response = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json', ...init?.headers } })
+  } catch (error) {
+    throw new APIError('APIUnavailable', error instanceof Error ? error.message : String(error))
+  }
   const body = await response.json().catch(() => ({}))
-  if (!response.ok) throw new APIError(typeof body.code === 'string' ? body.code : '', body.message || `${response.status} ${response.statusText}`)
+  if (!response.ok) throw new APIError(typeof body.code === 'string' ? body.code : response.status >= 500 ? 'APIUnavailable' : '', body.message || `${response.status} ${response.statusText}`)
   return body as T
 }
 
