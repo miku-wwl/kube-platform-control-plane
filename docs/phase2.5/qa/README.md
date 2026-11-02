@@ -14,7 +14,7 @@ Batch `kpcp-final-20261102-1815`；base main `21231fc`；独立分支 `qa/phase2
 | Gate E | PASS（保护行为） | wrong account、Git outage、foreign Job、ambiguous Apply、partial Apply 五项 live 保护通过；不声称生产 IAM |
 | Gate F | PARTIAL | F01–F03 live 保护通过；**F04 正常恢复/清理 BLOCKED** |
 | Clean Build | PASS | clean `99dc281`，Go/unit/race/vet/build、前端 7 tests/typecheck/build、Terraform 1.14.0、MiniStack；三个二进制 modified=false |
-| CI | PENDING | 本地回归已完成；PR 最终 checks 发布后核验，不把默认 opt-in SKIP 记作 live PASS |
+| CI | PASS | [PR #4 / Actions 41424548082](https://github.com/miku-wwl/kube-platform-control-plane/actions/runs/41424548082)：五个 Actions jobs 与 GitGuardian 均成功；对应 head `1b6dff6`，报告提交后的最终 head 在交付收据再次核验 |
 | Resource Cleanup | BLOCKED（部分） | 正常 lane、临时第二集群完成清理；四条不确定/部分变更业务链及其证据桶保留 |
 | Evidence Integrity | PASS | 真实截图解码与 SHA、raw receipt/log SHA、实际 Controller imageID 与 binary 来源均核验 |
 
