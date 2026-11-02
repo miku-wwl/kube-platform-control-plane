@@ -1,3 +1,22 @@
+<!-- FINAL_ACCEPTANCE_20261102_CURRENT -->
+# Phase 2.5 — PR #3 后 Engineering Gates
+
+Batch `kpcp-final-20261102-1815`，base `21231fc`，feature `qa/phase25-final-acceptance`。**Freeze NO-GO：F04 / 正常清理 BLOCKED**。本轮实际恢复 QA 前置设施、运行完整基线及新增 live 故障，未只停留在只读诊断。
+
+| Gate | 本轮结果 | 证据边界 |
+|---|---|---|
+| [A](GATE_A_EXACT_APPROVAL.md) | PASS | 6/6 上下文变更拒绝旧审批；夹具失败与复测分别记录 |
+| [B](GATE_B_IMMUTABLE_EVIDENCE.md) | PASS（修复后） | 真实 Plan UID 绑定缺陷保留；最小修复、10/10 live 复测 |
+| [C](GATE_C_CONTROLLER_RECOVERY.md) | PASS（重验） | 修复后的新镜像，两副本六阶段接管及 contention 接管 |
+| [D](GATE_D_MULTI_CLUSTER.md) | PASS（重验） | 全新第二集群，不同 UID/CA/凭据；并发、runtime/state、逐目标 Destroy |
+| [E](GATE_E_FAIL_CLOSED.md) | PASS（保护行为） | 五项 live 负例；partial/ambiguous Apply 未盲重试，最终正常恢复仍受 F04 限制 |
+| [F](GATE_F_DESTROY_FINALIZER.md) | PARTIAL | F01–F03 保护 PASS，F04 BLOCKED；没有手工 finalizer/status patch 或 force delete |
+
+[完整本轮来源与最终矩阵](../PHASE25_FINAL_FREEZE.md)、[工程 receipts](../evidence/final-acceptance-20261102/gate-ef.public.json)、[保留资源/归档 SHA](../evidence/final-acceptance-20261102/retained-resources.public.json)、[正常第二集群清理](../evidence/final-acceptance-20261102/secondary-cleanup.public.json)。Go E/F lane exit 0 中的 F04 SKIP 不计为 PASS；默认 CI 跳过宿主 E2E 不代替真实 Gate。
+
+以下保留前序批次原文。
+
+<!-- FINAL_ACCEPTANCE_20261102_HISTORY -->
 # Phase 2.5 最终 Engineering Gate 验证
 
 ## 最新 Final Closure Attempt — 2026-11-02

@@ -1,3 +1,76 @@
+<!-- FINAL_ACCEPTANCE_20261102_CURRENT -->
+# Phase 2.5 PR #3 后最终验收 — 2026-11-02
+
+**Freeze：NO-GO。** 本轮已恢复真实 UI 与工程测试，补齐指定安全故障；当前 Controller 在 post-mutation failure/缺失可信终态后正确保持 `RecoveryRequired`，但没有可执行的受支持恢复路径将四条业务链按正常审批与 finalizer 机制收尾。F04 / Resource Cleanup 为 BLOCKED，没有批准例外，不能 Freeze。
+
+适用范围仅为 **KPCP Phase 2.5 Local Podman + Minikube + MiniStack Acceptance**。Production AWS Portability **NOT VALIDATED**。
+
+## 1. 最终验收矩阵
+
+| Area | Result | 本轮范围 / 证据 |
+|---|---|---|
+| DeepSeek Live Intent | PASS（复用） | 历史 DS01–DS07 7/7、1,948 tokens，未重跑七次收费请求 |
+| DeepSeek Browser UI | PASS | 本轮 IAB 两次真实请求、8 张原始 JPEG；EN/ZH、typed intent/YAML/advisory、显式 Submit、零自动资源变更 |
+| Gate A | PASS | 六类上下文变化均实测拒绝旧审批；历史失败与独立复测分开保存 |
+| Gate B | PASS（修复后） | 首轮发现 Plan UID 语义绑定缺陷；最小修复后 10/10 live 子场景 PASS |
+| Gate C | PASS（重验） | 新 Controller 两真实副本、六生命周期阶段和跨目标 contention 接管 |
+| Gate D | PASS（重验） | 两个独立 UID/CA/凭据；真实 runtime/state/并发/逐目标 Destroy |
+| Gate E | PASS（保护行为） | wrong account、Git outage、foreign Job、ambiguous Apply、partial Apply 五项 live 保护通过；不声称生产 IAM |
+| Gate F | PARTIAL | F01–F03 live 保护通过；**F04 正常恢复/清理 BLOCKED** |
+| Clean Build | PASS | clean `99dc281`，Go/unit/race/vet/build、前端 7 tests/typecheck/build、Terraform 1.14.0、MiniStack；三个二进制 modified=false |
+| CI | PENDING | 本地回归已完成；PR 最终 checks 发布后核验，不把默认 opt-in SKIP 记作 live PASS |
+| Resource Cleanup | BLOCKED（部分） | 正常 lane、临时第二集群完成清理；四条不确定/部分变更业务链及其证据桶保留 |
+| Evidence Integrity | PASS | 真实截图解码与 SHA、raw receipt/log SHA、实际 Controller imageID 与 binary 来源均核验 |
+
+## 2. 来源与执行边界
+
+- Batch：`kpcp-final-20261102-1815`，NZDT；起始及最终 fetch 的 main 为 `21231fc792b9f461c42ef335d99fd79b211862f8`（PR #3 merge）。
+- 独立 branch：`qa/phase25-final-acceptance`，worktree `D:/workshop/nov/kpcp-final-acceptance`；原 main 工作树两份运行日志保留，不提交、不还原、不覆盖。
+- DeepSeek UI clean API：`f8c307fd6555ff118249f667dd2833d41f650e76`、provider `deepseek`，独立 QA `5174 → 8091`；原 `5173/8090` 保留。生产 API 未暴露本轮 served model/token usage，配置模型为 `deepseek-flash`，没有推测 usage。
+- live 修复后 Controller：clean `7cdad59ef8035391cafc1e4d8727ebe715fd9f32`；B driver 同 SHA、C/D driver `99dc281`、E/F driver `f4e067d5b5a51027b5d3a887c7ad53d796e1e7e9`。这些 driver 的相关产品/E2E 源码与 Controller 构建源码一致，后续报告提交不冒充重新执行。
+- [Controller OCI/binary/source 证明](evidence/final-acceptance-20261102/controller-bound-image.public.json)、[clean regression 收据](evidence/final-acceptance-20261102/clean-regression.public.json)。镜像内实际二进制 hash 与 clean Linux binary 相同；Go VCS metadata 为 modified=false。
+
+## 3. UI 验收与最小修复
+
+本聊天新建 IAB tab，实际完成 example.com 标题/AX smoke、原 KPCP 读取和真实截图保存，再操作独立 DeepSeek QA UI。没有使用 native Computer Use、独立 Playwright 或 API 代替 UI 操作。
+
+本轮只增加 **2 次**真实收费调用。第一次发现显式 `Do not enable Valkey` 被共享短语匹配器反向解释；最小补齐否定短语后，第二次真实 UI 返回 Valkey Disabled、2 nodes、typed intent/YAML。真实 API 停止产生的 502 最初未本地化，增加 `APIUnavailable` 分类及 EN/ZH 文案，保留技术详情。两项 UI 修复均有失败/修复截图与非计费回归。
+
+[TC03 独立批次](TC03_AI_DRAFT.md#11-pr-3-后独立验收批次--2026-11-02)、[DeepSeek live/UI](DEEPSEEK_LIVE_VALIDATION.md)、[8 图及 No-Submit 收据](evidence/final-acceptance-20261102/deepseek-ui.public.json)。没有点击 Submit；Draft 前后 KPCP 业务对象为零，唯一额外 Job 是明确归属的连通性 probe。
+
+## 4. 工程 Gate 与失败保留
+
+Gate A 的不可变字段更新被 admission 拒绝，测试改用正常删除未 Apply 对象、同名新 UID/上下文与旧审批，未降低断言；两次夹具失败及其正常清理留存，六项各自 PASS 才合并结果。Gate B 首轮 9/10，通过真实摘要一致的外来 Plan 路径发现缺陷；只增加 Plan 当前 UID 路径及 Apply 冻结 PlanRef 检查，两个语义单测先红后绿，live 重跑 10/10 PASS。
+
+因 Controller 终态身份校验改变，本轮重新建立独立第二集群并重验 C/D。新集群 UID `32d75cbe-8c49-439c-885e-6b36329da3d8` 与主集群 `2c62d6a8-08b6-460d-bb1b-ac59557dc281` 不同；CA、客户端证书也不同，TLS 验证保留。实际 C/D/F lane 566.40 秒、exit 0；第二集群 container/volume/network 已确认消失，主集群身份不变。
+
+E/F 使用真实 saved Plan、exact approval、Runner Job 与 MiniStack bucket。E04/F02 的 Terraform mutation 真实完成，但 terminal PUT 被精确 403 拒绝，Controller 为 Indeterminate；E05/F01 在两个有依赖的资源中完成一项 mutation 后失败。没有把 Plan failure 当作 Apply/Destroy Apply failure。Controller 重启后 Run/Job 身份保留，没有重复 mutation，两个业务 finalizer 保留。
+
+E/F lane 的 Go 命令 exit 0 只表明七个执行保护子测试 PASS；`F04_RecoveryAndCleanup` 是明确 **SKIP / BLOCKED**，不属于 PASS。详见 [Gate A](gates/GATE_A_EXACT_APPROVAL.md)、[Gate B](gates/GATE_B_IMMUTABLE_EVIDENCE.md)、[Gate C](gates/GATE_C_CONTROLLER_RECOVERY.md)、[Gate D](gates/GATE_D_MULTI_CLUSTER.md)、[Gate E](gates/GATE_E_FAIL_CLOSED.md)、[Gate F](gates/GATE_F_DESTROY_FINALIZER.md)及[最终 E/F 收据](evidence/final-acceptance-20261102/gate-ef.public.json)。历史失败、旧 Browser BLOCKED 与旧 Gate PARTIAL 保留在各文档原批次。
+
+## 5. 清理与恢复阻塞
+
+保留 namespace：`kpcp-1793611893090112000`，UID `4797a13a-e3ec-4773-a6f8-ad867edad61a`；artifact bucket 同名。四条业务链的完整 Environment/Stack/Plan/Apply/Job UID、审批绑定、digest、finalizer、cloud 状态与本地归档摘要见[保留资源清单](evidence/final-acceptance-20261102/retained-resources.public.json)。原始 state、backend、source bundles、binary Plans 与 Pod/Controller 日志归档于受控本地 work 目录，公开仓库仅有脱敏投影与 hash。
+
+当前 `InfraStack.reconcileDestroy` 对任何 Indeterminate Apply 或可能发生 mutation 的 Failed Apply 返回 RecoveryRequired；现有 API 没有安全清除此阻塞并产生 fresh-observation recovery Plan 的操作。不能用补写 stdout 为可信 terminal、删历史 Run、手工 patch status/finalizer 或强删对象制造恢复成功。
+
+人工恢复步骤与风险：先保持执行 Controller 停止，核对主集群 incarnation 和四条链的精确 UID；只读比较 retained backend/state 的 lineage/serial、实际 bucket 与 Job/terminal/plan 证据。需要另行实现并审查受支持的 fresh observation → 新不可变 Plan → 独立审批 → 正常 Destroy/finalizer 收尾流程。错误 state、错误目标或把缺失 terminal 推断为成功会造成漏删或重复 mutation；在该路径验证通过前保留原对象与证据，不宣称 CLEANUP PASS。
+
+临时第二集群完整清理见[独立清理收据](evidence/final-acceptance-20261102/secondary-cleanup.public.json)。本轮其余支撑服务和原服务健康的交付状态见[最终资源核对](evidence/final-acceptance-20261102/final-cleanup.public.json)。未修改全局防火墙、DNS、共享路由；未重启或删除共享 Minikube/MiniStack；未访问真实 AWS。
+
+## 6. Clean regression / 证据完整性
+
+Go unit/race/vet/build、前端 npm ci / 7 tests / typecheck / build、Terraform 1.14.0 的全仓 fmt 与 basic/partial overlay init/validate、真实 MiniStack STS/immutable writer/backend lock、Markdown links、Gitleaks 8.30.1 与 git whitespace 全部实际执行。默认 E2E 与收费 DeepSeek opt-in 的 SKIP 日志单独保存，不计为 live PASS。[逐命令收据](evidence/final-acceptance-20261102/clean-regression.public.json)、[Go tests](evidence/final-acceptance-20261102/clean-logs/clean-go-unit.log)、[race](evidence/final-acceptance-20261102/clean-logs/clean-go-race.log)、[前端 tests](evidence/final-acceptance-20261102/clean-logs/clean-frontend-test.log)、[Terraform](evidence/final-acceptance-20261102/clean-logs/clean-terraform.log)。
+
+[完整性核验](evidence/final-acceptance-20261102/evidence-integrity.public.json)：8 张原始 IAB JPEG 解码、文件长度和 SHA 匹配；live receipts/raw Controller/Pod log hash 匹配；实际 Pod Controller imageID 与 OCI index、child manifest、image 内 executable 的 hash 绑定。公开文本仅脱敏和规范换行，原始敏感证据不提交。真实 AWS/IAM、生产故障域、SLA 与生产可移植性不在验收范围。
+
+## 7. 交付
+
+Feature branch 提交并创建 PR，**不合并 main**。GitHub Actions 发布后核验，最终 PR URL、head SHA 与最新 CI run 在交付收据中明确记录。NO-GO 来自 F04 受支持恢复与正常资源清理的实证阻塞，不被绿色单测/CI 或保护性拒绝覆盖。
+
+以下是前序批次的原文，其时间、身份、FAIL/BLOCKED/PARTIAL 不覆盖本轮结果。
+
+<!-- FINAL_ACCEPTANCE_20261102_HISTORY -->
 # Phase 2.5 Final Freeze Decision — 2026-11-02
 
 ## 1. Executive Summary

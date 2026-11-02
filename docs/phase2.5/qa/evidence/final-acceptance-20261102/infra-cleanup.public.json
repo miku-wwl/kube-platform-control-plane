@@ -1,0 +1,14 @@
+{
+  "batch": "kpcp-final-20261102-1815",
+  "at": "2026-11-02T09:49:49.064464+00:00",
+  "namespace": "kpcp-final-20261102-1815-infra",
+  "namespaceUID": "308f8dfb-d56d-4272-8a8b-a535a491d2ea",
+  "namespaceNormallyDeleted": true,
+  "artifactBucketNormallyDeleted": true,
+  "archivedObjects": [],
+  "kubernetesSnapshotSHA256": "ea550892b9018ba41ebb4243cfcc4bee77570390e31ad9ad8c3baa5a0d438c6b",
+  "uiCloudBucketAbsent": true,
+  "retainedFaultNamespaceTouched": false,
+  "manualFinalizerPatch": false,
+  "forcedDelete": false
+}

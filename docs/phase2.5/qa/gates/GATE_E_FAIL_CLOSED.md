@@ -1,5 +1,21 @@
 # Gate E — Fail-Closed
 
+## PR #3 后独立批次 — 2026-11-02：五项 live 保护 PASS
+
+Batch `kpcp-final-20261102-1815`；clean Controller `7cdad59ef8035391cafc1e4d8727ebe715fd9f32`，driver `f4e067d`（相关产品/E2E 源码一致）。E/F lane 实际 1006.39 秒、exit 0；F04 单独 SKIP/BLOCKED，不能把该 exit 0 当作完整恢复 PASS。
+
+| 场景 | 真实操作与结果 | 状态 |
+|---|---|---|
+| E01 Wrong Account | dummy Secret 为 `111111111111`、配置绑定 `000000000000`；实际 Controller 输出 account/identity mismatch；零 TerraformRun、零 Apply/cloud mutation。独立 dummy STS 响应仅作 emulator 范围证据 | PASS，16.71 秒；不证明生产 IAM 隔离 |
+| E02 Git Transport Outage | 先真实成功 Plan；只修改本轮 Git Service selector，确认 ready endpoints 为零；真实 clone Job 失败，无旧 source fallback/Apply；恢复同 UID Service 后生成不同 UID 的新 Plan，仍需新审批 | PASS，142.83 秒 |
+| E03 Foreign Job | 本轮 namespace 中创建相同 Run label、不同 ConfigMap owner 的真实完成 Job；Controller 判 Indeterminate，没有接管、更换 owner 或替换 Job，精确 UID fixture 普通删除 | PASS，21.52 秒 |
+| E04 Ambiguous Apply | 已批准 saved Plan 的真实 Apply 创建 QA bucket；仅 terminal PUT 被 403 拒绝，实际对象缺失，Controller Indeterminate；重启后原 Run/Job 身份保留，无重复 Apply，普通删除停在 RecoveryRequired | PASS（保护行为），109.81 秒 |
+| E05 Partial Mutation | 两个固定、有依赖的 QA bucket；第二个 Create PUT 精确 403，第一个已真实创建；Terraform Apply 非零退出、mutationMayHaveOccurred=true；无盲重试，两个业务 finalizer 保留 | PASS（保护行为），93.80 秒 |
+
+[49 项完整脱敏 E/F 收据](../evidence/final-acceptance-20261102/gate-ef.public.json)、[真实命令输出](../evidence/final-acceptance-20261102/gate-ef.selected.public.txt)。Run/Job/Plan/Approval UID、执行上下文与 artifact digest、实际 Pod 日志及 cloud before/after 均在独立子场景收据中；完整原始证据只保留本地。
+
+**Gate E 本轮要求的 fail-closed 保护 PASS；正常恢复仍受 F04 阻塞。** E04/E05 不是普通 Plan failure，未将未完成的人工恢复算作 PASS。四条保留链见[身份及归档清单](../evidence/final-acceptance-20261102/retained-resources.public.json)；完整 Freeze 因 F04 / cleanup BLOCKED 为 NO-GO。下方历史 NOT RUN/PARTIAL 保持原批次身份。
+
 ## 1. Test Objective
 
 缺少可信 source、target、execution identity、approval 或 terminal evidence 时，不执行未经授权的 Apply、不重复 mutation、不影响非归属资源。

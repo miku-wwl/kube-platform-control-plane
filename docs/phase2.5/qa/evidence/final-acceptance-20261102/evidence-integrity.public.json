@@ -1,0 +1,135 @@
+{
+  "batch": "kpcp-final-20261102-1815",
+  "at": "2026-11-02T09:49:03.706776+00:00",
+  "screenshots": [
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/01-builder-initial-zh.jpg",
+      "size": [
+        890,
+        866
+      ],
+      "sha256": "9e5dba1b39f1dadf33b1e2aae8ca109ee572566828088c8eb2e739c62335ddd5",
+      "decodes": true
+    },
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/02-request-parameters-en.jpg",
+      "size": [
+        890,
+        866
+      ],
+      "sha256": "3356ee2c56c118ddca65fefdb5cc98d170a18e745cc9a3883875cf8d5767ac65",
+      "decodes": true
+    },
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/03-first-draft-semantic-failure.jpg",
+      "size": [
+        890,
+        866
+      ],
+      "sha256": "00aaa811662d439c7493aafed7fc242399cbb3f00d621eb83f72785f3fc6e925",
+      "decodes": true
+    },
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/04-fixed-draft-provider-yaml-en.jpg",
+      "size": [
+        890,
+        866
+      ],
+      "sha256": "ccc4d5b9a1a907052e39cb86962dcfb3bcec4ace66585629a789a390c68b992a",
+      "decodes": true
+    },
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/05-fixed-draft-warning-submit-zh.jpg",
+      "size": [
+        890,
+        866
+      ],
+      "sha256": "53e53951ff284e3bbb4ca13cda67c87d6cb2f4a7738ffada60b7f6b43634e3d7",
+      "decodes": true
+    },
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/06-api-outage-unlocalized-before-fix.jpg",
+      "size": [
+        890,
+        866
+      ],
+      "sha256": "660fbc86ca2726b5219daffb5cd309ef22dccf16b57ec58cc94126e3241a9416",
+      "decodes": true
+    },
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/07-api-outage-technical-zh.jpg",
+      "size": [
+        890,
+        866
+      ],
+      "sha256": "536e0918f3d384be65449c500ad47456e0dcf2dd8f3d627d2ffe41f5c2d9a154",
+      "decodes": true
+    },
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/08-api-outage-technical-en.jpg",
+      "size": [
+        890,
+        866
+      ],
+      "sha256": "d6eacb972dd6d89a8d49a51f2592b5a2a55c3810a4855046f50bebfb449128d1",
+      "decodes": true
+    }
+  ],
+  "imagesAreRawIABJPEGs": true,
+  "paidRequestsInThisBatch": 2,
+  "hashVerifiedLanes": [
+    {
+      "lane": "baseline",
+      "exitCode": 0,
+      "receiptCount": 5,
+      "rawHashesMatch": true
+    },
+    {
+      "lane": "gate-a",
+      "exitCode": 1,
+      "receiptCount": 24,
+      "rawHashesMatch": true
+    },
+    {
+      "lane": "gate-a-corrected",
+      "exitCode": 1,
+      "receiptCount": 15,
+      "rawHashesMatch": true
+    },
+    {
+      "lane": "gate-a-final",
+      "exitCode": 0,
+      "receiptCount": 15,
+      "rawHashesMatch": true
+    },
+    {
+      "lane": "gate-b",
+      "exitCode": 1,
+      "receiptCount": 39,
+      "rawHashesMatch": true
+    },
+    {
+      "lane": "gate-b-corrected",
+      "exitCode": 0,
+      "receiptCount": 39,
+      "rawHashesMatch": true
+    },
+    {
+      "lane": "gate-cd",
+      "exitCode": 0,
+      "receiptCount": 32,
+      "rawHashesMatch": true
+    },
+    {
+      "lane": "gate-ef",
+      "exitCode": 0,
+      "receiptCount": 49,
+      "rawHashesMatch": true
+    }
+  ],
+  "actualControllerImageIDs": [
+    "docker.io/library/import-2026-11-02@sha256:a37f0e1bf9818cd3e4f8e1697710e4bae17c840aada47d7ce0c559195b360705"
+  ],
+  "controllerIdentityObservations": 30,
+  "projectionNote": "Public projections redact sensitive fields/private interface address and normalize line endings. SHA-256 refers to unchanged raw private originals. Failure/skip results remain failures/skips."
+}

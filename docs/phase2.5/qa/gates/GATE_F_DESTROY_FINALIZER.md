@@ -1,5 +1,22 @@
 # Gate F — Terraform Destroy / Finalizer
 
+## PR #3 后独立批次 — 2026-11-02：F01–F03 PASS，F04 BLOCKED
+
+Batch `kpcp-final-20261102-1815`；clean Controller `7cdad59`、driver `f4e067d`，相关源码一致。新增故障在真实 saved Destroy Plan 和独立 exact approval 后注入，不以 Destroy Plan failure 代替 Destroy Apply failure。
+
+| Case | 真实执行与检查 | 本轮结果 |
+|---|---|---|
+| F01 Partial Destroy Apply | 环境先真实 Ready、两个 bucket 都存在；Destroy Apply 删除依赖资源后，对最后一个 bucket DELETE 注入精确 403；Terraform 非零退出、mutationMayHaveOccurred=true，一项资源仍在、另一项确实消失；Controller Indeterminate，Environment/Stack 两个 finalizer 保留，无重复 Destroy Apply | PASS（保护），189.37 秒 |
+| F02 Missing Terminal | Terraform Destroy 真正 exit 0、QA bucket 消失；仅 terminal PUT 被 403 拒绝，对象实际不存在；Controller 未信任 stdout 成功、保持 Indeterminate/EvidenceCaptured=false、两个 finalizer 保留 | PASS（保护），与 F03 共 197.99 秒 |
+| F03 Ambiguous Restart | 重启专属 Controller，核对同 Lease UID、新 holder；原 Destroy Run/Job UID 保留，Destroy Apply 仍恰一次，RecoveryRequired 和两个 finalizer 未释放 | PASS（保护） |
+| F04 Normal Recovery/Cleanup | 四条 post-mutation/缺失可信终态业务链已正常发起删除，当前实现持续 RecoveryRequired；没有可执行的受支持 fresh-observation recovery/新审批路径。没有补写不可信 terminal、删历史 Run、patch status/finalizer 或 force delete | **BLOCKED / SKIP**，不计 PASS |
+
+同 lane 的普通主环境仍通过独立 Destroy 审批、真实 Destroy 和正常 finalizer 清理（114.92 秒）；这不能替代上述四条故障链的清理。整个 E/F Go 命令 exit 0、1006.39 秒，只表示执行的保护 assertions 通过，F04 SKIP 不会提升为完整 Gate F PASS。
+
+[完整 E/F 收据](../evidence/final-acceptance-20261102/gate-ef.public.json)、[真实输出](../evidence/final-acceptance-20261102/gate-ef.selected.public.txt)、[保留 Environment/Class/Stack/Run/Job/Plan 身份与 cloud/归档 SHA](../evidence/final-acceptance-20261102/retained-resources.public.json)。保留 namespace `kpcp-1793611893090112000`；准确 UID 见机器收据，没有对它做强制清理。
+
+**Gate F = PARTIAL；Freeze = NO-GO。** 人工恢复先只读核对 retained state 的 lineage/serial、实际 bucket、完整 source/backend/Plan/Job 身份；需要受支持且审查过的 fresh observation → 新不可变 Plan → 独立 Destroy approval → 正常 finalizer 流程。把缺失 terminal 推断为成功或用错 state/目标可能导致漏删或重复 mutation。见[最终 Freeze 与恢复说明](../PHASE25_FINAL_FREEZE.md)。下方历史记录保留。
+
 ## 1. Test Objective
 
 删除必须使用 retained convergence/source、独立 exact Destroy approval 和 saved binary Destroy Plan；失败时持有 finalizer，成功后只清理本轮资源。

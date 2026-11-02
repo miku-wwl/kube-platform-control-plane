@@ -1,3 +1,28 @@
+<!-- FINAL_ACCEPTANCE_20261102_CURRENT -->
+# KPCP Phase 2.5 — PR #3 后最终验收
+
+Batch `kpcp-final-20261102-1815`；base main `21231fc`；独立分支 `qa/phase25-final-acceptance`。**Freeze = NO-GO**：UI 与指定 live 保护已补齐，F04 受支持恢复和四条业务链的正常清理仍 BLOCKED。仅针对本地 Podman/Minikube/MiniStack；真实 AWS NOT VALIDATED。
+
+| Area | Result | 本轮范围 / 证据 |
+|---|---|---|
+| DeepSeek Live Intent | PASS（复用） | 历史 DS01–DS07 7/7、1,948 tokens，未重跑七次收费请求 |
+| DeepSeek Browser UI | PASS | 本轮 IAB 两次真实请求、8 张原始 JPEG；EN/ZH、typed intent/YAML/advisory、显式 Submit、零自动资源变更 |
+| Gate A | PASS | 六类上下文变化均实测拒绝旧审批；历史失败与独立复测分开保存 |
+| Gate B | PASS（修复后） | 首轮发现 Plan UID 语义绑定缺陷；最小修复后 10/10 live 子场景 PASS |
+| Gate C | PASS（重验） | 新 Controller 两真实副本、六生命周期阶段和跨目标 contention 接管 |
+| Gate D | PASS（重验） | 两个独立 UID/CA/凭据；真实 runtime/state/并发/逐目标 Destroy |
+| Gate E | PASS（保护行为） | wrong account、Git outage、foreign Job、ambiguous Apply、partial Apply 五项 live 保护通过；不声称生产 IAM |
+| Gate F | PARTIAL | F01–F03 live 保护通过；**F04 正常恢复/清理 BLOCKED** |
+| Clean Build | PASS | clean `99dc281`，Go/unit/race/vet/build、前端 7 tests/typecheck/build、Terraform 1.14.0、MiniStack；三个二进制 modified=false |
+| CI | PENDING | 本地回归已完成；PR 最终 checks 发布后核验，不把默认 opt-in SKIP 记作 live PASS |
+| Resource Cleanup | BLOCKED（部分） | 正常 lane、临时第二集群完成清理；四条不确定/部分变更业务链及其证据桶保留 |
+| Evidence Integrity | PASS | 真实截图解码与 SHA、raw receipt/log SHA、实际 Controller imageID 与 binary 来源均核验 |
+
+[最终 Freeze 与恢复说明](PHASE25_FINAL_FREEZE.md) · [15 TC 中的 TC03 新 UI 批次](TC03_AI_DRAFT.md) · [六 Gate](gates/README.md) · [live E/F](evidence/final-acceptance-20261102/gate-ef.public.json) · [保留资源身份](evidence/final-acceptance-20261102/retained-resources.public.json) · [clean regression](evidence/final-acceptance-20261102/clean-regression.public.json)。One TC = One Markdown / One Gate = One Markdown 保持；其他 TC 的历史限定结果未重新包装为本轮执行。
+
+以下保留前序批次原文。
+
+<!-- FINAL_ACCEPTANCE_20261102_HISTORY -->
 # KPCP Phase 2.5 — 最终工程验证
 
 ## 最新批次：DeepSeek Final Closure（2026-11-02）
