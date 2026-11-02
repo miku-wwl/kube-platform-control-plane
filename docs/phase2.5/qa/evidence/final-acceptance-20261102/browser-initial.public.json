@@ -1,0 +1,59 @@
+{
+  "runID": "kpcp-final-20261102-1815",
+  "baseline": "21231fc792b9f461c42ef335d99fd79b211862f8",
+  "browserControl": "PASS",
+  "browser": "ChatGPT in-app browser; new agent-owned tab 1",
+  "smoke": {
+    "exampleURL": "https://example.com/",
+    "exampleTitle": "Example Domain",
+    "AXRead": true,
+    "kpcpURL": "http://127.0.0.1:5173/",
+    "kpcpTitle": "平台控制平面",
+    "captureSaved": true,
+    "captureBytes": 36935
+  },
+  "firstUIRequest": {
+    "url": "http://127.0.0.1:5174/#builder",
+    "provider": "deepseek",
+    "configuredModel": "deepseek-flash",
+    "paidCalls": 1,
+    "request": "Create a small development environment named qa-deepseek-ui with 2 nodes in the selected class default region. Do not enable Valkey.",
+    "result": "FAIL",
+    "actual": "Validated typed Draft incorrectly enabled Valkey; no Submit performed",
+    "cause": "applyExplicitValkeyIntent matched enable valkey inside Do not enable Valkey",
+    "beforeObjects": 0,
+    "afterObjects": 0
+  },
+  "regression": {
+    "command": "go test ./internal/console -run TestOllamaDraftAppliesExplicitCacheIntentDeterministically -count=1",
+    "beforeFix": {
+      "exitCode": 1,
+      "failures": [
+        "negated_Valkey_enable",
+        "negated_cache_enable",
+        "negated_Redis_enable"
+      ]
+    },
+    "afterFix": {
+      "exitCode": 0,
+      "result": "PASS"
+    }
+  },
+  "screenshots": [
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/01-builder-initial-zh.jpg",
+      "sha256": "9e5dba1b39f1dadf33b1e2aae8ca109ee572566828088c8eb2e739c62335ddd5",
+      "bytes": 46303
+    },
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/02-request-parameters-en.jpg",
+      "sha256": "3356ee2c56c118ddca65fefdb5cc98d170a18e745cc9a3883875cf8d5767ac65",
+      "bytes": 55973
+    },
+    {
+      "path": "docs/phase2.5/qa/screenshots/final-acceptance-20261102/03-first-draft-semantic-failure.jpg",
+      "sha256": "00aaa811662d439c7493aafed7fc242399cbb3f00d621eb83f72785f3fc6e925",
+      "bytes": 50323
+    }
+  ]
+}

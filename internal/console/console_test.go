@@ -342,6 +342,9 @@ func TestOllamaDraftAppliesExplicitCacheIntentDeterministically(t *testing.T) {
 	}{
 		{name: "explicit enable", description: "Create a development environment with cache enabled", wantEnabled: true},
 		{name: "explicit disable", description: "Create a development environment without cache", wantEnabled: false},
+		{name: "negated Valkey enable", description: "Create a small environment. Do not enable Valkey.", wantEnabled: false},
+		{name: "negated cache enable", description: "Create an environment; don't enable cache.", wantEnabled: false},
+		{name: "negated Redis enable", description: "Do not enable Redis for this environment.", wantEnabled: false},
 		{name: "ambiguous request", description: "Create a small development environment", wantEnabled: false},
 	}
 	for _, test := range cases {
