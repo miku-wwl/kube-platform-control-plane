@@ -451,6 +451,12 @@ func (s *Server) generateDraft(w http.ResponseWriter, r *http.Request) {
 	}
 	intent, err := s.drafts.Generate(r.Context(), request)
 	if err != nil {
+		var providerErr *DraftProviderError
+		if errors.As(err, &providerErr) {
+			s.logger.Error("AI draft provider failed", "code", providerErr.Code, "diagnostic", providerErr.Diagnostic, "request_id", providerErr.RequestID)
+			writeError(w, http.StatusBadGateway, providerErr.Code, "The AI provider could not generate a valid draft. Nothing was submitted.")
+			return
+		}
 		writeError(w, http.StatusBadGateway, "DraftGenerationFailed", err.Error())
 		return
 	}

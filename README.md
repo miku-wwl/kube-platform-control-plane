@@ -93,6 +93,16 @@ with `AI_PROVIDER=deterministic`. Model output is advisory typed intent: separat
 human submission creates the environment. No inference failure silently falls
 back, and there is no direct Apply endpoint.
 
+The optional DeepSeek provider uses the official Chat Completions API. Configure
+the backend process with `AI_PROVIDER=deepseek` and `DEEPSEEK_API_KEY`; the
+default endpoint is `https://api.deepseek.com` and the default model is
+`deepseek-flash` (also supported: `deepseek-v4-pro`). `DEEPSEEK_BASE_URL` is
+restricted to the official HTTPS origin. Keep the key in the backend process
+environment or an approved local secret manager; never put it in the frontend,
+Kubernetes resources, source control, reports, or CI. Requests may incur DeepSeek
+usage charges. Provider failures return a safe localized error and do not fall
+back to deterministic generation or submit infrastructure.
+
 The console retains environment details/timeline/plan topology, exact approvals,
 class validation/create/delete and persisted template snapshots. Classes are
 immutable; copy into a new named version. Templates are independent ConfigMaps
@@ -145,6 +155,10 @@ an externally supplied test transport uses its bucket-name content to inject
 temporary 503 responses. The suite checks retained finalizers and recovery,
 then removes the switch. MiniStack itself stays externally managed.
 Live advisory-model tests independently require `PCP_RUN_OLLAMA_INTEGRATION=1`.
+The optional DeepSeek semantic suite requires `KPCP_DEEPSEEK_LIVE=1` and a
+backend-only `DEEPSEEK_API_KEY`; it makes seven bounded serial requests to the
+official DeepSeek API and is never run by default CI. It can incur API usage
+charges. See [DeepSeek live validation](docs/phase2.5/qa/DEEPSEEK_LIVE_VALIDATION.md).
 
 ## Historical evidence
 

@@ -41,6 +41,33 @@ import { PlanTopology } from './components/PlanTopology'
 
 type DetailTab = 'overview' | 'architecture' | 'terraform' | 'timeline'
 
+const deepSeekErrorMessages: Record<string, string> = {
+  DeepSeekKeyMissing: 'DeepSeek API key is not configured. Nothing was submitted.',
+  DeepSeekConfigurationError: 'DeepSeek provider configuration is invalid. Nothing was submitted.',
+  DeepSeekInvalidAPIKey: 'DeepSeek rejected the configured API key. Nothing was submitted.',
+  DeepSeekInsufficientBalance: 'DeepSeek API account has insufficient balance. Nothing was submitted.',
+  DeepSeekAuthorizationFailed: 'DeepSeek denied API access. Nothing was submitted.',
+  DeepSeekRateLimited: 'DeepSeek rate limit was reached. Nothing was submitted.',
+  DeepSeekInvalidRequest: 'DeepSeek rejected the request. Nothing was submitted.',
+  DeepSeekServiceUnavailable: 'DeepSeek service is unavailable. Nothing was submitted.',
+  DeepSeekRedirectRejected: 'A DeepSeek redirect was blocked. Nothing was submitted.',
+  DeepSeekTimeout: 'DeepSeek request timed out. Nothing was submitted.',
+  DeepSeekRequestCancelled: 'DeepSeek request was cancelled. Nothing was submitted.',
+  DeepSeekTLSFailure: 'DeepSeek TLS verification failed. Nothing was submitted.',
+  DeepSeekDNSFailure: 'DeepSeek DNS lookup failed. Nothing was submitted.',
+  DeepSeekNetworkFailure: 'DeepSeek network request failed. Nothing was submitted.',
+  DeepSeekResponseTooLarge: 'DeepSeek response exceeded the safe size limit. Nothing was submitted.',
+  DeepSeekMalformedResponse: 'DeepSeek response could not be parsed. Nothing was submitted.',
+  DeepSeekEmptyContent: 'DeepSeek returned no Draft content. Nothing was submitted.',
+  DeepSeekTruncatedResponse: 'DeepSeek response was truncated. Nothing was submitted.',
+  DeepSeekToolCallUnsupported: 'DeepSeek returned unsupported tool output. Nothing was submitted.',
+  DeepSeekIncompleteResponse: 'DeepSeek response was incomplete. Nothing was submitted.',
+  DeepSeekInvalidIntent: 'DeepSeek output failed Draft schema validation. Nothing was submitted.',
+  DeepSeekExplicitFieldChanged: 'DeepSeek changed an explicitly supplied field. Nothing was submitted.',
+  DeepSeekRequestEncodingFailed: 'DeepSeek request could not be prepared. Nothing was submitted.',
+  DeepSeekUpstreamFailure: 'DeepSeek returned an unexpected error. Nothing was submitted.',
+}
+
 export function Dashboard({
   environments,
   readyCount,
@@ -455,7 +482,15 @@ export function Builder({
             )}
             {error && (
               <Alert tone="error">
-                {errorCode === 'DraftGenerationFailed' ? (
+                {deepSeekErrorMessages[errorCode] ? (
+                  <>
+                    <p>{t(deepSeekErrorMessages[errorCode])}</p>
+                    <details>
+                      <summary>{t('Technical details')}</summary>
+                      <code>{errorCode}</code>
+                    </details>
+                  </>
+                ) : errorCode === 'DraftGenerationFailed' ? (
                   <>
                     <p>{t('The AI provider could not generate a valid draft. Nothing was submitted.')}</p>
                     <details>
@@ -508,7 +543,7 @@ export function Builder({
               <dl className="draft-facts">
                 <Fact
                   label={t('Provider')}
-                  value={draft.provider === 'ollama' ? 'Ollama' : t(draft.provider)}
+                  value={draft.provider === 'ollama' ? 'Ollama' : draft.provider === 'deepseek' ? 'DeepSeek' : t(draft.provider)}
                 />
                 <Fact label={t('Environment')} value={`${draft.intent.namespace}/${draft.intent.name}`} />
                 <Fact label={t('Environment class')} value={draft.intent.classRef} />
