@@ -1,0 +1,26 @@
+{
+  "batch": "kpcp-final-20261102-1815",
+  "at": "2026-11-02T09:17:31.128370+00:00",
+  "clusters": [
+    {
+      "context": "podman-minikube",
+      "kubeSystemUID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+      "nodeUID": "ddd9911b-a2fe-471c-940b-83a82b87b287",
+      "nodeReady": true,
+      "apiPort": 45315,
+      "caSHA256": "77a8551bdb5d9bc16cdbcac536419282a2dff8a2137f9b3d5f971ca501681399",
+      "clientCertSHA256": "ebdc84b6822ac0fbf31be8d57cfe36682020ea6787a34070c6537a0cbf3b19ae"
+    },
+    {
+      "context": "kpcp-final-20261102-1815-b",
+      "kubeSystemUID": "32d75cbe-8c49-439c-885e-6b36329da3d8",
+      "nodeUID": "69790529-ad64-4916-9e55-0e9a2f7743d3",
+      "nodeReady": true,
+      "apiPort": 45733,
+      "caSHA256": "8aa399d14cfc1c89fc4777f8639ba4f4425b26992595d65f1b0ef3d522021450",
+      "clientCertSHA256": "7866929e71d6d6dfe215e1164aae1811d2487da9c1043fab393b1754644cb282"
+    }
+  ],
+  "privateCredentialsPublished": false,
+  "tlsVerificationDisabled": false
+}

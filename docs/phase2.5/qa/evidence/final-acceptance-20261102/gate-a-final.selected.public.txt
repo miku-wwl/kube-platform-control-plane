@@ -1,62 +1,62 @@
-=== RUN   TestLifecycle
-    lifecycle_test.go:119: owned namespace=kpcp-1793606630392919800 uid=6ac8c2ee-cb98-4d6a-92ef-9cb821225d9c source=0eab0368c66e2a9abbac8522007f659205697d96 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
-2026/11/02 21:03:50 INFO platform API request method=POST path=/api/classes/validate duration=11ms
-2026/11/02 21:03:50 INFO platform API request method=GET path=/api/classes/kpcp-1793606630392919800 duration=7ms
-2026/11/02 21:03:50 INFO platform API request method=POST path=/api/classes duration=16ms
-2026/11/02 21:03:50 INFO platform API request method=POST path=/api/classes duration=14ms
-2026/11/02 21:03:50 INFO PlatformEnvironment submitted namespace=kpcp-1793606630392919800 name=environment class=kpcp-1793606630392919800 generation=1
-2026/11/02 21:03:50 INFO platform API request method=POST path=/api/environments duration=27ms
-2026/11/02 21:03:50 INFO platform API request method=DELETE path=/api/classes/kpcp-1793606630392919800 duration=16ms
-    lifecycle_test.go:255: dedicated controller process restarted phase=active-plan
-    lifecycle_test.go:255: dedicated controller process restarted phase=pending-approval
-2026/11/02 21:04:40 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793606630392919800/environment-infra-plan-1/approve duration=38ms
-2026/11/02 21:04:40 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793606630392919800/environment-infra-plan-1/approve duration=18ms
-    lifecycle_test.go:255: dedicated controller process restarted phase=active-apply
-    lifecycle_test.go:255: dedicated controller process restarted phase=ready
-2026/11/02 21:05:36 INFO platform API request method=GET path=/api/environments/kpcp-1793606630392919800/environment duration=26ms
-2026/11/02 21:05:36 INFO platform API request method=GET path=/api/environments/kpcp-1793606630392919800/environment/timeline duration=32ms
-2026/11/02 21:05:36 INFO platform API request method=GET path=/api/environments/kpcp-1793606630392919800/environment/terraform-runs duration=42ms
-2026/11/02 21:05:36 INFO platform API request method=GET path=/api/environments/kpcp-1793606630392919800/environment/architecture duration=45ms
-2026/11/02 21:05:36 INFO platform API request method=GET path=/api/environments duration=34ms
-=== RUN   TestLifecycle/FinalSafety
-=== RUN   TestLifecycle/FinalSafety/A_ContextDrift
-=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/source
-=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/target
-    final_safety_test.go:454: explicit incremental case selection
-=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/backend
-    final_safety_test.go:454: explicit incremental case selection
-=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/runner
-=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/inputs
-    final_safety_test.go:454: explicit incremental case selection
-=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/profile
-    final_safety_test.go:454: explicit incremental case selection
-=== RUN   TestLifecycle/FinalSafety/B_TerminalIdentity
-    final_safety_test.go:291: explicit KPCP_FINAL_GATE selection
-=== RUN   TestLifecycle/FinalSafety/B_PartialUpload
-    final_safety_test.go:291: explicit KPCP_FINAL_GATE selection
-=== RUN   TestLifecycle/FinalSafety/B_SnapshotDrift
-    final_safety_test.go:291: explicit KPCP_FINAL_GATE selection
-=== RUN   TestLifecycle/F_DestroyFinalizer
-2026/11/02 21:09:09 INFO platform API request method=DELETE path=/api/environments/kpcp-1793606630392919800/environment duration=5ms
-2026/11/02 21:09:09 INFO platform API request method=DELETE path=/api/environments/kpcp-1793606630392919800/environment duration=17ms
-=== NAME  TestLifecycle
-    lifecycle_test.go:255: dedicated controller process restarted phase=destroy-pending-approval
-2026/11/02 21:10:16 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793606630392919800/environment-infra-destroy-plan-3/approve duration=31ms
-    lifecycle_test.go:255: dedicated controller process restarted phase=active-destroy
-2026/11/02 21:11:15 INFO platform API request method=GET path=/api/environments/kpcp-1793606630392919800/environment duration=38ms
-2026/11/02 21:11:16 INFO platform API request method=DELETE path=/api/classes/kpcp-1793606630392919800 duration=23ms
---- PASS: TestLifecycle (446.14s)
-    --- PASS: TestLifecycle/FinalSafety (213.03s)
-        --- PASS: TestLifecycle/FinalSafety/A_ContextDrift (213.02s)
-            --- PASS: TestLifecycle/FinalSafety/A_ContextDrift/source (114.78s)
-            --- SKIP: TestLifecycle/FinalSafety/A_ContextDrift/target (0.00s)
-            --- SKIP: TestLifecycle/FinalSafety/A_ContextDrift/backend (0.00s)
-            --- PASS: TestLifecycle/FinalSafety/A_ContextDrift/runner (98.24s)
-            --- SKIP: TestLifecycle/FinalSafety/A_ContextDrift/inputs (0.00s)
-            --- SKIP: TestLifecycle/FinalSafety/A_ContextDrift/profile (0.00s)
-        --- SKIP: TestLifecycle/FinalSafety/B_TerminalIdentity (0.00s)
-        --- SKIP: TestLifecycle/FinalSafety/B_PartialUpload (0.00s)
-        --- SKIP: TestLifecycle/FinalSafety/B_SnapshotDrift (0.00s)
-    --- PASS: TestLifecycle/F_DestroyFinalizer (126.77s)
-PASS
-ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	446.573s
+=== RUN   TestLifecycle
+    lifecycle_test.go:119: owned namespace=kpcp-1793606630392919800 uid=6ac8c2ee-cb98-4d6a-92ef-9cb821225d9c source=0eab0368c66e2a9abbac8522007f659205697d96 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+2026/11/02 21:03:50 INFO platform API request method=POST path=/api/classes/validate duration=11ms
+2026/11/02 21:03:50 INFO platform API request method=GET path=/api/classes/kpcp-1793606630392919800 duration=7ms
+2026/11/02 21:03:50 INFO platform API request method=POST path=/api/classes duration=16ms
+2026/11/02 21:03:50 INFO platform API request method=POST path=/api/classes duration=14ms
+2026/11/02 21:03:50 INFO PlatformEnvironment submitted namespace=kpcp-1793606630392919800 name=environment class=kpcp-1793606630392919800 generation=1
+2026/11/02 21:03:50 INFO platform API request method=POST path=/api/environments duration=27ms
+2026/11/02 21:03:50 INFO platform API request method=DELETE path=/api/classes/kpcp-1793606630392919800 duration=16ms
+    lifecycle_test.go:255: dedicated controller process restarted phase=active-plan
+    lifecycle_test.go:255: dedicated controller process restarted phase=pending-approval
+2026/11/02 21:04:40 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793606630392919800/environment-infra-plan-1/approve duration=38ms
+2026/11/02 21:04:40 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793606630392919800/environment-infra-plan-1/approve duration=18ms
+    lifecycle_test.go:255: dedicated controller process restarted phase=active-apply
+    lifecycle_test.go:255: dedicated controller process restarted phase=ready
+2026/11/02 21:05:36 INFO platform API request method=GET path=/api/environments/kpcp-1793606630392919800/environment duration=26ms
+2026/11/02 21:05:36 INFO platform API request method=GET path=/api/environments/kpcp-1793606630392919800/environment/timeline duration=32ms
+2026/11/02 21:05:36 INFO platform API request method=GET path=/api/environments/kpcp-1793606630392919800/environment/terraform-runs duration=42ms
+2026/11/02 21:05:36 INFO platform API request method=GET path=/api/environments/kpcp-1793606630392919800/environment/architecture duration=45ms
+2026/11/02 21:05:36 INFO platform API request method=GET path=/api/environments duration=34ms
+=== RUN   TestLifecycle/FinalSafety
+=== RUN   TestLifecycle/FinalSafety/A_ContextDrift
+=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/source
+=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/target
+    final_safety_test.go:454: explicit incremental case selection
+=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/backend
+    final_safety_test.go:454: explicit incremental case selection
+=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/runner
+=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/inputs
+    final_safety_test.go:454: explicit incremental case selection
+=== RUN   TestLifecycle/FinalSafety/A_ContextDrift/profile
+    final_safety_test.go:454: explicit incremental case selection
+=== RUN   TestLifecycle/FinalSafety/B_TerminalIdentity
+    final_safety_test.go:291: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/FinalSafety/B_PartialUpload
+    final_safety_test.go:291: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/FinalSafety/B_SnapshotDrift
+    final_safety_test.go:291: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/F_DestroyFinalizer
+2026/11/02 21:09:09 INFO platform API request method=DELETE path=/api/environments/kpcp-1793606630392919800/environment duration=5ms
+2026/11/02 21:09:09 INFO platform API request method=DELETE path=/api/environments/kpcp-1793606630392919800/environment duration=17ms
+=== NAME  TestLifecycle
+    lifecycle_test.go:255: dedicated controller process restarted phase=destroy-pending-approval
+2026/11/02 21:10:16 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793606630392919800/environment-infra-destroy-plan-3/approve duration=31ms
+    lifecycle_test.go:255: dedicated controller process restarted phase=active-destroy
+2026/11/02 21:11:15 INFO platform API request method=GET path=/api/environments/kpcp-1793606630392919800/environment duration=38ms
+2026/11/02 21:11:16 INFO platform API request method=DELETE path=/api/classes/kpcp-1793606630392919800 duration=23ms
+--- PASS: TestLifecycle (446.14s)
+    --- PASS: TestLifecycle/FinalSafety (213.03s)
+        --- PASS: TestLifecycle/FinalSafety/A_ContextDrift (213.02s)
+            --- PASS: TestLifecycle/FinalSafety/A_ContextDrift/source (114.78s)
+            --- SKIP: TestLifecycle/FinalSafety/A_ContextDrift/target (0.00s)
+            --- SKIP: TestLifecycle/FinalSafety/A_ContextDrift/backend (0.00s)
+            --- PASS: TestLifecycle/FinalSafety/A_ContextDrift/runner (98.24s)
+            --- SKIP: TestLifecycle/FinalSafety/A_ContextDrift/inputs (0.00s)
+            --- SKIP: TestLifecycle/FinalSafety/A_ContextDrift/profile (0.00s)
+        --- SKIP: TestLifecycle/FinalSafety/B_TerminalIdentity (0.00s)
+        --- SKIP: TestLifecycle/FinalSafety/B_PartialUpload (0.00s)
+        --- SKIP: TestLifecycle/FinalSafety/B_SnapshotDrift (0.00s)
+    --- PASS: TestLifecycle/F_DestroyFinalizer (126.77s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	446.573s

@@ -1,33 +1,33 @@
-=== RUN   TestLifecycle
-    lifecycle_test.go:117: owned namespace=kpcp-1793604358027082200 uid=87195306-0fb9-4351-aa4f-fe8e947833d3 source=0eab0368c66e2a9abbac8522007f659205697d96 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
-2026/11/02 20:25:58 INFO platform API request method=POST path=/api/classes/validate duration=17ms
-2026/11/02 20:25:58 INFO platform API request method=GET path=/api/classes/kpcp-1793604358027082200 duration=5ms
-2026/11/02 20:25:58 INFO platform API request method=POST path=/api/classes duration=16ms
-2026/11/02 20:25:58 INFO platform API request method=POST path=/api/classes duration=15ms
-2026/11/02 20:25:58 INFO PlatformEnvironment submitted namespace=kpcp-1793604358027082200 name=environment class=kpcp-1793604358027082200 generation=1
-2026/11/02 20:25:58 INFO platform API request method=POST path=/api/environments duration=22ms
-2026/11/02 20:25:59 INFO platform API request method=DELETE path=/api/classes/kpcp-1793604358027082200 duration=89ms
-    lifecycle_test.go:253: dedicated controller process restarted phase=active-plan
-    lifecycle_test.go:253: dedicated controller process restarted phase=pending-approval
-2026/11/02 20:27:05 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793604358027082200/environment-infra-plan-1/approve duration=35ms
-2026/11/02 20:27:05 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793604358027082200/environment-infra-plan-1/approve duration=22ms
-    lifecycle_test.go:253: dedicated controller process restarted phase=active-apply
-    lifecycle_test.go:253: dedicated controller process restarted phase=ready
-2026/11/02 20:27:47 INFO platform API request method=GET path=/api/environments/kpcp-1793604358027082200/environment duration=42ms
-2026/11/02 20:27:47 INFO platform API request method=GET path=/api/environments/kpcp-1793604358027082200/environment/timeline duration=36ms
-2026/11/02 20:27:47 INFO platform API request method=GET path=/api/environments/kpcp-1793604358027082200/environment/terraform-runs duration=41ms
-2026/11/02 20:27:47 INFO platform API request method=GET path=/api/environments/kpcp-1793604358027082200/environment/architecture duration=51ms
-2026/11/02 20:27:47 INFO platform API request method=GET path=/api/environments duration=37ms
-=== RUN   TestLifecycle/F_DestroyFinalizer
-2026/11/02 20:27:47 INFO platform API request method=DELETE path=/api/environments/kpcp-1793604358027082200/environment duration=6ms
-2026/11/02 20:27:47 INFO platform API request method=DELETE path=/api/environments/kpcp-1793604358027082200/environment duration=19ms
-=== NAME  TestLifecycle
-    lifecycle_test.go:253: dedicated controller process restarted phase=destroy-pending-approval
-2026/11/02 20:28:57 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793604358027082200/environment-infra-destroy-plan-3/approve duration=33ms
-    lifecycle_test.go:253: dedicated controller process restarted phase=active-destroy
-2026/11/02 20:29:50 INFO platform API request method=GET path=/api/environments/kpcp-1793604358027082200/environment duration=23ms
-2026/11/02 20:29:50 INFO platform API request method=DELETE path=/api/classes/kpcp-1793604358027082200 duration=23ms
---- PASS: TestLifecycle (232.75s)
-    --- PASS: TestLifecycle/F_DestroyFinalizer (122.53s)
-PASS
-ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	233.195s
+=== RUN   TestLifecycle
+    lifecycle_test.go:117: owned namespace=kpcp-1793604358027082200 uid=87195306-0fb9-4351-aa4f-fe8e947833d3 source=0eab0368c66e2a9abbac8522007f659205697d96 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+2026/11/02 20:25:58 INFO platform API request method=POST path=/api/classes/validate duration=17ms
+2026/11/02 20:25:58 INFO platform API request method=GET path=/api/classes/kpcp-1793604358027082200 duration=5ms
+2026/11/02 20:25:58 INFO platform API request method=POST path=/api/classes duration=16ms
+2026/11/02 20:25:58 INFO platform API request method=POST path=/api/classes duration=15ms
+2026/11/02 20:25:58 INFO PlatformEnvironment submitted namespace=kpcp-1793604358027082200 name=environment class=kpcp-1793604358027082200 generation=1
+2026/11/02 20:25:58 INFO platform API request method=POST path=/api/environments duration=22ms
+2026/11/02 20:25:59 INFO platform API request method=DELETE path=/api/classes/kpcp-1793604358027082200 duration=89ms
+    lifecycle_test.go:253: dedicated controller process restarted phase=active-plan
+    lifecycle_test.go:253: dedicated controller process restarted phase=pending-approval
+2026/11/02 20:27:05 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793604358027082200/environment-infra-plan-1/approve duration=35ms
+2026/11/02 20:27:05 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793604358027082200/environment-infra-plan-1/approve duration=22ms
+    lifecycle_test.go:253: dedicated controller process restarted phase=active-apply
+    lifecycle_test.go:253: dedicated controller process restarted phase=ready
+2026/11/02 20:27:47 INFO platform API request method=GET path=/api/environments/kpcp-1793604358027082200/environment duration=42ms
+2026/11/02 20:27:47 INFO platform API request method=GET path=/api/environments/kpcp-1793604358027082200/environment/timeline duration=36ms
+2026/11/02 20:27:47 INFO platform API request method=GET path=/api/environments/kpcp-1793604358027082200/environment/terraform-runs duration=41ms
+2026/11/02 20:27:47 INFO platform API request method=GET path=/api/environments/kpcp-1793604358027082200/environment/architecture duration=51ms
+2026/11/02 20:27:47 INFO platform API request method=GET path=/api/environments duration=37ms
+=== RUN   TestLifecycle/F_DestroyFinalizer
+2026/11/02 20:27:47 INFO platform API request method=DELETE path=/api/environments/kpcp-1793604358027082200/environment duration=6ms
+2026/11/02 20:27:47 INFO platform API request method=DELETE path=/api/environments/kpcp-1793604358027082200/environment duration=19ms
+=== NAME  TestLifecycle
+    lifecycle_test.go:253: dedicated controller process restarted phase=destroy-pending-approval
+2026/11/02 20:28:57 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793604358027082200/environment-infra-destroy-plan-3/approve duration=33ms
+    lifecycle_test.go:253: dedicated controller process restarted phase=active-destroy
+2026/11/02 20:29:50 INFO platform API request method=GET path=/api/environments/kpcp-1793604358027082200/environment duration=23ms
+2026/11/02 20:29:50 INFO platform API request method=DELETE path=/api/classes/kpcp-1793604358027082200 duration=23ms
+--- PASS: TestLifecycle (232.75s)
+    --- PASS: TestLifecycle/F_DestroyFinalizer (122.53s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	233.195s
