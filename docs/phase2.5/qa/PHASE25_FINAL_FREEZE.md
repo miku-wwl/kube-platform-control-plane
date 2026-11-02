@@ -69,7 +69,7 @@ Gate C/D 的 PASS 是此前已审阅的 run 与限定范围，不是本轮重跑
 | Frontend `npm ci`, tests, typecheck, build | PASS；Node 26.5.0 / npm 12.0.1；5/5 Node tests |
 | Terraform fmt / init / validate | PASS；固定 Runner digest 使用 Terraform 1.14.0 / AWS provider 5.100.0；host Terraform 1.15.5 被 fixture 约束拒绝后未改约束 |
 | Markdown local links / whitespace / secret scan | PASS；519 links、41 Markdown；Gitleaks 8.30.1；1 条历史 binary SHA 误报使用精确 fingerprint 忽略 |
-| GitHub Actions PR checks | 工作流已加；实际 PR checks 创建后核验，本报告不预先声称 PASS |
+| GitHub Actions PR checks | Run `41386849296`（head `d042c5a`）：Go tests/race/vet/build、前端、Terraform fixture、Markdown/whitespace、Secret scan 与 GitGuardian 全部 PASS；首轮 `41386332271` 曾因两份 `*.log` 证据未入 Git 造成链接失败，修复提交 `d042c5a` 已纳入日志；本报告更新会触发后续 PR 检查 |
 | Clean source `vcs.modified=false` | PASS；API build metadata 的 `vcs.modified=false`，revision `fcc8048…` |
 | Go Kubernetes lifecycle E2E | **NOT RUN / SKIP**；缺少显式 `KPCP_E2E_CONFIG`，日志证明未执行 |
 
