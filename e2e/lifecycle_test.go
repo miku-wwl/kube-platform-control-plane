@@ -36,6 +36,7 @@ import (
 )
 
 type configuration struct {
+	TimeoutSeconds                                       int    // optional bounded integration context; Go test timeout must allow cleanup
 	ControllerImage, ControllerKubeconfig                string // optional isolated two-replica Kubernetes controller lane
 	TransportScopeFile                                   string // optional new test-owned path restricting an external transport to this run
 	Kubeconfig, Context, ControllerBinary, RunnerImage   string
@@ -71,7 +72,11 @@ func TestLifecycle(t *testing.T) {
 	t.Setenv("AWS_ACCESS_KEY_ID", "000000000000")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "test")
 	t.Setenv("AWS_SESSION_TOKEN", "")
-	ctx, cancel := context.WithTimeout(context.Background(), 35*time.Minute)
+	timeout := 35 * time.Minute
+	if cfg.TimeoutSeconds > 0 {
+		timeout = time.Duration(cfg.TimeoutSeconds) * time.Second
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	rules := clientcmd.NewDefaultClientConfigLoadingRules()
 	rules.ExplicitPath = cfg.Kubeconfig
