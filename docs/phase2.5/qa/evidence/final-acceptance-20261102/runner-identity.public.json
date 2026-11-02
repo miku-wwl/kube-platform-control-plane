@@ -1,10 +1,16 @@
 {
   "runID": "kpcp-final-20261102-1815",
   "baseReference": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
-  "variantReference": "localhost/kpcp-runner@sha256:243050285f0def12fda1b718462181b470d6d55c7eafcd224a76695c073738c2",
+  "variantReference": "localhost/kpcp-runner@sha256:c220014d9d0027502c49d7e6f3e27e92ae02725c58f8e5e4c1b8049eae1b6f8e",
   "purpose": "different exact OCI manifest identity; identical runner filesystem and executable",
   "rootFSLayersIdentical": true,
   "sourceRevision": "d9f038650353768fc4a0341b73001e5954763625",
   "onlyChange": "OCI QA ownership labels",
-  "archiveSHA256": "d8326c1a3db0548b938fe581440d2b42be79e09a8a7708b38d16ea3d03ba0bbc"
+  "archiveSHA256": "d8326c1a3db0548b938fe581440d2b42be79e09a8a7708b38d16ea3d03ba0bbc",
+  "manifestReference": "localhost/kpcp-runner@sha256:243050285f0def12fda1b718462181b470d6d55c7eafcd224a76695c073738c2",
+  "indexContainsManifest": "sha256:243050285f0def12fda1b718462181b470d6d55c7eafcd224a76695c073738c2",
+  "probePodUID": "c3ffcc28-6d64-4064-b468-5b47f5e19229",
+  "probeActualImageID": "docker.io/library/import-2026-11-02@sha256:c220014d9d0027502c49d7e6f3e27e92ae02725c58f8e5e4c1b8049eae1b6f8e",
+  "runnerBinarySHA256": "756cced4cb67e34b9f4eeff5989a0fe19d07735c69ae87aae3ce3c0a776983db",
+  "identityNote": "Container runtime reports the imported OCI index; the exact variant is pinned to that verified index, whose manifest and filesystem are separately recorded."
 }

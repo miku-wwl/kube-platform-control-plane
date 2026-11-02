@@ -22,6 +22,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -491,7 +492,15 @@ func (h *finalSafetyHarness) contextDrift(t *testing.T) {
 				stack.Spec.ExecutionProfile.CredentialsSecretRef.Name = secret.Name
 			}
 			admissionRejection := ""
-			if err := h.kube.Update(h.ctx, stack); err != nil {
+			desiredSpec := stack.Spec.DeepCopy()
+			updateErr := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+				if err := h.kube.Get(h.ctx, client.ObjectKeyFromObject(stack), stack); err != nil {
+					return err
+				}
+				stack.Spec = *desiredSpec.DeepCopy()
+				return h.kube.Update(h.ctx, stack)
+			})
+			if err := updateErr; err != nil {
 				if !apierrors.IsInvalid(err) {
 					t.Fatal(err)
 				}
