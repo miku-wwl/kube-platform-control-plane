@@ -1,0 +1,37 @@
+{
+  "at": "2026-11-02T09:32:41.306325+00:00",
+  "batch": "kpcp-final-20261102-1815",
+  "profile": "kpcp-final-20261102-1815-b",
+  "containerUID": "d89b67370a7e8b7783677f1319463cfa58ad16a7c20586d4cfcd27e3b477a3f6",
+  "kubeSystemUID": "32d75cbe-8c49-439c-885e-6b36329da3d8",
+  "businessNamespacesBeforeDelete": 0,
+  "deleteExitCode": 0,
+  "containerAbsent": true,
+  "volumeAbsent": true,
+  "networkAbsent": true,
+  "primaryContainerUnchanged": true,
+  "primaryContainerID": "9c2b43adca10ea388455c281698943696c8b2bb3c9d7a90a85a6d513f2c0c2d4",
+  "rawCleanupLogSHA256": "d96edd834ebe4dc86b820dd29d67ea567da5e3259b6f16813351e2c45daa7fb9",
+  "startupAttempts": [
+    {
+      "file": "second-cluster-start-attempt1.log",
+      "sha256": "1a9000c920ed9f9339dfebdbb2acd0b205bd4af238513aa3000d0304c9668f2e",
+      "outcome": "FAIL"
+    },
+    {
+      "file": "second-cluster-start-attempt2.log",
+      "sha256": "4e5a9572dcc5e659f00b304ed7eb5915ddaa8b2e3a5a5a2dd2a0c0832eada83a",
+      "outcome": "FAIL"
+    },
+    {
+      "file": "second-cluster-start-attempt3.log",
+      "sha256": "6f6d1929a3461214e28da0974e8bb25937534eeb82e32bc1f46afb3a58c0d487",
+      "outcome": "FAIL"
+    },
+    {
+      "file": "second-cluster-start-attempt4.log",
+      "sha256": "306db11473996a05b985d45f2be7695dc09e29596b359d259a223de78dc14cbd",
+      "outcome": "PASS"
+    }
+  ]
+}

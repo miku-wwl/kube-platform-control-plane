@@ -1,0 +1,15 @@
+?   	github.com/miku-wwl/kube-platform-control-plane/api/v1alpha1	[no test files]
+ok  	github.com/miku-wwl/kube-platform-control-plane/cmd/controller	1.803s
+?   	github.com/miku-wwl/kube-platform-control-plane/cmd/platform-api	[no test files]
+ok  	github.com/miku-wwl/kube-platform-control-plane/cmd/terraform-runner	1.727s
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	1.695s
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/artifacts	1.680s
+?   	github.com/miku-wwl/kube-platform-control-plane/internal/cloud	[no test files]
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/console	2.596s
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/controller	1.739s
+?   	github.com/miku-wwl/kube-platform-control-plane/internal/observability	[no test files]
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/planview	1.218s
+?   	github.com/miku-wwl/kube-platform-control-plane/internal/reliability	[no test files]
+?   	github.com/miku-wwl/kube-platform-control-plane/internal/runtime	[no test files]
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/target	1.426s
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/terraform	1.396s

@@ -1,0 +1,17 @@
+npm notice run platform-console@0.1.0 test
+npm notice run node --test test/*.test.mjs
+✔ API failures retain their stable code and full original diagnostic (46.4621ms)
+✔ legacy HTTP errors retain their diagnostic without inventing a known code (1.0031ms)
+✔ a non-JSON gateway failure has a local API availability code and preserves its status (1.2176ms)
+✔ a disconnected API retains the browser diagnostic behind an availability code (0.4016ms)
+✔ server code selects translation even when original diagnostic changes (1.8278ms)
+✔ backend warning and required field use stable code with field context (0.5418ms)
+✔ unknown codes and legacy errors retain the entire original diagnostic (0.2304ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 556.5542
