@@ -440,6 +440,14 @@ func TestLifecycle(t *testing.T) {
 		t.Fatal("restart replaced Plan UID")
 	}
 	restart("pending-approval")
+	wait(t, "Reconcile approval admission after recovery", func() (bool, error) {
+		var stack platform.InfraStack
+		if err := kube.Get(ctx, client.ObjectKey{Namespace: prefix, Name: "environment-infra"}, &stack); err != nil {
+			return false, err
+		}
+		condition := meta.FindStatusCondition(stack.Status.Conditions, "Ready")
+		return stack.Status.LatestPlanRunRef != nil && stack.Status.LatestPlanRunRef.Name == plan.Name && condition != nil && condition.Reason == "WaitingApproval", nil
+	})
 	if !t.Run("A_ExactApproval", func(t *testing.T) {
 		if countApply() != 0 {
 			t.Fatal("Apply before approval")
@@ -909,11 +917,11 @@ func TestLifecycle(t *testing.T) {
 			for _, r := range isolationRuns.Items {
 				if r.Spec.StackRef.Name == label+"-infra" && r.Spec.Operation == "Apply" && r.Spec.PlanMode == "Reconcile" {
 					count++
-				}
-			}
-			for _, j := range isolationJobs.Items {
-				if strings.HasPrefix(j.Name, label+"-infra-apply-") {
-					jobs++
+					for _, j := range isolationJobs.Items {
+						if hasOwnerUID(j.OwnerReferences, r.UID) {
+							jobs++
+						}
+					}
 				}
 			}
 			if count != 1 || jobs != 1 {
