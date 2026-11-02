@@ -1,0 +1,10 @@
+{
+  "runID": "kpcp-final-20261102-1815",
+  "baseReference": "localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60",
+  "variantReference": "localhost/kpcp-runner@sha256:243050285f0def12fda1b718462181b470d6d55c7eafcd224a76695c073738c2",
+  "purpose": "different exact OCI manifest identity; identical runner filesystem and executable",
+  "rootFSLayersIdentical": true,
+  "sourceRevision": "d9f038650353768fc4a0341b73001e5954763625",
+  "onlyChange": "OCI QA ownership labels",
+  "archiveSHA256": "d8326c1a3db0548b938fe581440d2b42be79e09a8a7708b38d16ea3d03ba0bbc"
+}

@@ -332,7 +332,7 @@ func (h *finalSafetyHarness) createStack(t *testing.T, name string, configure fu
 		t.Fatal(err)
 	}
 	h.remaining[stack.Name] = true
-	recordGateEvidence(t, h.namespace, name+"-created", stack)
+	recordGateEvidence(t, h.namespace, name+"-created-"+string(stack.UID), stack)
 	return stack
 }
 
@@ -408,6 +408,11 @@ func (h *finalSafetyHarness) noApply(t *testing.T, stack *platform.InfraStack, p
 	if _, err := h.storage.HeadBucket(h.ctx, &s3.HeadBucketInput{Bucket: aws.String(h.namespace + "-" + stack.Name + "-cloud")}); !artifacts.IsNotFound(err) {
 		t.Fatal("unexpected cloud mutation: ", err)
 	}
+	if bucket := stack.Spec.Variables.Values["bucket_name"]; bucket != h.namespace+"-"+stack.Name+"-cloud" {
+		if _, err := h.storage.HeadBucket(h.ctx, &s3.HeadBucketInput{Bucket: aws.String(bucket)}); !artifacts.IsNotFound(err) {
+			t.Fatal("changed inputs mutated cloud: ", err)
+		}
+	}
 	recordGateEvidence(t, h.namespace, stack.Name+"-"+phase, map[string]any{"stack": stack, "runs": runs, "jobs": jobs, "applyCount": 0, "cloudAbsent": true})
 }
 
@@ -426,8 +431,27 @@ func (h *finalSafetyHarness) removeUnapplied(t *testing.T, stack *platform.Infra
 }
 
 func (h *finalSafetyHarness) contextDrift(t *testing.T) {
-	for _, field := range []string{"source", "target", "backend", "runner", "inputs", "profile"} {
+	fields := []string{"source", "target", "backend", "runner", "inputs", "profile"}
+	selected := map[string]bool{}
+	if value := os.Getenv("KPCP_FINAL_CASES"); value != "" {
+		for _, field := range strings.Split(value, ",") {
+			valid := false
+			for _, allowed := range fields {
+				if field == allowed {
+					valid = true
+				}
+			}
+			if !valid {
+				t.Fatal("unknown KPCP_FINAL_CASES field: ", field)
+			}
+			selected[field] = true
+		}
+	}
+	for _, field := range fields {
 		t.Run(field, func(t *testing.T) {
+			if len(selected) > 0 && !selected[field] {
+				t.Skip("explicit incremental case selection")
+			}
 			stack := h.createStack(t, "a-"+field, nil)
 			plan := h.savedPlan(t, stack, "Reconcile")
 			if err := h.kube.Get(h.ctx, client.ObjectKeyFromObject(stack), stack); err != nil {
@@ -453,7 +477,10 @@ func (h *finalSafetyHarness) contextDrift(t *testing.T) {
 				}
 				stack.Spec.Backend.ConfigRef.Name = backend.Name
 			case "runner":
-				stack.Spec.Executor.Image = "localhost/kpcp-runner@sha256:" + strings.Repeat("0", 64)
+				if !strings.Contains(h.cfg.FinalSafetyRunnerImage, "@sha256:") || h.cfg.FinalSafetyRunnerImage == h.cfg.RunnerImage {
+					t.Fatal("supply an independently pinned owned runner image")
+				}
+				stack.Spec.Executor.Image = h.cfg.FinalSafetyRunnerImage
 			case "inputs":
 				stack.Spec.Variables.Values["bucket_name"] += "-changed"
 			case "profile":
@@ -463,8 +490,22 @@ func (h *finalSafetyHarness) contextDrift(t *testing.T) {
 				}
 				stack.Spec.ExecutionProfile.CredentialsSecretRef.Name = secret.Name
 			}
+			admissionRejection := ""
 			if err := h.kube.Update(h.ctx, stack); err != nil {
-				t.Fatal(err)
+				if !apierrors.IsInvalid(err) {
+					t.Fatal(err)
+				}
+				admissionRejection = err.Error()
+				desired := stack.DeepCopy()
+				h.removeUnapplied(t, stack)
+				h.await(t, "old immutable Plan ordinary garbage collection", func() (bool, error) {
+					err := h.kube.Get(h.ctx, client.ObjectKeyFromObject(&plan), &platform.TerraformRun{})
+					return apierrors.IsNotFound(err), client.IgnoreNotFound(err)
+				})
+				stack = h.createStack(t, before.Name, func(replacement *platform.InfraStack) { replacement.Spec = desired.Spec })
+				if stack.UID == before.UID {
+					t.Fatal("replacement retained the old stack UID")
+				}
 			}
 			approval := h.approve(t, plan, "a-"+field+"-old-approval")
 			h.await(t, field+" controller observes changed execution context", func() (bool, error) {
@@ -472,7 +513,7 @@ func (h *finalSafetyHarness) contextDrift(t *testing.T) {
 					return false, err
 				}
 				for _, run := range h.runs(t, stack.Name) {
-					if run.Spec.Operation == "Plan" && run.UID != plan.UID && run.Spec.InfraStackGeneration == stack.Generation {
+					if run.Spec.Operation == "Plan" && run.UID != plan.UID && run.Spec.InfraStackGeneration == stack.Generation && run.Spec.ExecutionContextDigest != plan.Spec.ExecutionContextDigest && run.Status.ExecutionOutcome == "ChangesPresent" && run.Status.ArtifactsReady && stack.Status.LatestPlanRunRef != nil && stack.Status.LatestPlanRunRef.Name == run.Name && stack.Status.ObservedGeneration == stack.Generation {
 						return true, nil
 					}
 				}
@@ -480,7 +521,7 @@ func (h *finalSafetyHarness) contextDrift(t *testing.T) {
 			})
 			time.Sleep(2 * time.Second)
 			h.noApply(t, stack, "old-approval-blocked")
-			recordGateEvidence(t, h.namespace, "a-"+field+"-context", map[string]any{"before": before, "after": stack, "savedPlan": plan, "oldApproval": approval})
+			recordGateEvidence(t, h.namespace, "a-"+field+"-context", map[string]any{"before": before, "after": stack, "savedPlan": plan, "oldApproval": approval, "immutableAdmissionRejection": admissionRejection})
 			h.removeUnapplied(t, stack)
 		})
 	}

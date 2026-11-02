@@ -44,6 +44,7 @@ type configuration struct {
 	FaultFile                                            string // optional test-owned transport fault switch
 	SecondContext                                        string // optional independent target in the supplied kubeconfig
 	FinalSafetyFaultFile, FinalSafetySourceRevision      string // optional owned live-fault transport and alternate fixed fixture revision
+	FinalSafetyRunnerImage                               string // optional second owned digest with the same runner executable
 }
 
 // The caller supplies Kubernetes, the emulator, a built controller and immutable
