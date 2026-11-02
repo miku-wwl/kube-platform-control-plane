@@ -1,5 +1,28 @@
 # Gate B — Immutable Artifact Evidence
 
+## PR #3 后独立批次 — 2026-11-02：修复后 live 复测 PASS
+
+修复后的独立批次 `gate-b-corrected`：clean Controller 与 driver 均为 `7cdad59ef8035391cafc1e4d8727ebe715fd9f32`，实际运行 918.60 秒、exit 0。上述五项摘要一致的 terminal 语义身份负例、三项部分上传/不确定写入及重试检查、两项 Source/Backend snapshot drift **10/10 PASS**；没有给负例 Plan 批准 Apply。正常 Destroy/finalizer 基线亦 PASS（103.99 秒），该 lane 的业务对象及测试桶按正常机制清理。
+
+[修复后完整脱敏收据（39 项）](../evidence/final-acceptance-20261102/gate-b-corrected.public.json)及[实际测试输出](../evidence/final-acceptance-20261102/gate-b-corrected.selected.public.txt)。错误 Plan UID 的实际结论为 `Superseded`，未被接受为可信 `ChangesPresent`。Gate B 本轮补齐范围 **PASS**；受 Controller 身份校验修复影响的 Gate C/D 另行重验，不能用 Gate B 代替。
+
+### 首轮失败与修复记录（保留）
+
+Batch：`kpcp-final-20261102-1815`；driver `8760807`，clean Controller `4f014c7`。实际运行 988.55 秒、exit 1；[完整脱敏收据](../evidence/final-acceptance-20261102/gate-b.public.json)。首轮 10 个新增子场景中 9 PASS、1 FAIL；失败保留，不将整个 lane 写成 PASS。
+
+| 类别 | 首轮实际结果 | 证据边界 |
+|---|---|---|
+| 摘要一致的错误 Run UID / Job UID / Operation | PASS | 暂停专属 Controller；真实 Plan Job 完成后改写本轮 terminal，重新计算并核验 S3 content digest，再恢复 Controller；无 Apply/cloud mutation |
+| 摘要一致的错误 Plan UID | **FAIL** | 将真实、摘要匹配的 binary Plan 放到另一个 UID 路径；terminal `planRef` 指向该对象；Controller 错误接受为 ChangesPresent。没有批准该 Plan，没有执行 Apply |
+| 摘要一致的错误 Plan Digest | PASS | terminal 自身摘要正确，引用的 Plan 内容摘要与声明不一致，被拒绝 |
+| 中断上传 / 缺少 terminal / 不确定写入结果 | PASS（3/3） | 真实 Runner/Pod 经专属传输注入；不产生可信成功、不 Apply；恢复产生不同 UID 的新 Plan，不冒充旧 Plan |
+| 不确定写入后的相同重试 / 冲突重试 | PASS | 对实际已写入对象执行相同 bytes 的 immutable retry，再以不同 bytes 重试，后者被拒绝 |
+| Source / Backend snapshot drift | PASS（2/2） | artifact bytes 与 metadata 同时改变，实际内容摘要可自洽；原 Plan 的固定 digest 仍阻止 Apply Job，云资源不存在 |
+
+最小修复：可信完整终态的 Plan 必须引用 `runs/<当前 Run UID>/plan.binary`；Apply 必须引用冻结在其 spec 中的已批准 Plan 路径。没有放松摘要、Job、时间或审批校验，没有改动失败终态的 fail-closed 分类。新增 Plan/Apply 两个语义回归，修复前均 FAIL、修复后 Controller 单测全集 PASS；本轮 live 重跑及 Gate C/D 重验另行追加结果。
+
+首轮结束时尚不能 Freeze；上述独立复测已关闭 Gate B 缺口。以下为历史批次的原始记录，不覆盖历史 FAIL / BLOCKED。
+
 ## 1. Test Objective
 
 验证 saved Plan/source/backend/report/terminal 的不可变证据链。读取失败或摘要不符时不得重 Plan 后沿用旧审批。

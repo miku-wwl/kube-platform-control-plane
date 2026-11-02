@@ -1,0 +1,22 @@
+{
+  "sourceSHA": "7cdad59ef8035391cafc1e4d8727ebe715fd9f32",
+  "worktreeCleanAtBuild": true,
+  "linuxBinarySHA256": "1edc693b5ee5977a4aef924e007e9bf7d25ffabee66033e609e78ed528a6e5a2",
+  "vcsModifiedFalse": true,
+  "ociArchiveSHA256": "fb0750cbcdaa3c036c3bf1324671747b9a59d1cd05c599015bfd8af9cd6ac700",
+  "ociIndexSHA256": "a37f0e1bf9818cd3e4f8e1697710e4bae17c840aada47d7ce0c559195b360705",
+  "manifestDescriptor": {
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "digest": "sha256:27b28c182edbbd50c076551c2948a11a70a706d7cde60dd945de128e7cc40d36",
+    "size": 2945,
+    "annotations": {
+      "org.opencontainers.image.ref.name": "localhost/kpcp-controller:final-7cdad59"
+    }
+  },
+  "controllerImage": "localhost/kpcp-controller@sha256:a37f0e1bf9818cd3e4f8e1697710e4bae17c840aada47d7ce0c559195b360705",
+  "note": "Linux executable embeds clean Go VCS metadata; copied into nonroot distroless image. CRI index identity and child manifest retained.",
+  "inImageBinarySHA256": "1edc693b5ee5977a4aef924e007e9bf7d25ffabee66033e609e78ed528a6e5a2",
+  "entrypoint": [
+    "/platform-control-plane"
+  ]
+}

@@ -31,6 +31,26 @@ func approvalFixture() (*platform.InfraStack, *platform.TerraformRun, *platform.
 	return stack, plan, approval
 }
 
+func TestTerminalEvidenceBindsTheExactPlanReference(t *testing.T) {
+	for _, operation := range []string{"Plan", "Apply"} {
+		t.Run(operation, func(t *testing.T) {
+			now := time.Now().UTC()
+			run := &platform.TerraformRun{ObjectMeta: metav1.ObjectMeta{UID: "run"}, Spec: platform.TerraformRunSpec{Operation: operation, PlanRef: "runs/approved-plan/plan.binary"}, Status: platform.TerraformRunStatus{JobUID: "job"}}
+			terminal := runnerTerminalResult{RunUID: "run", JobUID: "job", Operation: operation, StartedAt: now, FinishedAt: now.Add(time.Second), ArtifactsReady: true, PlanRef: run.Spec.PlanRef, ExecutionOutcome: "Succeeded"}
+			if operation == "Plan" {
+				terminal.PlanRef, terminal.ExecutionOutcome, terminal.TerraformExitCode, terminal.HasChanges = "runs/run/plan.binary", "ChangesPresent", 2, true
+			}
+			if err := validateTerminalIdentity(run, terminal, nil); err != nil {
+				t.Fatal("legitimate saved-plan identity rejected: ", err)
+			}
+			terminal.PlanRef = "runs/foreign-plan/plan.binary"
+			if err := validateTerminalIdentity(run, terminal, nil); err == nil {
+				t.Fatal("a valid content digest must not authorize a different Plan reference")
+			}
+		})
+	}
+}
+
 func TestApprovalBindsCompleteSnapshotAndDeduplicatesPlan(t *testing.T) {
 	stack, plan, approval := approvalFixture()
 	if err := validateApplyAdmission(stack, plan, approval); err != nil {

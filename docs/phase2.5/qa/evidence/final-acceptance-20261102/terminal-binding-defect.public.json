@@ -1,0 +1,25 @@
+{
+  "batch": "kpcp-final-20261102-1815",
+  "defect": "digest-correct terminal accepted a foreign Plan UID reference",
+  "oldControllerSource": "4f014c7e2b4ce81cc324e1ac2dde15974b8e6c12",
+  "driverSource": "8760807993f00d57270d9432259eb4efa5e288fd",
+  "runUID": "b754f3e1-cbb7-4190-a54a-96c06c346544",
+  "jobUID": "6a8e6384-1f5c-4801-9a67-2151b8fc5ffc",
+  "forgedTerminalDigest": "sha256:bc3f63e96c956ad6dd1c79b6dc80286e2167e72d4444ae1eace17c23f0e6ba31",
+  "forgedPlanRef": "runs/qa-foreign-plan-uid/plan.binary",
+  "actualOutcome": "ChangesPresent",
+  "contentHashVerified": true,
+  "rawReceiptSHA256": "33d9b93e85d6c5faeb65e74e0d3daafd0295bd8c30e306151301ff0539a4855c",
+  "unitRegression": {
+    "command": "go test ./internal/controller -run TestTerminalEvidenceBindsTheExactPlanReference -count=1",
+    "beforeFixExitCode": 1,
+    "beforeFixFailedCases": [
+      "Plan",
+      "Apply"
+    ],
+    "afterFixControllerSuiteExitCode": 0
+  },
+  "change": "8 lines bind complete Plan/Apply terminal references; no new recovery or approval bypass",
+  "liveRetest": "PENDING",
+  "C_D_Revalidation": "REQUIRED"
+}

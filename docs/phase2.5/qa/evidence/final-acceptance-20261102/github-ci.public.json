@@ -1,0 +1,51 @@
+{
+  "observedAt": "2026-11-02T09:58:49.663726+00:00",
+  "prURL": "https://github.com/miku-wwl/kube-platform-control-plane/pull/4",
+  "headSHA": "1b6dff6c7cc653052c22f97dc411b5855c50d70f",
+  "state": "OPEN",
+  "merged": false,
+  "runID": 41424548082,
+  "runURL": "https://github.com/miku-wwl/kube-platform-control-plane/actions/runs/41424548082",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "Go tests and static checks",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/miku-wwl/kube-platform-control-plane/actions/runs/41424548082/job/125207866737"
+    },
+    {
+      "name": "Frontend tests and build",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/miku-wwl/kube-platform-control-plane/actions/runs/41424548082/job/125207867017"
+    },
+    {
+      "name": "Terraform fixture checks",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/miku-wwl/kube-platform-control-plane/actions/runs/41424548082/job/125207866655"
+    },
+    {
+      "name": "Documentation links and whitespace",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/miku-wwl/kube-platform-control-plane/actions/runs/41424548082/job/125207866392"
+    },
+    {
+      "name": "Secret scan",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/miku-wwl/kube-platform-control-plane/actions/runs/41424548082/job/125207866680"
+    },
+    {
+      "name": "GitGuardian Security Checks",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://dashboard.gitguardian.com"
+    }
+  ],
+  "defaultLiveLanes": "Kubernetes/DeepSeek billing opt-ins are not claimed by CI; independent actual receipts are required",
+  "sourceCodeEquivalentToCleanRegression": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+  "deliveryNote": "This file records this observed commit. A later documentation-only commit is checked again and its exact head/run is recorded in the user-facing delivery receipt."
+}

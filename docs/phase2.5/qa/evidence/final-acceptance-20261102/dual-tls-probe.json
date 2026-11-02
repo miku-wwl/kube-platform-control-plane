@@ -1,0 +1,14 @@
+[
+  {
+    "context": "podman-minikube",
+    "kubeSystemUID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+    "endToEndTLSVerified": true,
+    "clientCertificateAccepted": true
+  },
+  {
+    "context": "kpcp-final-20261102-1815-b",
+    "kubeSystemUID": "32d75cbe-8c49-439c-885e-6b36329da3d8",
+    "endToEndTLSVerified": true,
+    "clientCertificateAccepted": true
+  }
+]

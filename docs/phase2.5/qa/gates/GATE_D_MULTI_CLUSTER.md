@@ -1,5 +1,20 @@
 # Gate D — True Multi-Cluster Isolation
 
+## PR #3 后独立批次 — 2026-11-02：修复后重验 PASS
+
+因终态身份校验发生最小修复，本轮恢复全新 QA 第二集群并重新运行真实双目标 lane。`D_MultiTarget` 实际 326.78 秒 PASS；合并 C/D/F lane 566.40 秒、exit 0。Controller clean `7cdad59`，driver clean `99dc281`，相关源码一致；没有复用旧临时集群或旧 QA 分支。
+
+| 身份 | 主集群 | 本轮独立第二集群 |
+|---|---|---|
+| Context | `podman-minikube` | `kpcp-final-20261102-1815-b` |
+| kube-system UID | `2c62d6a8-08b6-460d-bb1b-ac59557dc281` | `32d75cbe-8c49-439c-885e-6b36329da3d8` |
+| Node UID | `ddd9911b-a2fe-471c-940b-83a82b87b287` | `69790529-ad64-4916-9e55-0e9a2f7743d3` |
+| Kubernetes | v1.37.0 / Ready | v1.37.0 / Ready |
+
+不同 CA/client credential 的摘要已核对；private TLS passthrough 保留服务端证书验证及客户端证书认证，没有设置 insecure TLS。实际两目标并发 Apply、单并发门禁、contention 期间 Leader 接管、唯一 Run/Job、不同 workspace/state/runner identity、runtime 正确目标及错误目标不存在、逐目标独立 Destroy/云资源消失均 PASS。业务 namespace/对象已正常删除；临时第二集群的宿主清理另列最终清理收据。
+
+[独立集群身份](../evidence/final-acceptance-20261102/dual-cluster-preflight.public.json)、[节点至两个 API 的 TLS 实测](../evidence/final-acceptance-20261102/dual-tls-probe.json)、[完整 C/D 工程收据](../evidence/final-acceptance-20261102/gate-cd.public.json)。创建前几次失败仅涉及本轮 profile：remote Podman 临时文件路径与 DrvFS SSH 公钥权限，失败容器未被当作 PASS；未修改共享网络/防火墙/DNS或重启主集群。下方历史结果原样保留。
+
 ## 1. Test Objective
 
 在两个真正独立的 Kubernetes API 上验证身份、凭据、runtime ownership、state/workspace、并发门禁、重启恢复及逐目标 Destroy。

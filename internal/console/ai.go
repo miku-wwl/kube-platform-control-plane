@@ -559,9 +559,9 @@ func (g *OllamaDraftGenerator) Generate(ctx context.Context, request DraftReques
 func applyExplicitValkeyIntent(description string, intent DraftIntent) DraftIntent {
 	lower := strings.ToLower(description)
 	for _, phrase := range []string{
-		"no cache", "without cache", "cache disabled", "disable cache", "no caching", "without caching",
-		"no valkey", "without valkey", "valkey disabled", "disable valkey",
-		"no redis", "without redis", "redis disabled", "disable redis",
+		"no cache", "without cache", "cache disabled", "disable cache", "no caching", "without caching", "do not enable cache", "don't enable cache",
+		"no valkey", "without valkey", "valkey disabled", "disable valkey", "do not enable valkey", "don't enable valkey",
+		"no redis", "without redis", "redis disabled", "disable redis", "do not enable redis", "don't enable redis",
 		"不要缓存", "不启用缓存", "关闭缓存", "无需缓存", "不用缓存",
 		"不要valkey", "不启用valkey", "关闭valkey", "不用valkey",
 		"不要redis", "不启用redis", "关闭redis", "不用redis",

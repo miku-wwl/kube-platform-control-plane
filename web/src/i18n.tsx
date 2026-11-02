@@ -280,6 +280,7 @@ const chinese: Record<string, string> = {
   'Configuration validation passed': '配置校验通过',
   'Technical details': '技术详情',
   'The AI provider could not generate a valid draft. Nothing was submitted.': 'AI 服务未能生成有效草稿，未提交任何资源。',
+  'The local API is unavailable. Nothing was submitted.': '本地 API 当前不可用，未提交任何资源。',
   'DeepSeek API key is not configured. Nothing was submitted.': '尚未配置 DeepSeek API 密钥，未提交任何资源。',
   'DeepSeek provider configuration is invalid. Nothing was submitted.': 'DeepSeek 服务配置无效，未提交任何资源。',
   'DeepSeek rejected the configured API key. Nothing was submitted.': 'DeepSeek 拒绝了当前 API 密钥，未提交任何资源。',

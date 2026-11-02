@@ -1,0 +1,51 @@
+{
+  "at": "2026-11-02T09:50:52.146444+00:00",
+  "batch": "kpcp-final-20261102-1815",
+  "resourceCleanup": "BLOCKED",
+  "retainedNamespace": "kpcp-1793611893090112000",
+  "retainedNamespaceUID": "4797a13a-e3ec-4773-a6f8-ad867edad61a",
+  "retainedEnvironmentCount": 4,
+  "retainedStackCount": 4,
+  "retainedClassCount": 4,
+  "retainedRunCount": 12,
+  "retainedCompletedJobCount": 12,
+  "activeJobs": 0,
+  "retainedOwnedBuckets": [
+    "kpcp-1793611893090112000",
+    "kpcp-1793611893090112000-e-ambiguous-cloud",
+    "kpcp-1793611893090112000-e-partial-cloud",
+    "kpcp-1793611893090112000-f-partial-cloud"
+  ],
+  "retainedCloudBuckets": [
+    "kpcp-1793611893090112000-e-ambiguous-cloud",
+    "kpcp-1793611893090112000-e-partial-cloud",
+    "kpcp-1793611893090112000-f-partial-cloud"
+  ],
+  "infraNamespaceNormallyDeleted": true,
+  "secondaryClusterNormallyDeleted": true,
+  "ownedQAAPIAndVitePortsClosed": [
+    5174,
+    8091
+  ],
+  "ownedPodTransportAndTLSRelaysStopped": true,
+  "mainHEADUnchanged": "21231fc792b9f461c42ef335d99fd79b211862f8",
+  "mainWorktreeOnlyOriginalLogModifications": [
+    " M docs/phase2.5/evidence/qa-20261101/api-service.log",
+    " M docs/phase2.5/evidence/qa-20261101/web-service.log"
+  ],
+  "originalAPIHTTPStatus": 200,
+  "originalAPIProvider": "ollama",
+  "originalFrontendHTTPStatus": 200,
+  "primaryKubeSystemUID": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+  "primaryNodeUID": "ddd9911b-a2fe-471c-940b-83a82b87b287",
+  "sharedContainersUnchanged": {
+    "podman-minikube": "9c2b43adca10ea388455c281698943696c8b2bb3c9d7a90a85a6d513f2c0c2d4",
+    "ministack": "01e6fc9c0ccde322bed165fa4e74dcd0184f7c337883ec4fb90986e317f52473"
+  },
+  "noSharedContainerRestartByThisBatch": true,
+  "transportRawSHA256": "7b2e0c2f91eb753defa073810dc168c5b0d76ecfe6fc81f195f071842a4d3759",
+  "manualBusinessFinalizerPatch": false,
+  "forcedBusinessDelete": false,
+  "productionAWS": "NOT VALIDATED",
+  "remainingLocalFiles": "Raw evidence, kubeconfigs, source/image archives and binaries kept only in private work directory for diagnosis; not published."
+}

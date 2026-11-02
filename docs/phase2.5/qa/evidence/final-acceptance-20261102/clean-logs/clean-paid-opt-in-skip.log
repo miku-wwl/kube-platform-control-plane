@@ -1,0 +1,5 @@
+=== RUN   TestDeepSeekLiveValidation
+    deepseek_live_test.go:13: set KPCP_DEEPSEEK_LIVE=1 to make bounded, billable DeepSeek requests
+--- SKIP: TestDeepSeekLiveValidation (0.00s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/internal/console	0.209s

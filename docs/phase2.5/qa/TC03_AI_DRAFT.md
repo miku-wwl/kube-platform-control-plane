@@ -153,3 +153,25 @@ Run ID：`kpcp-deepseek-final-20261102-1644`。真实官方 DeepSeek API 串行�
 - [浏览器原始预检](evidence/deepseek-final-20261102/browser-preflight.public.json)
 
 本节结论：**真实 DeepSeek Draft intent 子集 PASS；DeepSeek UI / Screenshot BLOCKED。** 历史 deterministic UI PASS 和 Ollama 不可用 UI PASS 均保持原来的运行身份，不扩展到本轮。
+
+## 11. PR #3 后独立验收批次 — 2026-11-02
+
+Run ID：`kpcp-final-20261102-1815`。当前聊天新建的 Desktop Work 内置 Browser tab 1，先实际读取 `https://example.com/` 的标题 `Example Domain` 和 AX，再访问原 `5173` 并保存真实 JPEG；没有接管旧聊天标签页。新的 QA 页面为 `http://127.0.0.1:5174/#builder`，Vite `/api` 指向独立 `8091`，health 实际返回 `aiProvider=deepseek`。旧 `5173/8090` 保留。
+
+成功 Draft 使用 clean backend `f8c307fd6555ff118249f667dd2833d41f650e76`，`vcs.modified=false`。配置模型 `deepseek-flash`；成功产品 API 不暴露 served model/token usage，本轮不把历史 1,948 tokens 当作新 UI 用量。共两次真实收费请求，未重跑 DS01–DS07。错误本地化复测是停止本轮专属 API 后的真实连接失败，没有第三次模型调用。
+
+| Step | 操作与预期 | 实际结果 | 状态 / 真截图 |
+|---|---|---|---|
+| UI01 | 打开 Builder；实际 Ready Class 可选、草稿为空 | Controller 协调后的专属 Class Ready，页面显示人工确认边界 | PASS；[初始中文](screenshots/final-acceptance-20261102/01-builder-initial-zh.jpg) |
+| UI02 | 英文请求、名称、专属 namespace、2 个节点 | 实际页面输入与选择均保留；请求明确 Do not enable Valkey | PASS；[请求参数](screenshots/final-acceptance-20261102/02-request-parameters-en.jpg) |
+| UI03 | 点击 Generate Draft，否定缓存请求应保持关闭 | 首次显示 DeepSeek / Validated，却错误启用 Valkey；本地 phrase matcher 把否定句中的 enable valkey 当成肯定 | **首次 FAIL 保留**；[原始错误](screenshots/final-acceptance-20261102/03-first-draft-semantic-failure.jpg) |
+| UI04 | 最小修复后，第二次从真实页面生成 | DeepSeek；环境/namespace/Class/local/2 nodes 正确；Valkey Disabled；YAML 为 `valkey: {}`，容量在 Class 1–3 约束内 | PASS；[Provider / Typed Intent / YAML](screenshots/final-acceptance-20261102/04-fixed-draft-provider-yaml-en.jpg) |
+| UI05 | 切换中文并检查 Warning、独立 Submit | 字段值及英文请求保持；Advisory 中文正确；提交按钮独立存在并未点击 | PASS；[中文 Warning / No Submit](screenshots/final-acceptance-20261102/05-fixed-draft-warning-submit-zh.jpg) |
+| UI06 | 专属 API 停止时，错误应本地化、无模型调用 | 首次直接显示 502 Bad Gateway | **首次 FAIL 保留**；[错误原态](screenshots/final-acceptance-20261102/06-api-outage-unlocalized-before-fix.jpg) |
+| UI07 | 修复 transport error 分类后复测 EN/ZH | 显示本地 API 不可用 / Nothing was submitted；技术详情保留 `APIUnavailable` 和原始 `502 Bad Gateway`；输入保持、无 Draft/Submit | PASS；[中文详情](screenshots/final-acceptance-20261102/07-api-outage-technical-zh.jpg)、[英文详情](screenshots/final-acceptance-20261102/08-api-outage-technical-en.jpg) |
+
+每张图均为本轮实际 Browser capture，未加工或替代；Run ID、backend SHA、逐图 SHA-256 与资源快照计数见[本轮 UI 收据](evidence/final-acceptance-20261102/deepseek-ui.public.json)。错误复测前端为同批提交的可审查增量源码；最终 clean regression 另行记录。
+
+No-Submit：两次 Draft 前后 `PlatformEnvironment=0 / InfraStack=0 / TerraformRun=0`。唯一 Job 是终端独立创建、明确归属的 `runner-preflight`，其 UID 单独记录；未将它归因于 Draft，也未把全局 Job 数写成零。没有创建 `qa-deepseek-ui` 或其 stack。首次失败、针对否定句的 red→green 单测及初始截图见[原始批次收据](evidence/final-acceptance-20261102/browser-initial.public.json)。
+
+**本批次结论：DeepSeek Browser UI PASS（两项最小修复后）。** 原七条语义调用与旧 Browser BLOCKED 保持历史身份；本轮没有 Submit、审批或 UI 生命周期声明。专属 Class 和支撑服务的最终清理见本轮总收据。

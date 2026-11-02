@@ -1,0 +1,1419 @@
+{
+  "batch": "kpcp-final-20261102-1815",
+  "at": "2026-11-02T09:48:57.787254+00:00",
+  "status": "BLOCKED",
+  "namespace": "kpcp-1793611893090112000",
+  "namespaceUID": "4797a13a-e3ec-4773-a6f8-ad867edad61a",
+  "reason": "Current controller holds RecoveryRequired after post-mutation failure/uncertain terminal. No supported fresh-observation recovery mechanism is available in this scoped task.",
+  "businessChains": [
+    {
+      "environment": {
+        "name": "e-ambiguous",
+        "uid": "8aab098f-2040-4550-8a06-309d3c870836",
+        "namespace": "kpcp-1793611893090112000",
+        "deletionTimestamp": "2026-11-02T09:44:49Z",
+        "finalizers": [
+          "platform.example.io/platformenvironment-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:44:49Z",
+            "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal.",
+            "observedGeneration": 2,
+            "reason": "Deleting",
+            "status": "False",
+            "type": "Ready"
+          }
+        ]
+      },
+      "stack": {
+        "name": "e-ambiguous-infra",
+        "uid": "c72a13cf-9eb0-4ee3-9393-d7ce5b94c284",
+        "namespace": "kpcp-1793611893090112000",
+        "deletionTimestamp": null,
+        "finalizers": [
+          "platform.example.io/infrastack-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:44:49Z",
+            "message": "An active Apply is indeterminate; destroy is blocked until fresh observation and Plan.",
+            "observedGeneration": 3,
+            "reason": "RecoveryRequired",
+            "status": "Unknown",
+            "type": "Ready"
+          }
+        ]
+      },
+      "class": {
+        "name": "kpcp-1793611893090112000-e-ambiguous",
+        "uid": "db364319-c4e9-471f-be1c-5590bc0258c5",
+        "namespace": null,
+        "deletionTimestamp": null,
+        "finalizers": [
+          "platform.example.io/environmentclass-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:43:00Z",
+            "message": "EnvironmentClass is immutable and available for typed PlatformEnvironment use",
+            "observedGeneration": 1,
+            "reason": "ClassValidated",
+            "status": "True",
+            "type": "Ready"
+          }
+        ]
+      },
+      "sourceRevision": "0eab0368c66e2a9abbac8522007f659205697d96",
+      "cloudBuckets": {
+        "kpcp-1793611893090112000-e-ambiguous-cloud": true,
+        "kpcp-1793611893090112000-e-ambiguous-cloud-second": false
+      },
+      "runs": [
+        {
+          "name": "e-ambiguous-infra-plan-1",
+          "uid": "f72bccea-c2f6-4efb-b62d-bc8967502280",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:43:52Z",
+              "message": "Terraform runner terminal result captured.",
+              "observedGeneration": 1,
+              "reason": "TerraformSucceeded",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Plan",
+          "planMode": "Reconcile",
+          "workspace": "e-ambiguous",
+          "planRunUID": null,
+          "planRef": null,
+          "planDigest": "sha256:a869bc528e3a79be95b8ba320160bfd270c633534d5280505a8d65403482d81f",
+          "executionContextDigest": "sha256:d879b52f40ae8de7ecdb2391a00d2151c823974a8bde2edda692e6d4b800aaff",
+          "outcome": "ChangesPresent",
+          "job": {
+            "name": "e-ambiguous-infra-plan-1"
+          },
+          "jobUID": "7dabdc8d-5eaf-4c47-ba69-0f20650788f3",
+          "mutationMayHaveOccurred": null,
+          "mutationClassification": "NoMutation",
+          "evidenceCaptured": true
+        },
+        {
+          "name": "e-ambiguous-infra-plan-1-apply-f5df6f4008",
+          "uid": "4951e373-a070-4102-b3e9-cb598177c857",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:44:29Z",
+              "message": "read durable terminal result \"runs/4951e373-a070-4102-b3e9-cb598177c857/terminal-result.json\": operation error S3: HeadObject, https response error StatusCode: 404, RequestID: D8YHLSVNJ1SNBV5P, HostID: avoL94TILG0oTrd8NY8SjaWThH/8eIzagqn2hN8ugDaGeX1PtmIwGpZg2AGwQvF+, NotFound: ",
+              "observedGeneration": 1,
+              "reason": "TerraformTerminalResultMissing",
+              "status": "Unknown",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Apply",
+          "planMode": "Reconcile",
+          "workspace": "e-ambiguous",
+          "planRunUID": "f72bccea-c2f6-4efb-b62d-bc8967502280",
+          "planRef": "runs/f72bccea-c2f6-4efb-b62d-bc8967502280/plan.binary",
+          "planDigest": "sha256:a869bc528e3a79be95b8ba320160bfd270c633534d5280505a8d65403482d81f",
+          "executionContextDigest": "sha256:d879b52f40ae8de7ecdb2391a00d2151c823974a8bde2edda692e6d4b800aaff",
+          "outcome": "Indeterminate",
+          "job": {
+            "name": "e-ambiguous-infra-plan-1-apply-f5df6f4008"
+          },
+          "jobUID": "b3ba4aaf-e9bf-4ae1-88e9-d076b92c9247",
+          "mutationMayHaveOccurred": null,
+          "mutationClassification": null,
+          "evidenceCaptured": false
+        }
+      ]
+    },
+    {
+      "environment": {
+        "name": "e-partial",
+        "uid": "5e176467-5da9-4c04-bfcf-5652cd1c48d3",
+        "namespace": "kpcp-1793611893090112000",
+        "deletionTimestamp": "2026-11-02T09:46:23Z",
+        "finalizers": [
+          "platform.example.io/platformenvironment-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:46:23Z",
+            "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal.",
+            "observedGeneration": 2,
+            "reason": "Deleting",
+            "status": "False",
+            "type": "Ready"
+          }
+        ]
+      },
+      "stack": {
+        "name": "e-partial-infra",
+        "uid": "37f0aa92-40b0-4fb1-9b45-39f5adeaaf69",
+        "namespace": "kpcp-1793611893090112000",
+        "deletionTimestamp": null,
+        "finalizers": [
+          "platform.example.io/infrastack-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:46:23Z",
+            "message": "An active Apply is indeterminate; destroy is blocked until fresh observation and Plan.",
+            "observedGeneration": 3,
+            "reason": "RecoveryRequired",
+            "status": "Unknown",
+            "type": "Ready"
+          }
+        ]
+      },
+      "class": {
+        "name": "kpcp-1793611893090112000-e-partial",
+        "uid": "620c8dfd-2985-4c34-b795-c53a7dec5ad8",
+        "namespace": null,
+        "deletionTimestamp": null,
+        "finalizers": [
+          "platform.example.io/environmentclass-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:44:49Z",
+            "message": "EnvironmentClass is immutable and available for typed PlatformEnvironment use",
+            "observedGeneration": 1,
+            "reason": "ClassValidated",
+            "status": "True",
+            "type": "Ready"
+          }
+        ]
+      },
+      "sourceRevision": "4b4d4d50e70109fdc403fa79510920814369f4a9",
+      "cloudBuckets": {
+        "kpcp-1793611893090112000-e-partial-cloud": true,
+        "kpcp-1793611893090112000-e-partial-cloud-second": false
+      },
+      "runs": [
+        {
+          "name": "e-partial-infra-plan-1",
+          "uid": "73d8cd95-7db4-4521-a267-de33680a6582",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:45:44Z",
+              "message": "Terraform runner terminal result captured.",
+              "observedGeneration": 1,
+              "reason": "TerraformSucceeded",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Plan",
+          "planMode": "Reconcile",
+          "workspace": "e-partial",
+          "planRunUID": null,
+          "planRef": null,
+          "planDigest": "sha256:1fca9733965c4a5143edf1f4f91682747df846807a4dec2fbb2cdae66f4c0fd0",
+          "executionContextDigest": "sha256:3603761a75490ab1f6f09c491b6315b885a4a0cdc31853c99161eda49019c28e",
+          "outcome": "ChangesPresent",
+          "job": {
+            "name": "e-partial-infra-plan-1"
+          },
+          "jobUID": "72ea5eae-adb7-494a-9c4e-14a1c2ad1c4f",
+          "mutationMayHaveOccurred": null,
+          "mutationClassification": "NoMutation",
+          "evidenceCaptured": true
+        },
+        {
+          "name": "e-partial-infra-plan-1-apply-17e6ea422f",
+          "uid": "adadf599-d5e1-47bb-b4d6-c47b82f1e618",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:46:21Z",
+              "message": "terraform apply failed with exit code 1: Error: creating S3 Bucket (kpcp-1793611893090112000-e-partial-cloud-second): operation error S3: CreateBucket, https response error StatusCode: 403, RequestID: , HostID: , api error AccessDenied: Owned QA fault\n\n  with aws_s3_bucket.partial,\n  on extra.tf line 4, in resource \"aws_s3_bucket\" \"partial\":\n   4: resource \"aws_s3_bucket\" \"partial\" {",
+              "observedGeneration": 1,
+              "reason": "TerraformIndeterminate",
+              "status": "Unknown",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Apply",
+          "planMode": "Reconcile",
+          "workspace": "e-partial",
+          "planRunUID": "73d8cd95-7db4-4521-a267-de33680a6582",
+          "planRef": "runs/73d8cd95-7db4-4521-a267-de33680a6582/plan.binary",
+          "planDigest": "sha256:1fca9733965c4a5143edf1f4f91682747df846807a4dec2fbb2cdae66f4c0fd0",
+          "executionContextDigest": "sha256:3603761a75490ab1f6f09c491b6315b885a4a0cdc31853c99161eda49019c28e",
+          "outcome": "Indeterminate",
+          "job": {
+            "name": "e-partial-infra-plan-1-apply-17e6ea422f"
+          },
+          "jobUID": "aeb5a0bd-c85b-4b38-94d9-41163cbe3899",
+          "mutationMayHaveOccurred": true,
+          "mutationClassification": "FailedPostMutationPossible",
+          "evidenceCaptured": true
+        }
+      ]
+    },
+    {
+      "environment": {
+        "name": "f-partial",
+        "uid": "7c075f50-28c9-4ee7-a467-22ed16ff208b",
+        "namespace": "kpcp-1793611893090112000",
+        "deletionTimestamp": "2026-11-02T09:38:00Z",
+        "finalizers": [
+          "platform.example.io/platformenvironment-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:38:00Z",
+            "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal.",
+            "observedGeneration": 2,
+            "reason": "Deleting",
+            "status": "False",
+            "type": "Ready"
+          }
+        ]
+      },
+      "stack": {
+        "name": "f-partial-infra",
+        "uid": "628e5d6b-1fd6-452a-af77-cae90da40302",
+        "namespace": "kpcp-1793611893090112000",
+        "deletionTimestamp": null,
+        "finalizers": [
+          "platform.example.io/infrastack-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:39:39Z",
+            "message": "An active Apply is indeterminate; destroy is blocked until fresh observation and Plan.",
+            "observedGeneration": 3,
+            "reason": "RecoveryRequired",
+            "status": "Unknown",
+            "type": "Ready"
+          }
+        ]
+      },
+      "class": {
+        "name": "kpcp-1793611893090112000-f-partial",
+        "uid": "3f787919-c804-456e-93ec-9ebe5f4c7f15",
+        "namespace": null,
+        "deletionTimestamp": null,
+        "finalizers": [
+          "platform.example.io/environmentclass-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:36:32Z",
+            "message": "EnvironmentClass is immutable and available for typed PlatformEnvironment use",
+            "observedGeneration": 1,
+            "reason": "ClassValidated",
+            "status": "True",
+            "type": "Ready"
+          }
+        ]
+      },
+      "sourceRevision": "4b4d4d50e70109fdc403fa79510920814369f4a9",
+      "cloudBuckets": {
+        "kpcp-1793611893090112000-f-partial-cloud": true,
+        "kpcp-1793611893090112000-f-partial-cloud-second": false
+      },
+      "runs": [
+        {
+          "name": "f-partial-infra-destroy-plan-3",
+          "uid": "fd6831b4-8426-425b-af01-0cf90dfe32af",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:38:55Z",
+              "message": "Terraform runner terminal result captured.",
+              "observedGeneration": 1,
+              "reason": "TerraformSucceeded",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Plan",
+          "planMode": "Destroy",
+          "workspace": "f-partial",
+          "planRunUID": null,
+          "planRef": null,
+          "planDigest": "sha256:94b27f9e1e1cbbd8312a7faa0a63a478b4029393e1402b672564c1c68eef64f7",
+          "executionContextDigest": "sha256:d60a0e109c9db11c400cde7874be8fad67554d0f035017f901f3af10bfa32135",
+          "outcome": "ChangesPresent",
+          "job": {
+            "name": "f-partial-infra-destroy-plan-3"
+          },
+          "jobUID": "74a62a02-e434-4faf-b6ca-af07dff0f181",
+          "mutationMayHaveOccurred": null,
+          "mutationClassification": "NoMutation",
+          "evidenceCaptured": true
+        },
+        {
+          "name": "f-partial-infra-destroy-plan-3-apply-4d2b22da87",
+          "uid": "dace7aff-7562-4090-bdc4-184168ea6748",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:39:39Z",
+              "message": "terraform apply failed with exit code 1: Error: deleting S3 Bucket (kpcp-1793611893090112000-f-partial-cloud): operation error S3: DeleteBucket, https response error StatusCode: 403, RequestID: , HostID: , api error AccessDenied: Owned QA fault",
+              "observedGeneration": 1,
+              "reason": "TerraformIndeterminate",
+              "status": "Unknown",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Apply",
+          "planMode": "Destroy",
+          "workspace": "f-partial",
+          "planRunUID": "fd6831b4-8426-425b-af01-0cf90dfe32af",
+          "planRef": "runs/fd6831b4-8426-425b-af01-0cf90dfe32af/plan.binary",
+          "planDigest": "sha256:94b27f9e1e1cbbd8312a7faa0a63a478b4029393e1402b672564c1c68eef64f7",
+          "executionContextDigest": "sha256:d60a0e109c9db11c400cde7874be8fad67554d0f035017f901f3af10bfa32135",
+          "outcome": "Indeterminate",
+          "job": {
+            "name": "f-partial-infra-destroy-plan-3-apply-4d2b22da87"
+          },
+          "jobUID": "0a5c484b-643a-4118-a239-cea068391504",
+          "mutationMayHaveOccurred": true,
+          "mutationClassification": "FailedPostMutationPossible",
+          "evidenceCaptured": true
+        },
+        {
+          "name": "f-partial-infra-plan-1",
+          "uid": "a9e40c21-203f-4155-874b-c2bd7bcc8989",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:37:22Z",
+              "message": "Terraform runner terminal result captured.",
+              "observedGeneration": 1,
+              "reason": "TerraformSucceeded",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Plan",
+          "planMode": "Reconcile",
+          "workspace": "f-partial",
+          "planRunUID": null,
+          "planRef": null,
+          "planDigest": "sha256:88d47392c372eb131f00308adaf500ac2a745fe112d39331c0e9045b46f1df88",
+          "executionContextDigest": "sha256:d60a0e109c9db11c400cde7874be8fad67554d0f035017f901f3af10bfa32135",
+          "outcome": "ChangesPresent",
+          "job": {
+            "name": "f-partial-infra-plan-1"
+          },
+          "jobUID": "d67578f5-b6a5-44fb-b9c0-b66993e05f3d",
+          "mutationMayHaveOccurred": null,
+          "mutationClassification": "NoMutation",
+          "evidenceCaptured": true
+        },
+        {
+          "name": "f-partial-infra-plan-1-apply-d43e8ce109",
+          "uid": "1c3edf37-0c79-4a9c-9831-dcbf20b7f217",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:38:00Z",
+              "message": "Terraform runner terminal result captured.",
+              "observedGeneration": 1,
+              "reason": "TerraformSucceeded",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Apply",
+          "planMode": "Reconcile",
+          "workspace": "f-partial",
+          "planRunUID": "a9e40c21-203f-4155-874b-c2bd7bcc8989",
+          "planRef": "runs/a9e40c21-203f-4155-874b-c2bd7bcc8989/plan.binary",
+          "planDigest": "sha256:88d47392c372eb131f00308adaf500ac2a745fe112d39331c0e9045b46f1df88",
+          "executionContextDigest": "sha256:d60a0e109c9db11c400cde7874be8fad67554d0f035017f901f3af10bfa32135",
+          "outcome": "Succeeded",
+          "job": {
+            "name": "f-partial-infra-plan-1-apply-d43e8ce109"
+          },
+          "jobUID": "aed936e9-c7ac-4bc3-ab6a-0234bbdfdab3",
+          "mutationMayHaveOccurred": null,
+          "mutationClassification": "SucceededPostMutation",
+          "evidenceCaptured": true
+        }
+      ]
+    },
+    {
+      "environment": {
+        "name": "f-terminal",
+        "uid": "fcdd6159-609f-4b71-89ec-8bad4f6c5866",
+        "namespace": "kpcp-1793611893090112000",
+        "deletionTimestamp": "2026-11-02T09:41:04Z",
+        "finalizers": [
+          "platform.example.io/platformenvironment-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:41:04Z",
+            "message": "PlatformEnvironment deletion is waiting for runtime prune and infrastructure removal.",
+            "observedGeneration": 2,
+            "reason": "Deleting",
+            "status": "False",
+            "type": "Ready"
+          }
+        ]
+      },
+      "stack": {
+        "name": "f-terminal-infra",
+        "uid": "15a9951a-e9e2-4899-a994-c6b91ec451b5",
+        "namespace": "kpcp-1793611893090112000",
+        "deletionTimestamp": null,
+        "finalizers": [
+          "platform.example.io/infrastack-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:42:39Z",
+            "message": "An active Apply is indeterminate; destroy is blocked until fresh observation and Plan.",
+            "observedGeneration": 3,
+            "reason": "RecoveryRequired",
+            "status": "Unknown",
+            "type": "Ready"
+          }
+        ]
+      },
+      "class": {
+        "name": "kpcp-1793611893090112000-f-terminal",
+        "uid": "7071af59-90a7-4ce3-a9cc-0f988b242fe5",
+        "namespace": null,
+        "deletionTimestamp": null,
+        "finalizers": [
+          "platform.example.io/environmentclass-finalizer"
+        ],
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-11-02T09:39:42Z",
+            "message": "EnvironmentClass is immutable and available for typed PlatformEnvironment use",
+            "observedGeneration": 1,
+            "reason": "ClassValidated",
+            "status": "True",
+            "type": "Ready"
+          }
+        ]
+      },
+      "sourceRevision": "0eab0368c66e2a9abbac8522007f659205697d96",
+      "cloudBuckets": {
+        "kpcp-1793611893090112000-f-terminal-cloud": false,
+        "kpcp-1793611893090112000-f-terminal-cloud-second": false
+      },
+      "runs": [
+        {
+          "name": "f-terminal-infra-destroy-plan-3",
+          "uid": "aa274f81-c3c3-4e37-ab57-0ce0649cf8d1",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:41:58Z",
+              "message": "Terraform runner terminal result captured.",
+              "observedGeneration": 1,
+              "reason": "TerraformSucceeded",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Plan",
+          "planMode": "Destroy",
+          "workspace": "f-terminal",
+          "planRunUID": null,
+          "planRef": null,
+          "planDigest": "sha256:9131bf48f41235eee34d50349cbc58c7af87619bea814bb4c26d7280148b7493",
+          "executionContextDigest": "sha256:643725d3a41343d084b0037d1bef65d3ebd9eee5b4585923e23132c0bac4aca2",
+          "outcome": "ChangesPresent",
+          "job": {
+            "name": "f-terminal-infra-destroy-plan-3"
+          },
+          "jobUID": "bdf1cd91-4e0f-4e82-be04-a8bb58549675",
+          "mutationMayHaveOccurred": null,
+          "mutationClassification": "NoMutation",
+          "evidenceCaptured": true
+        },
+        {
+          "name": "f-terminal-infra-destroy-plan-3-apply-59383a5d26",
+          "uid": "2751988d-5b5d-4f5d-9d67-40cb85baae50",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:42:39Z",
+              "message": "read durable terminal result \"runs/2751988d-5b5d-4f5d-9d67-40cb85baae50/terminal-result.json\": operation error S3: HeadObject, https response error StatusCode: 404, RequestID: OPTSUQF9AOY8W564, HostID: n8cYNCnCTyyRKAq5WdAeZCg1lWkj8xyftIGKdzYUG4HN226hFSMinMCaPnG34spq, NotFound: ",
+              "observedGeneration": 1,
+              "reason": "TerraformTerminalResultMissing",
+              "status": "Unknown",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Apply",
+          "planMode": "Destroy",
+          "workspace": "f-terminal",
+          "planRunUID": "aa274f81-c3c3-4e37-ab57-0ce0649cf8d1",
+          "planRef": "runs/aa274f81-c3c3-4e37-ab57-0ce0649cf8d1/plan.binary",
+          "planDigest": "sha256:9131bf48f41235eee34d50349cbc58c7af87619bea814bb4c26d7280148b7493",
+          "executionContextDigest": "sha256:643725d3a41343d084b0037d1bef65d3ebd9eee5b4585923e23132c0bac4aca2",
+          "outcome": "Indeterminate",
+          "job": {
+            "name": "f-terminal-infra-destroy-plan-3-apply-59383a5d26"
+          },
+          "jobUID": "6f4fec17-66d4-4a22-a646-93bed00596bc",
+          "mutationMayHaveOccurred": null,
+          "mutationClassification": null,
+          "evidenceCaptured": false
+        },
+        {
+          "name": "f-terminal-infra-plan-1",
+          "uid": "9ca8e6d5-17e1-4837-babf-76b47e176c74",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:40:28Z",
+              "message": "Terraform runner terminal result captured.",
+              "observedGeneration": 1,
+              "reason": "TerraformSucceeded",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Plan",
+          "planMode": "Reconcile",
+          "workspace": "f-terminal",
+          "planRunUID": null,
+          "planRef": null,
+          "planDigest": "sha256:37b013059936c1d11a00894434a413e0568c9fe34f8877fec408d08464d11992",
+          "executionContextDigest": "sha256:643725d3a41343d084b0037d1bef65d3ebd9eee5b4585923e23132c0bac4aca2",
+          "outcome": "ChangesPresent",
+          "job": {
+            "name": "f-terminal-infra-plan-1"
+          },
+          "jobUID": "c71ce42d-f45a-4ce0-bdb6-07aaaea2c83a",
+          "mutationMayHaveOccurred": null,
+          "mutationClassification": "NoMutation",
+          "evidenceCaptured": true
+        },
+        {
+          "name": "f-terminal-infra-plan-1-apply-d5c3d177eb",
+          "uid": "c3925d97-9ea7-442c-9a7d-e4994a83bd1c",
+          "namespace": "kpcp-1793611893090112000",
+          "deletionTimestamp": null,
+          "finalizers": [],
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-11-02T09:41:04Z",
+              "message": "Terraform runner terminal result captured.",
+              "observedGeneration": 1,
+              "reason": "TerraformSucceeded",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "operation": "Apply",
+          "planMode": "Reconcile",
+          "workspace": "f-terminal",
+          "planRunUID": "9ca8e6d5-17e1-4837-babf-76b47e176c74",
+          "planRef": "runs/9ca8e6d5-17e1-4837-babf-76b47e176c74/plan.binary",
+          "planDigest": "sha256:37b013059936c1d11a00894434a413e0568c9fe34f8877fec408d08464d11992",
+          "executionContextDigest": "sha256:643725d3a41343d084b0037d1bef65d3ebd9eee5b4585923e23132c0bac4aca2",
+          "outcome": "Succeeded",
+          "job": {
+            "name": "f-terminal-infra-plan-1-apply-d5c3d177eb"
+          },
+          "jobUID": "afd52796-1d41-44ac-8b71-2762a5c2e608",
+          "mutationMayHaveOccurred": null,
+          "mutationClassification": "SucceededPostMutation",
+          "evidenceCaptured": true
+        }
+      ]
+    }
+  ],
+  "artifactBucket": "kpcp-1793611893090112000",
+  "archivedObjects": [
+    {
+      "key": "env:/e-ambiguous/kpcp-1793611893090112000/state.tfstate",
+      "bytes": 3606,
+      "sha256": "sha256:010ea1ec3c15f68c6da0e754f2fb7d47c0f53c66481663a95864336f76896993",
+      "metadataDigest": null,
+      "metadataDigestMatches": true,
+      "archiveFile": "2e32ff24873e7f6d729b11e4c55d5e96a4cee01586a2b653417a4d63312ba82e.bin"
+    },
+    {
+      "key": "env:/e-git/kpcp-1793611893090112000/state.tfstate",
+      "bytes": 181,
+      "sha256": "sha256:60f18177f248d2db73503056c12f6e366e77d9ffc749963929484d02aec3a607",
+      "metadataDigest": null,
+      "metadataDigestMatches": true,
+      "archiveFile": "0713363c5b3505c114397c79f4c0aac1f1d4d516ab9525b4035ce47a17d9aa8a.bin"
+    },
+    {
+      "key": "env:/e-partial/kpcp-1793611893090112000/state.tfstate",
+      "bytes": 3594,
+      "sha256": "sha256:d9cd1c2d425a8ce65141b652ea427c2bbf301ae94fc20a96ff359875ceec27f8",
+      "metadataDigest": null,
+      "metadataDigestMatches": true,
+      "archiveFile": "d1d04ad5e9e5730d1d3194c065fe0d9982fe11b1a76d090d5004070d3cd61037.bin"
+    },
+    {
+      "key": "env:/environment/kpcp-1793611893090112000/state.tfstate",
+      "bytes": 181,
+      "sha256": "sha256:0227ecd69f1c27075ff9c05f1a01c460e2ca3deaaa57d3409bc52e2974fe9d02",
+      "metadataDigest": null,
+      "metadataDigestMatches": true,
+      "archiveFile": "f24ade5f79ab29167d743cb0056bed7a158bf8429707177a3f6490143efc79a4.bin"
+    },
+    {
+      "key": "env:/f-partial/kpcp-1793611893090112000/state.tfstate",
+      "bytes": 2763,
+      "sha256": "sha256:0cdb4721feef1a15d751cbc1327a7b8e58118a1cdc791174d0e38b5df13c3904",
+      "metadataDigest": null,
+      "metadataDigestMatches": true,
+      "archiveFile": "54b0dfc6988a2b2cc689001820482532dfc4c68500e016f703928aa20a689c41.bin"
+    },
+    {
+      "key": "env:/f-terminal/kpcp-1793611893090112000/state.tfstate",
+      "bytes": 181,
+      "sha256": "sha256:a295f4a36cdc51bb2b87d57cef3ee8b804e0a031c5981e2529e7bfec38a57f30",
+      "metadataDigest": null,
+      "metadataDigestMatches": true,
+      "archiveFile": "d8c5f2055e38f0db5f21682032846f2d308dfe56c0087e8d88cdaf06bcbf79ba.bin"
+    },
+    {
+      "key": "runs/00ff65cf-a544-4510-b7c1-a45ee46c9e2b/backend-config.hcl",
+      "bytes": 360,
+      "sha256": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigest": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigestMatches": true,
+      "archiveFile": "39f7c07bf566bc39be652a08005a99f91d0b2202a4d95ef68cedcd4cdf2040e4.bin"
+    },
+    {
+      "key": "runs/00ff65cf-a544-4510-b7c1-a45ee46c9e2b/module-inputs.json",
+      "bytes": 334,
+      "sha256": "sha256:5fd34ffe7478c71d3da68a1aa3f99690bd9c8ef9a4386a80d4b0b38c4651d65b",
+      "metadataDigest": "sha256:5fd34ffe7478c71d3da68a1aa3f99690bd9c8ef9a4386a80d4b0b38c4651d65b",
+      "metadataDigestMatches": true,
+      "archiveFile": "e0254432d4872b962b344fa08a1df23516ac4fcc4290bcc35aa43f3aac2fba90.bin"
+    },
+    {
+      "key": "runs/00ff65cf-a544-4510-b7c1-a45ee46c9e2b/plan-report.json",
+      "bytes": 211,
+      "sha256": "sha256:1595114f647c531705b3ec717e510274f7025092fa14ef82e42fd2eb7b71c5b5",
+      "metadataDigest": "sha256:1595114f647c531705b3ec717e510274f7025092fa14ef82e42fd2eb7b71c5b5",
+      "metadataDigestMatches": true,
+      "archiveFile": "2f032a314865597eb83cc1099e8cc3f887582af5f086a129b443b6e34d8f2819.bin"
+    },
+    {
+      "key": "runs/00ff65cf-a544-4510-b7c1-a45ee46c9e2b/plan-visualization.json",
+      "bytes": 430,
+      "sha256": "sha256:1e523793614e49e49e87cab3263be61551f8e9b38d80fc6b0ba7a9687bf76202",
+      "metadataDigest": "sha256:1e523793614e49e49e87cab3263be61551f8e9b38d80fc6b0ba7a9687bf76202",
+      "metadataDigestMatches": true,
+      "archiveFile": "d9a39e2fb3311663d36e89eab23cf53900c921b35d6e999efc5af68bce17d170.bin"
+    },
+    {
+      "key": "runs/00ff65cf-a544-4510-b7c1-a45ee46c9e2b/plan.binary",
+      "bytes": 4500,
+      "sha256": "sha256:1a6dc306c965952b5a28a7a1bc3254491227d848eb2e2822af70e5fb48e63bfa",
+      "metadataDigest": "sha256:1a6dc306c965952b5a28a7a1bc3254491227d848eb2e2822af70e5fb48e63bfa",
+      "metadataDigestMatches": true,
+      "archiveFile": "2e350b3aa95613f6f2066a0486263807c9ef0c07be476077058a71319cafeed8.bin"
+    },
+    {
+      "key": "runs/00ff65cf-a544-4510-b7c1-a45ee46c9e2b/source-bundle.tar.zst",
+      "bytes": 1830,
+      "sha256": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigestMatches": true,
+      "archiveFile": "078df811c43e0fbaf5b7f53c21dc2a489d4a2052de6adb110d55d5417cd652e4.bin"
+    },
+    {
+      "key": "runs/00ff65cf-a544-4510-b7c1-a45ee46c9e2b/terminal-result.json",
+      "bytes": 1249,
+      "sha256": "sha256:dd9387188978a11fe369cdc74a2c652b1715d6256190d3d4ee4b1ca863eb7c5a",
+      "metadataDigest": "sha256:dd9387188978a11fe369cdc74a2c652b1715d6256190d3d4ee4b1ca863eb7c5a",
+      "metadataDigestMatches": true,
+      "archiveFile": "ff2816a50941f1148280dbb1fa6c8b40b0b5f49cc82d833b9074438585c4a6c7.bin"
+    },
+    {
+      "key": "runs/077f87b9-8c5b-4db8-80f0-3c62a0ea58ef/backend-config.hcl",
+      "bytes": 360,
+      "sha256": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigest": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigestMatches": true,
+      "archiveFile": "0f0fb079d44070b2a892aaad02b5b7eb2adfda4e72352b11624a67ecbe70992d.bin"
+    },
+    {
+      "key": "runs/077f87b9-8c5b-4db8-80f0-3c62a0ea58ef/module-inputs.json",
+      "bytes": 328,
+      "sha256": "sha256:2201da37110260611b56e685aa100871f38045d64da4474d0139e85d8d01a358",
+      "metadataDigest": "sha256:2201da37110260611b56e685aa100871f38045d64da4474d0139e85d8d01a358",
+      "metadataDigestMatches": true,
+      "archiveFile": "75e4326eca6d097138756626a6f6102192fdd02a8008784c353f8ecd0891f3e7.bin"
+    },
+    {
+      "key": "runs/077f87b9-8c5b-4db8-80f0-3c62a0ea58ef/plan-report.json",
+      "bytes": 211,
+      "sha256": "sha256:9339fbc530d44ff47cda319255dd68a2c25f637198a8baf0799bfc12c7a31e70",
+      "metadataDigest": "sha256:9339fbc530d44ff47cda319255dd68a2c25f637198a8baf0799bfc12c7a31e70",
+      "metadataDigestMatches": true,
+      "archiveFile": "a9b1430b649936e59c910e43bee9419e9c541534e32717662c9730b6a33c68cb.bin"
+    },
+    {
+      "key": "runs/077f87b9-8c5b-4db8-80f0-3c62a0ea58ef/plan-visualization.json",
+      "bytes": 536,
+      "sha256": "sha256:a4f53e016b9f3c710abe08dd055452fdd986ea2ca79cd8d30e18a4f0cfdb4b82",
+      "metadataDigest": "sha256:a4f53e016b9f3c710abe08dd055452fdd986ea2ca79cd8d30e18a4f0cfdb4b82",
+      "metadataDigestMatches": true,
+      "archiveFile": "1dceb1da89bf579ad3b85ff6cd21d8b7f51cbe1e1dd09d96b8c890a54b37df6e.bin"
+    },
+    {
+      "key": "runs/077f87b9-8c5b-4db8-80f0-3c62a0ea58ef/plan.binary",
+      "bytes": 6516,
+      "sha256": "sha256:d81d6d5c0c34129e00486a3e66b96f75ab68d52d9beac0506e293cea19268528",
+      "metadataDigest": "sha256:d81d6d5c0c34129e00486a3e66b96f75ab68d52d9beac0506e293cea19268528",
+      "metadataDigestMatches": true,
+      "archiveFile": "25a48471fb6e0306e82a4820e46ec91f74fceb9f84820389a37ed5555ca571fd.bin"
+    },
+    {
+      "key": "runs/077f87b9-8c5b-4db8-80f0-3c62a0ea58ef/source-bundle.tar.zst",
+      "bytes": 1830,
+      "sha256": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigestMatches": true,
+      "archiveFile": "2f425d28dddf16745a4f0bef81cf45e95c21f0353597e8c6d7a5d8ad67500678.bin"
+    },
+    {
+      "key": "runs/077f87b9-8c5b-4db8-80f0-3c62a0ea58ef/terminal-result.json",
+      "bytes": 1250,
+      "sha256": "sha256:eddd12b2e6ace7daeddf574fa5e743d8156f8283dc98645d61a98bf0a02261d5",
+      "metadataDigest": "sha256:eddd12b2e6ace7daeddf574fa5e743d8156f8283dc98645d61a98bf0a02261d5",
+      "metadataDigestMatches": true,
+      "archiveFile": "f8e90c4a907b4dc04d3188c44c5d5c1c831d6b0e46168e00cd3c558930ae657f.bin"
+    },
+    {
+      "key": "runs/1c3edf37-0c79-4a9c-9831-dcbf20b7f217/module-inputs.json",
+      "bytes": 338,
+      "sha256": "sha256:244b9f96d4b43721ce44b5f6efff92bb93fbb9d0e83c6ade8d350aba3c3c74de",
+      "metadataDigest": "sha256:244b9f96d4b43721ce44b5f6efff92bb93fbb9d0e83c6ade8d350aba3c3c74de",
+      "metadataDigestMatches": true,
+      "archiveFile": "47699b5472f94758fd73720504d25f0a1ecd0b839674fcfe98e1f1073bc5ff55.bin"
+    },
+    {
+      "key": "runs/1c3edf37-0c79-4a9c-9831-dcbf20b7f217/target-discovery.json",
+      "bytes": 548,
+      "sha256": "sha256:650aa2f6840e2d271167c09e9784049a1bd644e71ba065ef96209ffc2a84ff31",
+      "metadataDigest": "sha256:650aa2f6840e2d271167c09e9784049a1bd644e71ba065ef96209ffc2a84ff31",
+      "metadataDigestMatches": true,
+      "archiveFile": "5465f088b353b0f35c427119be667f915ee3f0652117f66b017f13301699a593.bin"
+    },
+    {
+      "key": "runs/1c3edf37-0c79-4a9c-9831-dcbf20b7f217/terminal-result.json",
+      "bytes": 1272,
+      "sha256": "sha256:b0358173a9edae8a8966f9011665b96ad8a4389e6677cf0362d1944f1b8563a8",
+      "metadataDigest": "sha256:b0358173a9edae8a8966f9011665b96ad8a4389e6677cf0362d1944f1b8563a8",
+      "metadataDigestMatches": true,
+      "archiveFile": "252f1ac21e941eaeb6a888d0388f67ddf39f280a6289b96d7a5ae754eb7ab186.bin"
+    },
+    {
+      "key": "runs/2751988d-5b5d-4f5d-9d67-40cb85baae50/module-inputs.json",
+      "bytes": 339,
+      "sha256": "sha256:a389fe5624cf4330e2ba517e772beb1c1df7b3b6339b5f07051031a4bb5463fe",
+      "metadataDigest": "sha256:a389fe5624cf4330e2ba517e772beb1c1df7b3b6339b5f07051031a4bb5463fe",
+      "metadataDigestMatches": true,
+      "archiveFile": "d35afdffccfa0c12e549b0da1b18d79bdaa72e76577cbc3e6efd65f2cf0013ed.bin"
+    },
+    {
+      "key": "runs/2bea35b1-7997-402f-bf3e-745f5ba07003/backend-config.hcl",
+      "bytes": 360,
+      "sha256": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigest": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigestMatches": true,
+      "archiveFile": "c4ea8d25d9c2d7488b77c4088098dfebbd7eab419c59d8423a13e77d228b0509.bin"
+    },
+    {
+      "key": "runs/2bea35b1-7997-402f-bf3e-745f5ba07003/module-inputs.json",
+      "bytes": 328,
+      "sha256": "sha256:2201da37110260611b56e685aa100871f38045d64da4474d0139e85d8d01a358",
+      "metadataDigest": "sha256:2201da37110260611b56e685aa100871f38045d64da4474d0139e85d8d01a358",
+      "metadataDigestMatches": true,
+      "archiveFile": "74c47b791d27b4757ee736f1eb05833ab8e143ed17ea120012fdb24af724a8a9.bin"
+    },
+    {
+      "key": "runs/2bea35b1-7997-402f-bf3e-745f5ba07003/plan-report.json",
+      "bytes": 211,
+      "sha256": "sha256:a677846e164214369022950ffc411d100ed7ba10ab6d9fa169dcd48e94abce5f",
+      "metadataDigest": "sha256:a677846e164214369022950ffc411d100ed7ba10ab6d9fa169dcd48e94abce5f",
+      "metadataDigestMatches": true,
+      "archiveFile": "d00cc203814e78c12cc63f9ab867b178313b37206bce7a5daa4fd741ffaa5919.bin"
+    },
+    {
+      "key": "runs/2bea35b1-7997-402f-bf3e-745f5ba07003/plan-visualization.json",
+      "bytes": 424,
+      "sha256": "sha256:002875ae353379e5327f5b1a092413f5e959c5934d5878a675d8055fdf817002",
+      "metadataDigest": "sha256:002875ae353379e5327f5b1a092413f5e959c5934d5878a675d8055fdf817002",
+      "metadataDigestMatches": true,
+      "archiveFile": "801dcc24b64eac67a8d25b1521e0ab48a158fc98a718d6649dd6bc60654bffc3.bin"
+    },
+    {
+      "key": "runs/2bea35b1-7997-402f-bf3e-745f5ba07003/plan.binary",
+      "bytes": 4496,
+      "sha256": "sha256:65720e169e4ec9c9edfdcbe04b8d8fd9b10df3d3819206b3a320ef8e95ae4cc5",
+      "metadataDigest": "sha256:65720e169e4ec9c9edfdcbe04b8d8fd9b10df3d3819206b3a320ef8e95ae4cc5",
+      "metadataDigestMatches": true,
+      "archiveFile": "eed4493457226dcb5cf60f66ac8ba9efe8fbb7711786cd86c46cce8fc180091b.bin"
+    },
+    {
+      "key": "runs/2bea35b1-7997-402f-bf3e-745f5ba07003/source-bundle.tar.zst",
+      "bytes": 1830,
+      "sha256": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigestMatches": true,
+      "archiveFile": "379e76b6c9dcb564a6b2ce288697380f74af2cd11455e50f1a51a6f6b567f925.bin"
+    },
+    {
+      "key": "runs/2bea35b1-7997-402f-bf3e-745f5ba07003/terminal-result.json",
+      "bytes": 1250,
+      "sha256": "sha256:cd1a8e2d52a472510c85a2f0b6fa4ce7c59be0c4403d2aaf3691eeeba0a8bf50",
+      "metadataDigest": "sha256:cd1a8e2d52a472510c85a2f0b6fa4ce7c59be0c4403d2aaf3691eeeba0a8bf50",
+      "metadataDigestMatches": true,
+      "archiveFile": "aca43653e0b7b23240dc36148a679138d889995ac05e9469d6004a941563512a.bin"
+    },
+    {
+      "key": "runs/4951e373-a070-4102-b3e9-cb598177c857/module-inputs.json",
+      "bytes": 340,
+      "sha256": "sha256:624ea886d8382931068c807ea5c4c093566640049a6a3891e1d139682b85733e",
+      "metadataDigest": "sha256:624ea886d8382931068c807ea5c4c093566640049a6a3891e1d139682b85733e",
+      "metadataDigestMatches": true,
+      "archiveFile": "80e85825ab9e074205da2ba1578a090cf805482626f89f67c0e1ca9e43660b34.bin"
+    },
+    {
+      "key": "runs/4951e373-a070-4102-b3e9-cb598177c857/target-discovery.json",
+      "bytes": 548,
+      "sha256": "sha256:bf43511f0f9527c88f11ae728c517e2160beaca88a7b0f8730f0efd9521a7d97",
+      "metadataDigest": "sha256:bf43511f0f9527c88f11ae728c517e2160beaca88a7b0f8730f0efd9521a7d97",
+      "metadataDigestMatches": true,
+      "archiveFile": "6dc2b725e81597acd16ca821efb92afbb888f332c75a07b9f3e9ec7f87474e65.bin"
+    },
+    {
+      "key": "runs/5c9af3af-044c-4b25-a1a4-03fd1dd42085/module-inputs.json",
+      "bytes": 328,
+      "sha256": "sha256:2201da37110260611b56e685aa100871f38045d64da4474d0139e85d8d01a358",
+      "metadataDigest": "sha256:2201da37110260611b56e685aa100871f38045d64da4474d0139e85d8d01a358",
+      "metadataDigestMatches": true,
+      "archiveFile": "58ed8caa6e3e34c40e7617f9f592f8f3f634597965026fc5bbdbb3603141eee3.bin"
+    },
+    {
+      "key": "runs/5c9af3af-044c-4b25-a1a4-03fd1dd42085/terminal-result.json",
+      "bytes": 1273,
+      "sha256": "sha256:2f6d1f50a06d9fb88bd6a628f3d6290b903eac8850410ff8b6ed6de6e0482a4c",
+      "metadataDigest": "sha256:2f6d1f50a06d9fb88bd6a628f3d6290b903eac8850410ff8b6ed6de6e0482a4c",
+      "metadataDigestMatches": true,
+      "archiveFile": "82ea35983606c3f57beb4e871c61568fbd5ec975cdbdb93a4430da5913ce136e.bin"
+    },
+    {
+      "key": "runs/721dcb88-06cc-455e-a73a-ae9bb46fe3d2/module-inputs.json",
+      "bytes": 328,
+      "sha256": "sha256:2201da37110260611b56e685aa100871f38045d64da4474d0139e85d8d01a358",
+      "metadataDigest": "sha256:2201da37110260611b56e685aa100871f38045d64da4474d0139e85d8d01a358",
+      "metadataDigestMatches": true,
+      "archiveFile": "13514abefcd9b8a3c2e4300c91aaa51d4a75d6c0efb835b4d31b02dfcb037d42.bin"
+    },
+    {
+      "key": "runs/721dcb88-06cc-455e-a73a-ae9bb46fe3d2/target-discovery.json",
+      "bytes": 548,
+      "sha256": "sha256:52e6ce5d20da4d73bddb034417a522d0e3744a7511b0facdc8901359ca51944a",
+      "metadataDigest": "sha256:52e6ce5d20da4d73bddb034417a522d0e3744a7511b0facdc8901359ca51944a",
+      "metadataDigestMatches": true,
+      "archiveFile": "8c2d7ee75b5ee6d8ceecf3207ed8c87b132fd3f9201d20308eef0f7ae00645c7.bin"
+    },
+    {
+      "key": "runs/721dcb88-06cc-455e-a73a-ae9bb46fe3d2/terminal-result.json",
+      "bytes": 1273,
+      "sha256": "sha256:00faf96fc698c172cde970b7bf45a4d0a933e12e42d7474ed9abcde7ecb8cc6a",
+      "metadataDigest": "sha256:00faf96fc698c172cde970b7bf45a4d0a933e12e42d7474ed9abcde7ecb8cc6a",
+      "metadataDigestMatches": true,
+      "archiveFile": "5b93c1184617227d50976c9a0cf47a163c7380636e1986bd57300b05bc60fd72.bin"
+    },
+    {
+      "key": "runs/73d8cd95-7db4-4521-a267-de33680a6582/backend-config.hcl",
+      "bytes": 360,
+      "sha256": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigest": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigestMatches": true,
+      "archiveFile": "b07f128d169fcaa8c8a2f7155d45076c487a0b9c35ef07fe2c9c4ff53120aa2f.bin"
+    },
+    {
+      "key": "runs/73d8cd95-7db4-4521-a267-de33680a6582/module-inputs.json",
+      "bytes": 338,
+      "sha256": "sha256:4de1c41b8a8e69a38039e67a5491e82e7a1688e9fe4abe96e7589d0be961c4c3",
+      "metadataDigest": "sha256:4de1c41b8a8e69a38039e67a5491e82e7a1688e9fe4abe96e7589d0be961c4c3",
+      "metadataDigestMatches": true,
+      "archiveFile": "6e736f822c66c8a54a4ebdc5b503fc48f9603e12e8466433856611365ada5818.bin"
+    },
+    {
+      "key": "runs/73d8cd95-7db4-4521-a267-de33680a6582/plan-report.json",
+      "bytes": 211,
+      "sha256": "sha256:b73dcfda2a2885c59218846684c3ee11e68615dda783e7dafc4654ccef401ea4",
+      "metadataDigest": "sha256:b73dcfda2a2885c59218846684c3ee11e68615dda783e7dafc4654ccef401ea4",
+      "metadataDigestMatches": true,
+      "archiveFile": "3eb6b9e8dd95c5ffbf95d88aacc47d2721cba8491d587fe814b4337b250a8de7.bin"
+    },
+    {
+      "key": "runs/73d8cd95-7db4-4521-a267-de33680a6582/plan-visualization.json",
+      "bytes": 629,
+      "sha256": "sha256:863b68d95d9cf2260fd9cbda2690f294a46bf114895e18d0045db3dbdae54097",
+      "metadataDigest": "sha256:863b68d95d9cf2260fd9cbda2690f294a46bf114895e18d0045db3dbdae54097",
+      "metadataDigestMatches": true,
+      "archiveFile": "233ab5f39dceee7bacb8a29ff72f63852d8aede7fd47bcdc490c8539c6899ce4.bin"
+    },
+    {
+      "key": "runs/73d8cd95-7db4-4521-a267-de33680a6582/plan.binary",
+      "bytes": 4960,
+      "sha256": "sha256:1fca9733965c4a5143edf1f4f91682747df846807a4dec2fbb2cdae66f4c0fd0",
+      "metadataDigest": "sha256:1fca9733965c4a5143edf1f4f91682747df846807a4dec2fbb2cdae66f4c0fd0",
+      "metadataDigestMatches": true,
+      "archiveFile": "d3a106cac7efcd923ef82f61a8dc7054bcf61401322cc6d53abd2a140e9ccff6.bin"
+    },
+    {
+      "key": "runs/73d8cd95-7db4-4521-a267-de33680a6582/source-bundle.tar.zst",
+      "bytes": 2063,
+      "sha256": "sha256:01e693d1df25cd92a281562479870649478be0337a2045ffcb639f2510466b37",
+      "metadataDigest": "sha256:01e693d1df25cd92a281562479870649478be0337a2045ffcb639f2510466b37",
+      "metadataDigestMatches": true,
+      "archiveFile": "7ec42d0dcb52d405d00b0d7269db51fd75169a639641a38cca3cfa555ccb9b09.bin"
+    },
+    {
+      "key": "runs/73d8cd95-7db4-4521-a267-de33680a6582/terminal-result.json",
+      "bytes": 1250,
+      "sha256": "sha256:bb06536a7eed2c6eedf3b49af11802976021b24001325ce5e79452c1c40e9b47",
+      "metadataDigest": "sha256:bb06536a7eed2c6eedf3b49af11802976021b24001325ce5e79452c1c40e9b47",
+      "metadataDigestMatches": true,
+      "archiveFile": "1b9c360282c98416b81611715a4f462ac3cdfcf8dd113a51b1385d56def71450.bin"
+    },
+    {
+      "key": "runs/9ca8e6d5-17e1-4837-babf-76b47e176c74/backend-config.hcl",
+      "bytes": 360,
+      "sha256": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigest": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigestMatches": true,
+      "archiveFile": "a69cc5ec4356c88a60c138919ba08f0cba94517cd02d94d0f2966195ca13a4f9.bin"
+    },
+    {
+      "key": "runs/9ca8e6d5-17e1-4837-babf-76b47e176c74/module-inputs.json",
+      "bytes": 339,
+      "sha256": "sha256:a389fe5624cf4330e2ba517e772beb1c1df7b3b6339b5f07051031a4bb5463fe",
+      "metadataDigest": "sha256:a389fe5624cf4330e2ba517e772beb1c1df7b3b6339b5f07051031a4bb5463fe",
+      "metadataDigestMatches": true,
+      "archiveFile": "573ecc7352c899dd3a1b4f8417f24c2f91d06a2e28cf141c6454407af56d35de.bin"
+    },
+    {
+      "key": "runs/9ca8e6d5-17e1-4837-babf-76b47e176c74/plan-report.json",
+      "bytes": 210,
+      "sha256": "sha256:f0fe545546e4f0cf4c537c252aebd8098d38622127db3d1616543b6e2a37bcb5",
+      "metadataDigest": "sha256:f0fe545546e4f0cf4c537c252aebd8098d38622127db3d1616543b6e2a37bcb5",
+      "metadataDigestMatches": true,
+      "archiveFile": "8ba62e8e9e18dca8081210f7b65ab99421e92159ee4e06b42ceca1c18ba7a696.bin"
+    },
+    {
+      "key": "runs/9ca8e6d5-17e1-4837-babf-76b47e176c74/plan-visualization.json",
+      "bytes": 435,
+      "sha256": "sha256:f3bb683ed761602a9b27b49b3050a5a0a12e5b2b5598b2310503db3db09ef2ec",
+      "metadataDigest": "sha256:f3bb683ed761602a9b27b49b3050a5a0a12e5b2b5598b2310503db3db09ef2ec",
+      "metadataDigestMatches": true,
+      "archiveFile": "041ff25b552ef12de81abadcf75390e1c8a810cf9e0a1607cee672944cee2a8f.bin"
+    },
+    {
+      "key": "runs/9ca8e6d5-17e1-4837-babf-76b47e176c74/plan.binary",
+      "bytes": 4511,
+      "sha256": "sha256:37b013059936c1d11a00894434a413e0568c9fe34f8877fec408d08464d11992",
+      "metadataDigest": "sha256:37b013059936c1d11a00894434a413e0568c9fe34f8877fec408d08464d11992",
+      "metadataDigestMatches": true,
+      "archiveFile": "85eec096bf4f4eec63a23aec6124e35fe223102a3d58d71d606be1eff1957d1b.bin"
+    },
+    {
+      "key": "runs/9ca8e6d5-17e1-4837-babf-76b47e176c74/source-bundle.tar.zst",
+      "bytes": 1830,
+      "sha256": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigestMatches": true,
+      "archiveFile": "7147be03cd2bedd2c395adb4286a499c44d2fd9d2768cb9e4793e7bfb15e0dc5.bin"
+    },
+    {
+      "key": "runs/9ca8e6d5-17e1-4837-babf-76b47e176c74/terminal-result.json",
+      "bytes": 1249,
+      "sha256": "sha256:810edab1d37492889c66a81b2fb66fab3c7b5d532c04f0f8dca15823c58089c2",
+      "metadataDigest": "sha256:810edab1d37492889c66a81b2fb66fab3c7b5d532c04f0f8dca15823c58089c2",
+      "metadataDigestMatches": true,
+      "archiveFile": "b9c854b06693d8915d3d3578c5b194579bca3eba5ef37180c22034914d7d9f8e.bin"
+    },
+    {
+      "key": "runs/a9e40c21-203f-4155-874b-c2bd7bcc8989/backend-config.hcl",
+      "bytes": 360,
+      "sha256": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigest": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigestMatches": true,
+      "archiveFile": "a9474795e9d261eef3942f3131eece003e1553384c3c25282097a0035b681ac8.bin"
+    },
+    {
+      "key": "runs/a9e40c21-203f-4155-874b-c2bd7bcc8989/module-inputs.json",
+      "bytes": 338,
+      "sha256": "sha256:244b9f96d4b43721ce44b5f6efff92bb93fbb9d0e83c6ade8d350aba3c3c74de",
+      "metadataDigest": "sha256:244b9f96d4b43721ce44b5f6efff92bb93fbb9d0e83c6ade8d350aba3c3c74de",
+      "metadataDigestMatches": true,
+      "archiveFile": "6737b2604d486983577bada2ea7f3165b11915f32994251716a070b92baa9772.bin"
+    },
+    {
+      "key": "runs/a9e40c21-203f-4155-874b-c2bd7bcc8989/plan-report.json",
+      "bytes": 211,
+      "sha256": "sha256:e54d41dad4c1de6d3d7236470ded09620a69e550fb3aa5a0964f7c6d8de178f8",
+      "metadataDigest": "sha256:e54d41dad4c1de6d3d7236470ded09620a69e550fb3aa5a0964f7c6d8de178f8",
+      "metadataDigestMatches": true,
+      "archiveFile": "0dfa06b56676ba1e7c30be98be6d04cf243de7bd7e5d85a9bcb08f023c32c79e.bin"
+    },
+    {
+      "key": "runs/a9e40c21-203f-4155-874b-c2bd7bcc8989/plan-visualization.json",
+      "bytes": 629,
+      "sha256": "sha256:5e6e7c3615c7e8296573d63441a3ea21ce149383a2ff13e4c5d50e0296679513",
+      "metadataDigest": "sha256:5e6e7c3615c7e8296573d63441a3ea21ce149383a2ff13e4c5d50e0296679513",
+      "metadataDigestMatches": true,
+      "archiveFile": "98e2e07ef3f33c0b625ee85012e4627982836802649ea5160fba64fbc96382f9.bin"
+    },
+    {
+      "key": "runs/a9e40c21-203f-4155-874b-c2bd7bcc8989/plan.binary",
+      "bytes": 4958,
+      "sha256": "sha256:88d47392c372eb131f00308adaf500ac2a745fe112d39331c0e9045b46f1df88",
+      "metadataDigest": "sha256:88d47392c372eb131f00308adaf500ac2a745fe112d39331c0e9045b46f1df88",
+      "metadataDigestMatches": true,
+      "archiveFile": "995a003d5865258b73a69ec7613d671c50e125a6cbae91d5c2a5ce0366ba2c60.bin"
+    },
+    {
+      "key": "runs/a9e40c21-203f-4155-874b-c2bd7bcc8989/source-bundle.tar.zst",
+      "bytes": 2063,
+      "sha256": "sha256:01e693d1df25cd92a281562479870649478be0337a2045ffcb639f2510466b37",
+      "metadataDigest": "sha256:01e693d1df25cd92a281562479870649478be0337a2045ffcb639f2510466b37",
+      "metadataDigestMatches": true,
+      "archiveFile": "718509588879698b052363374bfe970da102a6b4a02702770e367ebb7753eb96.bin"
+    },
+    {
+      "key": "runs/a9e40c21-203f-4155-874b-c2bd7bcc8989/terminal-result.json",
+      "bytes": 1250,
+      "sha256": "sha256:3e35d0a2f499836f303b029d4ee9ee0bd06477203c9d9d596d1d84f8c0274651",
+      "metadataDigest": "sha256:3e35d0a2f499836f303b029d4ee9ee0bd06477203c9d9d596d1d84f8c0274651",
+      "metadataDigestMatches": true,
+      "archiveFile": "9b809b6c7c0c854d2a750557ae6bd57d316ff831711ebc6e6bdcda46fdec81b6.bin"
+    },
+    {
+      "key": "runs/aa274f81-c3c3-4e37-ab57-0ce0649cf8d1/backend-config.hcl",
+      "bytes": 360,
+      "sha256": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigest": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigestMatches": true,
+      "archiveFile": "ed7fddc33e235ba34d0273ea29a30e9bcfb0c81536378267de030f2cd56dacaf.bin"
+    },
+    {
+      "key": "runs/aa274f81-c3c3-4e37-ab57-0ce0649cf8d1/module-inputs.json",
+      "bytes": 339,
+      "sha256": "sha256:a389fe5624cf4330e2ba517e772beb1c1df7b3b6339b5f07051031a4bb5463fe",
+      "metadataDigest": "sha256:a389fe5624cf4330e2ba517e772beb1c1df7b3b6339b5f07051031a4bb5463fe",
+      "metadataDigestMatches": true,
+      "archiveFile": "53ec2e2986d00e8572be2c75caf716e41bd2f46bcae21ecdc61e9395e9989086.bin"
+    },
+    {
+      "key": "runs/aa274f81-c3c3-4e37-ab57-0ce0649cf8d1/plan-report.json",
+      "bytes": 211,
+      "sha256": "sha256:ba460edb6fe242c74136567f8f9df031c9a82ec98787c46065fa710cc4e26639",
+      "metadataDigest": "sha256:ba460edb6fe242c74136567f8f9df031c9a82ec98787c46065fa710cc4e26639",
+      "metadataDigestMatches": true,
+      "archiveFile": "426fdace7553e7b6a49b25d12e4601a06a54e214a2657042d9d7210e90e33fa5.bin"
+    },
+    {
+      "key": "runs/aa274f81-c3c3-4e37-ab57-0ce0649cf8d1/plan-visualization.json",
+      "bytes": 569,
+      "sha256": "sha256:f1ce72b4cc76e6409ca432433e8ff4bbfcce1b7d72a824158f46725b0b85c4e6",
+      "metadataDigest": "sha256:f1ce72b4cc76e6409ca432433e8ff4bbfcce1b7d72a824158f46725b0b85c4e6",
+      "metadataDigestMatches": true,
+      "archiveFile": "c0073af80be813e49c06cd2218f73b4272ed1f9b501392925c3e455b009adb3d.bin"
+    },
+    {
+      "key": "runs/aa274f81-c3c3-4e37-ab57-0ce0649cf8d1/plan.binary",
+      "bytes": 6543,
+      "sha256": "sha256:9131bf48f41235eee34d50349cbc58c7af87619bea814bb4c26d7280148b7493",
+      "metadataDigest": "sha256:9131bf48f41235eee34d50349cbc58c7af87619bea814bb4c26d7280148b7493",
+      "metadataDigestMatches": true,
+      "archiveFile": "e24a2dd3dfc18604b10b61d10cebe2a016350b4df4011e3d9744a67aec292cc9.bin"
+    },
+    {
+      "key": "runs/aa274f81-c3c3-4e37-ab57-0ce0649cf8d1/source-bundle.tar.zst",
+      "bytes": 1830,
+      "sha256": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigestMatches": true,
+      "archiveFile": "94064fef22b6f3032f63ab9ceb1f44483321e5e98f402c418243b0068d9791f9.bin"
+    },
+    {
+      "key": "runs/aa274f81-c3c3-4e37-ab57-0ce0649cf8d1/terminal-result.json",
+      "bytes": 1250,
+      "sha256": "sha256:a11809d630e0ac1b734098e190e8913ce2829596357818ed815ac89d19ad603f",
+      "metadataDigest": "sha256:a11809d630e0ac1b734098e190e8913ce2829596357818ed815ac89d19ad603f",
+      "metadataDigestMatches": true,
+      "archiveFile": "e31e9dae267bc386e367b43ab45befe67bee7a1bc31091a775c64f47a7b08a3c.bin"
+    },
+    {
+      "key": "runs/adadf599-d5e1-47bb-b4d6-c47b82f1e618/module-inputs.json",
+      "bytes": 338,
+      "sha256": "sha256:4de1c41b8a8e69a38039e67a5491e82e7a1688e9fe4abe96e7589d0be961c4c3",
+      "metadataDigest": "sha256:4de1c41b8a8e69a38039e67a5491e82e7a1688e9fe4abe96e7589d0be961c4c3",
+      "metadataDigestMatches": true,
+      "archiveFile": "2bd091e089efabd38517ec9ffd5c5aeb1148c7a6364a4678bb5aeb4cff11041d.bin"
+    },
+    {
+      "key": "runs/adadf599-d5e1-47bb-b4d6-c47b82f1e618/terminal-result.json",
+      "bytes": 1499,
+      "sha256": "sha256:fbf4c5713c045d72bf57c9e093bec5838aa9321d23b024c45729b6934b2ad017",
+      "metadataDigest": "sha256:fbf4c5713c045d72bf57c9e093bec5838aa9321d23b024c45729b6934b2ad017",
+      "metadataDigestMatches": true,
+      "archiveFile": "f66bec53f5bd551a3fafbfba74d3392ebb2fe1913ffce8d1b222d2e2d46e9969.bin"
+    },
+    {
+      "key": "runs/b645a921-3837-4815-9333-160a7de1fff5/backend-config.hcl",
+      "bytes": 360,
+      "sha256": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigest": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigestMatches": true,
+      "archiveFile": "d189de9faf462c803210c7024c6b0b0008074e4ecb825c9f8f63a269d6f008a5.bin"
+    },
+    {
+      "key": "runs/b645a921-3837-4815-9333-160a7de1fff5/module-inputs.json",
+      "bytes": 334,
+      "sha256": "sha256:5fd34ffe7478c71d3da68a1aa3f99690bd9c8ef9a4386a80d4b0b38c4651d65b",
+      "metadataDigest": "sha256:5fd34ffe7478c71d3da68a1aa3f99690bd9c8ef9a4386a80d4b0b38c4651d65b",
+      "metadataDigestMatches": true,
+      "archiveFile": "43dc43ccda8d2164ef796767243af471582dc1c3ddb8e2aef1fefd0bab56c620.bin"
+    },
+    {
+      "key": "runs/b645a921-3837-4815-9333-160a7de1fff5/plan-report.json",
+      "bytes": 211,
+      "sha256": "sha256:9f11bcaee886eaad2cb76ccb7b5e5028ed85ea30f4f70de35769411d553cca1a",
+      "metadataDigest": "sha256:9f11bcaee886eaad2cb76ccb7b5e5028ed85ea30f4f70de35769411d553cca1a",
+      "metadataDigestMatches": true,
+      "archiveFile": "982a386f512a1fc605448e2d37b3bb7b731eca1f203b541f1a9b188a39dcb361.bin"
+    },
+    {
+      "key": "runs/b645a921-3837-4815-9333-160a7de1fff5/plan-visualization.json",
+      "bytes": 430,
+      "sha256": "sha256:7457acfa09b016f96819254c55b6fa6185deb183bdc123e0c4e53084d087bdd4",
+      "metadataDigest": "sha256:7457acfa09b016f96819254c55b6fa6185deb183bdc123e0c4e53084d087bdd4",
+      "metadataDigestMatches": true,
+      "archiveFile": "ea9410f95f1d28e1a2a64910f6ff6661f63f64d0b3d3836da2ba80e1cfe03d82.bin"
+    },
+    {
+      "key": "runs/b645a921-3837-4815-9333-160a7de1fff5/plan.binary",
+      "bytes": 4501,
+      "sha256": "sha256:1fef08dde493bd1af6cf982664c5cc22b0a76101bd42dabe0230dddb79fd9bc5",
+      "metadataDigest": "sha256:1fef08dde493bd1af6cf982664c5cc22b0a76101bd42dabe0230dddb79fd9bc5",
+      "metadataDigestMatches": true,
+      "archiveFile": "318fbc884f836380f18b2a8f95bd5b5d52fd86dc64a876e0dafe9e4846ad96a6.bin"
+    },
+    {
+      "key": "runs/b645a921-3837-4815-9333-160a7de1fff5/source-bundle.tar.zst",
+      "bytes": 1830,
+      "sha256": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigestMatches": true,
+      "archiveFile": "e47427738c78108b6069b82271f31c59e0c8c796fd83776b1be6f83354f3f6ce.bin"
+    },
+    {
+      "key": "runs/b645a921-3837-4815-9333-160a7de1fff5/terminal-result.json",
+      "bytes": 1250,
+      "sha256": "sha256:a227368b9b06d19c6c4fa2b9b54f934172376dd1b2ad3d0210f8bc1e69ca1fe1",
+      "metadataDigest": "sha256:a227368b9b06d19c6c4fa2b9b54f934172376dd1b2ad3d0210f8bc1e69ca1fe1",
+      "metadataDigestMatches": true,
+      "archiveFile": "870a9b8f5ad35ab03b47bb4cbf2dec7dddb7f42ea7db064cef633a849bea922b.bin"
+    },
+    {
+      "key": "runs/c3925d97-9ea7-442c-9a7d-e4994a83bd1c/module-inputs.json",
+      "bytes": 339,
+      "sha256": "sha256:a389fe5624cf4330e2ba517e772beb1c1df7b3b6339b5f07051031a4bb5463fe",
+      "metadataDigest": "sha256:a389fe5624cf4330e2ba517e772beb1c1df7b3b6339b5f07051031a4bb5463fe",
+      "metadataDigestMatches": true,
+      "archiveFile": "f9ad10476b83546caebacccc569f70d9b2633f734f1756503fef8f0beffb06e2.bin"
+    },
+    {
+      "key": "runs/c3925d97-9ea7-442c-9a7d-e4994a83bd1c/target-discovery.json",
+      "bytes": 548,
+      "sha256": "sha256:e1e6af4af5bc7bfe9887fa0d3668e7b9507090c098fd62fa52eeb17f540cb5c2",
+      "metadataDigest": "sha256:e1e6af4af5bc7bfe9887fa0d3668e7b9507090c098fd62fa52eeb17f540cb5c2",
+      "metadataDigestMatches": true,
+      "archiveFile": "cb9dd2abe6fcf640cb834f5e2914f4935d5b0ff040fa174dbc3e5a81f4e1be07.bin"
+    },
+    {
+      "key": "runs/c3925d97-9ea7-442c-9a7d-e4994a83bd1c/terminal-result.json",
+      "bytes": 1273,
+      "sha256": "sha256:783e6f7efa9947b440eb8ae40c386759d3e30917ec8dcdd48d8abf7052ebb3dc",
+      "metadataDigest": "sha256:783e6f7efa9947b440eb8ae40c386759d3e30917ec8dcdd48d8abf7052ebb3dc",
+      "metadataDigestMatches": true,
+      "archiveFile": "860ebf9531fd1b72d0d8d74046fbd945f6fb307cf7dfbe93d7107e2b5316e9c5.bin"
+    },
+    {
+      "key": "runs/dace7aff-7562-4090-bdc4-184168ea6748/module-inputs.json",
+      "bytes": 338,
+      "sha256": "sha256:244b9f96d4b43721ce44b5f6efff92bb93fbb9d0e83c6ade8d350aba3c3c74de",
+      "metadataDigest": "sha256:244b9f96d4b43721ce44b5f6efff92bb93fbb9d0e83c6ade8d350aba3c3c74de",
+      "metadataDigestMatches": true,
+      "archiveFile": "cf0c49be6955f325e77c3f6389eeca783a1b9d3d6813f1c6326216e32ac79bdd.bin"
+    },
+    {
+      "key": "runs/dace7aff-7562-4090-bdc4-184168ea6748/terminal-result.json",
+      "bytes": 1345,
+      "sha256": "sha256:3430193b0d1fec012602168325f357540c295304cbd8e35b04715d85277295a6",
+      "metadataDigest": "sha256:3430193b0d1fec012602168325f357540c295304cbd8e35b04715d85277295a6",
+      "metadataDigestMatches": true,
+      "archiveFile": "448ecd50d0e217f54f4074c8404776c48a25f01a50c91a777bfd867251cefe0a.bin"
+    },
+    {
+      "key": "runs/f72bccea-c2f6-4efb-b62d-bc8967502280/backend-config.hcl",
+      "bytes": 360,
+      "sha256": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigest": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigestMatches": true,
+      "archiveFile": "fae647454eb36319e9a0ec2c0062db42951cfaeafe3860b770c4ae0e483b71cf.bin"
+    },
+    {
+      "key": "runs/f72bccea-c2f6-4efb-b62d-bc8967502280/module-inputs.json",
+      "bytes": 340,
+      "sha256": "sha256:624ea886d8382931068c807ea5c4c093566640049a6a3891e1d139682b85733e",
+      "metadataDigest": "sha256:624ea886d8382931068c807ea5c4c093566640049a6a3891e1d139682b85733e",
+      "metadataDigestMatches": true,
+      "archiveFile": "e87eea1f1808a7c7836a1d922211dfa77a0fed53089e49e4cc29f258a33f2603.bin"
+    },
+    {
+      "key": "runs/f72bccea-c2f6-4efb-b62d-bc8967502280/plan-report.json",
+      "bytes": 211,
+      "sha256": "sha256:6ed73f44d8ab0028f783d7052de28f055f9a895b6d9a16b19247f1ca14613fb8",
+      "metadataDigest": "sha256:6ed73f44d8ab0028f783d7052de28f055f9a895b6d9a16b19247f1ca14613fb8",
+      "metadataDigestMatches": true,
+      "archiveFile": "4ee3352432257b14935e8a9e764d4a580910756a9cffdd31c6244ae4741f3402.bin"
+    },
+    {
+      "key": "runs/f72bccea-c2f6-4efb-b62d-bc8967502280/plan-visualization.json",
+      "bytes": 436,
+      "sha256": "sha256:389938891dd85a6d0c6ed08c311c37af2ff230a03b14acf28c4b63db140e65e3",
+      "metadataDigest": "sha256:389938891dd85a6d0c6ed08c311c37af2ff230a03b14acf28c4b63db140e65e3",
+      "metadataDigestMatches": true,
+      "archiveFile": "bfda579bdb677007c45d3755cf6fa2b3fc1f6c7c3124dbee0173227847924fd0.bin"
+    },
+    {
+      "key": "runs/f72bccea-c2f6-4efb-b62d-bc8967502280/plan.binary",
+      "bytes": 4518,
+      "sha256": "sha256:a869bc528e3a79be95b8ba320160bfd270c633534d5280505a8d65403482d81f",
+      "metadataDigest": "sha256:a869bc528e3a79be95b8ba320160bfd270c633534d5280505a8d65403482d81f",
+      "metadataDigestMatches": true,
+      "archiveFile": "584d682fc7e96cd7845e2ceccb81c8b72f12761b8ddfcd1ea9b79f2b2c7161e9.bin"
+    },
+    {
+      "key": "runs/f72bccea-c2f6-4efb-b62d-bc8967502280/source-bundle.tar.zst",
+      "bytes": 1830,
+      "sha256": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigest": "sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30",
+      "metadataDigestMatches": true,
+      "archiveFile": "08e3ed9a1af3c9177c9335d5ffff8af535831d647162c596776a04cbc57e7feb.bin"
+    },
+    {
+      "key": "runs/f72bccea-c2f6-4efb-b62d-bc8967502280/terminal-result.json",
+      "bytes": 1248,
+      "sha256": "sha256:4cd74e6be472cfe40e9a447527e53ebad0b38a880fa760a082bd930ad922b2f5",
+      "metadataDigest": "sha256:4cd74e6be472cfe40e9a447527e53ebad0b38a880fa760a082bd930ad922b2f5",
+      "metadataDigestMatches": true,
+      "archiveFile": "dba3b40c6a046015c97433fecfd3c1078dc4b5662e337f674bae60abefaa7853.bin"
+    },
+    {
+      "key": "runs/fd6831b4-8426-425b-af01-0cf90dfe32af/backend-config.hcl",
+      "bytes": 360,
+      "sha256": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigest": "sha256:6950a5df1abd33f77bf0c3e39c319fed732954683a56cdbaeda74ac977b65861",
+      "metadataDigestMatches": true,
+      "archiveFile": "9e4e34474fbcf9fe727e3da84f099717c89709e9bb94c16b9688a08f8bd3f36c.bin"
+    },
+    {
+      "key": "runs/fd6831b4-8426-425b-af01-0cf90dfe32af/module-inputs.json",
+      "bytes": 338,
+      "sha256": "sha256:244b9f96d4b43721ce44b5f6efff92bb93fbb9d0e83c6ade8d350aba3c3c74de",
+      "metadataDigest": "sha256:244b9f96d4b43721ce44b5f6efff92bb93fbb9d0e83c6ade8d350aba3c3c74de",
+      "metadataDigestMatches": true,
+      "archiveFile": "3b1502f18518f8d0baae8c1c916dea9c5df5087185b4a1d223559c8f085e2c2a.bin"
+    },
+    {
+      "key": "runs/fd6831b4-8426-425b-af01-0cf90dfe32af/plan-report.json",
+      "bytes": 211,
+      "sha256": "sha256:d0efa5be77ea2a26a6f32bf48358e512c1058a1fa7642b33a27682237a55ca60",
+      "metadataDigest": "sha256:d0efa5be77ea2a26a6f32bf48358e512c1058a1fa7642b33a27682237a55ca60",
+      "metadataDigestMatches": true,
+      "archiveFile": "b25f75208f0207398616f806ed71dfd0865f3e0e8bebe30fe96e66b42f4f423b.bin"
+    },
+    {
+      "key": "runs/fd6831b4-8426-425b-af01-0cf90dfe32af/plan-visualization.json",
+      "bytes": 907,
+      "sha256": "sha256:3be4b0eda9452ce3b8c820a182618ccd3080d1035e29a6737d5c8c6bbdbf01e6",
+      "metadataDigest": "sha256:3be4b0eda9452ce3b8c820a182618ccd3080d1035e29a6737d5c8c6bbdbf01e6",
+      "metadataDigestMatches": true,
+      "archiveFile": "c245722c9c96e700b9edf452c8baba3be131c5736d8e7c0de90c240382044dae.bin"
+    },
+    {
+      "key": "runs/fd6831b4-8426-425b-af01-0cf90dfe32af/plan.binary",
+      "bytes": 7210,
+      "sha256": "sha256:94b27f9e1e1cbbd8312a7faa0a63a478b4029393e1402b672564c1c68eef64f7",
+      "metadataDigest": "sha256:94b27f9e1e1cbbd8312a7faa0a63a478b4029393e1402b672564c1c68eef64f7",
+      "metadataDigestMatches": true,
+      "archiveFile": "6386089961f0c1106393d2d3f4ee2b475d5cdd77b39b6d951206c2f50f7faa01.bin"
+    },
+    {
+      "key": "runs/fd6831b4-8426-425b-af01-0cf90dfe32af/source-bundle.tar.zst",
+      "bytes": 2063,
+      "sha256": "sha256:01e693d1df25cd92a281562479870649478be0337a2045ffcb639f2510466b37",
+      "metadataDigest": "sha256:01e693d1df25cd92a281562479870649478be0337a2045ffcb639f2510466b37",
+      "metadataDigestMatches": true,
+      "archiveFile": "c1e2d02cbfa24663ab190becd19a174f90843ac6fa5a45e466e2e9942d49d982.bin"
+    },
+    {
+      "key": "runs/fd6831b4-8426-425b-af01-0cf90dfe32af/terminal-result.json",
+      "bytes": 1250,
+      "sha256": "sha256:ad1bef07323139a8cec12d6a7de7242c0613223c12171c9a2b35018d89580073",
+      "metadataDigest": "sha256:ad1bef07323139a8cec12d6a7de7242c0613223c12171c9a2b35018d89580073",
+      "metadataDigestMatches": true,
+      "archiveFile": "b3ca2bbe355dfdb2e97f865d8b2b867db110e60a9a1caa13931551aff0604e1d.bin"
+    }
+  ],
+  "kubernetesSnapshotSHA256": "25d8964093dc048ac4155afa8ce28e161bd5008f4450d33eacea7c8ae13c9e83",
+  "activeJobs": 0,
+  "manualFinalizerPatch": false,
+  "forcedDelete": false,
+  "cloudObjectsDeletedByArchive": 0,
+  "controllerStopped": true
+}

@@ -1,0 +1,228 @@
+{
+  "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+  "defaultKubernetesE2E": "SKIP; separate real Gate receipts required",
+  "paidDeepSeekCalls": 0,
+  "steps": [
+    {
+      "name": "go-unit",
+      "command": [
+        "go",
+        "test",
+        "./...",
+        "-count=1"
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:22:19.418429+00:00",
+      "seconds": 9.92,
+      "exitCode": 0,
+      "rawLogSHA256": "74b8cbe7d0ba33667de82996329528788d612a095e2f5b67f3b36a85b9d4d9a5"
+    },
+    {
+      "name": "go-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./...",
+        "-count=1"
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:22:29.344432+00:00",
+      "seconds": 25.12,
+      "exitCode": 0,
+      "rawLogSHA256": "638e9ed86f0d93d2fbaeaf3571a7f570fcefaaa4e3f43ea18b5671edffab650c"
+    },
+    {
+      "name": "go-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:22:54.464347+00:00",
+      "seconds": 5.04,
+      "exitCode": 0,
+      "rawLogSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "go-build",
+      "command": [
+        "go",
+        "build",
+        "./..."
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:22:59.507330+00:00",
+      "seconds": 8.73,
+      "exitCode": 0,
+      "rawLogSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "frontend-ci",
+      "command": [
+        "cmd",
+        "/c",
+        "npm",
+        "ci"
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:23:08.241209+00:00",
+      "seconds": 11.59,
+      "exitCode": 0,
+      "rawLogSHA256": "14a1aa9911f93cd1c540d557e063ea56e12e614c32cb157e87630f70f7c571b2"
+    },
+    {
+      "name": "frontend-test",
+      "command": [
+        "cmd",
+        "/c",
+        "npm",
+        "test"
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:23:19.829903+00:00",
+      "seconds": 1.62,
+      "exitCode": 0,
+      "rawLogSHA256": "ad076f976cbb35952d43d6ffbffd940c4488801a71a821b81f3af00d48a163f4"
+    },
+    {
+      "name": "frontend-typecheck",
+      "command": [
+        "cmd",
+        "/c",
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:23:21.448738+00:00",
+      "seconds": 4.73,
+      "exitCode": 0,
+      "rawLogSHA256": "5d98a98da3578893e5c3be372775a2c8ecd2c23d7581c33eee35c636e2849ac5"
+    },
+    {
+      "name": "frontend-build",
+      "command": [
+        "cmd",
+        "/c",
+        "npm",
+        "run",
+        "build"
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:23:26.175818+00:00",
+      "seconds": 5.86,
+      "exitCode": 0,
+      "rawLogSHA256": "3fc52436969a5335044531343c270f4aa7eeb6c98aeb959fcb46043851186547"
+    },
+    {
+      "name": "ministack-integration",
+      "command": [
+        "go",
+        "test",
+        "./internal/artifacts",
+        "-run",
+        "TestMiniStackIntegration",
+        "-v",
+        "-count=1"
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:23:32.039053+00:00",
+      "seconds": 2.96,
+      "exitCode": 0,
+      "rawLogSHA256": "28c5453d98a64df01735508bbb34b49c2ff3c0a1845ba0f348f9229b0be94ceb"
+    },
+    {
+      "name": "markdown-links",
+      "command": [
+        "D:\\anaconda3\\python.exe",
+        "scripts/check_markdown_links.py"
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:23:35.001197+00:00",
+      "seconds": 0.47,
+      "exitCode": 0,
+      "rawLogSHA256": "c52d4b6ecdcc20a891d6213067d5b549e9a0ac78f81bfa27f589d164e2785981"
+    },
+    {
+      "name": "git-whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "origin/main...HEAD"
+      ],
+      "sourceSHA": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "started": "2026-11-02T09:23:35.473450+00:00",
+      "seconds": 0.13,
+      "exitCode": 0,
+      "rawLogSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "batch": "kpcp-final-20261102-1815",
+  "at": "2026-11-02T09:34:02.487833+00:00",
+  "frontendTests": 7,
+  "additionalChecks": [
+    {
+      "name": "terraform",
+      "rawLogSHA256": "5d49218f5fb160315138fba589e1b3632d519be0d9e435ffc84767a4b4dae986",
+      "status": "PASS",
+      "source": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "command": "isolated pinned Runner: terraform fmt -check -recursive; basic and partial overlay init -backend=false -lockfile=readonly; validate",
+      "terraform": "1.14.0",
+      "exitCode": 0
+    },
+    {
+      "name": "gitleaks",
+      "rawLogSHA256": "24a56042084cb57571efded47c1f186ea79710a03e757fc4bdac26df862bd56a",
+      "status": "PASS"
+    },
+    {
+      "name": "paid-opt-in-skip",
+      "rawLogSHA256": "0272b63759f6951496d379321378febbc33f3c7a39e94fac85d1c6d446ac6905",
+      "status": "SKIP"
+    },
+    {
+      "name": "default-e2e-skip",
+      "rawLogSHA256": "c4275eff59e06be3bdc45754fe261f0eec2b00ed497d94427ebfc656e4274c10",
+      "status": "SKIP"
+    }
+  ],
+  "binaries": [
+    {
+      "name": "controller.exe",
+      "sha256": "cd19d38096a92be6742c51ef33c2a278b4bceaf6595e9ea80c7166f17c3c22a4",
+      "vcs.revision": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "vcs.time": "2026-11-02T09:19:57Z",
+      "vcs.modified": "false"
+    },
+    {
+      "name": "platform-api.exe",
+      "sha256": "b3f762a71315cbf20d5cd7605cf4cc68e2023eb39e91f23b1ae0c218a4940677",
+      "vcs.revision": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "vcs.time": "2026-11-02T09:19:57Z",
+      "vcs.modified": "false"
+    },
+    {
+      "name": "terraform-runner.exe",
+      "sha256": "695c79d15ee767bf11fa49e6c0b98be46876dcfea3495dc3d8fbe620d4e78c6c",
+      "vcs.revision": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+      "vcs.time": "2026-11-02T09:19:57Z",
+      "vcs.modified": "false"
+    }
+  ],
+  "sourceEquivalence": {
+    "liveController": "7cdad59ef8035391cafc1e4d8727ebe715fd9f32",
+    "cleanRegression": "99dc281c0d0223009d593f03abd5c943a1210b8d",
+    "diffPaths": [
+      "api",
+      "cmd",
+      "internal",
+      "e2e",
+      "web",
+      "test"
+    ],
+    "diffEmpty": true
+  }
+}

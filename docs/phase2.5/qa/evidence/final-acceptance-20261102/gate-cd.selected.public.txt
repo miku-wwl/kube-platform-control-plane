@@ -1,0 +1,56 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:122: owned namespace=kpcp-1793611216037299000 uid=3642cbd6-89dc-4bab-8c24-a2e78d0c2eee source=0eab0368c66e2a9abbac8522007f659205697d96 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+    lifecycle_test.go:243: Deployment failover phase=initial deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=133787 holder=kpcp-1793611216037299000-controller-545c55c5b9-qgr9b_9cef47f9-61fd-4f19-a5c4-b104a88b4a3c
+2026/11/02 22:20:18 INFO platform API request method=POST path=/api/classes/validate duration=11ms
+2026/11/02 22:20:18 INFO platform API request method=GET path=/api/classes/kpcp-1793611216037299000 duration=4ms
+2026/11/02 22:20:18 INFO platform API request method=POST path=/api/classes duration=12ms
+2026/11/02 22:20:18 INFO platform API request method=POST path=/api/classes duration=16ms
+2026/11/02 22:20:18 INFO PlatformEnvironment submitted namespace=kpcp-1793611216037299000 name=environment class=kpcp-1793611216037299000 generation=1
+2026/11/02 22:20:18 INFO platform API request method=POST path=/api/environments duration=32ms
+2026/11/02 22:20:18 INFO platform API request method=DELETE path=/api/classes/kpcp-1793611216037299000 duration=79ms
+    lifecycle_test.go:256: Deployment failover phase=before-active-plan deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=133787 holder=kpcp-1793611216037299000-controller-545c55c5b9-qgr9b_9cef47f9-61fd-4f19-a5c4-b104a88b4a3c
+    lifecycle_test.go:256: owned leader Pod exited phase=active-plan pod=kpcp-1793611216037299000-controller-545c55c5b9-qgr9b uid=ea3e9023-c5ab-4405-8904-fc25123569ec
+    lifecycle_test.go:256: Deployment failover phase=after-active-plan deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=133883 holder=kpcp-1793611216037299000-controller-545c55c5b9-9jpkq_590962fc-530d-4d3a-b387-e2f54f44d8b3
+    lifecycle_test.go:256: Deployment failover phase=before-pending-approval deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=133938 holder=kpcp-1793611216037299000-controller-545c55c5b9-9jpkq_590962fc-530d-4d3a-b387-e2f54f44d8b3
+    lifecycle_test.go:256: owned leader Pod exited phase=pending-approval pod=kpcp-1793611216037299000-controller-545c55c5b9-9jpkq uid=214b0ab5-dc24-4ad3-b981-9fdbb4535bfe
+    lifecycle_test.go:256: Deployment failover phase=after-pending-approval deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=133980 holder=kpcp-1793611216037299000-controller-545c55c5b9-c9v2b_25d0a178-cce4-4e1d-a1f3-6d9c539db839
+2026/11/02 22:21:28 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793611216037299000/environment-infra-plan-1/approve duration=25ms
+2026/11/02 22:21:28 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793611216037299000/environment-infra-plan-1/approve duration=19ms
+    lifecycle_test.go:256: Deployment failover phase=before-active-apply deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=133980 holder=kpcp-1793611216037299000-controller-545c55c5b9-c9v2b_25d0a178-cce4-4e1d-a1f3-6d9c539db839
+    lifecycle_test.go:256: owned leader Pod exited phase=active-apply pod=kpcp-1793611216037299000-controller-545c55c5b9-c9v2b uid=2d009f8a-878f-415d-ab9c-63d1bf6238b9
+    lifecycle_test.go:256: Deployment failover phase=after-active-apply deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=134038 holder=kpcp-1793611216037299000-controller-545c55c5b9-lxvz9_1639ec57-9fba-4334-9fbf-e8cf2f7a27dd
+    lifecycle_test.go:256: Deployment failover phase=before-ready deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=134070 holder=kpcp-1793611216037299000-controller-545c55c5b9-lxvz9_1639ec57-9fba-4334-9fbf-e8cf2f7a27dd
+    lifecycle_test.go:256: owned leader Pod exited phase=ready pod=kpcp-1793611216037299000-controller-545c55c5b9-lxvz9 uid=eed8329f-9988-451b-b320-2e19e6cdc061
+    lifecycle_test.go:256: Deployment failover phase=after-ready deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=134123 holder=kpcp-1793611216037299000-controller-545c55c5b9-z2fmd_8fe19f49-48dc-4b01-b36e-026699ee401b
+2026/11/02 22:22:24 INFO platform API request method=GET path=/api/environments/kpcp-1793611216037299000/environment duration=56ms
+2026/11/02 22:22:24 INFO platform API request method=GET path=/api/environments/kpcp-1793611216037299000/environment/timeline duration=50ms
+2026/11/02 22:22:24 INFO platform API request method=GET path=/api/environments/kpcp-1793611216037299000/environment/terraform-runs duration=59ms
+2026/11/02 22:22:24 INFO platform API request method=GET path=/api/environments/kpcp-1793611216037299000/environment/architecture duration=75ms
+2026/11/02 22:22:24 INFO platform API request method=GET path=/api/environments duration=45ms
+=== RUN   TestLifecycle/C_RestartRecovery
+    lifecycle_test.go:736: Plan UID=6a76b3e7-bb8d-4915-9339-1ad87667d79f digest=sha256:31d3c63f7ab1add3cd82e46d2abb6a35502f9b81d8cbb00c2e86b6f44d76c0ab input=sha256:2be10dca9428c600e6d9922d0d16b00ae1d6b985d1f99bcaf955335e9573cc5e source=sha256:6aa19a8a1b550843dec2ba208b81a1e907702da491466588bd2cf3e1b19abe30
+=== RUN   TestLifecycle/D_MultiTarget
+    lifecycle_test.go:788: owned isolation namespace=kpcp-1793611216037299000 uid=39975b95-0e4a-4ee6-b145-b44f72ff62fa clusterUID=32d75cbe-8c49-439c-885e-6b36329da3d8 multiCluster=true
+=== NAME  TestLifecycle
+    lifecycle_test.go:256: Deployment failover phase=before-cross-target-apply-contention deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=134343 holder=kpcp-1793611216037299000-controller-545c55c5b9-z2fmd_8fe19f49-48dc-4b01-b36e-026699ee401b
+    lifecycle_test.go:256: owned leader Pod exited phase=cross-target-apply-contention pod=kpcp-1793611216037299000-controller-545c55c5b9-z2fmd uid=c50b39d5-3779-4d51-8ec8-aa34b98fab0e
+    lifecycle_test.go:256: Deployment failover phase=after-cross-target-apply-contention deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=134412 holder=kpcp-1793611216037299000-controller-545c55c5b9-8hg4k_84294e93-9c4c-4288-a174-eb0e46689a32
+=== RUN   TestLifecycle/F_DestroyFinalizer
+2026/11/02 22:27:51 INFO platform API request method=DELETE path=/api/environments/kpcp-1793611216037299000/environment duration=6ms
+2026/11/02 22:27:51 INFO platform API request method=DELETE path=/api/environments/kpcp-1793611216037299000/environment duration=19ms
+=== NAME  TestLifecycle
+    lifecycle_test.go:256: Deployment failover phase=before-destroy-pending-approval deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=135106 holder=kpcp-1793611216037299000-controller-545c55c5b9-8hg4k_84294e93-9c4c-4288-a174-eb0e46689a32
+    lifecycle_test.go:256: owned leader Pod exited phase=destroy-pending-approval pod=kpcp-1793611216037299000-controller-545c55c5b9-8hg4k uid=de2346dd-4b99-4011-ac33-356418a9281c
+    lifecycle_test.go:256: Deployment failover phase=after-destroy-pending-approval deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=135143 holder=kpcp-1793611216037299000-controller-545c55c5b9-8gxv8_6b2ebbda-1439-4d34-9239-f332e41fc581
+2026/11/02 22:29:04 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793611216037299000/environment-infra-destroy-plan-3/approve duration=33ms
+    lifecycle_test.go:256: Deployment failover phase=before-active-destroy deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=135143 holder=kpcp-1793611216037299000-controller-545c55c5b9-8gxv8_6b2ebbda-1439-4d34-9239-f332e41fc581
+    lifecycle_test.go:256: owned leader Pod exited phase=active-destroy pod=kpcp-1793611216037299000-controller-545c55c5b9-8gxv8 uid=ae099bdf-8abf-4bfc-91dc-d9a227764327
+    lifecycle_test.go:256: Deployment failover phase=after-active-destroy deploymentUID=c5d16931-dd14-4b37-a718-828717d82c8e running=2 ready=2 leaseUID=c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009 rv=135200 holder=kpcp-1793611216037299000-controller-545c55c5b9-kmm4s_770165bb-55e2-425d-9980-4a1100836e97
+2026/11/02 22:29:41 INFO platform API request method=GET path=/api/environments/kpcp-1793611216037299000/environment duration=33ms
+2026/11/02 22:29:41 INFO platform API request method=DELETE path=/api/classes/kpcp-1793611216037299000 duration=25ms
+--- PASS: TestLifecycle (566.40s)
+    --- PASS: TestLifecycle/C_RestartRecovery (0.03s)
+    --- PASS: TestLifecycle/D_MultiTarget (326.78s)
+    --- PASS: TestLifecycle/F_DestroyFinalizer (109.94s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	566.873s

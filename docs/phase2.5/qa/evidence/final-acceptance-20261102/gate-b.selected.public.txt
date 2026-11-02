@@ -1,0 +1,75 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:121: owned namespace=kpcp-1793607629829107900 uid=caa71590-a6e4-4795-94b2-3f26046dbabd source=0eab0368c66e2a9abbac8522007f659205697d96 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+2026/11/02 21:20:29 INFO platform API request method=POST path=/api/classes/validate duration=12ms
+2026/11/02 21:20:29 INFO platform API request method=GET path=/api/classes/kpcp-1793607629829107900 duration=3ms
+2026/11/02 21:20:29 INFO platform API request method=POST path=/api/classes duration=14ms
+2026/11/02 21:20:30 INFO platform API request method=POST path=/api/classes duration=16ms
+2026/11/02 21:20:30 INFO PlatformEnvironment submitted namespace=kpcp-1793607629829107900 name=environment class=kpcp-1793607629829107900 generation=1
+2026/11/02 21:20:30 INFO platform API request method=POST path=/api/environments duration=23ms
+2026/11/02 21:20:30 INFO platform API request method=DELETE path=/api/classes/kpcp-1793607629829107900 duration=86ms
+    lifecycle_test.go:257: dedicated controller process restarted phase=active-plan
+    lifecycle_test.go:257: dedicated controller process restarted phase=pending-approval
+2026/11/02 21:21:18 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793607629829107900/environment-infra-plan-1/approve duration=27ms
+2026/11/02 21:21:18 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793607629829107900/environment-infra-plan-1/approve duration=17ms
+    lifecycle_test.go:257: dedicated controller process restarted phase=active-apply
+    lifecycle_test.go:257: dedicated controller process restarted phase=ready
+2026/11/02 21:22:13 INFO platform API request method=GET path=/api/environments/kpcp-1793607629829107900/environment duration=38ms
+2026/11/02 21:22:13 INFO platform API request method=GET path=/api/environments/kpcp-1793607629829107900/environment/timeline duration=30ms
+2026/11/02 21:22:13 INFO platform API request method=GET path=/api/environments/kpcp-1793607629829107900/environment/terraform-runs duration=27ms
+2026/11/02 21:22:13 INFO platform API request method=GET path=/api/environments/kpcp-1793607629829107900/environment/architecture duration=40ms
+2026/11/02 21:22:13 INFO platform API request method=GET path=/api/environments duration=34ms
+=== RUN   TestLifecycle/FinalSafety
+=== RUN   TestLifecycle/FinalSafety/A_ContextDrift
+    final_safety_test.go:300: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/FinalSafety/B_TerminalIdentity
+=== RUN   TestLifecycle/FinalSafety/B_TerminalIdentity/run-uid
+=== RUN   TestLifecycle/FinalSafety/B_TerminalIdentity/job-uid
+=== RUN   TestLifecycle/FinalSafety/B_TerminalIdentity/operation
+=== RUN   TestLifecycle/FinalSafety/B_TerminalIdentity/plan-uid
+    final_safety_test.go:170: digest-correct terminal with wrong plan-uid was accepted
+=== RUN   TestLifecycle/FinalSafety/B_TerminalIdentity/plan-digest
+=== RUN   TestLifecycle/FinalSafety/B_PartialUpload
+=== RUN   TestLifecycle/FinalSafety/B_PartialUpload/interrupted
+=== RUN   TestLifecycle/FinalSafety/B_PartialUpload/missing-terminal
+=== RUN   TestLifecycle/FinalSafety/B_PartialUpload/uncertain-write
+=== RUN   TestLifecycle/FinalSafety/B_SnapshotDrift
+=== RUN   TestLifecycle/FinalSafety/B_SnapshotDrift/source
+=== RUN   TestLifecycle/FinalSafety/B_SnapshotDrift/backend
+=== RUN   TestLifecycle/FinalSafety/E_WrongAccount
+    final_safety_test.go:300: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/FinalSafety/E_GitOutage
+    final_safety_test.go:300: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/FinalSafety/E_ForeignJob
+    final_safety_test.go:300: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/F_DestroyFinalizer
+2026/11/02 21:35:14 INFO platform API request method=DELETE path=/api/environments/kpcp-1793607629829107900/environment duration=6ms
+2026/11/02 21:35:14 INFO platform API request method=DELETE path=/api/environments/kpcp-1793607629829107900/environment duration=14ms
+=== NAME  TestLifecycle
+    lifecycle_test.go:257: dedicated controller process restarted phase=destroy-pending-approval
+2026/11/02 21:36:06 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793607629829107900/environment-infra-destroy-plan-3/approve duration=28ms
+    lifecycle_test.go:257: dedicated controller process restarted phase=active-destroy
+2026/11/02 21:36:57 INFO platform API request method=GET path=/api/environments/kpcp-1793607629829107900/environment duration=29ms
+2026/11/02 21:36:57 INFO platform API request method=DELETE path=/api/classes/kpcp-1793607629829107900 duration=38ms
+--- FAIL: TestLifecycle (988.55s)
+    --- FAIL: TestLifecycle/FinalSafety (781.34s)
+        --- SKIP: TestLifecycle/FinalSafety/A_ContextDrift (0.00s)
+        --- FAIL: TestLifecycle/FinalSafety/B_TerminalIdentity (341.81s)
+            --- PASS: TestLifecycle/FinalSafety/B_TerminalIdentity/run-uid (80.42s)
+            --- PASS: TestLifecycle/FinalSafety/B_TerminalIdentity/job-uid (64.03s)
+            --- PASS: TestLifecycle/FinalSafety/B_TerminalIdentity/operation (66.62s)
+            --- FAIL: TestLifecycle/FinalSafety/B_TerminalIdentity/plan-uid (64.20s)
+            --- PASS: TestLifecycle/FinalSafety/B_TerminalIdentity/plan-digest (66.54s)
+        --- PASS: TestLifecycle/FinalSafety/B_PartialUpload (336.31s)
+            --- PASS: TestLifecycle/FinalSafety/B_PartialUpload/interrupted (121.44s)
+            --- PASS: TestLifecycle/FinalSafety/B_PartialUpload/missing-terminal (115.55s)
+            --- PASS: TestLifecycle/FinalSafety/B_PartialUpload/uncertain-write (99.32s)
+        --- PASS: TestLifecycle/FinalSafety/B_SnapshotDrift (103.21s)
+            --- PASS: TestLifecycle/FinalSafety/B_SnapshotDrift/source (55.58s)
+            --- PASS: TestLifecycle/FinalSafety/B_SnapshotDrift/backend (47.63s)
+        --- SKIP: TestLifecycle/FinalSafety/E_WrongAccount (0.00s)
+        --- SKIP: TestLifecycle/FinalSafety/E_GitOutage (0.00s)
+        --- SKIP: TestLifecycle/FinalSafety/E_ForeignJob (0.00s)
+    --- PASS: TestLifecycle/F_DestroyFinalizer (102.99s)
+FAIL
+FAIL	github.com/miku-wwl/kube-platform-control-plane/e2e	988.998s
+FAIL

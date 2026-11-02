@@ -1,0 +1,153 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:122: owned namespace=kpcp-1793611893090112000 uid=4797a13a-e3ec-4773-a6f8-ad867edad61a source=0eab0368c66e2a9abbac8522007f659205697d96 image=localhost/kpcp-runner@sha256:7e57a7a3d8b6ffafb8061ed9bb768037c26c3e1287b8d3546ccfc0b31a1c4f60
+2026/11/02 22:31:33 INFO platform API request method=POST path=/api/classes/validate duration=12ms
+2026/11/02 22:31:33 INFO platform API request method=GET path=/api/classes/kpcp-1793611893090112000 duration=6ms
+2026/11/02 22:31:33 INFO platform API request method=POST path=/api/classes duration=19ms
+2026/11/02 22:31:33 INFO platform API request method=POST path=/api/classes duration=20ms
+2026/11/02 22:31:33 INFO PlatformEnvironment submitted namespace=kpcp-1793611893090112000 name=environment class=kpcp-1793611893090112000 generation=1
+2026/11/02 22:31:33 INFO platform API request method=POST path=/api/environments duration=22ms
+2026/11/02 22:31:33 INFO platform API request method=DELETE path=/api/classes/kpcp-1793611893090112000 duration=88ms
+    lifecycle_test.go:261: dedicated controller process restarted phase=active-plan
+    lifecycle_test.go:261: dedicated controller process restarted phase=pending-approval
+2026/11/02 22:32:21 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793611893090112000/environment-infra-plan-1/approve duration=33ms
+2026/11/02 22:32:21 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793611893090112000/environment-infra-plan-1/approve duration=24ms
+    lifecycle_test.go:261: dedicated controller process restarted phase=active-apply
+    lifecycle_test.go:261: dedicated controller process restarted phase=ready
+2026/11/02 22:33:31 INFO platform API request method=GET path=/api/environments/kpcp-1793611893090112000/environment duration=61ms
+2026/11/02 22:33:31 INFO platform API request method=GET path=/api/environments/kpcp-1793611893090112000/environment/timeline duration=99ms
+2026/11/02 22:33:31 INFO platform API request method=GET path=/api/environments/kpcp-1793611893090112000/environment/terraform-runs duration=56ms
+2026/11/02 22:33:31 INFO platform API request method=GET path=/api/environments/kpcp-1793611893090112000/environment/architecture duration=82ms
+2026/11/02 22:33:31 INFO platform API request method=GET path=/api/environments duration=61ms
+=== RUN   TestLifecycle/FinalSafety
+=== RUN   TestLifecycle/FinalSafety/A_ContextDrift
+    final_safety_test.go:306: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/FinalSafety/B_TerminalIdentity
+    final_safety_test.go:306: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/FinalSafety/B_PartialUpload
+    final_safety_test.go:306: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/FinalSafety/B_SnapshotDrift
+    final_safety_test.go:306: explicit KPCP_FINAL_GATE selection
+=== RUN   TestLifecycle/FinalSafety/E_WrongAccount
+=== RUN   TestLifecycle/FinalSafety/E_GitOutage
+=== RUN   TestLifecycle/FinalSafety/E_ForeignJob
+[controller-runtime] log.SetLogger(...) was never called; logs will not be displayed.
+Detected at:
+	>  goroutine 2229 [running]:
+	>  runtime/debug.Stack()
+	>  	C:/Go/src/runtime/debug/stack.go:26 +0x5e
+	>  sigs.k8s.io/controller-runtime/pkg/log.eventuallyFulfillRoot()
+	>  	C:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/log/log.go:60 +0xcd
+	>  sigs.k8s.io/controller-runtime/pkg/log.(*delegatingLogSink).Enabled(0x22d35b616880, 0x0)
+	>  	C:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/log/deleg.go:111 +0x32
+	>  github.com/go-logr/logr.Logger.Info({{0x7ff6c4905e78?, 0x22d35b616880?}, 0x22d35baa4030?}, {0x22d35b585b00, 0xa3}, {0x0, 0x0, 0x0})
+	>  	C:/Users/weila/go/pkg/mod/github.com/go-logr/logr@v1.4.2/logr.go:276 +0x6e
+	>  sigs.k8s.io/controller-runtime/pkg/log.(*KubeAPIWarningLogger).HandleWarningHeader(0x22d35baa4030?, 0x7ff6c48fad18?, {0x7ff6c2efcb66?, 0x0?}, {0x22d35b585b00?, 0x7ff6c48fad18?})
+	>  	C:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/log/warning_handler.go:65 +0x150
+	>  k8s.io/client-go/rest.handleWarnings(0x22d35b7027e0?, {0x7ff6c48e47a0?, 0x22d35b22a570?})
+	>  	C:/Users/weila/go/pkg/mod/k8s.io/client-go@v0.32.1/rest/warnings.go:144 +0xbd
+	>  k8s.io/client-go/rest.(*Request).transformResponse(0x22d35ba60780, {0x7ff6c4904138?, 0x22d35b60a620?}, 0x22d35ba6abd0, 0x22d35ba54f00)
+	>  	C:/Users/weila/go/pkg/mod/k8s.io/client-go@v0.32.1/rest/request.go:1396 +0x348
+	>  k8s.io/client-go/rest.(*Request).Do.func1(0x22d35b4c5c40?, 0xa?)
+	>  	C:/Users/weila/go/pkg/mod/k8s.io/client-go@v0.32.1/rest/request.go:1276 +0x45
+	>  k8s.io/client-go/rest.(*Request).request.func3.1(...)
+	>  	C:/Users/weila/go/pkg/mod/k8s.io/client-go@v0.32.1/rest/request.go:1247
+	>  k8s.io/client-go/rest.(*Request).request.func3(0x22d35ba6abd0, 0x22d35bb5ccb8, {0x7ff6c49042f8?, 0x22d35b4c5c40?}, 0x0?, 0x0?, 0x22d35ba54f00, {0x0?, 0x0?}, 0x7ff6c49105d8)
+	>  	C:/Users/weila/go/pkg/mod/k8s.io/client-go@v0.32.1/rest/request.go:1254 +0xcd
+	>  k8s.io/client-go/rest.(*Request).request(0x22d35ba60780, {0x7ff6c4904138, 0x22d35b1ff880}, 0x22d35bb5ccb8)
+	>  	C:/Users/weila/go/pkg/mod/k8s.io/client-go@v0.32.1/rest/request.go:1256 +0x54c
+	>  k8s.io/client-go/rest.(*Request).Do(0x22d35ba60780, {0x7ff6c4904138, 0x22d35b60a620})
+	>  	C:/Users/weila/go/pkg/mod/k8s.io/client-go@v0.32.1/rest/request.go:1275 +0x112
+	>  sigs.k8s.io/controller-runtime/pkg/client.(*typedClient).Delete(0x22d35b3133b0?, {0x7ff6c4904138, 0x22d35b60a620}, {0x7ff6c490e1f8?, 0x22d35b7e8f08?}, {0x22d35b551c00, 0x1, 0x22d35b551c10?})
+	>  	C:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/client/typed_client.go:87 +0x351
+	>  sigs.k8s.io/controller-runtime/pkg/client.(*client).Delete(0x22d35b3133b0?, {0x7ff6c4904138?, 0x22d35b60a620?}, {0x7ff6c490e1f8?, 0x22d35b7e8f08?}, {0x22d35b551c00?, 0x1?, 0x1?})
+	>  	C:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/client/client.go:304 +0x75
+	>  github.com/miku-wwl/kube-platform-control-plane/e2e.(*finalSafetyHarness).foreignJob(0x22d35b9fbc08, 0x22d35b07a000)
+	>  	D:/workshop/nov/kpcp-final-acceptance/e2e/final_failclosed_test.go:250 +0x1145
+	>  github.com/miku-wwl/kube-platform-control-plane/e2e.(*finalSafetyHarness).group.func1(0x22d35b07a000)
+	>  	D:/workshop/nov/kpcp-final-acceptance/e2e/final_safety_test.go:308 +0xe7
+	>  testing.tRunner(0x22d35b07a000, 0x22d35b8da5d0)
+	>  	C:/Go/src/testing/testing.go:2195 +0xc3
+	>  created by testing.(*T).Run in goroutine 973
+	>  	C:/Go/src/testing/testing.go:2260 +0x4b4
+=== RUN   TestLifecycle/FinalSafety/F01_PartialDestroyApply
+=== RUN   TestLifecycle/FinalSafety/F02_F03_MissingDestroyTerminal
+=== RUN   TestLifecycle/FinalSafety/E04_AmbiguousApply
+=== RUN   TestLifecycle/FinalSafety/E05_PartialApply
+=== RUN   TestLifecycle/FinalSafety/F04_RecoveryAndCleanup
+    final_mutation_test.go:377: F04 normal recovery BLOCKED; uncertain resources and exact identities retained for supported operator recovery
+=== RUN   TestLifecycle/F_DestroyFinalizer
+2026/11/02 22:46:23 INFO platform API request method=DELETE path=/api/environments/kpcp-1793611893090112000/environment duration=9ms
+2026/11/02 22:46:23 INFO platform API request method=DELETE path=/api/environments/kpcp-1793611893090112000/environment duration=20ms
+=== NAME  TestLifecycle
+    lifecycle_test.go:261: dedicated controller process restarted phase=destroy-pending-approval
+2026/11/02 22:47:24 INFO platform API request method=POST path=/api/terraform-runs/kpcp-1793611893090112000/environment-infra-destroy-plan-3/approve duration=35ms
+    lifecycle_test.go:261: dedicated controller process restarted phase=active-destroy
+2026/11/02 22:48:18 INFO platform API request method=GET path=/api/environments/kpcp-1793611893090112000/environment duration=54ms
+2026/11/02 22:48:18 INFO platform API request method=DELETE path=/api/classes/kpcp-1793611893090112000 duration=30ms
+    lifecycle_test.go:276: controller diagnostics (tail): em\n\tC:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/internal/controller/controller.go:294\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller[...]).Start.func2.2\n\tC:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/internal/controller/controller.go:255"}
+        {"level":"info","ts":"2026-11-02T22:47:25+13:00","logger":"setup","msg":"starting manager","leaderElection":true}
+        I1102 22:47:25.112711   17216 leaderelection.go:257] attempting to acquire leader lease kpcp-1793611893090112000/platform-control-plane.platform.example.io...
+        I1102 22:47:41.771140   17216 leaderelection.go:271] successfully acquired lease kpcp-1793611893090112000/platform-control-plane.platform.example.io
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting EventSource","controller":"environmentclass","controllerGroup":"platform.example.io","controllerKind":"EnvironmentClass","source":"kind source: *v1alpha1.PlatformEnvironment"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting EventSource","controller":"platformenvironment","controllerGroup":"platform.example.io","controllerKind":"PlatformEnvironment","source":"kind source: *v1alpha1.InfraStack"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting EventSource","controller":"platformenvironment","controllerGroup":"platform.example.io","controllerKind":"PlatformEnvironment","source":"kind source: *v1alpha1.PlatformEnvironment"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting EventSource","controller":"terraformrun","controllerGroup":"platform.example.io","controllerKind":"TerraformRun","source":"kind source: *v1alpha1.TerraformRun"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting EventSource","controller":"platformenvironment","controllerGroup":"platform.example.io","controllerKind":"PlatformEnvironment","source":"kind source: *v1alpha1.ResourceSet"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting EventSource","controller":"terraformrun","controllerGroup":"platform.example.io","controllerKind":"TerraformRun","source":"kind source: *v1.Job"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting EventSource","controller":"environmentclass","controllerGroup":"platform.example.io","controllerKind":"EnvironmentClass","source":"kind source: *v1alpha1.EnvironmentClass"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting EventSource","controller":"resourceset","controllerGroup":"platform.example.io","controllerKind":"ResourceSet","source":"kind source: *v1alpha1.ResourceSet"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting EventSource","controller":"infrastack","controllerGroup":"platform.example.io","controllerKind":"InfraStack","source":"kind source: *v1alpha1.InfraStack"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting EventSource","controller":"infrastack","controllerGroup":"platform.example.io","controllerKind":"InfraStack","source":"kind source: *v1alpha1.TerraformRun"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting Controller","controller":"environmentclass","controllerGroup":"platform.example.io","controllerKind":"EnvironmentClass"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting Controller","controller":"infrastack","controllerGroup":"platform.example.io","controllerKind":"InfraStack"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting workers","controller":"environmentclass","controllerGroup":"platform.example.io","controllerKind":"EnvironmentClass","worker count":1}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting workers","controller":"infrastack","controllerGroup":"platform.example.io","controllerKind":"InfraStack","worker count":1}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting Controller","controller":"resourceset","controllerGroup":"platform.example.io","controllerKind":"ResourceSet"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting workers","controller":"resourceset","controllerGroup":"platform.example.io","controllerKind":"ResourceSet","worker count":1}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting Controller","controller":"platformenvironment","controllerGroup":"platform.example.io","controllerKind":"PlatformEnvironment"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting workers","controller":"platformenvironment","controllerGroup":"platform.example.io","controllerKind":"PlatformEnvironment","worker count":1}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting Controller","controller":"terraformrun","controllerGroup":"platform.example.io","controllerKind":"TerraformRun"}
+        {"level":"info","ts":"2026-11-02T22:47:41+13:00","msg":"Starting workers","controller":"terraformrun","controllerGroup":"platform.example.io","controllerKind":"TerraformRun","worker count":1}
+        {"level":"error","ts":"2026-11-02T22:47:42+13:00","msg":"Reconciler error","controller":"terraformrun","controllerGroup":"platform.example.io","controllerKind":"TerraformRun","TerraformRun":{"name":"environment-infra-destroy-plan-3-apply-11277e4632","namespace":"kpcp-1793611893090112000"},"namespace":"kpcp-1793611893090112000","name":"environment-infra-destroy-plan-3-apply-11277e4632","reconcileID":"244c4fb5-79ee-40b2-889c-f8bebcab2b34","error":"Operation cannot be fulfilled on terraformruns.platform.example.io \"environment-infra-destroy-plan-3-apply-11277e4632\": the object has been modified; please apply your changes to the latest version and try again","stacktrace":"sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller[...]).reconcileHandler\n\tC:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/internal/controller/controller.go:347\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller[...]).processNextWorkItem\n\tC:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/internal/controller/controller.go:294\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller[...]).Start.func2.2\n\tC:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/internal/controller/controller.go:255"}
+        {"level":"info","ts":"2026-11-02T22:47:42+13:00","logger":"setup","msg":"starting manager","leaderElection":true}
+        I1102 22:47:42.404846   25444 leaderelection.go:257] attempting to acquire leader lease kpcp-1793611893090112000/platform-control-plane.platform.example.io...
+        I1102 22:47:59.193448   25444 leaderelection.go:271] successfully acquired lease kpcp-1793611893090112000/platform-control-plane.platform.example.io
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting EventSource","controller":"infrastack","controllerGroup":"platform.example.io","controllerKind":"InfraStack","source":"kind source: *v1alpha1.TerraformRun"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting EventSource","controller":"platformenvironment","controllerGroup":"platform.example.io","controllerKind":"PlatformEnvironment","source":"kind source: *v1alpha1.ResourceSet"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting EventSource","controller":"terraformrun","controllerGroup":"platform.example.io","controllerKind":"TerraformRun","source":"kind source: *v1alpha1.TerraformRun"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting EventSource","controller":"terraformrun","controllerGroup":"platform.example.io","controllerKind":"TerraformRun","source":"kind source: *v1.Job"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting EventSource","controller":"resourceset","controllerGroup":"platform.example.io","controllerKind":"ResourceSet","source":"kind source: *v1alpha1.ResourceSet"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting EventSource","controller":"environmentclass","controllerGroup":"platform.example.io","controllerKind":"EnvironmentClass","source":"kind source: *v1alpha1.PlatformEnvironment"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting EventSource","controller":"platformenvironment","controllerGroup":"platform.example.io","controllerKind":"PlatformEnvironment","source":"kind source: *v1alpha1.InfraStack"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting EventSource","controller":"infrastack","controllerGroup":"platform.example.io","controllerKind":"InfraStack","source":"kind source: *v1alpha1.InfraStack"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting EventSource","controller":"environmentclass","controllerGroup":"platform.example.io","controllerKind":"EnvironmentClass","source":"kind source: *v1alpha1.EnvironmentClass"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting EventSource","controller":"platformenvironment","controllerGroup":"platform.example.io","controllerKind":"PlatformEnvironment","source":"kind source: *v1alpha1.PlatformEnvironment"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting Controller","controller":"resourceset","controllerGroup":"platform.example.io","controllerKind":"ResourceSet"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting workers","controller":"resourceset","controllerGroup":"platform.example.io","controllerKind":"ResourceSet","worker count":1}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting Controller","controller":"platformenvironment","controllerGroup":"platform.example.io","controllerKind":"PlatformEnvironment"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting workers","controller":"platformenvironment","controllerGroup":"platform.example.io","controllerKind":"PlatformEnvironment","worker count":1}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting Controller","controller":"environmentclass","controllerGroup":"platform.example.io","controllerKind":"EnvironmentClass"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting workers","controller":"environmentclass","controllerGroup":"platform.example.io","controllerKind":"EnvironmentClass","worker count":1}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting Controller","controller":"terraformrun","controllerGroup":"platform.example.io","controllerKind":"TerraformRun"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting workers","controller":"terraformrun","controllerGroup":"platform.example.io","controllerKind":"TerraformRun","worker count":1}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting Controller","controller":"infrastack","controllerGroup":"platform.example.io","controllerKind":"InfraStack"}
+        {"level":"info","ts":"2026-11-02T22:47:59+13:00","msg":"Starting workers","controller":"infrastack","controllerGroup":"platform.example.io","controllerKind":"InfraStack","worker count":1}
+        {"level":"error","ts":"2026-11-02T22:48:18+13:00","msg":"Reconciler error","controller":"infrastack","controllerGroup":"platform.example.io","controllerKind":"InfraStack","InfraStack":{"name":"environment-infra","namespace":"kpcp-1793611893090112000"},"namespace":"kpcp-1793611893090112000","name":"environment-infra","reconcileID":"0a444c28-5c56-4f7b-8710-6decba9543a7","error":"Operation cannot be fulfilled on infrastacks.platform.example.io \"environment-infra\": the object has been modified; please apply your changes to the latest version and try again","stacktrace":"sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller[...]).reconcileHandler\n\tC:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/internal/controller/controller.go:347\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller[...]).processNextWorkItem\n\tC:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/internal/controller/controller.go:294\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller[...]).Start.func2.2\n\tC:/Users/weila/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.20.4/pkg/internal/controller/controller.go:255"}
+    lifecycle_test.go:277: retained owned namespace/bucket kpcp-1793611893090112000; finalizers and evidence preserved
+--- PASS: TestLifecycle (1005.92s)
+    --- PASS: TestLifecycle/FinalSafety (772.11s)
+        --- SKIP: TestLifecycle/FinalSafety/A_ContextDrift (0.00s)
+        --- SKIP: TestLifecycle/FinalSafety/B_TerminalIdentity (0.00s)
+        --- SKIP: TestLifecycle/FinalSafety/B_PartialUpload (0.00s)
+        --- SKIP: TestLifecycle/FinalSafety/B_SnapshotDrift (0.00s)
+        --- PASS: TestLifecycle/FinalSafety/E_WrongAccount (16.71s)
+        --- PASS: TestLifecycle/FinalSafety/E_GitOutage (142.83s)
+        --- PASS: TestLifecycle/FinalSafety/E_ForeignJob (21.52s)
+        --- PASS: TestLifecycle/FinalSafety/F01_PartialDestroyApply (189.37s)
+        --- PASS: TestLifecycle/FinalSafety/F02_F03_MissingDestroyTerminal (197.99s)
+        --- PASS: TestLifecycle/FinalSafety/E04_AmbiguousApply (109.81s)
+        --- PASS: TestLifecycle/FinalSafety/E05_PartialApply (93.80s)
+        --- SKIP: TestLifecycle/FinalSafety/F04_RecoveryAndCleanup (0.06s)
+    --- PASS: TestLifecycle/F_DestroyFinalizer (114.92s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	1006.391s
