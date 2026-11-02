@@ -31,6 +31,7 @@ import (
 // storage and fixed runner/source. Each attack gets a separately owned stack;
 // none changes a shared cluster setting or removes a business finalizer.
 type finalSafetyHarness struct {
+	environments  map[string]*platform.PlatformEnvironment
 	ctx           context.Context
 	kube          client.Client
 	storage       *s3.Client
@@ -58,6 +59,11 @@ func runFinalSafety(t *testing.T, ctx context.Context, kube client.Client, stora
 	h.group(t, selected, "E", "E_WrongAccount", h.wrongAccount)
 	h.group(t, selected, "E", "E_GitOutage", h.gitOutage)
 	h.group(t, selected, "E", "E_ForeignJob", h.foreignJob)
+	h.group(t, selected, "F", "F01_PartialDestroyApply", h.partialDestroy)
+	h.group(t, selected, "F", "F02_F03_MissingDestroyTerminal", h.missingDestroy)
+	h.group(t, selected, "E", "E04_AmbiguousApply", h.ambiguousApply)
+	h.group(t, selected, "E", "E05_PartialApply", h.partialApply)
+	h.group(t, selected, "F", "F04_RecoveryAndCleanup", h.recoveryBlocked)
 	if len(h.remaining) > 0 {
 		recordGateEvidence(t, namespace, "final-safety-retained", h.remaining)
 	}

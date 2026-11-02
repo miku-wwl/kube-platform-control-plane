@@ -501,6 +501,14 @@ func validateTerminalIdentity(object *platformv1alpha1.TerraformRun, result runn
 	default:
 		return fmt.Errorf("unknown terminal outcome")
 	}
+	if result.ArtifactsReady {
+		if object.Spec.Operation == "Plan" && result.PlanRef != path.Join("runs", string(object.UID), "plan.binary") {
+			return fmt.Errorf("terminal Plan UID/reference mismatch")
+		}
+		if object.Spec.Operation == "Apply" && (object.Spec.PlanRef == "" || result.PlanRef != object.Spec.PlanRef) {
+			return fmt.Errorf("terminal approved Plan reference mismatch")
+		}
+	}
 	return nil
 }
 

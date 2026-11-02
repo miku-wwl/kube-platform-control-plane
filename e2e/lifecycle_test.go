@@ -114,6 +114,7 @@ func TestLifecycle(t *testing.T) {
 		}
 	}
 	prefix := fmt.Sprintf("kpcp-%d", time.Now().UnixNano())
+	complete := false
 	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: prefix, Labels: map[string]string{"platform.example.io/e2e": prefix}}}
 	if err := kube.Create(ctx, ns); err != nil {
 		t.Fatal(err)
@@ -134,7 +135,11 @@ func TestLifecycle(t *testing.T) {
 		if err := file.Close(); err != nil {
 			t.Fatal(err)
 		}
-		t.Cleanup(func() { _ = os.Remove(cfg.TransportScopeFile) })
+		t.Cleanup(func() {
+			if complete {
+				_ = os.Remove(cfg.TransportScopeFile)
+			}
+		})
 	}
 	var target corev1.Namespace
 	if err := kube.Get(ctx, client.ObjectKey{Name: "kube-system"}, &target); err != nil {
@@ -220,7 +225,6 @@ func TestLifecycle(t *testing.T) {
 	}
 	var process *exec.Cmd
 	var deployment *controllerDeployment
-	complete := false
 	log, err := os.Create(filepath.Join(dir, "controller.log"))
 	if err != nil {
 		t.Fatal(err)
