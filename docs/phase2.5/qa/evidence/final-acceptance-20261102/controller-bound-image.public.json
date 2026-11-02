@@ -14,5 +14,9 @@
     }
   },
   "controllerImage": "localhost/kpcp-controller@sha256:a37f0e1bf9818cd3e4f8e1697710e4bae17c840aada47d7ce0c559195b360705",
-  "note": "Linux executable embeds clean Go VCS metadata; copied into nonroot distroless image. CRI index identity and child manifest retained."
+  "note": "Linux executable embeds clean Go VCS metadata; copied into nonroot distroless image. CRI index identity and child manifest retained.",
+  "inImageBinarySHA256": "1edc693b5ee5977a4aef924e007e9bf7d25ffabee66033e609e78ed528a6e5a2",
+  "entrypoint": [
+    "/platform-control-plane"
+  ]
 }

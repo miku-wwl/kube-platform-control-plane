@@ -1,5 +1,16 @@
 # Gate C — Multi-Replica Controller Recovery
 
+## PR #3 后独立批次 — 2026-11-02：修复后重验 PASS
+
+本轮修改了可信终态的 Plan 引用身份校验，因此按要求重新运行 C/D，未只复用旧 PASS。Batch `kpcp-final-20261102-1815`，clean Controller `7cdad59ef8035391cafc1e4d8727ebe715fd9f32`，driver `99dc281c0d0223009d593f03abd5c943a1210b8d`（产品及 E2E 源码 diff 为空）。实际 lane 566.40 秒、exit 0；两个真实副本每次接管后均恢复 Ready。
+
+- Deployment UID：`c5d16931-dd14-4b37-a718-828717d82c8e`。
+- 同一 Lease UID：`c81760e4-5cb6-4a5a-9cf1-f0d7ac42b009`，不同实际 Pod/holder、递增 resourceVersion。
+- 六阶段：Active Plan、Pending Approval、Active Apply、Ready、Destroy Pending Approval、Active Destroy；另有 Gate D 跨目标 Apply contention 期间的一次 Leader 接管。
+- 原 Plan/Apply Run 和 Job 身份保留；主环境只有一次 Reconcile Apply，正常独立 Destroy 与 finalizer 清理 PASS（109.94 秒）。
+
+[32 项脱敏工程收据](../evidence/final-acceptance-20261102/gate-cd.public.json)、[实际测试输出](../evidence/final-acceptance-20261102/gate-cd.selected.public.txt)、[镜像中实际 binary 与 clean VCS 来源](../evidence/final-acceptance-20261102/controller-bound-image.public.json)。本轮 Gate C **PASS（本机测试范围）**；没有节点掉电或跨主机故障域结论。下方历史记录保留。
+
 ## 1. Test Objective
 
 以真实 Kubernetes 两副本 Deployment、Leader Lease 和实际 Terraform Job 验证接管，不能以进程重启替代多副本 failover。
