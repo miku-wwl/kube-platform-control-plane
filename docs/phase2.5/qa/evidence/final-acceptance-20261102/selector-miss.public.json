@@ -1,0 +1,15 @@
+{
+  "batch": "kpcp-final-20261102-1815",
+  "result": "Lifecycle PASS only; Gate A NOT RUN because the nested slash selector did not select FinalSafety",
+  "exitCode": 0,
+  "durationSeconds": 228.24,
+  "gateAScenariosExecuted": 0,
+  "rawLogSHA256": "438aeddc91c51e194254848b282893caf4606560e021bdb139e608873a8b8ceb",
+  "command": {
+    "controllerSource": "4f014c7e2b4ce81cc324e1ac2dde15974b8e6c12",
+    "exitCode": 0,
+    "testSource": "4f014c7e2b4ce81cc324e1ac2dde15974b8e6c12",
+    "command": "go test ./e2e -run TestLifecycle/(FinalSafety/A_ContextDrift|F_DestroyFinalizer)$ -v -count=1 -timeout=40m"
+  },
+  "sourceCaveat": "Declared source SHA was captured while driver-only changes were being committed; production Controller remained clean 4f014c7. This execution is not accepted as a Gate A result."
+}

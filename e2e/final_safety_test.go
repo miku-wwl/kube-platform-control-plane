@@ -1,8 +1,15 @@
 package e2e
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -36,11 +43,254 @@ type finalSafetyHarness struct {
 
 func runFinalSafety(t *testing.T, ctx context.Context, kube client.Client, storage *s3.Client, store *artifacts.Store, cfg configuration, namespace string, template platform.InfraStack, stop, start func()) bool {
 	h := &finalSafetyHarness{ctx: ctx, kube: kube, storage: storage, store: store, cfg: cfg, namespace: namespace, template: template, stop: stop, start: start, clean: true, remaining: map[string]bool{}}
-	t.Run("A_ContextDrift", h.contextDrift)
+	selected := os.Getenv("KPCP_FINAL_GATE")
+	if selected != "" && selected != "A" && selected != "B" && selected != "E" && selected != "F" {
+		t.Fatal("KPCP_FINAL_GATE must be A, B, E, F or empty for all")
+	}
+	h.group(t, selected, "A", "A_ContextDrift", h.contextDrift)
+	h.group(t, selected, "B", "B_TerminalIdentity", h.terminalIdentity)
+	h.group(t, selected, "B", "B_PartialUpload", h.partialUpload)
+	h.group(t, selected, "B", "B_SnapshotDrift", h.snapshotDrift)
 	if len(h.remaining) > 0 {
 		recordGateEvidence(t, namespace, "final-safety-retained", h.remaining)
 	}
 	return h.clean && len(h.remaining) == 0
+}
+
+func (h *finalSafetyHarness) activePlan(t *testing.T, stack *platform.InfraStack) (platform.TerraformRun, batchv1.Job) {
+	t.Helper()
+	var run platform.TerraformRun
+	var job batchv1.Job
+	h.await(t, stack.Name+" real active Plan Job", func() (bool, error) {
+		for _, candidate := range h.runs(t, stack.Name) {
+			if candidate.Spec.Operation != "Plan" || candidate.Status.JobRef == nil || candidate.Status.JobUID == "" {
+				continue
+			}
+			if err := h.kube.Get(h.ctx, client.ObjectKey{Namespace: h.namespace, Name: candidate.Status.JobRef.Name}, &job); err != nil {
+				return false, client.IgnoreNotFound(err)
+			}
+			if job.Status.Succeeded > 0 || job.Status.Failed > 0 {
+				return false, fmt.Errorf("fixture Job finished before injection")
+			}
+			if string(job.UID) != candidate.Status.JobUID || !hasOwnerUID(job.OwnerReferences, candidate.UID) {
+				return false, fmt.Errorf("fixture Job identity mismatch")
+			}
+			run = candidate
+			return true, nil
+		}
+		return false, nil
+	})
+	return run, job
+}
+
+func (h *finalSafetyHarness) putTampered(t *testing.T, key string, body []byte) string {
+	t.Helper()
+	digest := fmt.Sprintf("sha256:%x", sha256.Sum256(body))
+	if _, err := h.storage.PutObject(h.ctx, &s3.PutObjectInput{Bucket: aws.String(h.namespace), Key: aws.String(key), Body: bytes.NewReader(body), Metadata: map[string]string{"sha256": digest}}); err != nil {
+		t.Fatal(err)
+	}
+	ref, actual, err := h.store.GetVerifiedByKey(h.ctx, key)
+	if err != nil || ref.Digest != digest || !bytes.Equal(actual, body) {
+		t.Fatalf("test injection must have a valid content digest: %v", err)
+	}
+	return digest
+}
+
+func (h *finalSafetyHarness) terminalIdentity(t *testing.T) {
+	for _, field := range []string{"run-uid", "job-uid", "operation", "plan-uid", "plan-digest"} {
+		t.Run(field, func(t *testing.T) {
+			stack := h.createStack(t, "b-terminal-"+field, nil)
+			run, job := h.activePlan(t, stack)
+			h.stop()
+			paused := true
+			defer func() {
+				if paused {
+					h.start()
+				}
+			}()
+			h.await(t, "genuine runner terminal upload", func() (bool, error) {
+				if err := h.kube.Get(h.ctx, client.ObjectKeyFromObject(&job), &job); err != nil {
+					return false, err
+				}
+				if job.Status.Failed > 0 {
+					return false, fmt.Errorf("fixture Plan Job failed before forgery")
+				}
+				return job.Status.Succeeded == 1, nil
+			})
+			terminalKey := path.Join("runs", string(run.UID), "terminal-result.json")
+			originalRef, original, err := h.store.GetVerifiedByKey(h.ctx, terminalKey)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var terminal map[string]any
+			if err := json.Unmarshal(original, &terminal); err != nil {
+				t.Fatal(err)
+			}
+			switch field {
+			case "run-uid":
+				terminal["terraformRunUID"] = "00000000-0000-0000-0000-000000000001"
+			case "job-uid":
+				terminal["jobUID"] = "00000000-0000-0000-0000-000000000002"
+			case "operation":
+				terminal["operation"] = "Apply"
+			case "plan-uid":
+				planBytes, err := h.store.GetVerified(h.ctx, artifacts.Ref{Key: terminal["planRef"].(string), Digest: terminal["planDigest"].(string)})
+				if err != nil {
+					t.Fatal(err)
+				}
+				foreign := path.Join("runs", "qa-foreign-plan-uid", "plan.binary")
+				h.putTampered(t, foreign, planBytes)
+				terminal["planRef"] = foreign
+			case "plan-digest":
+				terminal["planDigest"] = "sha256:" + strings.Repeat("0", 64)
+			}
+			forged, _ := json.Marshal(terminal)
+			forgedDigest := h.putTampered(t, terminalKey, forged)
+			h.start()
+			paused = false
+			h.await(t, "controller classifies semantic terminal forgery", func() (bool, error) {
+				if err := h.kube.Get(h.ctx, client.ObjectKeyFromObject(&run), &run); err != nil {
+					return false, err
+				}
+				switch run.Status.ExecutionOutcome {
+				case "ChangesPresent", "Failed", "Rejected", "Indeterminate":
+					return true, nil
+				}
+				return false, nil
+			})
+			recordGateEvidence(t, h.namespace, "b-terminal-"+field+"-result", map[string]any{"run": run, "job": job, "originalTerminalRef": originalRef, "forgedTerminalDigest": forgedDigest, "forgedTerminal": terminal, "contentHashVerified": true})
+			if run.Status.ExecutionOutcome == "ChangesPresent" || run.Status.EvidenceCaptured && run.Status.ArtifactsReady {
+				t.Errorf("digest-correct terminal with wrong %s was accepted", field)
+			}
+			h.noApply(t, stack, "forgery-no-mutation")
+			h.removeUnapplied(t, stack)
+		})
+	}
+}
+
+func (h *finalSafetyHarness) setFault(t *testing.T, rules []map[string]any) {
+	t.Helper()
+	if !filepath.IsAbs(h.cfg.FinalSafetyFaultFile) {
+		t.Fatal("supply a new absolute test-owned FinalSafetyFaultFile")
+	}
+	data, _ := json.Marshal(map[string]any{"runID": h.namespace, "rules": rules})
+	temporary := h.cfg.FinalSafetyFaultFile + ".next"
+	if err := os.WriteFile(temporary, data, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(temporary, h.cfg.FinalSafetyFaultFile); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func (h *finalSafetyHarness) clearFault(t *testing.T) {
+	t.Helper()
+	if err := os.Remove(h.cfg.FinalSafetyFaultFile); err != nil && !os.IsNotExist(err) {
+		h.clean = false
+		t.Error(err)
+	}
+}
+
+func (h *finalSafetyHarness) partialUpload(t *testing.T) {
+	for _, mode := range []string{"interrupted", "missing-terminal", "uncertain-write"} {
+		t.Run(mode, func(t *testing.T) {
+			stack := h.createStack(t, "b-upload-"+mode, nil)
+			run, _ := h.activePlan(t, stack)
+			key := path.Join("runs", string(run.UID), "plan-report.json")
+			action := "abort_before"
+			if mode == "missing-terminal" {
+				key = path.Join("runs", string(run.UID), "terminal-result.json")
+				action = "status"
+			}
+			if mode == "uncertain-write" {
+				action = "abort_after"
+			}
+			h.setFault(t, []map[string]any{{"method": "PUT", "path": "^" + regexp.QuoteMeta("/"+h.namespace+"/"+key) + "$", "action": action, "status": 403}})
+			defer h.clearFault(t)
+			h.await(t, "partial upload cannot become success", func() (bool, error) {
+				if err := h.kube.Get(h.ctx, client.ObjectKeyFromObject(&run), &run); err != nil {
+					return false, err
+				}
+				if run.Status.ExecutionOutcome == "ChangesPresent" || run.Status.ExecutionOutcome == "Succeeded" {
+					return false, fmt.Errorf("incomplete upload became trusted success")
+				}
+				return run.Status.ExecutionOutcome == "Failed" || run.Status.ExecutionOutcome == "Indeterminate", nil
+			})
+			h.noApply(t, stack, "partial-upload-blocked")
+			recordGateEvidence(t, h.namespace, "b-upload-"+mode+"-result", map[string]any{"run": run, "faultObject": key, "action": action, "noFalseSuccess": true})
+			h.clearFault(t)
+			if mode == "uncertain-write" {
+				ref, body, err := h.store.GetVerifiedByKey(h.ctx, key)
+				if err != nil {
+					t.Fatal("uncertain response did not leave the expected independently readable object: ", err)
+				}
+				retry, err := h.store.PutImmutable(h.ctx, key, body)
+				if err != nil || retry.Digest != ref.Digest {
+					t.Fatal("identical immutable retry failed: ", err)
+				}
+				if _, err := h.store.PutImmutable(h.ctx, key, []byte("different QA bytes")); err != artifacts.ErrArtifactExists {
+					t.Fatal("conflicting retry was accepted: ", err)
+				}
+				recordGateEvidence(t, h.namespace, "b-upload-immutable-retry", map[string]any{"original": ref, "retry": retry, "conflictRejected": true})
+			}
+			var fresh platform.TerraformRun
+			h.await(t, "recovered Plan has its own new UID", func() (bool, error) {
+				for _, candidate := range h.runs(t, stack.Name) {
+					if candidate.Spec.Operation == "Plan" && candidate.UID != run.UID && candidate.Status.ExecutionOutcome == "ChangesPresent" {
+						fresh = candidate
+						return true, nil
+					}
+				}
+				return false, nil
+			})
+			recordGateEvidence(t, h.namespace, "b-upload-"+mode+"-recovery", map[string]any{"failedPlan": run, "freshPlan": fresh, "differentUID": run.UID != fresh.UID})
+			h.removeUnapplied(t, stack)
+		})
+	}
+}
+
+func (h *finalSafetyHarness) snapshotDrift(t *testing.T) {
+	for _, kind := range []string{"source", "backend"} {
+		t.Run(kind, func(t *testing.T) {
+			stack := h.createStack(t, "b-snapshot-"+kind, nil)
+			plan := h.savedPlan(t, stack, "Reconcile")
+			key, approvedDigest := plan.Status.SourceBundleRef, plan.Status.SourceBundleDigest
+			if kind == "backend" {
+				key, approvedDigest = plan.Status.ResolvedBackendConfigRef, plan.Status.ResolvedBackendConfigDigest
+			}
+			actualDigest := h.putTampered(t, key, []byte("test-owned changed "+kind+" snapshot"))
+			approval := h.approve(t, plan, "b-snapshot-"+kind+"-approval")
+			var rejected platform.TerraformRun
+			h.await(t, "changed snapshot rejects Apply before Job", func() (bool, error) {
+				for _, run := range h.runs(t, stack.Name) {
+					if run.Spec.Operation == "Apply" {
+						if run.Status.JobRef != nil {
+							return false, fmt.Errorf("changed snapshot started Apply Job")
+						}
+						if run.Status.ExecutionOutcome == "Rejected" {
+							rejected = run
+							return true, nil
+						}
+					}
+				}
+				return false, nil
+			})
+			if _, err := h.storage.HeadBucket(h.ctx, &s3.HeadBucketInput{Bucket: aws.String(stack.Spec.Variables.Values["bucket_name"])}); !artifacts.IsNotFound(err) {
+				t.Fatal("changed snapshot mutated cloud: ", err)
+			}
+			recordGateEvidence(t, h.namespace, "b-snapshot-"+kind+"-rejected", map[string]any{"plan": plan, "approval": approval, "rejectedApply": rejected, "artifactKey": key, "approvedDigest": approvedDigest, "actualVerifiedDigest": actualDigest, "applyJobCount": 0, "cloudAbsent": true})
+			h.removeUnapplied(t, stack)
+		})
+	}
+}
+
+func (h *finalSafetyHarness) group(t *testing.T, selected, gate, name string, run func(*testing.T)) {
+	t.Run(name, func(t *testing.T) {
+		if selected != "" && selected != gate {
+			t.Skip("explicit KPCP_FINAL_GATE selection")
+		}
+		run(t)
+	})
 }
 
 func (h *finalSafetyHarness) await(t *testing.T, description string, check func() (bool, error)) {
