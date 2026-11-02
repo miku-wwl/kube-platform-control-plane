@@ -123,7 +123,7 @@ func main() {
 		setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
 	}
-	if err := mgr.AddReadyzCheck("execution-reconstruction", executionGate.ReadyCheck); err != nil {
+	if err := mgr.AddReadyzCheck("execution-reconstruction", leaderExecutionReady(mgr.Elected(), executionGate)); err != nil {
 		setupLog.Error(err, "unable to set up execution reconstruction ready check")
 		os.Exit(1)
 	}
