@@ -55,3 +55,17 @@ Run ID：`kpcp-gates-20261102-0223`。真实 Kubernetes、MiniStack dummy 账户
 ## 10. Final Verdict
 
 **PARTIAL**。已执行的 exact binding、幂等及独立 Destroy 审批 PASS；完整 live 变更矩阵未关闭。
+
+## 11. 2026-11-02 Final Closure Attempt
+
+| 本轮要求场景 | 本轮结果 | 证据 / 原因 |
+|---|---|---|
+| source revision 改变 | BLOCKED | 无固定 Pod 可达 Git source transport |
+| target incarnation 改变 | BLOCKED | 本轮未创建 QA-owned Plan / target |
+| backend identity 改变 | BLOCKED | 本轮没有 QA backend 或 active Controller |
+| runner digest 改变 | BLOCKED | runner 镜像可在节点 cache 核对，但没有运行中的 QA Controller；不创建未经完整配置的生命周期 |
+| effective input / execution profile 改变 | BLOCKED | 未创建 live Plan 与审批资源 |
+
+只读复核发现 KPCP CRD 已安装、集群 Ready，但没有 QA namespace、Class、PlatformEnvironment、InfraStack、TerraformRun、Approval、Controller/Runner Pod 或 Job。MiniStack 为空且运行；Pod 专用 14566 transport 未监听。完整收据见[只读基础设施预检](../evidence/deepseek-final-20261102/infrastructure-preflight.public.json)。
+
+**本轮 Gate A 仍为 PARTIAL**；未修改 immutable object、未创建 TerraformRun/Apply、未做云端变更。上述 BLOCKED 不覆盖已有真实 exact binding 结果，也不将其升级成新的 PASS。

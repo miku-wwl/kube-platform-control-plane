@@ -1,5 +1,20 @@
 # Phase 2.5 最终 Engineering Gate 验证
 
+## 最新 Final Closure Attempt — 2026-11-02
+
+Run ID：`kpcp-deepseek-final-20261102-1644`；本轮起始基线 `4ec0ecc11086d8eb982b5b9e2169bec0849adb3f`。预检证实 Kubernetes / MiniStack 可读取、QA 对象为空，但 Pod 可达 MiniStack 与固定 Git source transport 均未配置；不启动不完整的 Apply/Destroy 负例。
+
+| Gate | 历史范围 | 本轮新增场景 | 汇总 |
+|---|---|---|---|
+| A Exact Approval | 既有 exact binding / expiry / idempotence evidence | BLOCKED | PARTIAL |
+| B Immutable Evidence | 既有损坏/缺失/immutable write evidence | BLOCKED | PARTIAL |
+| C Controller Recovery | 已审阅的两副本真实 failover | 未重跑 | PASS（原范围） |
+| D Multi-target Isolation | 已审阅的两独立集群 E2E | 未重跑 | PASS（原范围） |
+| E Fail-Closed | 既有 source/endpoint/startup/scoped 503 evidence | BLOCKED | PARTIAL |
+| F Destroy / Finalizer | 既有独立审批、正常 Destroy/finalizer evidence | BLOCKED；本轮仅完成零资源只读核对 | PARTIAL |
+
+当前身份和缺失条件见[基础设施预检](../evidence/deepseek-final-20261102/infrastructure-preflight.public.json)。本轮逐项结论分别追加在各 Gate 文档末尾；不覆盖后面的历史 run 记录。
+
 本轮结论：**完整 Phase 2.5 Freeze = NO-GO**。已修复 Class/AI 提示本地化和 Standby readiness；真实双副本 failover、独立双集群、核心 saved Plan/审批/Destroy 路径通过。真实 Ollama 质量未运行，A/B/E/F 的完整 live 故障矩阵仍有缺口，没有获批的例外。
 
 ## 本轮边界与来源

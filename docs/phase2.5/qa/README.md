@@ -1,5 +1,22 @@
 # KPCP Phase 2.5 — 最终工程验证
 
+## 最新批次：DeepSeek Final Closure（2026-11-02）
+
+Run ID：`kpcp-deepseek-final-20261102-1644`；基线 `4ec0ecc11086d8eb982b5b9e2169bec0849adb3f`。本轮在独立分支运行真实 DeepSeek 语义矩阵，并对当前 Kubernetes / MiniStack / Browser 只读预检；不覆盖下方旧批次记录。
+
+| Area | 本轮结果 | 细节 |
+|---|---|---|
+| DeepSeek API / semantic | PASS，7/7 | [Case matrix 与 token 收据](DEEPSEEK_LIVE_VALIDATION.md) |
+| DeepSeek UI / screenshot | BLOCKED | Browser 工具返回 `browser.user is unavailable`；本轮没有 PNG |
+| Gate A | PARTIAL；新增 live 变更矩阵 BLOCKED | [Gate A](gates/GATE_A_EXACT_APPROVAL.md) |
+| Gate B | PARTIAL；伪造身份/中断上传 BLOCKED | [Gate B](gates/GATE_B_IMMUTABLE_EVIDENCE.md) |
+| Gate C / D | 历史限定范围 PASS，未重跑 | 保留原 run 证据 |
+| Gate E / F | PARTIAL；新增 live 故障场景 BLOCKED | [Gate E](gates/GATE_E_FAIL_CLOSED.md)、[Gate F](gates/GATE_F_DESTROY_FINALIZER.md) |
+| Clean build / CI | 本地 clean build PASS；PR checks 待核验 | exit codes、版本与日志哈希见 [Freeze 报告](PHASE25_FINAL_FREEZE.md) |
+| 完整 Freeze | **NO-GO** | 必要 UI 与 live Gate 矩阵未闭环，无获批例外 |
+
+当前资源与浏览器控制结果见[只读预检收据](evidence/deepseek-final-20261102/infrastructure-preflight.public.json)和[Browser 收据](evidence/deepseek-final-20261102/browser-preflight.public.json)。下方 `kpcp-gates-20261102-0223` 等批次为历史执行记录，状态、时间、截图与结论原样保留。
+
 **完整 Freeze：NO-GO。** 本轮修复本地化与 Standby readiness，真实两副本 Leader failover、独立双集群及干净构建通过；真实 Ollama 质量 NOT RUN，部分 live 负例仍未关闭。完整操作、失败/恢复、UID 和证据见 [Engineering Gates](gates/README.md)。
 
 Run ID：`kpcp-gates-20261102-0223`；2026-11-02 NZDT。开始及交付前复核 remote/main 为 `0507f3164727d40fea73bf364a6effd537042e83`。本轮建立 `qa/phase25-final-gate-closure` 交付 PR，不自动合并。下方旧批次原文及 15 个 TC 历史结果保留，不把旧 PASS 当成本轮重新执行。

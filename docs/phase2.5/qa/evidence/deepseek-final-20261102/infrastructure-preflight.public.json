@@ -1,0 +1,72 @@
+{
+  "run_id": "kpcp-deepseek-final-20261102-1644",
+  "observed_date": "2026-11-02",
+  "git": {
+    "branch": "qa/phase25-deepseek-final-closure",
+    "base_sha": "4ec0ecc11086d8eb982b5b9e2169bec0849adb3f",
+    "worktree_modified": true,
+    "root_main_worktree_modified": true,
+    "root_main_preexisting_changes": [
+      "docs/phase2.5/evidence/qa-20261101/api-service.log",
+      "docs/phase2.5/evidence/qa-20261101/web-service.log"
+    ]
+  },
+  "host": {
+    "os": "Windows host with WSL2-backed Podman",
+    "free_physical_memory_kb": 11145760,
+    "total_visible_memory_kb": 32830324,
+    "podman_remote": "PASS",
+    "current_podman_machine": "podman-machine-default",
+    "unrelated_test_process_or_listener_stopped": false
+  },
+  "kubernetes": {
+    "context": "podman-minikube",
+    "version": "v1.37.0",
+    "node_status": "Ready",
+    "kube_system_uid": "2c62d6a8-08b6-460d-bb1b-ac59557dc281",
+    "namespaces": ["default", "kube-node-lease", "kube-public", "kube-system"],
+    "crd_group": "platform.example.io",
+    "kpcp_business_objects": {
+      "EnvironmentClass": 0,
+      "PlatformEnvironment": 0,
+      "InfraStack": 0,
+      "TerraformRun": 0,
+      "ChangeApproval": 0,
+      "ResourceSet": 0,
+      "ValkeyCluster": 0,
+      "Job": 0
+    },
+    "controller_or_runner_pods": 0,
+    "available_node_runner_image": "localhost/kpcp-runner@sha256:8159143aeb0bf424e37a4a609a95d9e244a0a7aae2611f2693c560e21ecaa71f",
+    "runner_terraform_version": "1.14.0"
+  },
+  "ministack": {
+    "http_endpoint": "http://127.0.0.1:4566/",
+    "http_status": 200,
+    "version": "1.5.35",
+    "container_id": "01e6fc9c0ccde322bed165fa4e74dcd0184f7c337883ec4fb90986e317f52473",
+    "image_revision": "ae9285c9b50ef2232a9d2c2c92e9a5efa93cead2",
+    "s3_bucket_count": 0
+  },
+  "lifecycle_readiness": {
+    "controller_pod_or_process": "not running",
+    "controller_image_in_node_cache": true,
+    "qa_namespace_and_objects": "none",
+    "pod_accessible_ministack_transport": "not available: no listener on 192.168.1.19:14566",
+    "fixed_git_source_transport": "not available: no listener on 192.168.1.19:18085 and no configured E2E source",
+    "e2e_config_environment_variable_present": false,
+    "live_gate_injection_run_safe_now": false
+  },
+  "shared_console": {
+    "api_health_http_status": 200,
+    "api_health_body": { "aiProvider": "ollama", "artifactPreview": true, "status": "ok" },
+    "frontend_http_status": 200,
+    "frontend_title": "Platform Control Plane",
+    "represents_this_deepseek_build": false
+  },
+  "deepseek_key": {
+    "process_environment_present": true,
+    "value_read_or_logged": false
+  },
+  "mutations_during_preflight": []
+}

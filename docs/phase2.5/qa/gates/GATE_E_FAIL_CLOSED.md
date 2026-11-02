@@ -59,3 +59,17 @@ live wrong-account/profile、Git 传输不可用、外来 active Job、ambiguous
 ## 10. Final Verdict
 
 **PARTIAL**。已执行边界均 fail closed；完整 live 负例矩阵仍有明确缺口。
+
+## 11. 2026-11-02 Final Closure Attempt
+
+| 本轮要求场景 | 本轮结果 | 证据 / 原因 |
+|---|---|---|
+| Wrong MiniStack account | BLOCKED | 目前 emulator 只有当前 dummy context；本轮未伪造可隔离的 account boundary |
+| Git transport outage | BLOCKED | Pod 可达 Git source server 未运行，不能把现有无 source 当作故障注入后的可信基线 |
+| Foreign active Job | BLOCKED | 未创建 QA-owned Controller/Job，避免触碰 shared Job |
+| Ambiguous Apply / partial mutation | BLOCKED | 无完整隔离 Plan/Runner/backend transport；不启动未经验证的 mutation |
+| Partial mutation 后恢复 | BLOCKED | 无 QA-owned cloud object 或并发隔离 transport |
+
+本轮没有执行任何 Apply，也没有向 MiniStack 写对象。集群、Runner image cache、当前 MiniStack identity 与缺少的 Pod transport 见[只读预检收据](../evidence/deepseek-final-20261102/infrastructure-preflight.public.json)。
+
+**本轮新增场景 BLOCKED；Gate E 仍 PARTIAL。** 原有 startup/source/endpoint/scoped 503 live 结果和 unit-only 行为保持各自范围。

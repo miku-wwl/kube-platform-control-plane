@@ -141,3 +141,15 @@ Test Run ID：`kpcp-gates-20261102-0223`。上述 deterministic PASS 与历史�
 工程收据：[真实端点错误、模型与请求边界](evidence/final-gates-20261102/ollama-final.public.json)、[clean build 与回归](evidence/final-gates-20261102/clean-build.public.json)、[截图像素/哈希](evidence/final-gates-20261102/new-screenshots.public.json)。
 
 Final Verdict：**真实模型质量 NOT RUN；真实不可用的中英文 UI / Fail-Closed 路径 PASS**。未把 deterministic 或 controlled fixture 输出写成 phi4-mini 推理。未生成/提交本次命名环境，无需清理模型基础设施。
+
+## 10. 2026-11-02 — DeepSeek 真实推理补充
+
+Run ID：`kpcp-deepseek-final-20261102-1644`。真实官方 DeepSeek API 串行调用 DS01–DS07 共 7 次，实际返回 `deepseek-flash`，合计 1,948 tokens，无重试；英文、中文、显式字段、Valkey、含糊意图、Class 超限和 prompt injection 均按各自判定通过。
+
+这次是 generator API 证据，不是浏览器 UI 执行。内置 Browser 在取得当前标签页信息后，控制调用和一次受控重连均报 `browser.user is unavailable`；本轮没有打开 Builder、读取 Draft DOM、操作 Submit、切换语言或保存 PNG。共享旧 API 的 health 返回 provider `ollama`，因此不作为 DeepSeek 页面验收。
+
+- [逐 Case 语义结果](DEEPSEEK_LIVE_VALIDATION.md)
+- [安全原始日志及 SHA-256](evidence/deepseek-final-20261102/deepseek-live.public.json)
+- [浏览器原始预检](evidence/deepseek-final-20261102/browser-preflight.public.json)
+
+本节结论：**真实 DeepSeek Draft intent 子集 PASS；DeepSeek UI / Screenshot BLOCKED。** 历史 deterministic UI PASS 和 Ollama 不可用 UI PASS 均保持原来的运行身份，不扩展到本轮。
