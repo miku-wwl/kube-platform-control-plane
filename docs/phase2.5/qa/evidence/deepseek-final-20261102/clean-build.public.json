@@ -81,7 +81,12 @@
         "gitguardian": "PASS"
       }
     },
-    "final_report_commit_rerun": "pending"
+    "final_report_commit_rerun": {
+      "run_id": 41387011556,
+      "head_sha": "5897ae6cd676d05bc1e893ed7283248fc004b7fc",
+      "result": "PASS",
+      "url": "https://github.com/miku-wwl/kube-platform-control-plane/actions/runs/41387011556"
+    }
   },
   "deepseek_live_logs": {
     "DS01.log": "sha256:8cc895868f8188e7901e9772cc45ab0bd1011af70faa9a3cfe121c85dee432d4",
