@@ -1141,9 +1141,10 @@ func TestLifecycle(t *testing.T) {
 			t.Fatal("Destroy terminal evidence missing after recovery: ", err)
 		}
 		var terminal struct {
-			RunUID, JobUID, Operation, ExecutionOutcome, PlanRef, PlanDigest string
-			TerraformExitCode                                                int
-			ArtifactsReady                                                   bool
+			RunUID                                                   string `json:"terraformRunUID"`
+			JobUID, Operation, ExecutionOutcome, PlanRef, PlanDigest string
+			TerraformExitCode                                        int
+			ArtifactsReady                                           bool
 		}
 		if err := json.Unmarshal(terminalBytes, &terminal); err != nil || terminal.RunUID != string(destroyApply.UID) || terminal.JobUID != destroyApply.Status.JobUID || terminal.Operation != "Apply" || terminal.ExecutionOutcome != "Succeeded" || terminal.TerraformExitCode != 0 || !terminal.ArtifactsReady || terminal.PlanRef != plan.Status.PlanRef || terminal.PlanDigest != plan.Status.PlanDigest {
 			t.Fatalf("Destroy did not retain the exact saved-plan terminal identity: %+v %v", terminal, err)
