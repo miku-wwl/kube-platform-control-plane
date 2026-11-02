@@ -390,7 +390,7 @@ func TestLifecycle(t *testing.T) {
 		for _, run := range runs.Items {
 			if run.Spec.StackRef.Name == "environment-infra" && run.Spec.Operation == "Plan" && run.Spec.PlanMode == mode {
 				plan = run
-				if run.Status.ExecutionOutcome == "Failed" || run.Status.ExecutionOutcome == "Rejected" {
+				if run.Status.ExecutionOutcome == "Failed" || run.Status.ExecutionOutcome == "Rejected" || run.Status.ExecutionOutcome == "Superseded" || run.Status.ExecutionOutcome == "Indeterminate" {
 					return false, fmt.Errorf("plan %s: %+v", run.Name, run.Status.Conditions)
 				}
 				return run.Status.ExecutionOutcome == "ChangesPresent", nil
@@ -417,7 +417,21 @@ func TestLifecycle(t *testing.T) {
 	// Kill a genuinely active Plan process, retaining its Job/UID.
 	wait(t, "active Plan Job", func() (bool, error) {
 		_, err := getPlan("Reconcile")
-		return plan.Status.JobRef != nil && plan.Status.ExecutionOutcome != "ChangesPresent", err
+		if err != nil || plan.Status.JobRef == nil || plan.Status.JobUID == "" {
+			return false, err
+		}
+		var job batchv1.Job
+		if err := kube.Get(ctx, client.ObjectKey{Namespace: prefix, Name: plan.Status.JobRef.Name}, &job); err != nil {
+			return false, client.IgnoreNotFound(err)
+		}
+		if string(job.UID) != plan.Status.JobUID || !hasOwnerUID(job.OwnerReferences, plan.UID) {
+			return false, fmt.Errorf("active Plan Job identity is not durable")
+		}
+		if job.Status.Succeeded > 0 || job.Status.Failed > 0 {
+			return false, fmt.Errorf("Plan Job is no longer active before restart")
+		}
+		recordGateEvidence(t, prefix, "plan-active-before-restart", map[string]any{"run": plan, "job": job})
+		return true, nil
 	})
 	planUID := plan.UID
 	restart("active-plan")
