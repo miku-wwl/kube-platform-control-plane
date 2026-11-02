@@ -1,0 +1,36 @@
+{
+  "run_id": "kpcp-deepseek-final-20261102-1644",
+  "observed_date": "2026-11-02",
+  "computer_use_invoked": false,
+  "built_in_browser": "BLOCKED",
+  "kpcp_ui_access": "BLOCKED",
+  "screenshot_pipeline": "BLOCKED",
+  "tab_discovery": {
+    "result": "PASS",
+    "browser": "iab",
+    "browser_label": "Browser 2",
+    "tabs": [
+      { "tab_id": "4", "url": "http://127.0.0.1:5173/", "title": "平台控制平面" },
+      { "tab_id": "6", "url": "http://127.0.0.1:5173/", "title": "平台控制平面" }
+    ]
+  },
+  "control_attempts": [
+    {
+      "operation": "cua.getTab(6, {browser: 'iab'})",
+      "result": "FAIL",
+      "raw_error": "browser.user is unavailable"
+    },
+    {
+      "operation": "cua.getBrowser({id: 'iab'}) then one getTab retry",
+      "result": "FAIL",
+      "raw_error": "browser.user is unavailable"
+    }
+  ],
+  "classification": {
+    "browser_control": "unavailable",
+    "tab_discovery": "succeeded",
+    "site_permission_denial": "not reported by the tool",
+    "page_http_failure": "not tested through the browser"
+  },
+  "screenshots": []
+}

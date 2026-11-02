@@ -57,3 +57,16 @@
 ## 10. Final Verdict
 
 **PARTIAL**。真实 artifact 篡改/丢失/重试/冲突矩阵 PASS；语义身份伪造的 live 路径仍缺口。
+
+## 11. 2026-11-02 Final Closure Attempt
+
+| 本轮要求场景 | 本轮结果 | 证据 / 原因 |
+|---|---|---|
+| hash 一致但 Run UID 错误 | BLOCKED | 未创建 QA-owned Terraform execution |
+| hash 一致但 Job UID / operation / Plan UID / Plan digest 错误 | BLOCKED | 无 active Controller/Runner 和 Pod 可达固定 source/backend；不注入伪造终态 |
+| 中断 artifact upload / uncertain retry / immutable conflict | BLOCKED | 本轮没有 QA bucket 对象；MiniStack 当前 bucket list 为空 |
+| source/backend snapshot 改变后复用审批 | BLOCKED | 没有本轮 live Plan 或审批 |
+
+预检确认集群 KPCP CRD 已安装但业务对象为零；MiniStack 1.5.35 本身健康，Pod 可访问 transport 不存在。详细身份及限制见[只读基础设施预检](../evidence/deepseek-final-20261102/infrastructure-preflight.public.json)。
+
+**本轮 Gate B 扩展场景 BLOCKED；Gate 总状态仍 PARTIAL。** Controlled tests 与已有 artifact 故障证据保留，不能代替上述 live identity 攻击。

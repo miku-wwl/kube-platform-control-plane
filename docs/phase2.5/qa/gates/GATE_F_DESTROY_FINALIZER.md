@@ -67,3 +67,16 @@
 ## 10. Final Verdict
 
 **PARTIAL**。独立审批、503/Plan failure、进程与 Leader 恢复、普通 finalizer 清理 PASS；不确定/部分 Destroy Apply 的 live 负例未关闭。
+
+## 11. 2026-11-02 Final Closure Attempt
+
+| 本轮要求场景 | 本轮结果 | 证据 / 原因 |
+|---|---|---|
+| Destroy Apply 部分执行后失败 | BLOCKED | 本轮没有独立 QA environment、Runner/backend transport 或可注入的专属 cloud resource |
+| Destroy 已执行但缺 terminal evidence | BLOCKED | 不在共享对象上移除/伪造终态；没有 QA-owned Run/Job |
+| Ambiguous Destroy 时重启 dedicated Controller | BLOCKED | 当前没有 dedicated Controller；不能用共享服务重启代替隔离恢复测试 |
+| Cleanup | PASS（只读核对） | 当前 KPCP business objects/Jobs 均为零；MiniStack bucket list 为空；没有本轮 QA mutation 要清理 |
+
+本轮未创建/删除任何 Kubernetes 或云模拟资源，也未 patch finalizer。共享 Podman、Minikube、MiniStack 未重启。详见[只读预检收据](../evidence/deepseek-final-20261102/infrastructure-preflight.public.json)。
+
+**本轮 Destroy 故障场景 BLOCKED；Gate F 仍 PARTIAL。** Cleanup 的 PASS 仅表示复核时无需回收本轮未创建的业务资源，不代表重新运行了完整 Destroy 生命周期。

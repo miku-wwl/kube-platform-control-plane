@@ -1,0 +1,9 @@
+C:\Users\weila\Documents\Codex\2026-11-01\chatgpt-desktop-work-kpcp-e2e-agent\work\final-validation-fcc8048\platform-api.exe: go1.27.2
+	path	github.com/miku-wwl/kube-platform-control-plane/cmd/platform-api
+	mod	github.com/miku-wwl/kube-platform-control-plane	v0.0.0-20261102035510-fcc804874a65
+	build	GOARCH=amd64
+	build	GOOS=windows
+	build	vcs=git
+	build	vcs.revision=fcc804874a65812563127a9a58c98ed710a5a1e9
+	build	vcs.time=2026-11-02T03:55:10Z
+	build	vcs.modified=false

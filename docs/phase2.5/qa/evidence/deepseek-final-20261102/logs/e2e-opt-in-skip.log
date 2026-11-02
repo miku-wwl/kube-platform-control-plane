@@ -1,0 +1,5 @@
+=== RUN   TestLifecycle
+    lifecycle_test.go:54: set KPCP_E2E_CONFIG to an explicit local integration configuration
+--- SKIP: TestLifecycle (0.00s)
+PASS
+ok  	github.com/miku-wwl/kube-platform-control-plane/e2e	0.209s

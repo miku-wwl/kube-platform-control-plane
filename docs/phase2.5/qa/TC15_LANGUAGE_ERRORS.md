@@ -173,3 +173,13 @@ Actual Result / Final Verdict：**PASS（本批次 QA-01 的 Class 校验路径�
 回归：5 个 Node tests、完整 Go tests/race/vet、frontend build 均 exit 0，见[clean 证据](evidence/final-gates-20261102/clean-build.public.json)。Class 本地化路径的产品源码自第 9 节验证后未改变。
 
 本批次结果：**Class 校验和真实 AI 不可用提示的已执行路径 PASS**。正常 AI Draft 的 advisory warning 已按结构化码修复、单测 PASS，但由于模型服务缺失，其正常 UI 路径 **NOT RUN**；不宣称全部服务端错误全面本地化。历史第 7 节 FAIL 保持不变。
+
+## 11. 2026-11-02 — DeepSeek 错误文案代码审查
+
+DeepSeek provider 的稳定错误码增加了英文/中文摘要映射，并在技术详情中显示稳定码。新增前端映射和 Go API fixture 回归已纳入本分支，但本轮 Browser Host 不可控制，不能验证页面实际语言切换、输入保留或异常提示截图。
+
+- 实现：`web/src/ConsoleViews.tsx`、`web/src/i18n.tsx`
+- 回归：`internal/console/deepseek_test.go` 中的错误码/API 不泄密检查；frontend typecheck/build 待最终验证
+- Browser 与 PNG：**BLOCKED / 未生成**，详见 [Browser 预检收据](evidence/deepseek-final-20261102/browser-preflight.public.json)
+
+本节不改变历史 QA-01 FAIL 的执行身份，也不把代码或单测升级为新的 UI PASS。

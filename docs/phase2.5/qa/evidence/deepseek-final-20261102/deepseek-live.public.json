@@ -1,0 +1,28 @@
+{
+  "run_id": "kpcp-deepseek-final-20261102-1644",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "calls": 7,
+  "concurrency": 1,
+  "retries": 0,
+  "prompt_tokens": 1678,
+  "completion_tokens": 270,
+  "total_tokens": 1948,
+  "provider_duration_ms_total": 6673,
+  "request_ids": [],
+  "cases": [
+    { "id": "DS01", "result": "PASS", "model_intent": { "name": "dev-environment", "region": "", "nodeCount": 1, "valkeyEnabled": false, "valkeyShards": 0, "valkeyReplicas": 0 } },
+    { "id": "DS02", "result": "PASS", "model_intent": { "name": "dev-environment", "region": "", "nodeCount": 2, "valkeyEnabled": false, "valkeyShards": 0, "valkeyReplicas": 0 } },
+    { "id": "DS03", "result": "PASS", "explicit_fields_preserved": { "name": "deepseek-explicit-guard", "region": "us-east-1", "nodeCount": 2 } },
+    { "id": "DS04", "result": "PASS", "model_intent": { "name": "dev-environment", "region": "", "nodeCount": 1, "valkeyEnabled": true, "valkeyShards": 1, "valkeyReplicas": 1 } },
+    { "id": "DS05", "result": "PASS", "model_intent": { "name": "dev-cluster", "region": "", "nodeCount": 1, "valkeyEnabled": false, "valkeyShards": 0, "valkeyReplicas": 0 } },
+    { "id": "DS06", "result": "PASS", "model_returned_nodes": 100, "production_class_validation": "rejected over maximum using in-memory Ready Class" },
+    { "id": "DS07", "result": "PASS", "explicit_fields_preserved": { "name": "deepseek-injection-guard", "region": "us-east-1", "nodeCount": 1 }, "unauthorized_fields_accepted": false }
+  ],
+  "live_kubernetes_resources_created": false,
+  "browser_ui_test": "BLOCKED",
+  "raw_logs": [
+    { "path": "DS01.log", "sha256": "8cc895868f8188e7901e9772cc45ab0bd1011af70faa9a3cfe121c85dee432d4" },
+    { "path": "DS02-DS07.log", "sha256": "328587c117a34a706cbb0cde81f87983c8a72507eb5f3b8ec7c4bc223450f81e" }
+  ]
+}
